@@ -83,6 +83,8 @@ export interface WorldInterface extends Interface {
       | "RoleAdminChanged"
       | "RoleGranted"
       | "RoleRevoked"
+      | "SignerAdded"
+      | "SignerRemoved"
   ): EventFragment;
 
   encodeFunctionData(
@@ -284,6 +286,30 @@ export namespace RoleRevokedEvent {
     role: string;
     account: string;
     sender: string;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
+}
+
+export namespace SignerAddedEvent {
+  export type InputTuple = [signer: AddressLike];
+  export type OutputTuple = [signer: string];
+  export interface OutputObject {
+    signer: string;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
+}
+
+export namespace SignerRemovedEvent {
+  export type InputTuple = [signer: AddressLike];
+  export type OutputTuple = [signer: string];
+  export interface OutputObject {
+    signer: string;
   }
   export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
   export type Filter = TypedDeferredTopicFilter<Event>;
@@ -561,6 +587,20 @@ export interface World extends BaseContract {
     RoleRevokedEvent.OutputTuple,
     RoleRevokedEvent.OutputObject
   >;
+  getEvent(
+    key: "SignerAdded"
+  ): TypedContractEvent<
+    SignerAddedEvent.InputTuple,
+    SignerAddedEvent.OutputTuple,
+    SignerAddedEvent.OutputObject
+  >;
+  getEvent(
+    key: "SignerRemoved"
+  ): TypedContractEvent<
+    SignerRemovedEvent.InputTuple,
+    SignerRemovedEvent.OutputTuple,
+    SignerRemovedEvent.OutputObject
+  >;
 
   filters: {
     "ReceivedFunds(address,uint256)": TypedContractEvent<
@@ -605,6 +645,28 @@ export interface World extends BaseContract {
       RoleRevokedEvent.InputTuple,
       RoleRevokedEvent.OutputTuple,
       RoleRevokedEvent.OutputObject
+    >;
+
+    "SignerAdded(address)": TypedContractEvent<
+      SignerAddedEvent.InputTuple,
+      SignerAddedEvent.OutputTuple,
+      SignerAddedEvent.OutputObject
+    >;
+    SignerAdded: TypedContractEvent<
+      SignerAddedEvent.InputTuple,
+      SignerAddedEvent.OutputTuple,
+      SignerAddedEvent.OutputObject
+    >;
+
+    "SignerRemoved(address)": TypedContractEvent<
+      SignerRemovedEvent.InputTuple,
+      SignerRemovedEvent.OutputTuple,
+      SignerRemovedEvent.OutputObject
+    >;
+    SignerRemoved: TypedContractEvent<
+      SignerRemovedEvent.InputTuple,
+      SignerRemovedEvent.OutputTuple,
+      SignerRemovedEvent.OutputObject
     >;
   };
 }

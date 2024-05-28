@@ -44,7 +44,7 @@ describe("World Registration", () => {
             admin: worldRegistryAdmin
         });
 
-        const isRegistered = await registrarRegistry.isRegistrar({
+        const isRegistered = await registrarRegistry.isSignerForRegistrar({
             registrarId: 1n,
             signer: registrarSigner.address
         });

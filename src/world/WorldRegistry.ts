@@ -11,6 +11,11 @@ export interface IWorldRegistryOpts {
     admin: Provider | Signer;
 }
 
+export interface IWorldRegistrationResult {
+    receipt: ethers.TransactionReceipt;
+    worldAddress: string;
+}
+
 export class WorldRegistry {
     private address: string;
     private admin: Provider | Signer;
@@ -31,7 +36,7 @@ export class WorldRegistry {
         details: IWorldInfo,
         tokensToOwner: boolean,
         tokens?: bigint
-    }) {
+    }): Promise<IWorldRegistrationResult> {
         
 
         const {registrarId, registrarSigner, owner, details, tokensToOwner} = props;
@@ -52,7 +57,7 @@ export class WorldRegistry {
         return {receipt: r, worldAddress: addr};
     }
 
-    async lookupWorldAddress(name: string) {
+    async lookupWorldAddress(name: string): Promise<string> {
         const addr = await this.registry.worldsByName(name.toLowerCase());
         return addr;
     }

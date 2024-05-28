@@ -4,15 +4,18 @@
 # code.
 
 WORLD_SET_IMPL="World#WorldFactory~WorldFactory.setImplementation";
+WORLD_SET_WORLD_REG="WorldRegistry#WorldFactory~WorldFactory.setWorldRegistry";
 WORLD="World#World";
 WORLD_REGISTRY="WorldRegistry#WorldRegistry";
 WORLD_FACTORY="WorldFactory#WorldFactory";
 REGISTRAR="RegistrarRegistry#RegistrarRegistry";
 
-CHAIN=chain-55555
+#CHAIN=chain-55555
+CHAIN=chain-26379
 
 # Wipe all deployment history
 npx hardhat ignition wipe $CHAIN $WORLD_SET_IMPL
+npx hardhat ignition wipe $CHAIN $WORLD_SET_WORLD_REG
 npx hardhat ignition wipe $CHAIN $WORLD
 npx hardhat ignition wipe $CHAIN $WORLD_REGISTRY
 npx hardhat ignition wipe $CHAIN $WORLD_FACTORY

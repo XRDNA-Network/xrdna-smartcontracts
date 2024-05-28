@@ -7,8 +7,6 @@ export default buildModule("RegistrarRegistry", (m) => {
     if(!regs || regs.length === 0) {
         throw new Error("Registerers not found");
     }
-    const acct = m.getAccount(0);
-    console.log("Deploying with registerers", regs);
-    const Registry = m.contract("RegistrarRegistry", [acct, regs]);
+    const Registry = m.contract("RegistrarRegistry", [regs]);
     return {registry: Registry};
 });

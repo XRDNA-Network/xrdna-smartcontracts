@@ -7,6 +7,8 @@ const throwError = (name: string) => {
 }
 
 const dk = process.env.DEPLOYMENT_KEY;
+
+
 const config: HardhatUserConfig = {
   solidity: {
     version: "0.8.24",
@@ -43,13 +45,11 @@ const config: HardhatUserConfig = {
   networks: {
     hardhat: {
       chainId: 55555,
-      /*forking: {
-        url: 'https://sepolia.base.org',
-      },*/
     },
     xrdna_testnet: {
       chainId: 26379,
       url: 'https://rpc-xrdna-testnet-s1zvdnqr3d.t.conduit.xyz',
+      accounts: dk ? [dk]: undefined
     },
     base_sepolia: {
       chainId: 84532,

@@ -31,6 +31,8 @@ contract World is IWorld, AccessControl {
     
 
     event ReceivedFunds(address indexed sender, uint256 value);
+    event SignerAdded(address indexed signer);
+    event SignerRemoved(address indexed signer);
 
     modifier onlyWorldFactory() {
        // console.log("WorldFactory sender", msg.sender, address(worldFactory));
@@ -92,12 +94,14 @@ contract World is IWorld, AccessControl {
     function addSigners(address[] memory sigs) public onlyRole(DEFAULT_ADMIN_ROLE) {
         for (uint256 i = 0; i < sigs.length; i++) {
             _grantRole(DEFAULT_ADMIN_ROLE, sigs[i]);
+            emit SignerAdded(sigs[i]);
         }
     }
 
     function removeSigners(address[] memory sigs) public onlyRole(DEFAULT_ADMIN_ROLE) {
         for (uint256 i = 0; i < sigs.length; i++) {
             _revokeRole(DEFAULT_ADMIN_ROLE, sigs[i]);
+            emit SignerRemoved(sigs[i]);
         }
     }
 

@@ -34,8 +34,7 @@ contract RegistrarRegistry is IRegistrarRegistry, AccessControl {
         _;
     }
 
-    constructor(address defaultAdmin, address[] memory registerers) {
-        _grantRole(DEFAULT_ADMIN_ROLE, defaultAdmin);
+    constructor(address[] memory registerers) {
         for (uint256 i = 0; i < registerers.length; i++) {
             _grantRole(DEFAULT_ADMIN_ROLE, registerers[i]);
         }
@@ -57,6 +56,10 @@ contract RegistrarRegistry is IRegistrarRegistry, AccessControl {
         }
         emit RegistrarAdded(registrarCount, signer, msg.value);
         //console.log("----------- Register End -----------");
+    }
+
+    function removeRegistrar(uint256 registrarId) public onlyRole(DEFAULT_ADMIN_ROLE) {
+        delete registrars[registrarId];
     }
 
     function addSigners(uint256 registrarId, address[] memory signers) public onlyRegistrar(registrarId) {

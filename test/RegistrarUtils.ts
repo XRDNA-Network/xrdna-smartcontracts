@@ -27,9 +27,9 @@ export class RegistrarUtils  {
             return;
         }
 
-        const {registrarAdmin, signers} = props;
+        const {signers} = props;
         const Registry = await ethers.getContractFactory("RegistrarRegistry");
-        const registry = await Registry.deploy(registrarAdmin.address, signers);
+        const registry = await Registry.deploy(signers);
         const t = await registry.deploymentTransaction()?.wait();
         this.registryAddress = t?.contractAddress || "";
         console.log("Registry deployed at", this.registryAddress);

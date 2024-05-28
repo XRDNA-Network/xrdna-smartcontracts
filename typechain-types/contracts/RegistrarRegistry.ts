@@ -35,6 +35,7 @@ export interface RegistrarRegistryInterface extends Interface {
       | "register"
       | "registrarCount"
       | "registrars"
+      | "removeRegistrar"
       | "removeSigners"
       | "renounceRole"
       | "revokeRole"
@@ -88,6 +89,10 @@ export interface RegistrarRegistryInterface extends Interface {
     values: [BigNumberish]
   ): string;
   encodeFunctionData(
+    functionFragment: "removeRegistrar",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
     functionFragment: "removeSigners",
     values: [BigNumberish, AddressLike[]]
   ): string;
@@ -125,6 +130,10 @@ export interface RegistrarRegistryInterface extends Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "registrars", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "removeRegistrar",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "removeSigners",
     data: BytesLike
@@ -319,6 +328,12 @@ export interface RegistrarRegistry extends BaseContract {
 
   registrars: TypedContractMethod<[arg0: BigNumberish], [bigint], "view">;
 
+  removeRegistrar: TypedContractMethod<
+    [registrarId: BigNumberish],
+    [void],
+    "nonpayable"
+  >;
+
   removeSigners: TypedContractMethod<
     [registrarId: BigNumberish, signers: AddressLike[]],
     [void],
@@ -390,6 +405,9 @@ export interface RegistrarRegistry extends BaseContract {
   getFunction(
     nameOrSignature: "registrars"
   ): TypedContractMethod<[arg0: BigNumberish], [bigint], "view">;
+  getFunction(
+    nameOrSignature: "removeRegistrar"
+  ): TypedContractMethod<[registrarId: BigNumberish], [void], "nonpayable">;
   getFunction(
     nameOrSignature: "removeSigners"
   ): TypedContractMethod<

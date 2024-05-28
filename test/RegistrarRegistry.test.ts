@@ -13,7 +13,7 @@ describe("RegistrarRegistry", () => {
         async function deployRegistry() {
             const w = new ethers.Wallet(HardhatTestKeys[0].key, ethers.provider);
             const Registry = await ethers.getContractFactory("RegistrarRegistry");
-            const registry = await Registry.deploy(HardhatTestKeys[0].address, [HardhatTestKeys[1].address]);
+            const registry = await Registry.deploy([HardhatTestKeys[1].address]);
             return registry;
         }
 

@@ -830,8 +830,8 @@
       ]
     },
     "/Users/mdcoon/git/xrdna-smartcontracts/contracts/RegistrarRegistry.sol": {
-      "lastModificationDate": 1716557499299,
-      "contentHash": "873acced589fd8ae8703a63f69d3ab06",
+      "lastModificationDate": 1716907025504,
+      "contentHash": "22b8fb6497a52fe956bf2ec82f0994f2",
       "sourceName": "contracts/RegistrarRegistry.sol",
       "solcConfig": {
         "version": "0.8.24",
@@ -1177,8 +1177,8 @@
       ]
     },
     "/Users/mdcoon/git/xrdna-smartcontracts/contracts/world/World.sol": {
-      "lastModificationDate": 1716729351877,
-      "contentHash": "e514d8d6ce9efded8245ddfa862317d3",
+      "lastModificationDate": 1716916868422,
+      "contentHash": "4b16857850e36d3754954a5e045344cb",
       "sourceName": "contracts/world/World.sol",
       "solcConfig": {
         "version": "0.8.24",

@@ -15,6 +15,11 @@ export interface IRegisterProps {
     tokens?: bigint;
 }
 
+export interface IRegistrationResult {
+    receipt: ethers.TransactionReceipt;
+    registrarId: bigint;
+}
+
 export class RegistrarRegistry {
     private address: string;
     private admin: Provider | Signer;
@@ -28,7 +33,7 @@ export class RegistrarRegistry {
         this.logParser = new LogParser(RegistrarRegistryABI, this.address);
     }
 
-    async registerRegistrar(props: IRegisterProps) {
+    async registerRegistrar(props: IRegisterProps): Promise<IRegistrationResult> {
         if(!this.registry) {
             throw new Error("Registry not deployed");
         }
@@ -49,9 +54,9 @@ export class RegistrarRegistry {
 
     
 
-    async isRegistrar(props: {
+    async isSignerForRegistrar(props: {
         registrarId: bigint, signer: string
-    }) {
+    }): Promise<boolean> {
         if(!this.registry) {
             throw new Error("Registry not deployed");
         }
