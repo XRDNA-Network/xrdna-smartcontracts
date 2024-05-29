@@ -1,7 +1,7 @@
 import { ethers } from "hardhat";
 import { WorldUtils } from "./world/WorldUtils";
 import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
-import { RegistrarRegistry, VectorAddress, World, WorldRegistry } from "../src";
+import { IWorldInfo, RegistrarRegistry, VectorAddress, World, WorldRegistry, signVectorAddress } from "../src";
 import { expect } from "chai";
 import { ZeroAddress } from "ethers";
 
@@ -20,6 +20,7 @@ describe("World Registration", () => {
     let worldFactoryAdmin: HardhatEthersSigner;
     let worldRegistryAdmin: HardhatEthersSigner;
     let worldOwner: HardhatEthersSigner;
+    let vectorAddressAuthority: HardhatEthersSigner;
     let registrarId: bigint = 1n;
     let registrarRegistry: RegistrarRegistry;
     let worldRegistry: WorldRegistry;
@@ -32,6 +33,7 @@ describe("World Registration", () => {
         registrarSigner = signers[0];
         worldFactoryAdmin = signers[0];
         worldRegistryAdmin = signers[0];
+        vectorAddressAuthority = signers[0];
         worldOwner = signers[1];
 
 
@@ -73,22 +75,28 @@ describe("World Registration", () => {
             return;
         }
 
+        const baseVector = {
+            x: "1",
+            y: "1",
+            z: "1",
+            t: 0n,
+            p: 0n,
+            p_sub: 0n
+        } as VectorAddress;
+
+        const sig = await signVectorAddress(baseVector, vectorAddressAuthority);
+        
+        const worldInfo: IWorldInfo = {
+            baseVector,
+            name: "TestWorld",
+            vectorAuthorizedSignature: sig
+        };
         const r = await worldRegistry.createWorld({
             registrarSigner,
             registrarId,
             owner: worldOwner.address,
             tokensToOwner: false,
-            details: {
-                baseVector: {
-                x: "1",
-                y: "1",
-                z: "1",
-                t: 0n,
-                p: 0n,
-                p_sub: 0n
-            } as VectorAddress,
-            name: "TestWorld",
-            },
+            details: worldInfo,
             tokens: BigInt("1000000000000000000")
         });
         

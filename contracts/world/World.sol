@@ -7,11 +7,11 @@ import { VectorAddress, LibVectorAddress } from "../VectorAddress.sol";
 import { IWorld } from "./IWorld.sol";
 import {IWorldRegistry} from "./WorldRegistry.sol";
 import {IWorldFactory} from "./IWorldFactory.sol";
-//import "hardhat/console.sol";
 
 struct WorldInfo {
         string name;
         VectorAddress baseVector;
+        bytes vectorAuthorizedSignature;
 }
 
 contract World is IWorld, AccessControl {
@@ -67,6 +67,11 @@ contract World is IWorld, AccessControl {
         require(!initialized, "World: already initialized");
         //console.log("Decoding init data");
         (WorldInfo memory info) = abi.decode(initData, (WorldInfo));
+        //console.log("Decoded init data", info.name, info.baseVector.asLookupKey());
+
+        address signer = info.baseVector.getSigner(info.vectorAuthorizedSignature);
+        
+        require(worldRegistry.isVectorAddressAuthority(signer), "World: unauthorized vector address");
         //console.log("Decoded init data", info.name, info.baseVector.asLookupKey());
         baseVector = info.baseVector;
         name = info.name;

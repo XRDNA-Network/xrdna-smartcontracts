@@ -16,6 +16,7 @@ export class WorldRegistryUtils {
 
     static worldRegistryAt(props: {
         address: string,
+        vectorAuthority: string,
         admin: HardhatEthersSigner,
         regUtils: RegistrarUtils,
         facUtils: WorldFactoryUtils
@@ -34,14 +35,15 @@ export class WorldRegistryUtils {
     }
 
     async deployWorldRegistry(props: {
-        admin: HardhatEthersSigner
+        admin: HardhatEthersSigner,
+        vectorAddressAuthority: string
     }) {
         if(this.worldRegistry) {
             return;
         }
 
         const WorldRegistry = await ethers.getContractFactory("WorldRegistry");
-        const worldRegistry = await WorldRegistry.deploy(this.regUtils.registryAddress, this.facUtils.factoryAddress || throwError("WorldFactory not deployed"), props.admin.address);
+        const worldRegistry = await WorldRegistry.deploy(props.vectorAddressAuthority, this.regUtils.registryAddress, this.facUtils.factoryAddress || throwError("WorldFactory not deployed"), props.admin.address);
         const t = await worldRegistry.deploymentTransaction()?.wait();
         this.worldRegistryAddress = t?.contractAddress || "";
         console.log("WorldRegistry deployed at", this.worldRegistryAddress);

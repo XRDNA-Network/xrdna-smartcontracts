@@ -13,6 +13,25 @@ const _abi = [
     inputs: [
       {
         internalType: "address",
+        name: "auth",
+        type: "address",
+      },
+    ],
+    name: "isVectorAddressAuthority",
+    outputs: [
+      {
+        internalType: "bool",
+        name: "",
+        type: "bool",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
         name: "world",
         type: "address",
       },

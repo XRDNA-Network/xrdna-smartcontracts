@@ -23,9 +23,17 @@ import type {
 
 export interface IWorldRegistryInterface extends Interface {
   getFunction(
-    nameOrSignature: "isWorld" | "register" | "upgradeWorld"
+    nameOrSignature:
+      | "isVectorAddressAuthority"
+      | "isWorld"
+      | "register"
+      | "upgradeWorld"
   ): FunctionFragment;
 
+  encodeFunctionData(
+    functionFragment: "isVectorAddressAuthority",
+    values: [AddressLike]
+  ): string;
   encodeFunctionData(
     functionFragment: "isWorld",
     values: [AddressLike]
@@ -39,6 +47,10 @@ export interface IWorldRegistryInterface extends Interface {
     values: [BigNumberish, AddressLike, BytesLike]
   ): string;
 
+  decodeFunctionResult(
+    functionFragment: "isVectorAddressAuthority",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "isWorld", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "register", data: BytesLike): Result;
   decodeFunctionResult(
@@ -90,6 +102,12 @@ export interface IWorldRegistry extends BaseContract {
     event?: TCEvent
   ): Promise<this>;
 
+  isVectorAddressAuthority: TypedContractMethod<
+    [auth: AddressLike],
+    [boolean],
+    "view"
+  >;
+
   isWorld: TypedContractMethod<[world: AddressLike], [boolean], "view">;
 
   register: TypedContractMethod<
@@ -113,6 +131,9 @@ export interface IWorldRegistry extends BaseContract {
     key: string | FunctionFragment
   ): T;
 
+  getFunction(
+    nameOrSignature: "isVectorAddressAuthority"
+  ): TypedContractMethod<[auth: AddressLike], [boolean], "view">;
   getFunction(
     nameOrSignature: "isWorld"
   ): TypedContractMethod<[world: AddressLike], [boolean], "view">;

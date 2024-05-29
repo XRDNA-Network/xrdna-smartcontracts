@@ -45,12 +45,16 @@ export interface WorldRegistryInterface extends Interface {
   getFunction(
     nameOrSignature:
       | "DEFAULT_ADMIN_ROLE"
+      | "VECTOR_ADDRESS_AUTHORITY"
+      | "addVectorAddressAuthority"
       | "getRoleAdmin"
       | "grantRole"
       | "hasRole"
+      | "isVectorAddressAuthority"
       | "isWorld"
       | "register"
       | "registrarRegistry"
+      | "removeVectorAddressAuthority"
       | "renounceRole"
       | "revokeRole"
       | "supportsInterface"
@@ -66,12 +70,22 @@ export interface WorldRegistryInterface extends Interface {
       | "RoleAdminChanged"
       | "RoleGranted"
       | "RoleRevoked"
+      | "VectorAddressAuthorityAdded"
+      | "VectorAddressAuthorityRemoved"
       | "WorldRegistered"
   ): EventFragment;
 
   encodeFunctionData(
     functionFragment: "DEFAULT_ADMIN_ROLE",
     values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "VECTOR_ADDRESS_AUTHORITY",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "addVectorAddressAuthority",
+    values: [AddressLike]
   ): string;
   encodeFunctionData(
     functionFragment: "getRoleAdmin",
@@ -86,6 +100,10 @@ export interface WorldRegistryInterface extends Interface {
     values: [BytesLike, AddressLike]
   ): string;
   encodeFunctionData(
+    functionFragment: "isVectorAddressAuthority",
+    values: [AddressLike]
+  ): string;
+  encodeFunctionData(
     functionFragment: "isWorld",
     values: [AddressLike]
   ): string;
@@ -96,6 +114,10 @@ export interface WorldRegistryInterface extends Interface {
   encodeFunctionData(
     functionFragment: "registrarRegistry",
     values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "removeVectorAddressAuthority",
+    values: [AddressLike]
   ): string;
   encodeFunctionData(
     functionFragment: "renounceRole",
@@ -135,15 +157,31 @@ export interface WorldRegistryInterface extends Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "VECTOR_ADDRESS_AUTHORITY",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "addVectorAddressAuthority",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "getRoleAdmin",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "grantRole", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "hasRole", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "isVectorAddressAuthority",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "isWorld", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "register", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "registrarRegistry",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "removeVectorAddressAuthority",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -235,6 +273,30 @@ export namespace RoleRevokedEvent {
   export type LogDescription = TypedLogDescription<Event>;
 }
 
+export namespace VectorAddressAuthorityAddedEvent {
+  export type InputTuple = [authority: AddressLike];
+  export type OutputTuple = [authority: string];
+  export interface OutputObject {
+    authority: string;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
+}
+
+export namespace VectorAddressAuthorityRemovedEvent {
+  export type InputTuple = [authority: AddressLike];
+  export type OutputTuple = [authority: string];
+  export interface OutputObject {
+    authority: string;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
+}
+
 export namespace WorldRegisteredEvent {
   export type InputTuple = [
     world: AddressLike,
@@ -302,6 +364,14 @@ export interface WorldRegistry extends BaseContract {
 
   DEFAULT_ADMIN_ROLE: TypedContractMethod<[], [string], "view">;
 
+  VECTOR_ADDRESS_AUTHORITY: TypedContractMethod<[], [string], "view">;
+
+  addVectorAddressAuthority: TypedContractMethod<
+    [auth: AddressLike],
+    [void],
+    "nonpayable"
+  >;
+
   getRoleAdmin: TypedContractMethod<[role: BytesLike], [string], "view">;
 
   grantRole: TypedContractMethod<
@@ -312,6 +382,12 @@ export interface WorldRegistry extends BaseContract {
 
   hasRole: TypedContractMethod<
     [role: BytesLike, account: AddressLike],
+    [boolean],
+    "view"
+  >;
+
+  isVectorAddressAuthority: TypedContractMethod<
+    [auth: AddressLike],
     [boolean],
     "view"
   >;
@@ -330,6 +406,12 @@ export interface WorldRegistry extends BaseContract {
   >;
 
   registrarRegistry: TypedContractMethod<[], [string], "view">;
+
+  removeVectorAddressAuthority: TypedContractMethod<
+    [auth: AddressLike],
+    [void],
+    "nonpayable"
+  >;
 
   renounceRole: TypedContractMethod<
     [role: BytesLike, callerConfirmation: AddressLike],
@@ -375,6 +457,12 @@ export interface WorldRegistry extends BaseContract {
     nameOrSignature: "DEFAULT_ADMIN_ROLE"
   ): TypedContractMethod<[], [string], "view">;
   getFunction(
+    nameOrSignature: "VECTOR_ADDRESS_AUTHORITY"
+  ): TypedContractMethod<[], [string], "view">;
+  getFunction(
+    nameOrSignature: "addVectorAddressAuthority"
+  ): TypedContractMethod<[auth: AddressLike], [void], "nonpayable">;
+  getFunction(
     nameOrSignature: "getRoleAdmin"
   ): TypedContractMethod<[role: BytesLike], [string], "view">;
   getFunction(
@@ -391,6 +479,9 @@ export interface WorldRegistry extends BaseContract {
     [boolean],
     "view"
   >;
+  getFunction(
+    nameOrSignature: "isVectorAddressAuthority"
+  ): TypedContractMethod<[auth: AddressLike], [boolean], "view">;
   getFunction(
     nameOrSignature: "isWorld"
   ): TypedContractMethod<[world: AddressLike], [boolean], "view">;
@@ -409,6 +500,9 @@ export interface WorldRegistry extends BaseContract {
   getFunction(
     nameOrSignature: "registrarRegistry"
   ): TypedContractMethod<[], [string], "view">;
+  getFunction(
+    nameOrSignature: "removeVectorAddressAuthority"
+  ): TypedContractMethod<[auth: AddressLike], [void], "nonpayable">;
   getFunction(
     nameOrSignature: "renounceRole"
   ): TypedContractMethod<
@@ -468,6 +562,20 @@ export interface WorldRegistry extends BaseContract {
     RoleRevokedEvent.OutputObject
   >;
   getEvent(
+    key: "VectorAddressAuthorityAdded"
+  ): TypedContractEvent<
+    VectorAddressAuthorityAddedEvent.InputTuple,
+    VectorAddressAuthorityAddedEvent.OutputTuple,
+    VectorAddressAuthorityAddedEvent.OutputObject
+  >;
+  getEvent(
+    key: "VectorAddressAuthorityRemoved"
+  ): TypedContractEvent<
+    VectorAddressAuthorityRemovedEvent.InputTuple,
+    VectorAddressAuthorityRemovedEvent.OutputTuple,
+    VectorAddressAuthorityRemovedEvent.OutputObject
+  >;
+  getEvent(
     key: "WorldRegistered"
   ): TypedContractEvent<
     WorldRegisteredEvent.InputTuple,
@@ -507,6 +615,28 @@ export interface WorldRegistry extends BaseContract {
       RoleRevokedEvent.InputTuple,
       RoleRevokedEvent.OutputTuple,
       RoleRevokedEvent.OutputObject
+    >;
+
+    "VectorAddressAuthorityAdded(address)": TypedContractEvent<
+      VectorAddressAuthorityAddedEvent.InputTuple,
+      VectorAddressAuthorityAddedEvent.OutputTuple,
+      VectorAddressAuthorityAddedEvent.OutputObject
+    >;
+    VectorAddressAuthorityAdded: TypedContractEvent<
+      VectorAddressAuthorityAddedEvent.InputTuple,
+      VectorAddressAuthorityAddedEvent.OutputTuple,
+      VectorAddressAuthorityAddedEvent.OutputObject
+    >;
+
+    "VectorAddressAuthorityRemoved(address)": TypedContractEvent<
+      VectorAddressAuthorityRemovedEvent.InputTuple,
+      VectorAddressAuthorityRemovedEvent.OutputTuple,
+      VectorAddressAuthorityRemovedEvent.OutputObject
+    >;
+    VectorAddressAuthorityRemoved: TypedContractEvent<
+      VectorAddressAuthorityRemovedEvent.InputTuple,
+      VectorAddressAuthorityRemovedEvent.OutputTuple,
+      VectorAddressAuthorityRemovedEvent.OutputObject
     >;
 
     "WorldRegistered(address,address,tuple)": TypedContractEvent<

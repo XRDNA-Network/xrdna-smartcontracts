@@ -1,4 +1,4 @@
-import { AddressLike, Provider, Signer, ethers } from "ethers";
+import { AddressLike, Provider, Signer, TransactionResponse, ethers } from "ethers";
 import {abi as WorldRegistryABI} from "../../artifacts/contracts/world/WorldRegistry.sol/WorldRegistry.json";
 import {abi as WorldABI} from "../../artifacts/contracts/world/World.sol/World.json";
 import { IWorldInfo } from "./IWorldInfo";
@@ -62,4 +62,11 @@ export class WorldRegistry {
         return addr;
     }
 
+    async addVectorAddressAuthority(authority: string): Promise<TransactionResponse> {
+        return this.registry.addVectorAddressAuthority(authority);
+    }
+
+    async removeVectorAddressAuthority(authority: string): Promise<TransactionResponse> {
+        return this.registry.removeVectorAddressAuthority(authority);
+    }
 }

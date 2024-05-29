@@ -1,7 +1,7 @@
 import { ethers } from "hardhat";
 import { WorldUtils } from "./world/WorldUtils";
 import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
-import { VectorAddress } from "../src";
+import { IWorldInfo, VectorAddress, signVectorAddress } from "../src";
 import { expect } from "chai";
 
 describe("World Registration", () => {
@@ -13,6 +13,7 @@ describe("World Registration", () => {
     let worldFactoryAdmin: HardhatEthersSigner;
     let worldRegistryAdmin: HardhatEthersSigner;
     let worldOwner: HardhatEthersSigner;
+    let vectorAddressAuthority: HardhatEthersSigner;
     let registrarId: bigint;
     
     before(async () => {
@@ -23,7 +24,9 @@ describe("World Registration", () => {
         worldFactoryAdmin = signers[2];
         worldRegistryAdmin = signers[3];
         worldOwner = signers[4];
+        vectorAddressAuthority = signers[5];
         await worldUtils.deployWorldMaster({
+            vectorAddressAuthority: vectorAddressAuthority.address,
             registrarAdmin,
             registrarSigner,
             worldFactoryAdmin,
@@ -45,22 +48,29 @@ describe("World Registration", () => {
 
     it("Should register a world", async () => {
         
+        const baseVector = {
+            x: "1",
+            y: "1",
+            z: "1",
+            t: 0n,
+            p: 0n,
+            p_sub: 0n
+        } as VectorAddress;
+
+        const sig = await signVectorAddress(baseVector, vectorAddressAuthority);
+        
+        const worldInfo: IWorldInfo = {
+            baseVector,
+            name: "TestWorld",
+            vectorAuthorizedSignature: sig
+        };
+
         const r = await worldUtils.worldRegistryUtils?.createWorld({
             registrarSigner,
             registrarId,
             owner: worldOwner.address,
             tokensToOwner: false,
-            details: {
-                baseVector: {
-                x: "1",
-                y: "1",
-                z: "1",
-                t: 0n,
-                p: 0n,
-                p_sub: 0n
-            } as VectorAddress,
-            name: "TestWorld",
-            },
+            details: worldInfo,
             tokens: BigInt("1000000000000000000")
         });
         
@@ -81,22 +91,29 @@ describe("World Registration", () => {
     it("Should not allow duplicate registration", async () => {
         let fail = false;
         try {
+            const baseVector = {
+                x: "1",
+                y: "1",
+                z: "1",
+                t: 0n,
+                p: 0n,
+                p_sub: 0n
+            } as VectorAddress;
+    
+            const sig = await signVectorAddress(baseVector, vectorAddressAuthority);
+            
+            const worldInfo: IWorldInfo = {
+                baseVector,
+                name: "TestWorld",
+                vectorAuthorizedSignature: sig
+            };
+
             const r = await worldUtils.worldRegistryUtils?.createWorld({
                 registrarSigner,
                 registrarId,
                 owner: worldOwner.address,
                 tokensToOwner: false,
-                details: {
-                    baseVector: {
-                    x: "1",
-                    y: "1",
-                    z: "1",
-                    t: 0n,
-                    p: 0n,
-                    p_sub: 0n
-                } as VectorAddress,
-                name: "tEsTwOrLd", //case should be ignored
-                },
+                details: worldInfo,
             });
             if(r) {
                 fail = true;

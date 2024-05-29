@@ -18,9 +18,9 @@ const main = async () => {
         for (const i of Object.keys(input)) {
             if(i === 'sources') {
                 for(const s of Object.keys(input[i])) {
-                    //if(!allSources[s]) {
+                    if(!allSources[s]) {
                         allSources[s] = input[i][s];
-                    //}
+                    }
                 }
             } else {
                 stdInput[i] = input[i];

@@ -21,6 +21,7 @@ export class WorldUtils {
         worldFactoryAddress: string,
         worldRegistryAdmin: HardhatEthersSigner,
         worldRegistryAddress: string,
+        vectorAddressAuthority: string,
         address: string,
     }): WorldUtils {
         const utils = new WorldUtils();
@@ -40,6 +41,7 @@ export class WorldUtils {
 
         utils.worldRegistryUtils = WorldRegistryUtils.worldRegistryAt({
             address: props.worldRegistryAddress,
+            vectorAuthority: props.vectorAddressAuthority,
             admin: props.worldRegistryAdmin,
             regUtils: utils.registrarUtils,
             facUtils: utils.worldFactoryUtils
@@ -53,6 +55,7 @@ export class WorldUtils {
         registrarSigner: HardhatEthersSigner,
         worldFactoryAdmin: HardhatEthersSigner,
         worldRegistryAdmin: HardhatEthersSigner,
+        vectorAddressAuthority: string
     }) {
         if(this.worldFactoryUtils) {
             return;
@@ -62,7 +65,6 @@ export class WorldUtils {
         this.registrarUtils = new RegistrarUtils();
         await this.registrarUtils.deployRegistry({
             registrarAdmin: props.registrarAdmin,
-            signers: [props.registrarSigner.address]
         });
 
         this.worldFactoryUtils = new WorldFactoryUtils();
@@ -72,7 +74,8 @@ export class WorldUtils {
 
         this.worldRegistryUtils = new WorldRegistryUtils(this.registrarUtils, this.worldFactoryUtils);
         await this.worldRegistryUtils.deployWorldRegistry({
-            admin: props.worldRegistryAdmin
+            admin: props.worldRegistryAdmin,
+            vectorAddressAuthority: props.vectorAddressAuthority
         });
 
 

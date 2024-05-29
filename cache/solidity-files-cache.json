@@ -941,8 +941,8 @@
       ]
     },
     "/Users/mdcoon/git/xrdna-smartcontracts/contracts/VectorAddress.sol": {
-      "lastModificationDate": 1716727339414,
-      "contentHash": "c26be36f27cc74ae27cdb62a0e5aa378",
+      "lastModificationDate": 1716999170609,
+      "contentHash": "237f35e3369489728826e8544e677820",
       "sourceName": "contracts/VectorAddress.sol",
       "solcConfig": {
         "version": "0.8.24",
@@ -969,7 +969,10 @@
         }
       },
       "imports": [
-        "@openzeppelin/contracts/utils/Strings.sol"
+        "@openzeppelin/contracts/utils/Strings.sol",
+        "@openzeppelin/contracts/utils/cryptography/ECDSA.sol",
+        "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol",
+        "hardhat/console.sol"
       ],
       "versionPragmas": [
         "^0.8.24"
@@ -979,8 +982,8 @@
       ]
     },
     "/Users/mdcoon/git/xrdna-smartcontracts/contracts/world/WorldRegistry.sol": {
-      "lastModificationDate": 1716725923196,
-      "contentHash": "3b158751acbc698e35ac8e37404c650b",
+      "lastModificationDate": 1717000079191,
+      "contentHash": "fc2337ea2068bdeed4c2cef0099af98b",
       "sourceName": "contracts/world/WorldRegistry.sol",
       "solcConfig": {
         "version": "0.8.24",
@@ -1177,8 +1180,8 @@
       ]
     },
     "/Users/mdcoon/git/xrdna-smartcontracts/contracts/world/World.sol": {
-      "lastModificationDate": 1716916868422,
-      "contentHash": "4b16857850e36d3754954a5e045344cb",
+      "lastModificationDate": 1717000065100,
+      "contentHash": "088ed0ba23ba4a26ea6eabd7ca5ceeff",
       "sourceName": "contracts/world/World.sol",
       "solcConfig": {
         "version": "0.8.24",

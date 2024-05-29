@@ -41,12 +41,21 @@ export type VectorAddressStructOutput = [
   p_sub: bigint
 ] & { x: string; y: string; z: string; t: bigint; p: bigint; p_sub: bigint };
 
-export type WorldInfoStruct = { name: string; baseVector: VectorAddressStruct };
+export type WorldInfoStruct = {
+  name: string;
+  baseVector: VectorAddressStruct;
+  vectorAuthorizedSignature: BytesLike;
+};
 
 export type WorldInfoStructOutput = [
   name: string,
-  baseVector: VectorAddressStructOutput
-] & { name: string; baseVector: VectorAddressStructOutput };
+  baseVector: VectorAddressStructOutput,
+  vectorAuthorizedSignature: string
+] & {
+  name: string;
+  baseVector: VectorAddressStructOutput;
+  vectorAuthorizedSignature: string;
+};
 
 export interface WorldInterface extends Interface {
   getFunction(

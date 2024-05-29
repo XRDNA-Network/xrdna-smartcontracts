@@ -21,8 +21,7 @@ describe("RegistrarRegistry", () => {
         before(async () => {
             regUtils = new RegistrarUtils();
             await regUtils.deployRegistry({
-                registrarAdmin: (await ethers.getSigners())[0],
-                signers: [HardhatTestKeys[1].address]
+                registrarAdmin: (await ethers.getSigners())[0]
             });
         })
 

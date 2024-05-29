@@ -9,7 +9,7 @@ export default buildModule("WorldRegistry", (m) => {
     const regReg = m.useModule(RegistrarModule);
     const fac = m.useModule(WorldFactoryModule);
     
-    const Registry = m.contract("WorldRegistry", [regReg.registry, fac.worldFactory, config.worldRegistryAdmin], {
+    const Registry = m.contract("WorldRegistry", [config.vectorAddressAuthority, regReg.registry, fac.worldFactory, config.worldRegistryAdmin], {
         after: [regReg.registry, fac.worldFactory]
     });
     m.call(fac.worldFactory, "setWorldRegistry", [Registry]);

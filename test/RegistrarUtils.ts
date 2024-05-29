@@ -20,16 +20,13 @@ export class RegistrarUtils  {
     }
 
     async deployRegistry(props: {
-        registrarAdmin: HardhatEthersSigner, 
-        signers: AddressLike[]
-    }) {
+        registrarAdmin: HardhatEthersSigner}) {
         if(this.registry) {
             return;
         }
 
-        const {signers} = props;
         const Registry = await ethers.getContractFactory("RegistrarRegistry");
-        const registry = await Registry.deploy(signers);
+        const registry = await Registry.deploy([props.registrarAdmin.address]);
         const t = await registry.deploymentTransaction()?.wait();
         this.registryAddress = t?.contractAddress || "";
         console.log("Registry deployed at", this.registryAddress);
