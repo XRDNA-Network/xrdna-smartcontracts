@@ -12,5 +12,5 @@ export type VectorAddress = {
 export const signVectorAddress = async (address: VectorAddress, signer: Signer): Promise<string> => {
     const asKey = `${address.x}${address.y}${address.z}${address.t}${address.p}${address.p_sub}`;
     const msg = keccak256(Buffer.from(asKey));
-return signer.signMessage(ethers.getBytes(msg));
+    return signer.signMessage(ethers.getBytes(msg));
 }
