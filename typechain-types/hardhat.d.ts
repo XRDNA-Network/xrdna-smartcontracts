@@ -58,6 +58,18 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IERC20__factory>;
     getContractFactory(
+      name: "IERC721Metadata",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IERC721Metadata__factory>;
+    getContractFactory(
+      name: "IERC721",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IERC721__factory>;
+    getContractFactory(
+      name: "IERC721Receiver",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IERC721Receiver__factory>;
+    getContractFactory(
       name: "ECDSA",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.ECDSA__factory>;
@@ -89,6 +101,50 @@ declare module "hardhat/types/runtime" {
       name: "Strings",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.Strings__factory>;
+    getContractFactory(
+      name: "AssetFactory",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.AssetFactory__factory>;
+    getContractFactory(
+      name: "IBasicAsset",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IBasicAsset__factory>;
+    getContractFactory(
+      name: "AssetRegistry",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.AssetRegistry__factory>;
+    getContractFactory(
+      name: "IBasicAsset",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IBasicAsset__factory>;
+    getContractFactory(
+      name: "IAssetCondition",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IAssetCondition__factory>;
+    getContractFactory(
+      name: "IAssetFactory",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IAssetFactory__factory>;
+    getContractFactory(
+      name: "IAssetRegistry",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IAssetRegistry__factory>;
+    getContractFactory(
+      name: "NonTransferableERC20Asset",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.NonTransferableERC20Asset__factory>;
+    getContractFactory(
+      name: "IUpgradedERC721",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IUpgradedERC721__factory>;
+    getContractFactory(
+      name: "NonTransferableERC721Asset",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.NonTransferableERC721Asset__factory>;
+    getContractFactory(
+      name: "FilterByWorld",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.FilterByWorld__factory>;
     getContractFactory(
       name: "IRegistrarRegistry",
       signerOrOptions?: ethers.Signer | FactoryOptions
@@ -186,6 +242,21 @@ declare module "hardhat/types/runtime" {
       signer?: ethers.Signer
     ): Promise<Contracts.IERC20>;
     getContractAt(
+      name: "IERC721Metadata",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IERC721Metadata>;
+    getContractAt(
+      name: "IERC721",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IERC721>;
+    getContractAt(
+      name: "IERC721Receiver",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IERC721Receiver>;
+    getContractAt(
       name: "ECDSA",
       address: string | ethers.Addressable,
       signer?: ethers.Signer
@@ -225,6 +296,61 @@ declare module "hardhat/types/runtime" {
       address: string | ethers.Addressable,
       signer?: ethers.Signer
     ): Promise<Contracts.Strings>;
+    getContractAt(
+      name: "AssetFactory",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.AssetFactory>;
+    getContractAt(
+      name: "IBasicAsset",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IBasicAsset>;
+    getContractAt(
+      name: "AssetRegistry",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.AssetRegistry>;
+    getContractAt(
+      name: "IBasicAsset",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IBasicAsset>;
+    getContractAt(
+      name: "IAssetCondition",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IAssetCondition>;
+    getContractAt(
+      name: "IAssetFactory",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IAssetFactory>;
+    getContractAt(
+      name: "IAssetRegistry",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IAssetRegistry>;
+    getContractAt(
+      name: "NonTransferableERC20Asset",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.NonTransferableERC20Asset>;
+    getContractAt(
+      name: "IUpgradedERC721",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IUpgradedERC721>;
+    getContractAt(
+      name: "NonTransferableERC721Asset",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.NonTransferableERC721Asset>;
+    getContractAt(
+      name: "FilterByWorld",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.FilterByWorld>;
     getContractAt(
       name: "IRegistrarRegistry",
       address: string | ethers.Addressable,
@@ -321,6 +447,18 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.IERC20>;
     deployContract(
+      name: "IERC721Metadata",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IERC721Metadata>;
+    deployContract(
+      name: "IERC721",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IERC721>;
+    deployContract(
+      name: "IERC721Receiver",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IERC721Receiver>;
+    deployContract(
       name: "ECDSA",
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.ECDSA>;
@@ -352,6 +490,50 @@ declare module "hardhat/types/runtime" {
       name: "Strings",
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.Strings>;
+    deployContract(
+      name: "AssetFactory",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.AssetFactory>;
+    deployContract(
+      name: "IBasicAsset",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IBasicAsset>;
+    deployContract(
+      name: "AssetRegistry",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.AssetRegistry>;
+    deployContract(
+      name: "IBasicAsset",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IBasicAsset>;
+    deployContract(
+      name: "IAssetCondition",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IAssetCondition>;
+    deployContract(
+      name: "IAssetFactory",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IAssetFactory>;
+    deployContract(
+      name: "IAssetRegistry",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IAssetRegistry>;
+    deployContract(
+      name: "NonTransferableERC20Asset",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.NonTransferableERC20Asset>;
+    deployContract(
+      name: "IUpgradedERC721",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IUpgradedERC721>;
+    deployContract(
+      name: "NonTransferableERC721Asset",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.NonTransferableERC721Asset>;
+    deployContract(
+      name: "FilterByWorld",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.FilterByWorld>;
     deployContract(
       name: "IRegistrarRegistry",
       signerOrOptions?: ethers.Signer | DeployContractOptions
@@ -449,6 +631,21 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.IERC20>;
     deployContract(
+      name: "IERC721Metadata",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IERC721Metadata>;
+    deployContract(
+      name: "IERC721",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IERC721>;
+    deployContract(
+      name: "IERC721Receiver",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IERC721Receiver>;
+    deployContract(
       name: "ECDSA",
       args: any[],
       signerOrOptions?: ethers.Signer | DeployContractOptions
@@ -488,6 +685,61 @@ declare module "hardhat/types/runtime" {
       args: any[],
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.Strings>;
+    deployContract(
+      name: "AssetFactory",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.AssetFactory>;
+    deployContract(
+      name: "IBasicAsset",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IBasicAsset>;
+    deployContract(
+      name: "AssetRegistry",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.AssetRegistry>;
+    deployContract(
+      name: "IBasicAsset",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IBasicAsset>;
+    deployContract(
+      name: "IAssetCondition",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IAssetCondition>;
+    deployContract(
+      name: "IAssetFactory",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IAssetFactory>;
+    deployContract(
+      name: "IAssetRegistry",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IAssetRegistry>;
+    deployContract(
+      name: "NonTransferableERC20Asset",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.NonTransferableERC20Asset>;
+    deployContract(
+      name: "IUpgradedERC721",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IUpgradedERC721>;
+    deployContract(
+      name: "NonTransferableERC721Asset",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.NonTransferableERC721Asset>;
+    deployContract(
+      name: "FilterByWorld",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.FilterByWorld>;
     deployContract(
       name: "IRegistrarRegistry",
       args: any[],

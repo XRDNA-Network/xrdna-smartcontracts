@@ -8,7 +8,7 @@
   "license": "MIT",
   "private": false,
   "scripts": {
-    "clean": "rimraf --glob dist *.tsbuildinfo",
+    "clean": "rimraf --glob artifacts/contracts artifacts/build-info dist *.tsbuildinfo",
     "deploy": "npx hardhat ignition deploy",
     "clear-deployment": "npx hardhat ignition wipe",
     "generate-verify-input": "cat $1 | jq -r '.input' > $1.input.json",

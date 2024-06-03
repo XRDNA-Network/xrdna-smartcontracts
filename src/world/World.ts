@@ -1,5 +1,6 @@
 import { Provider, Signer, TransactionResponse, ethers } from "ethers";
 import {abi as WorldABI} from "../../artifacts/contracts/world/World.sol/World.json";
+import { RPCRetryHandler } from "../RPCRetryHandler";
 
 /**
  * Typescript proxy for World instance
@@ -21,18 +22,18 @@ export class World {
     }
 
     async addSigners(signers: string[]): Promise<TransactionResponse> {
-        return await this.world.addSigners(signers);
+        return await RPCRetryHandler.withRetry(() => this.world.addSigners(signers));
     }
 
     async removeSigners(signers: string[]): Promise<TransactionResponse> {
-        return await this.world.removeSigners(signers);
+        return await RPCRetryHandler.withRetry(() => this.world.removeSigners(signers));
     }
 
     async isSigner(address: string): Promise<boolean> {
-        return await this.world.isSigner(address);
+        return await RPCRetryHandler.withRetry(() => this.world.isSigner(address));
     }
 
     async withdraw(amount: bigint): Promise<TransactionResponse> {
-        return await this.world.withdraw(amount);
+        return await RPCRetryHandler.withRetry(() => this.world.withdraw(amount));
     }
 }

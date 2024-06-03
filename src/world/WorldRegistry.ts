@@ -3,6 +3,8 @@ import {abi as WorldRegistryABI} from "../../artifacts/contracts/world/WorldRegi
 import {abi as WorldABI} from "../../artifacts/contracts/world/World.sol/World.json";
 import { IWorldInfo } from "./IWorldInfo";
 import { LogParser } from "../LogParser";
+import { LogNames } from "../LogNames";
+import { RPCRetryHandler } from "../RPCRetryHandler";
 /**
  * Typescript proxy for WorldRegistry deployed contract.
  */
@@ -43,13 +45,14 @@ export class WorldRegistry {
         //const initData = encodeWorldInfo(details);
         let initData = await this.worldIfc.encodeFunctionData("encodeInfo", [details]);
         initData = `0x${initData.substring(10)}`;
-        const t = await (this.registry.connect(registrarSigner) as any).register(registrarId, owner, initData, tokensToOwner, {
+        const t = await RPCRetryHandler.withRetry(() => (this.registry.connect(registrarSigner) as any).register(registrarId, owner, initData, tokensToOwner, {
             value: props.tokens
-        });
+        }));
+
         const r = await t.wait();
         const parse = new LogParser(WorldRegistryABI, this.address);
         const logs = parse.parseLogs(r);
-        const args = logs.get("WorldRegistered");
+        const args = logs.get(LogNames.WorldRegistered);
         if(!args) {
             throw new Error("World not created");
         }
@@ -58,15 +61,15 @@ export class WorldRegistry {
     }
 
     async lookupWorldAddress(name: string): Promise<string> {
-        const addr = await this.registry.worldsByName(name.toLowerCase());
+        const addr = await RPCRetryHandler.withRetry(() => this.registry.worldsByName(name.toLowerCase()));
         return addr;
     }
 
     async addVectorAddressAuthority(authority: string): Promise<TransactionResponse> {
-        return this.registry.addVectorAddressAuthority(authority);
+        return await RPCRetryHandler.withRetry(()=>this.registry.addVectorAddressAuthority(authority));
     }
 
     async removeVectorAddressAuthority(authority: string): Promise<TransactionResponse> {
-        return this.registry.removeVectorAddressAuthority(authority);
+        return await RPCRetryHandler.withRetry(() =>this.registry.removeVectorAddressAuthority(authority));
     }
 }
