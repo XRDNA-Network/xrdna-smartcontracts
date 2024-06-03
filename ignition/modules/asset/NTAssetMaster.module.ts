@@ -2,7 +2,7 @@ import { buildModule } from "@nomicfoundation/hardhat-ignition/modules";
 import AssetRegistryModule from "./AssetRegistry.module";
 import AssetFactoryModule from "./AssetFactory.module";
 
-export default buildModule("World", (m) => {
+export default buildModule("NTAssets", (m) => {
     
     const reg = m.useModule(AssetRegistryModule);
     const fac = m.useModule(AssetFactoryModule);

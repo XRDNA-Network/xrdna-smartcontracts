@@ -54,7 +54,7 @@ describe("ERC721", function() {
         await filterUtils.deploy({
             filterAdmin: issuer,
             whitelist: [worldAddress],
-            regUtils: regUtils,
+            assetRegistry: reg,
             assetAddress: erc721.address,
             assetIssuer: issuer
         });

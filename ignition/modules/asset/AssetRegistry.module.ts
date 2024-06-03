@@ -2,11 +2,11 @@ import { buildModule } from "@nomicfoundation/hardhat-ignition/modules";
 import AssetFactoryModule from "./AssetFactory.module";
 import {config} from '../config';
 
-export default buildModule("WorldRegistry", (m) => {
+export default buildModule("AssetRegistry", (m) => {
     
     const fac = m.useModule(AssetFactoryModule);
-    
-    const Registry = m.contract("AssetRegistry", [config.assetRegistryAdmins, fac.assetFactory], {
+    const acct = m.getAccount(0);
+    const Registry = m.contract("AssetRegistry", [[acct, ...config.assetRegistryAdmins], fac.assetFactory], {
         after: [fac.assetFactory]
     });
     m.call(fac.assetFactory, "setAssetRegistry", [Registry]);

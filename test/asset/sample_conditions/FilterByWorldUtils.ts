@@ -1,6 +1,7 @@
 import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
 import { ethers } from "hardhat";
 import { AssetRegistryUtils } from "../AssetRegistryUtils";
+import { AssetRegistry } from "../../../src";
 
 export class FilterByWorldUtils {
     filter: any;
@@ -11,7 +12,7 @@ export class FilterByWorldUtils {
         props: {
             filterAdmin: HardhatEthersSigner,
             whitelist: string[],
-            regUtils: AssetRegistryUtils,
+            assetRegistry: AssetRegistry,
             assetAddress: string,
             assetIssuer: HardhatEthersSigner
         }
@@ -27,7 +28,7 @@ export class FilterByWorldUtils {
         this.filterAddress = t?.contractAddress || "";
         console.log("FilterByWorld deployed at", this.filterAddress);
         this.filter = factory;
-        const r = props.regUtils.toWrapper();
+        const r = props.assetRegistry;
         await r.addAssetCondition({
             assetAddress: props.assetAddress, 
             condition: this.filterAddress,
