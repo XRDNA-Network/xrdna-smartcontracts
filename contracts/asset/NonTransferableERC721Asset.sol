@@ -178,7 +178,7 @@ contract NonTransferableERC721Asset is IERC721, IERC721Metadata, IERC721Errors {
      * by default, can be overridden in child contracts.
      */
     function _baseURI() internal view virtual returns (string memory) {
-        return "";
+        return __baseURI;
     }
 
     /**

@@ -60,6 +60,8 @@ describe("ERC721", function() {
         const balance = await erc721.balanceOf(to);
         expect(balance).to.equal(1);
         expect(r.tokenId).to.equal(1);
+        const uri = await erc721.tokenURI(r.tokenId);
+        expect(uri).to.equal("https://boredapeyachtclub.com/1");
     });
 
     it("Should NOT allow non-issuer to mint assets", async () => {

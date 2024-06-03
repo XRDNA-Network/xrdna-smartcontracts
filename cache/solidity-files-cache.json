@@ -1172,8 +1172,8 @@
       ]
     },
     "/Users/mdcoon/git/xrdna-smartcontracts/contracts/asset/NonTransferableERC721Asset.sol": {
-      "lastModificationDate": 1717444734108,
-      "contentHash": "e9a5e5e4bc5a7eb687dd7622e19aa885",
+      "lastModificationDate": 1717450273612,
+      "contentHash": "6ba505a22103bd07b73dda29f27c26ea",
       "sourceName": "contracts/asset/NonTransferableERC721Asset.sol",
       "solcConfig": {
         "version": "0.8.24",
