@@ -1172,8 +1172,8 @@
       ]
     },
     "/Users/mdcoon/git/xrdna-smartcontracts/contracts/asset/NonTransferableERC721Asset.sol": {
-      "lastModificationDate": 1717450273612,
-      "contentHash": "6ba505a22103bd07b73dda29f27c26ea",
+      "lastModificationDate": 1717530000786,
+      "contentHash": "174a1bc0284b5021cfacb0cccb85fe19",
       "sourceName": "contracts/asset/NonTransferableERC721Asset.sol",
       "solcConfig": {
         "version": "0.8.24",
@@ -1205,7 +1205,8 @@
         "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol",
         "@openzeppelin/contracts/token/ERC721/extensions/IERC721Metadata.sol",
         "@openzeppelin/contracts/utils/introspection/ERC165.sol",
-        "@openzeppelin/contracts/utils/Strings.sol"
+        "@openzeppelin/contracts/utils/Strings.sol",
+        "./IAssetHook.sol"
       ],
       "versionPragmas": [
         "^0.8.24"
@@ -1299,8 +1300,8 @@
       ]
     },
     "/Users/mdcoon/git/xrdna-smartcontracts/contracts/asset/NonTransferableERC20Asset.sol": {
-      "lastModificationDate": 1717445703191,
-      "contentHash": "46a9963f61772a24414478d364e584fe",
+      "lastModificationDate": 1717529951447,
+      "contentHash": "893d473927e3af60f9036688df7cf2c7",
       "sourceName": "contracts/asset/NonTransferableERC20Asset.sol",
       "solcConfig": {
         "version": "0.8.24",
@@ -1329,7 +1330,8 @@
       "imports": [
         "@openzeppelin/contracts/token/ERC20/IERC20.sol",
         "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol",
-        "@openzeppelin/contracts/interfaces/draft-IERC6093.sol"
+        "@openzeppelin/contracts/interfaces/draft-IERC6093.sol",
+        "./IAssetHook.sol"
       ],
       "versionPragmas": [
         "^0.8.24"
@@ -1379,8 +1381,8 @@
       ]
     },
     "/Users/mdcoon/git/xrdna-smartcontracts/contracts/asset/AssetRegistry.sol": {
-      "lastModificationDate": 1717447553470,
-      "contentHash": "d39c528606e23d468e636e63ef1aa87f",
+      "lastModificationDate": 1717529862917,
+      "contentHash": "fc9bee4b341160d7766c101b42c4abc6",
       "sourceName": "contracts/asset/AssetRegistry.sol",
       "solcConfig": {
         "version": "0.8.24",
@@ -1643,6 +1645,42 @@
       ],
       "artifacts": [
         "RegistrarRegistry"
+      ]
+    },
+    "/Users/mdcoon/git/xrdna-smartcontracts/contracts/asset/IAssetHook.sol": {
+      "lastModificationDate": 1717529174776,
+      "contentHash": "4bdce04672c336adc8018ad8b01b48dd",
+      "sourceName": "contracts/asset/IAssetHook.sol",
+      "solcConfig": {
+        "version": "0.8.24",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "metadata",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "abi",
+                "evm.methodIdentifiers"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          },
+          "evmVersion": "paris"
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.24"
+      ],
+      "artifacts": [
+        "IAssetHook"
       ]
     }
   }

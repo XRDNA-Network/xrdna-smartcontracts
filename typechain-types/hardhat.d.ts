@@ -126,6 +126,10 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IAssetFactory__factory>;
     getContractFactory(
+      name: "IAssetHook",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IAssetHook__factory>;
+    getContractFactory(
       name: "IAssetRegistry",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IAssetRegistry__factory>;
@@ -327,6 +331,11 @@ declare module "hardhat/types/runtime" {
       signer?: ethers.Signer
     ): Promise<Contracts.IAssetFactory>;
     getContractAt(
+      name: "IAssetHook",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IAssetHook>;
+    getContractAt(
       name: "IAssetRegistry",
       address: string | ethers.Addressable,
       signer?: ethers.Signer
@@ -515,6 +524,10 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.IAssetFactory>;
     deployContract(
+      name: "IAssetHook",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IAssetHook>;
+    deployContract(
       name: "IAssetRegistry",
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.IAssetRegistry>;
@@ -715,6 +728,11 @@ declare module "hardhat/types/runtime" {
       args: any[],
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.IAssetFactory>;
+    deployContract(
+      name: "IAssetHook",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IAssetHook>;
     deployContract(
       name: "IAssetRegistry",
       args: any[],

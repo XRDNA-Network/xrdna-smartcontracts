@@ -18,6 +18,8 @@ describe("ERC721", function() {
     let issuer: HardhatEthersSigner;
     let erc721: ERC721Asset;
     let worldAddress: string;
+    let initData: ERC721InitData;
+
     before(async () => {
         signers = await ethers.getSigners();
         admin = signers[0];
@@ -32,7 +34,7 @@ describe("ERC721", function() {
         assetUtils = new AssetMasterUtils();
         await assetUtils.deploy({factory: facUtils, registry: regUtils, assetIssuer: issuer});
     
-        const initData: ERC721InitData = {
+        initData = {
             name: "Bored Ape Yaucht Club",
             symbol: "BAYC",
             issuer: issuer.address,
@@ -40,6 +42,7 @@ describe("ERC721", function() {
             originChainId: 1n,
             baseURI: "https://boredapeyachtclub.com/"
         }
+        
         const reg = regUtils.toWrapper();
         const r = await reg.registerAsset(AssetType.ERC721, initData);
         expect(r).to.not.be.null;
@@ -98,5 +101,13 @@ describe("ERC721", function() {
             experienceAddress: signers[5].address
         });
         expect(r).to.be.false;
+    });
+
+    it("Registry should show token exists by original address and chain", async () => {
+        const reg = regUtils.toWrapper();
+        const exists = await reg.assetExists(initData.originChainAddress, initData.originChainId);
+        expect(exists).to.be.true;
+        const not = await reg.assetExists(initData.originChainAddress, 55n);
+        expect(not).to.be.false;
     });
 })

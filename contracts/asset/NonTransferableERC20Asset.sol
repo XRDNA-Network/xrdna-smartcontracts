@@ -5,6 +5,8 @@ pragma solidity ^0.8.24;
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import {IERC20Errors} from "@openzeppelin/contracts/interfaces/draft-IERC6093.sol";
+import {IAssetHook} from './IAssetHook.sol';
+
 /**
  * @title Asset
  * @dev Asset represents a digital asset held on the XRDNA layer3 network or another 
@@ -58,10 +60,13 @@ contract NonTransferableERC20Asset is IERC20, IERC20Metadata, IERC20Errors {
     bool public upgraded;
 
     //the contract address on the origin chain
-    address public originChainAddress;
+    address public originAddress;
 
     //the address allowed to mint new tokens
     address public issuer;
+
+    //custom mint/transfer behavior
+    IAssetHook public hook;
 
     //decimals
     uint8  private _decimals;
@@ -92,6 +97,8 @@ contract NonTransferableERC20Asset is IERC20, IERC20Metadata, IERC20Errors {
 
     event ERC20Minted(address indexed to, uint256 amt);
     event ERC20Upgraded(address indexed oldAsset, address newAsset);
+    event ERC20HookAdded(address indexed hook);
+    event ERC20HookRemoved(address indexed hook);
 
     //called once at master-copy deployment
     constructor(address _assetFactory, address _assetRegistry) {
@@ -114,7 +121,7 @@ contract NonTransferableERC20Asset is IERC20, IERC20Metadata, IERC20Errors {
         require(bytes(data.symbol).length > 0, "NonTransferableERC20: symbol cannot be empty");
         require(data.originChainId > 0, "NonTransferableERC20: originChainId must be greater than zero");
 
-        originChainAddress = data.originChainAddress;
+        originAddress = data.originChainAddress;
         issuer = data.issuer;
         originChainId = data.originChainId;
         _totalSupply = data.totalSupply;
@@ -125,8 +132,21 @@ contract NonTransferableERC20Asset is IERC20, IERC20Metadata, IERC20Errors {
 
     function upgrade(address newAsset) public onlyRegistry() {
         //no-op
+        require(newAsset != address(this), "NonTransferableERC20Asset: new upgrade contract address cannot match original");
         upgraded = true;
         emit ERC20Upgraded(address(this), newAsset);
+    }
+
+    function addHook(IAssetHook _hook) public onlyIssuer {
+        require(address(hook) != address(0), "NonTransferableERC721Asset: hook cannot be zero address");
+        hook = _hook;
+        emit ERC20HookAdded(address(_hook));
+    }
+
+    function removeHook() public onlyIssuer {
+        address h = address(hook);
+        emit ERC20HookRemoved(h);
+        delete hook;
     }
 
     /**
@@ -229,7 +249,28 @@ contract NonTransferableERC20Asset is IERC20, IERC20Metadata, IERC20Errors {
     }
 
     function mint(address to, uint256 amt) public onlyIssuer()  {
+        //FIXME: if the to address is an Avatar (check with avatar registry once 
+        //launched), need to ask the avatar if it allows tokens to minted 
+        //outside of its active experience.
+        if(address(hook) != address(0)) {
+            bool s = hook.beforeMint(address(this), to, amt);
+            if(!s) {
+                revert("NonTransferableERC20Asset: beforeMint hook rejected request");
+            }
+        }
+
         _mint(to, amt);
+    }
+
+    function revoke(address tgt, uint256 amt) public onlyIssuer {
+        if(address(hook) != address(0)) {
+            bool s = hook.beforeRevoke(address(this), tgt, amt);
+            if(!s) {
+                revert("NonTransferableERC20Asset: beforeRevoke hook rejected request");
+            }
+        }
+        uint256 bal = balanceOf(tgt);
+        _burn(tgt, amt < bal ? amt : bal);
     }
 
     /**

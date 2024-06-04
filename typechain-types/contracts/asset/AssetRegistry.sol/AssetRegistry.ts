@@ -28,7 +28,9 @@ export interface AssetRegistryInterface extends Interface {
     nameOrSignature:
       | "DEFAULT_ADMIN_ROLE"
       | "addAssetCondition"
+      | "assetExists"
       | "assetFactory"
+      | "assetsByOriginalAddressAndChain"
       | "canUseAsset"
       | "canViewAsset"
       | "getAssetCondition"
@@ -65,8 +67,16 @@ export interface AssetRegistryInterface extends Interface {
     values: [AddressLike, AddressLike]
   ): string;
   encodeFunctionData(
+    functionFragment: "assetExists",
+    values: [AddressLike, BigNumberish]
+  ): string;
+  encodeFunctionData(
     functionFragment: "assetFactory",
     values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "assetsByOriginalAddressAndChain",
+    values: [BytesLike]
   ): string;
   encodeFunctionData(
     functionFragment: "canUseAsset",
@@ -138,7 +148,15 @@ export interface AssetRegistryInterface extends Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "assetExists",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "assetFactory",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "assetsByOriginalAddressAndChain",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -341,7 +359,19 @@ export interface AssetRegistry extends BaseContract {
     "nonpayable"
   >;
 
+  assetExists: TypedContractMethod<
+    [original: AddressLike, chainId: BigNumberish],
+    [boolean],
+    "view"
+  >;
+
   assetFactory: TypedContractMethod<[], [string], "view">;
+
+  assetsByOriginalAddressAndChain: TypedContractMethod<
+    [arg0: BytesLike],
+    [string],
+    "view"
+  >;
 
   canUseAsset: TypedContractMethod<
     [
@@ -454,8 +484,18 @@ export interface AssetRegistry extends BaseContract {
     "nonpayable"
   >;
   getFunction(
+    nameOrSignature: "assetExists"
+  ): TypedContractMethod<
+    [original: AddressLike, chainId: BigNumberish],
+    [boolean],
+    "view"
+  >;
+  getFunction(
     nameOrSignature: "assetFactory"
   ): TypedContractMethod<[], [string], "view">;
+  getFunction(
+    nameOrSignature: "assetsByOriginalAddressAndChain"
+  ): TypedContractMethod<[arg0: BytesLike], [string], "view">;
   getFunction(
     nameOrSignature: "canUseAsset"
   ): TypedContractMethod<

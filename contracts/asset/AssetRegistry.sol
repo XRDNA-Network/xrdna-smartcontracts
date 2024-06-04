@@ -11,6 +11,8 @@ import "./IAssetCondition.sol";
 interface IBasicAsset {
     function issuer() external view returns (address);
     function upgrade(address newAsset) external;
+    function originAddress() external view returns(address);
+    function originChainId() external view returns(uint256);
 }
 
 contract AssetRegistry is IAssetRegistry, AccessControl {
@@ -22,6 +24,7 @@ contract AssetRegistry is IAssetRegistry, AccessControl {
 
     IAssetFactory public assetFactory;
     mapping(address => AssetInfo) public registeredAssets;
+    mapping(bytes32 => address) public assetsByOriginalAddressAndChain;
 
     event AssetCreated(address indexed asset, uint256 assetType);
     event AssetConditionAdded(address indexed asset, address indexed condition);
@@ -45,10 +48,18 @@ contract AssetRegistry is IAssetRegistry, AccessControl {
         return registeredAssets[asset].issuer != address(0);
     }
 
+    function assetExists(address original, uint256 chainId) public view returns (bool) {
+        bytes32 hash = keccak256(abi.encode(original, chainId));
+        return assetsByOriginalAddressAndChain[hash] != address(0);
+    }
+
     function registerAsset(uint256 assetType, bytes calldata initData) external onlyRole(DEFAULT_ADMIN_ROLE) returns (address asset) {
         require(address(assetFactory) != address(0), "AssetRegistry: asset factory not set");
         asset = assetFactory.createAsset(assetType, initData);
-        registeredAssets[asset] = AssetInfo(IBasicAsset(asset).issuer(), IAssetCondition(address(0)));
+        IBasicAsset ba = IBasicAsset(asset);
+        registeredAssets[asset] = AssetInfo(ba.issuer(), IAssetCondition(address(0)));
+        bytes32 hash = keccak256(abi.encode(ba.originAddress(), ba.originChainId()));
+        assetsByOriginalAddressAndChain[hash] = asset;
         emit AssetCreated(asset, assetType);
     }
 
@@ -56,10 +67,22 @@ contract AssetRegistry is IAssetRegistry, AccessControl {
         require(registeredAssets[asset].issuer != address(0), "AssetRegistry: asset not registered");
         require(registeredAssets[asset].issuer == msg.sender, "AssetRegistry: caller is not the asset issuer");
         AssetInfo storage old = registeredAssets[asset];
+        IBasicAsset oa = IBasicAsset(asset);
+        bytes32 oHash = keccak256(abi.encode(oa.originAddress(),oa.originChainId()));
+        delete assetsByOriginalAddressAndChain[oHash];
         
+        //create the new version
         address newAsset = assetFactory.createAsset(assetType, initData);
+        require(newAsset != asset, "AssetRegistry: New asset address conflicts with old address");
+
         registeredAssets[newAsset] = AssetInfo(old.issuer,old.condition);
-        IBasicAsset(asset).upgrade(newAsset);
+        IBasicAsset ba = IBasicAsset(newAsset);
+
+        //old asset upgrades to new one and should mark itself as being upgraded
+        oa.upgrade(newAsset);
+
+        bytes32 hash = keccak256(abi.encode(ba.originAddress(), ba.originChainId()));
+        assetsByOriginalAddressAndChain[hash] = newAsset;
         delete registeredAssets[asset];
         emit AssetCreated(newAsset, assetType);
     }

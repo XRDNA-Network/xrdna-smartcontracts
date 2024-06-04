@@ -21,15 +21,33 @@ import type {
 } from "../../../common";
 
 export interface IBasicAssetInterface extends Interface {
-  getFunction(nameOrSignature: "issuer" | "upgrade"): FunctionFragment;
+  getFunction(
+    nameOrSignature: "issuer" | "originAddress" | "originChainId" | "upgrade"
+  ): FunctionFragment;
 
   encodeFunctionData(functionFragment: "issuer", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: "originAddress",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "originChainId",
+    values?: undefined
+  ): string;
   encodeFunctionData(
     functionFragment: "upgrade",
     values: [AddressLike]
   ): string;
 
   decodeFunctionResult(functionFragment: "issuer", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "originAddress",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "originChainId",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "upgrade", data: BytesLike): Result;
 }
 
@@ -78,6 +96,10 @@ export interface IBasicAsset extends BaseContract {
 
   issuer: TypedContractMethod<[], [string], "view">;
 
+  originAddress: TypedContractMethod<[], [string], "view">;
+
+  originChainId: TypedContractMethod<[], [bigint], "view">;
+
   upgrade: TypedContractMethod<[newAsset: AddressLike], [void], "nonpayable">;
 
   getFunction<T extends ContractMethod = ContractMethod>(
@@ -87,6 +109,12 @@ export interface IBasicAsset extends BaseContract {
   getFunction(
     nameOrSignature: "issuer"
   ): TypedContractMethod<[], [string], "view">;
+  getFunction(
+    nameOrSignature: "originAddress"
+  ): TypedContractMethod<[], [string], "view">;
+  getFunction(
+    nameOrSignature: "originChainId"
+  ): TypedContractMethod<[], [bigint], "view">;
   getFunction(
     nameOrSignature: "upgrade"
   ): TypedContractMethod<[newAsset: AddressLike], [void], "nonpayable">;

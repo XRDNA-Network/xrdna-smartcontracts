@@ -11,5 +11,6 @@ import type * as sampleConditions from "./sample_conditions";
 export type { sampleConditions };
 export type { IAssetCondition } from "./IAssetCondition";
 export type { IAssetFactory } from "./IAssetFactory";
+export type { IAssetHook } from "./IAssetHook";
 export type { IAssetRegistry } from "./IAssetRegistry";
 export type { NonTransferableERC20Asset } from "./NonTransferableERC20Asset";

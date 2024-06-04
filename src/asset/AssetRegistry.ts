@@ -37,6 +37,10 @@ export class AssetRegistry {
         return await  RPCRetryHandler.withRetry(()=>this.con.isRegisteredAsset(assetAddress));
     }
 
+    async assetExists(originAddress: string, originChainId: bigint): Promise<boolean> {
+        return await RPCRetryHandler.withRetry(() => this.con.assetExists(originAddress, originChainId));
+    }
+
     async registerAsset(assetType: bigint, initData: ERC20InitData | ERC721InitData): Promise<CreateAssetResult> {
         let encoded: string;
         switch(assetType) {

@@ -51,20 +51,24 @@ export type ERC721InitDataStructOutput = [
 export interface NonTransferableERC721AssetInterface extends Interface {
   getFunction(
     nameOrSignature:
+      | "addHook"
       | "approve"
       | "assetFactory"
       | "assetRegistry"
       | "balanceOf"
       | "encodeInitData"
       | "getApproved"
+      | "hook"
       | "init"
       | "isApprovedForAll"
       | "issuer"
       | "mint"
       | "name"
-      | "originChainAddress"
+      | "originAddress"
       | "originChainId"
       | "ownerOf"
+      | "removeHook"
+      | "revoke"
       | "safeTransferFrom(address,address,uint256)"
       | "safeTransferFrom(address,address,uint256,bytes)"
       | "setApprovalForAll"
@@ -80,11 +84,17 @@ export interface NonTransferableERC721AssetInterface extends Interface {
     nameOrSignatureOrTopic:
       | "Approval"
       | "ApprovalForAll"
+      | "ERC721HookAdded"
+      | "ERC721HookRemoved"
       | "ERC721Minted"
       | "ERC721Upgraded"
       | "Transfer"
   ): EventFragment;
 
+  encodeFunctionData(
+    functionFragment: "addHook",
+    values: [AddressLike]
+  ): string;
   encodeFunctionData(
     functionFragment: "approve",
     values: [AddressLike, BigNumberish]
@@ -109,6 +119,7 @@ export interface NonTransferableERC721AssetInterface extends Interface {
     functionFragment: "getApproved",
     values: [BigNumberish]
   ): string;
+  encodeFunctionData(functionFragment: "hook", values?: undefined): string;
   encodeFunctionData(functionFragment: "init", values: [BytesLike]): string;
   encodeFunctionData(
     functionFragment: "isApprovedForAll",
@@ -118,7 +129,7 @@ export interface NonTransferableERC721AssetInterface extends Interface {
   encodeFunctionData(functionFragment: "mint", values: [AddressLike]): string;
   encodeFunctionData(functionFragment: "name", values?: undefined): string;
   encodeFunctionData(
-    functionFragment: "originChainAddress",
+    functionFragment: "originAddress",
     values?: undefined
   ): string;
   encodeFunctionData(
@@ -128,6 +139,14 @@ export interface NonTransferableERC721AssetInterface extends Interface {
   encodeFunctionData(
     functionFragment: "ownerOf",
     values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "removeHook",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "revoke",
+    values: [AddressLike, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "safeTransferFrom(address,address,uint256)",
@@ -160,6 +179,7 @@ export interface NonTransferableERC721AssetInterface extends Interface {
   ): string;
   encodeFunctionData(functionFragment: "upgraded", values?: undefined): string;
 
+  decodeFunctionResult(functionFragment: "addHook", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "approve", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "assetFactory",
@@ -178,6 +198,7 @@ export interface NonTransferableERC721AssetInterface extends Interface {
     functionFragment: "getApproved",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "hook", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "init", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "isApprovedForAll",
@@ -187,7 +208,7 @@ export interface NonTransferableERC721AssetInterface extends Interface {
   decodeFunctionResult(functionFragment: "mint", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "name", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "originChainAddress",
+    functionFragment: "originAddress",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -195,6 +216,8 @@ export interface NonTransferableERC721AssetInterface extends Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "ownerOf", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "removeHook", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "revoke", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "safeTransferFrom(address,address,uint256)",
     data: BytesLike
@@ -254,6 +277,30 @@ export namespace ApprovalForAllEvent {
     owner: string;
     operator: string;
     approved: boolean;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
+}
+
+export namespace ERC721HookAddedEvent {
+  export type InputTuple = [hook: AddressLike];
+  export type OutputTuple = [hook: string];
+  export interface OutputObject {
+    hook: string;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
+}
+
+export namespace ERC721HookRemovedEvent {
+  export type InputTuple = [hook: AddressLike];
+  export type OutputTuple = [hook: string];
+  export interface OutputObject {
+    hook: string;
   }
   export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
   export type Filter = TypedDeferredTopicFilter<Event>;
@@ -348,6 +395,8 @@ export interface NonTransferableERC721Asset extends BaseContract {
     event?: TCEvent
   ): Promise<this>;
 
+  addHook: TypedContractMethod<[_hook: AddressLike], [void], "nonpayable">;
+
   approve: TypedContractMethod<
     [arg0: AddressLike, arg1: BigNumberish],
     [void],
@@ -368,6 +417,8 @@ export interface NonTransferableERC721Asset extends BaseContract {
 
   getApproved: TypedContractMethod<[tokenId: BigNumberish], [string], "view">;
 
+  hook: TypedContractMethod<[], [string], "view">;
+
   init: TypedContractMethod<[initData: BytesLike], [void], "nonpayable">;
 
   isApprovedForAll: TypedContractMethod<
@@ -382,11 +433,19 @@ export interface NonTransferableERC721Asset extends BaseContract {
 
   name: TypedContractMethod<[], [string], "view">;
 
-  originChainAddress: TypedContractMethod<[], [string], "view">;
+  originAddress: TypedContractMethod<[], [string], "view">;
 
   originChainId: TypedContractMethod<[], [bigint], "view">;
 
   ownerOf: TypedContractMethod<[tokenId: BigNumberish], [string], "view">;
+
+  removeHook: TypedContractMethod<[], [void], "nonpayable">;
+
+  revoke: TypedContractMethod<
+    [tgt: AddressLike, tokenId: BigNumberish],
+    [void],
+    "nonpayable"
+  >;
 
   "safeTransferFrom(address,address,uint256)": TypedContractMethod<
     [from: AddressLike, to: AddressLike, tokenId: BigNumberish],
@@ -431,6 +490,9 @@ export interface NonTransferableERC721Asset extends BaseContract {
   ): T;
 
   getFunction(
+    nameOrSignature: "addHook"
+  ): TypedContractMethod<[_hook: AddressLike], [void], "nonpayable">;
+  getFunction(
     nameOrSignature: "approve"
   ): TypedContractMethod<
     [arg0: AddressLike, arg1: BigNumberish],
@@ -453,6 +515,9 @@ export interface NonTransferableERC721Asset extends BaseContract {
     nameOrSignature: "getApproved"
   ): TypedContractMethod<[tokenId: BigNumberish], [string], "view">;
   getFunction(
+    nameOrSignature: "hook"
+  ): TypedContractMethod<[], [string], "view">;
+  getFunction(
     nameOrSignature: "init"
   ): TypedContractMethod<[initData: BytesLike], [void], "nonpayable">;
   getFunction(
@@ -472,7 +537,7 @@ export interface NonTransferableERC721Asset extends BaseContract {
     nameOrSignature: "name"
   ): TypedContractMethod<[], [string], "view">;
   getFunction(
-    nameOrSignature: "originChainAddress"
+    nameOrSignature: "originAddress"
   ): TypedContractMethod<[], [string], "view">;
   getFunction(
     nameOrSignature: "originChainId"
@@ -480,6 +545,16 @@ export interface NonTransferableERC721Asset extends BaseContract {
   getFunction(
     nameOrSignature: "ownerOf"
   ): TypedContractMethod<[tokenId: BigNumberish], [string], "view">;
+  getFunction(
+    nameOrSignature: "removeHook"
+  ): TypedContractMethod<[], [void], "nonpayable">;
+  getFunction(
+    nameOrSignature: "revoke"
+  ): TypedContractMethod<
+    [tgt: AddressLike, tokenId: BigNumberish],
+    [void],
+    "nonpayable"
+  >;
   getFunction(
     nameOrSignature: "safeTransferFrom(address,address,uint256)"
   ): TypedContractMethod<
@@ -539,6 +614,20 @@ export interface NonTransferableERC721Asset extends BaseContract {
     ApprovalForAllEvent.OutputObject
   >;
   getEvent(
+    key: "ERC721HookAdded"
+  ): TypedContractEvent<
+    ERC721HookAddedEvent.InputTuple,
+    ERC721HookAddedEvent.OutputTuple,
+    ERC721HookAddedEvent.OutputObject
+  >;
+  getEvent(
+    key: "ERC721HookRemoved"
+  ): TypedContractEvent<
+    ERC721HookRemovedEvent.InputTuple,
+    ERC721HookRemovedEvent.OutputTuple,
+    ERC721HookRemovedEvent.OutputObject
+  >;
+  getEvent(
     key: "ERC721Minted"
   ): TypedContractEvent<
     ERC721MintedEvent.InputTuple,
@@ -581,6 +670,28 @@ export interface NonTransferableERC721Asset extends BaseContract {
       ApprovalForAllEvent.InputTuple,
       ApprovalForAllEvent.OutputTuple,
       ApprovalForAllEvent.OutputObject
+    >;
+
+    "ERC721HookAdded(address)": TypedContractEvent<
+      ERC721HookAddedEvent.InputTuple,
+      ERC721HookAddedEvent.OutputTuple,
+      ERC721HookAddedEvent.OutputObject
+    >;
+    ERC721HookAdded: TypedContractEvent<
+      ERC721HookAddedEvent.InputTuple,
+      ERC721HookAddedEvent.OutputTuple,
+      ERC721HookAddedEvent.OutputObject
+    >;
+
+    "ERC721HookRemoved(address)": TypedContractEvent<
+      ERC721HookRemovedEvent.InputTuple,
+      ERC721HookRemovedEvent.OutputTuple,
+      ERC721HookRemovedEvent.OutputObject
+    >;
+    ERC721HookRemoved: TypedContractEvent<
+      ERC721HookRemovedEvent.InputTuple,
+      ERC721HookRemovedEvent.OutputTuple,
+      ERC721HookRemovedEvent.OutputObject
     >;
 
     "ERC721Minted(address,uint256)": TypedContractEvent<

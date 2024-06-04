@@ -60,6 +60,8 @@ export type { IAssetCondition } from "./contracts/asset/IAssetCondition";
 export { IAssetCondition__factory } from "./factories/contracts/asset/IAssetCondition__factory";
 export type { IAssetFactory } from "./contracts/asset/IAssetFactory";
 export { IAssetFactory__factory } from "./factories/contracts/asset/IAssetFactory__factory";
+export type { IAssetHook } from "./contracts/asset/IAssetHook";
+export { IAssetHook__factory } from "./factories/contracts/asset/IAssetHook__factory";
 export type { IAssetRegistry } from "./contracts/asset/IAssetRegistry";
 export { IAssetRegistry__factory } from "./factories/contracts/asset/IAssetRegistry__factory";
 export type { NonTransferableERC20Asset } from "./contracts/asset/NonTransferableERC20Asset";

@@ -9,6 +9,7 @@ import {IERC721Receiver} from "@openzeppelin/contracts/token/ERC721/IERC721Recei
 import {IERC721Metadata} from "@openzeppelin/contracts/token/ERC721/extensions/IERC721Metadata.sol";
 import {IERC165} from "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 import {Strings} from '@openzeppelin/contracts/utils/Strings.sol';
+import {IAssetHook} from './IAssetHook.sol';
 
 struct ERC721InitData {
     address issuer;
@@ -39,14 +40,17 @@ contract NonTransferableERC721Asset is IERC721, IERC721Metadata, IERC721Errors {
         _;
     }
 
-    //only authority allowed to issue tokens (refers to company contract)
-    address public issuer;
-
     //once upgraded, no new tokens can be minted on this base contract
     bool public upgraded;
 
+    //only authority allowed to issue tokens (refers to company contract)
+    address public issuer;
+
+    //optional hook installed to extend mint and transfer functionality
+    IAssetHook public hook;
+
     //origin chain contract address
-    address public originChainAddress;
+    address public originAddress;
 
     //original chain id
     uint256 public originChainId;
@@ -60,7 +64,7 @@ contract NonTransferableERC721Asset is IERC721, IERC721Metadata, IERC721Errors {
     // Token symbol
     string private _symbol;
 
-    //assigned base URI for asset media. Different than original NFT media url to 
+    //assigned base URI for asset media. Should be different from original NFT media url to 
     //mitigate mapping back to original owner address
     string private __baseURI;
 
@@ -85,6 +89,8 @@ contract NonTransferableERC721Asset is IERC721, IERC721Metadata, IERC721Errors {
 
     event ERC721Minted(address indexed to, uint256 tokenId);
     event ERC721Upgraded(address indexed oldAsset, address indexed newAsset);
+    event ERC721HookAdded(address indexed hook);
+    event ERC721HookRemoved(address indexed hook);
 
 
     //called once when master-copy deployed
@@ -108,7 +114,7 @@ contract NonTransferableERC721Asset is IERC721, IERC721Metadata, IERC721Errors {
         require(data.originChainAddress != address(0), "NonTransferableERC721: originChainAddress is the zero address");
         require(data.originChainId > 0, "NonTransferableERC721: originChainId is zero");
         issuer = data.issuer;
-        originChainAddress = data.originChainAddress;
+        originAddress = data.originChainAddress;
         originChainId = data.originChainId;
         _name = data.name;
         _symbol = data.symbol;
@@ -116,9 +122,24 @@ contract NonTransferableERC721Asset is IERC721, IERC721Metadata, IERC721Errors {
     }
 
     function upgrade(address newAsset) public onlyRegistry() {
+        require(newAsset != address(this), "NonTransferableERC721Asset: new upgrade contract address cannot match original");
+        
+        //NOTE: be sure new contract implements this interface!
         IUpgradedERC721(newAsset).setStartingTokenId(_tokenIdCounter);
         upgraded = true;
         emit ERC721Upgraded(address(this), newAsset);
+    }
+
+    function addHook(IAssetHook _hook) public onlyIssuer {
+        require(address(hook) != address(0), "NonTransferableERC721Asset: hook cannot be zero address");
+        hook = _hook;
+        emit ERC721HookAdded(address(_hook));
+    }
+
+    function removeHook() public onlyIssuer {
+        address h = address(hook);
+        emit ERC721HookRemoved(h);
+        delete hook;
     }
 
     /**
@@ -341,9 +362,29 @@ contract NonTransferableERC721Asset is IERC721, IERC721Metadata, IERC721Errors {
     }
 
     function mint(address to) public onlyIssuer() returns (uint256 id)  {
+        //FIXME: if the to address is an Avatar (check with avatar registry once 
+        //launched), need to ask the avatar if it allows tokens to minted 
+        //outside of its active experience.
+        if(address(hook) != address(0)) {
+            bool s = hook.beforeMint(address(this), to, _tokenIdCounter+1);
+            if(!s) {
+                revert("NonTransferableERC721Asset: beforeMint hook rejected request");
+            }
+        }
+
         ++_tokenIdCounter;
         id = _tokenIdCounter;
         _safeMint(to, id);
+    }
+
+    function revoke(address tgt, uint256 tokenId) public onlyIssuer {
+        if(address(hook) != address(0)) {
+            bool s = hook.beforeRevoke(address(this), tgt, tokenId);
+            if(!s) {
+                revert("NonTransferableERC721Asset: beforeMint hook rejected request");
+            }
+        }
+        _burn(tokenId);
     }
 
     /**
@@ -411,21 +452,6 @@ contract NonTransferableERC721Asset is IERC721, IERC721Metadata, IERC721Errors {
     }
 
 
-    /**
-     * @dev Approve `operator` to operate on all of `owner` tokens
-     *
-     * Requirements:
-     * - operator can't be the address zero.
-     *
-     * Emits an {ApprovalForAll} event.
-     */
-    function _setApprovalForAll(address owner, address operator, bool approved) internal virtual {
-        if (operator == address(0)) {
-            revert ERC721InvalidOperator(operator);
-        }
-        _operatorApprovals[owner][operator] = approved;
-        emit ApprovalForAll(owner, operator, approved);
-    }
 
     /**
      * @dev Reverts if the `tokenId` doesn't have a current owner (it hasn't been minted, or it has been burned).
