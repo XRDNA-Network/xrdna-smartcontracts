@@ -1,8 +1,9 @@
 {
-  "XRDNAGasToken#XRDNAGasToken": "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512",
-  "RegistrarRegistry#RegistrarRegistry": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
-  "LibVectorAddress#LibVectorAddress": "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512",
-  "WorldRegistry#WorldRegistry": "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0",
-  "WorldFactory#WorldFactory": "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512",
-  "World#World": "0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9"
+  "AssetFactory#AssetFactory": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+  "WorldRegistry#AssetRegistry": "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512",
+  "World#NonTransferableERC20Asset": "0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9",
+  "World#NonTransferableERC721Asset": "0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9",
+  "AssetRegistry#AssetRegistry": "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512",
+  "NTAssets#NonTransferableERC20Asset": "0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9",
+  "NTAssets#NonTransferableERC721Asset": "0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9"
 }

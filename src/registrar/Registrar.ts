@@ -1,5 +1,6 @@
 import { Provider, Signer, TransactionResponse, ethers } from "ethers";
 import {abi as RegistryABI} from "../../artifacts/contracts/RegistrarRegistry.sol/RegistrarRegistry.json";
+import { RPCRetryHandler } from "../RPCRetryHandler";
 
 /**
  * Typescript wrapper around regstirar functionality
@@ -24,11 +25,11 @@ export class Registrar {
     }
 
     async addSigners(signers: string[]): Promise<TransactionResponse> {
-        return await this.registry.addSigners(this.registrarId, signers);
+        return await RPCRetryHandler.withRetry(()=>this.registry.addSigners(this.registrarId, signers));
     }
 
     async removeSigners(signers: string[]): Promise<TransactionResponse> {
-        return await this.registry.removeSigners(this.registrarId, signers);
+        return await RPCRetryHandler.withRetry(()=>this.registry.removeSigners(this.registrarId, signers));
     }
 
 }

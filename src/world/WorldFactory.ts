@@ -1,5 +1,6 @@
 import { Signer, TransactionResponse, ethers } from "ethers";
 import {abi as WorldFactoryABI} from "../../artifacts/contracts/world/WorldFactory.sol/WorldFactory.json";
+import { RPCRetryHandler } from "../RPCRetryHandler";
 
 /**
  * Typescript proxy for WorldFactory deployed contract
@@ -29,6 +30,6 @@ export class WorldFactory {
      * @param implAddress 
      */
     async setImplementation(implAddress: string): Promise<TransactionResponse> {
-        return await this.factory.setImplementation(implAddress);
+        return await RPCRetryHandler.withRetry(() =>  this.factory.setImplementation(implAddress));
     }
 }

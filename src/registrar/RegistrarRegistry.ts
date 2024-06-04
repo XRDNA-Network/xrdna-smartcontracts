@@ -1,6 +1,8 @@
 import { Provider, Signer, ethers } from "ethers";
 import {abi as RegistrarRegistryABI} from "../../artifacts/contracts/RegistrarRegistry.sol/RegistrarRegistry.json";
 import { LogParser } from "../LogParser";
+import { LogNames } from "../LogNames";
+import { RPCRetryHandler } from "../RPCRetryHandler";
 
 /**
  * Typescript proxy for RegistrarRegistry deployed contract.
@@ -39,12 +41,12 @@ export class RegistrarRegistry {
         }
         const {defaultSigner, tokens} = props;
 
-        const t = await this.registry.register(defaultSigner, {
+        const t = await RPCRetryHandler.withRetry(() =>this.registry.register(defaultSigner, {
             value: tokens
-        });
+        }));
         const r = await t.wait();
         const logMap = this.logParser.parseLogs(r);
-        const args = logMap.get("RegistrarAdded");
+        const args = logMap.get(LogNames.RegistrarAdded);
         if(!args) {
             throw new Error("Registrar not added");
         }
@@ -61,7 +63,7 @@ export class RegistrarRegistry {
             throw new Error("Registry not deployed");
         }
         const {registrarId, signer} = props;
-        const r = await this.registry.isRegistrar(registrarId, signer);
+        const r = await RPCRetryHandler.withRetry(()=>this.registry.isRegistrar(registrarId, signer));
         return r;
     }
 
