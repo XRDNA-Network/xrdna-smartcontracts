@@ -1,4 +1,4 @@
-import { Provider, Signer, ethers } from "ethers";
+import { Provider, Signer, TransactionResponse, ethers } from "ethers";
 import {abi} from "../../artifacts/contracts/asset/NonTransferableERC721Asset.sol/NonTransferableERC721Asset.json";
 import { LogParser } from "../LogParser";
 import { LogNames } from "../LogNames";
@@ -80,5 +80,13 @@ export class ERC721Asset {
         }
 
         return {tokenId: args[1], receipt: r};
+    }
+
+    async addHook(address: string): Promise<TransactionResponse> {
+        return await RPCRetryHandler.withRetry(() => this.asset.addHook(address));
+    }
+
+    async removeHook(address: string): Promise<TransactionResponse> {
+        return await RPCRetryHandler.withRetry(() => this.asset.removeHook(address));
     }
 }

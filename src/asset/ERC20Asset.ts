@@ -35,6 +35,14 @@ export class ERC20Asset {
         this.asset = new ethers.Contract(this.address, abi, this.admin);
     }
 
+    async addHook(address: string): Promise<TransactionResponse> {
+        return await RPCRetryHandler.withRetry(() => this.asset.addHook(address));
+    }
+
+    async removeHook(address: string): Promise<TransactionResponse> {
+        return await RPCRetryHandler.withRetry(() => this.asset.removeHook(address));
+    }
+
     async name(): Promise<string> {
         return await  RPCRetryHandler.withRetry(()=>this.asset.name());
     }
