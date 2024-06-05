@@ -12,6 +12,7 @@ interface IBasicAsset {
 
 contract AssetFactory is IAssetFactory, AccessControl {
 
+    bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
     address assetRegistry;
     address erc20Implementation;
     address erc721Implementation;
@@ -24,21 +25,22 @@ contract AssetFactory is IAssetFactory, AccessControl {
 
     constructor(address[] memory admins) {
         for (uint256 i = 0; i < admins.length; i++) {
-            _grantRole(DEFAULT_ADMIN_ROLE, admins[i]);
+            require(admins[i] != address(0), "AssetFactory: admin address cannot be 0");
+            require(_grantRole(ADMIN_ROLE, admins[i]), "AssetFactory: admin role grant failed");
         }
     }
 
-    function setAssetRegistry(address registry) external onlyRole(DEFAULT_ADMIN_ROLE) {
+    function setAssetRegistry(address registry) external onlyRole(ADMIN_ROLE) {
         require(registry != address(0), "AssetFactory: zero address not valid");
         assetRegistry = registry;
     }
 
-    function setERC20Implementation(address impl) external onlyRole(DEFAULT_ADMIN_ROLE) {
+    function setERC20Implementation(address impl) external onlyRole(ADMIN_ROLE) {
         require(impl != address(0), "AssetFactory: zero address not valid");
         erc20Implementation = impl;
     }
 
-    function setERC721Implementation(address impl) external onlyRole(DEFAULT_ADMIN_ROLE) {
+    function setERC721Implementation(address impl) external onlyRole(ADMIN_ROLE) {
         require(impl != address(0), "AssetFactory: zero address not valid");
         erc721Implementation = impl;
     }

@@ -41,6 +41,10 @@ library LibVectorAddress {
             Strings.toString(self.p_sub));
     }
 
+    function equals(VectorAddress memory self, VectorAddress memory other) internal pure returns (bool) {
+        return keccak256(abi.encodePacked(asLookupKey(self))) == keccak256(abi.encodePacked(asLookupKey(other)));
+    }
+
     function getSigner(VectorAddress memory self, bytes memory signature) internal pure returns (address) {
         string memory asKey = asLookupKey(self);
         //NOTE: have to convert the bytes32 to bytes in order for message hash 

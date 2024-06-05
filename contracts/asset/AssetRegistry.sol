@@ -16,6 +16,7 @@ interface IBasicAsset {
 }
 
 contract AssetRegistry is IAssetRegistry, AccessControl {
+    bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
 
     struct AssetInfo {
         address issuer;
@@ -35,11 +36,11 @@ contract AssetRegistry is IAssetRegistry, AccessControl {
         assetFactory = IAssetFactory(_assetFactory);
         for (uint256 i = 0; i < admins.length; i++) {
             require(admins[i] != address(0), "AssetRegistry: admin cannot be zero address");
-            _grantRole(DEFAULT_ADMIN_ROLE, admins[i]);
+            require(_grantRole(ADMIN_ROLE, admins[i]), "AssetRegistry: admin role grant failed");
         }
     }
 
-    function setAssetFactory(address _assetFactory) public onlyRole(DEFAULT_ADMIN_ROLE) {
+    function setAssetFactory(address _assetFactory) public onlyRole(ADMIN_ROLE) {
         require(_assetFactory != address(0), "AssetRegistry: asset factory cannot be zero address");
         assetFactory = IAssetFactory(_assetFactory);
     }
@@ -53,7 +54,7 @@ contract AssetRegistry is IAssetRegistry, AccessControl {
         return assetsByOriginalAddressAndChain[hash] != address(0);
     }
 
-    function registerAsset(uint256 assetType, bytes calldata initData) external onlyRole(DEFAULT_ADMIN_ROLE) returns (address asset) {
+    function registerAsset(uint256 assetType, bytes calldata initData) external onlyRole(ADMIN_ROLE) returns (address asset) {
         require(address(assetFactory) != address(0), "AssetRegistry: asset factory not set");
         asset = assetFactory.createAsset(assetType, initData);
         IBasicAsset ba = IBasicAsset(asset);

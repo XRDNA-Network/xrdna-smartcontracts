@@ -10,6 +10,10 @@ import {IERC721Metadata} from "@openzeppelin/contracts/token/ERC721/extensions/I
 import {IERC165} from "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 import {Strings} from '@openzeppelin/contracts/utils/Strings.sol';
 import {IAssetHook} from './IAssetHook.sol';
+import {IAvatarRegistry} from '../avatar/IAvatarRegistry.sol';
+import {IAvatar} from '../avatar/IAvatar.sol';
+import {VectorAddress} from '../VectorAddress.sol';
+import {IExperience} from '../experience/IExperience.sol';
 
 struct ERC721InitData {
     address issuer;
@@ -18,6 +22,10 @@ struct ERC721InitData {
     string name;
     string symbol;
     string baseURI;
+}
+
+interface IExperienceRegistry {
+    function getExperienceByVector(VectorAddress memory va) external view returns (IExperience);
 }
 
 interface IUpgradedERC721 {
@@ -29,6 +37,8 @@ contract NonTransferableERC721Asset is IERC721, IERC721Metadata, IERC721Errors {
 
     address public immutable assetFactory;
     address public immutable assetRegistry;
+    IAvatarRegistry public immutable avatarRegistry;
+    IExperienceRegistry public experienceRegistry;
 
     modifier onlyFactory() {
         require(msg.sender == assetFactory, "NonTransferableERC721: only factory allowed");
@@ -94,11 +104,15 @@ contract NonTransferableERC721Asset is IERC721, IERC721Metadata, IERC721Errors {
 
 
     //called once when master-copy deployed
-    constructor(address factory, address registry) {
+    constructor(address factory, address registry, address _avatarRegistry, address _experienceRegistry) {
         require(factory != address(0), "NonTransferableERC721: factory is the zero address");
         require(registry != address(0), "NonTransferableERC721: registry is the zero address");
-       assetFactory = factory;
-         assetRegistry = registry;
+        require(_avatarRegistry != address(0), "NonTransferableERC721: avatarRegistry is the zero address");
+        require(_experienceRegistry != address(0), "NonTransferableERC721: experienceRegistry is the zero address");
+        assetFactory = factory;
+        assetRegistry = registry;
+        avatarRegistry = IAvatarRegistry(_avatarRegistry);
+        experienceRegistry = IExperienceRegistry(_experienceRegistry);
     }
 
     function encodeInitData(ERC721InitData memory data) public pure returns (bytes memory) {
@@ -253,6 +267,39 @@ contract NonTransferableERC721Asset is IERC721, IERC721Metadata, IERC721Errors {
         revert("NonTransferableERC721: token is non-transferable");
     }
 
+    function mint(address to) public onlyIssuer() returns (uint256 id)  {
+        //FIXME: if the to address is an Avatar (check with avatar registry once 
+        //launched), need to ask the avatar if it allows tokens to minted 
+        //outside of its active experience.
+        if(address(hook) != address(0)) {
+            bool s = hook.beforeMint(address(this), to, _tokenIdCounter+1);
+            if(!s) {
+                revert("NonTransferableERC721Asset: beforeMint hook rejected request");
+            }
+        }
+        if(avatarRegistry.isAvatar(to)) {
+            IAvatar avatar = IAvatar(to);
+            if(!avatar.canReceiveTokensOutsideOfExperience()) {
+                _verifyAvatarLocationMatchesIssuer(IAvatar(to));
+            }
+        }
+
+        ++_tokenIdCounter;
+        id = _tokenIdCounter;
+        _safeMint(to, id);
+    }
+
+    function revoke(address tgt, uint256 tokenId) public onlyIssuer {
+        if(address(hook) != address(0)) {
+            bool s = hook.beforeRevoke(address(this), tgt, tokenId);
+            if(!s) {
+                revert("NonTransferableERC721Asset: beforeMint hook rejected request");
+            }
+        }
+        _burn(tokenId);
+    }
+
+
     /**
      * @dev Returns the owner of the `tokenId`. Does NOT revert if token doesn't exist
      *
@@ -361,31 +408,7 @@ contract NonTransferableERC721Asset is IERC721, IERC721Metadata, IERC721Errors {
         return from;
     }
 
-    function mint(address to) public onlyIssuer() returns (uint256 id)  {
-        //FIXME: if the to address is an Avatar (check with avatar registry once 
-        //launched), need to ask the avatar if it allows tokens to minted 
-        //outside of its active experience.
-        if(address(hook) != address(0)) {
-            bool s = hook.beforeMint(address(this), to, _tokenIdCounter+1);
-            if(!s) {
-                revert("NonTransferableERC721Asset: beforeMint hook rejected request");
-            }
-        }
-
-        ++_tokenIdCounter;
-        id = _tokenIdCounter;
-        _safeMint(to, id);
-    }
-
-    function revoke(address tgt, uint256 tokenId) public onlyIssuer {
-        if(address(hook) != address(0)) {
-            bool s = hook.beforeRevoke(address(this), tgt, tokenId);
-            if(!s) {
-                revert("NonTransferableERC721Asset: beforeMint hook rejected request");
-            }
-        }
-        _burn(tokenId);
-    }
+    
 
     /**
      * @dev Mints `tokenId` and transfers it to `to`.
@@ -408,6 +431,13 @@ contract NonTransferableERC721Asset is IERC721, IERC721Metadata, IERC721Errors {
             revert ERC721InvalidSender(address(0));
         }
         emit ERC721Minted(to, tokenId);
+    }
+
+    function _verifyAvatarLocationMatchesIssuer(IAvatar avatar) internal view {
+        //get the avatar's current location
+        VectorAddress memory va = avatar.location();
+        IExperience exp = experienceRegistry.getExperienceByVector(va);
+        require(exp.company() == issuer, "NonTransferableERC721Asset: avatar does not receive tokens outside of its current experience");
     }
 
     /**
