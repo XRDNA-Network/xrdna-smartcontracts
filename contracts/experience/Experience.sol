@@ -7,6 +7,7 @@ import {VectorAddress} from '../VectorAddress.sol';
 import {IBasicCompany} from './IBasicCompany.sol';
 import {IBasicAvatar} from './IBasicAvatar.sol';
 import {IExperienceHook} from './IExperienceHook.sol';
+import {ReentrancyGuard} from '@openzeppelin/contracts/utils/ReentrancyGuard.sol';
 
 struct ExperienceInitData {
     string name;
@@ -14,7 +15,7 @@ struct ExperienceInitData {
     bytes connectionDetails;
 }
 
-contract Experience is IExperience {
+contract Experience is ReentrancyGuard, IExperience {
 
     //initialized when deploying master copy
     address public experienceFactory;
@@ -92,7 +93,7 @@ contract Experience is IExperience {
         return _vectorAddress;
     }
 
-    function entering(JumpEntryRequest memory request) external payable override onlyPortalRegistry returns (bytes memory)  {
+    function entering(JumpEntryRequest memory request) external payable override nonReentrant onlyPortalRegistry returns (bytes memory)  {
         if(address(hook) != address(0)) {
             bool s = hook.beforeJumpEntry(address(this), request.sourceWorld, request.sourceCompany, request.avatar);
             require(s, "Experience: hook disallowed entry");

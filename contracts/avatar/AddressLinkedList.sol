@@ -92,6 +92,10 @@ abstract contract AddressLinkedList {
         return list.size;
     }
 
+    function contains(address data) internal view returns (bool) {
+        return list.nodes[data].data != address(0);
+    }
+
     function getAllItems() internal view returns (address[] memory) {
         address[] memory items = new address[](list.size);
         address current = list.head;

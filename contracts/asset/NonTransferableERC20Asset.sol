@@ -5,6 +5,7 @@ pragma solidity ^0.8.24;
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import {IERC20Errors} from "@openzeppelin/contracts/interfaces/draft-IERC6093.sol";
+import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import {IAssetHook} from './IAssetHook.sol';
 
 /**
@@ -33,7 +34,7 @@ struct ERC20InitData {
 
 }
 
-contract NonTransferableERC20Asset is IERC20, IERC20Metadata, IERC20Errors {
+contract NonTransferableERC20Asset is ReentrancyGuard, IERC20, IERC20Metadata, IERC20Errors {
 
 
     /**
@@ -248,7 +249,7 @@ contract NonTransferableERC20Asset is IERC20, IERC20Metadata, IERC20Errors {
         revert("NonTransferableERC20: transfers not allowed yet");
     }
 
-    function mint(address to, uint256 amt) public onlyIssuer()  {
+    function mint(address to, uint256 amt) public nonReentrant onlyIssuer  {
         //FIXME: if the to address is an Avatar (check with avatar registry once 
         //launched), need to ask the avatar if it allows tokens to minted 
         //outside of its active experience.
@@ -262,7 +263,7 @@ contract NonTransferableERC20Asset is IERC20, IERC20Metadata, IERC20Errors {
         _mint(to, amt);
     }
 
-    function revoke(address tgt, uint256 amt) public onlyIssuer {
+    function revoke(address tgt, uint256 amt) public nonReentrant onlyIssuer {
         if(address(hook) != address(0)) {
             bool s = hook.beforeRevoke(address(this), tgt, amt);
             if(!s) {
