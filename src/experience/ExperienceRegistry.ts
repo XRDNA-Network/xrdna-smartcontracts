@@ -1,6 +1,7 @@
 import { Contract, Provider, Signer, TransactionResponse } from "ethers";
 import {abi} from "../../artifacts/contracts/experience/ExperienceRegistry.sol/ExperienceRegistry.json";
 import { RPCRetryHandler } from "../RPCRetryHandler";
+import { VectorAddress } from "../VectorAddress";
 
 export interface IExperienceRegistryOpts {
     address: string;
@@ -30,7 +31,7 @@ export class ExperienceRegistry {
         return await RPCRetryHandler.withRetry(() => this.con.isExperience(exp));
     }
 
-    async getExperienceByVector(vector: string): Promise<string> {
+    async getExperienceByVector(vector: VectorAddress): Promise<string> {
         return await RPCRetryHandler.withRetry(() => this.con.getExperienceByVector(vector));
     }
 

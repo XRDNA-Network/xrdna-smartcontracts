@@ -1,6 +1,7 @@
 import { Contract, Provider, Signer, TransactionResponse } from "ethers";
 import {abi} from "../../artifacts/contracts/experience/ExperienceFactory.sol/ExperienceFactory.json";
 import { RPCRetryHandler } from "../RPCRetryHandler";
+import { VectorAddress } from "../VectorAddress";
 
 
 export interface IExperienceFactoryOpts {
@@ -27,11 +28,11 @@ export class ExperienceFactory {
         return await RPCRetryHandler.withRetry(() => this.con.setImplementation(impl));
     }
 
-    async createExperience(owner: string, vectorAddress: string, initData: string): Promise<TransactionResponse> {
+    async createExperience(owner: string, vectorAddress: VectorAddress, initData: string): Promise<TransactionResponse> {
         return await RPCRetryHandler.withRetry(() => this.con.createExperience(owner, vectorAddress, initData));
     }
 
-    async isExperienceClone(possibleClone: string): Promise<boolean> {
-        return await RPCRetryHandler.withRetry(() => this.con.isExperienceClone(possibleClone));
+    async isExperienceClone(query: string): Promise<boolean> {
+        return await RPCRetryHandler.withRetry(() => this.con.isExperienceClone(query));
     }
 }

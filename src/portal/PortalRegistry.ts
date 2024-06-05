@@ -1,6 +1,7 @@
 import { Contract, Provider, Signer, TransactionResponse } from "ethers";
 import {abi} from "../../artifacts/contracts/portal/PortalRegistry.sol/PortalRegistry.json";
 import { RPCRetryHandler } from "../RPCRetryHandler";
+import { VectorAddress } from "../VectorAddress";
 
 
 export interface IPortalRegistryOpts {
@@ -40,7 +41,7 @@ export class PortalRegistry {
         return await RPCRetryHandler.withRetry(() => this.con.getPortalInfoByAddress(addr));
     }
 
-    async getPortalInfoByVectorAddress(vector: string): Promise<string> {
+    async getPortalInfoByVectorAddress(vector: VectorAddress): Promise<string> {
         return await RPCRetryHandler.withRetry(() => this.con.getPortalInfoByVectorAddress(vector));
     }
 
@@ -48,7 +49,7 @@ export class PortalRegistry {
         return await RPCRetryHandler.withRetry(() => this.con.getIdForExperience(experience));
     }
 
-    async getIdForVectorAddress(vector: string): Promise<string> {
+    async getIdForVectorAddress(vector: VectorAddress): Promise<string> {
         return await RPCRetryHandler.withRetry(() => this.con.getIdForVectorAddress(vector));
     }
 
