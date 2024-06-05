@@ -92,7 +92,7 @@ contract Company is IBasicCompany, AccessControl {
         }
     }
 
-    function withdraw(uint256 amt) public onlyRole(DEFAULT_ADMIN_ROLE) {
+    function withdraw(uint256 amt) public payable onlyRole(DEFAULT_ADMIN_ROLE) {
         require(amt <= address(this).balance, "Company: insufficient balance");
         payable(owner).transfer(amt);
     }
