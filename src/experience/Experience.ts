@@ -8,6 +8,12 @@ export interface IExperienceOpts {
     admin: Provider | Signer;
 }
 
+export interface IJumpEntryRequest {
+    sourceWorld: string
+    sourceCompany: string
+    avatar: string
+}
+
 
 export class Experience {
     private con: Contract;
@@ -35,7 +41,7 @@ export class Experience {
         return await RPCRetryHandler.withRetry(() => this.con.vectorAddress());
     }
 
-    async entering(request: string): Promise<TransactionResponse> {
+    async entering(request: IJumpEntryRequest): Promise<TransactionResponse> {
         return await RPCRetryHandler.withRetry(() => this.con.entering(request));
     }
 
