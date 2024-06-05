@@ -23,6 +23,7 @@ contract CompanyRegistry {
     
     event CompanyRegistered(address indexed company, address indexed owner, address world);
     event CompanyCreated(address indexed company, address indexed owner);
+    event CompanyUpgraded(address indexed oldCompany, address indexed newCompany);
 
     constructor(ICompanyFactory _companyFactory) {
         companyFactory = _companyFactory;
@@ -65,7 +66,7 @@ contract CompanyRegistry {
         emit CompanyRegistered(company, _owner, world);
     }
     function upgradeCompany(address oldCompany, address _owner, bytes calldata initData) external {
-
+        // upgraded companies need to reregister the new company address with each world
         require(this.isCompany(oldCompany), "CompanyRegistry: invalid company");
 
         bool isSigner = IBasicCompany(oldCompany).isSigner(msg.sender);
@@ -84,5 +85,6 @@ contract CompanyRegistry {
         companiesByName[nm] = newCompany;
 
         IBasicCompany(oldCompany).upgrade(newCompany);
+        emit CompanyUpgraded(oldCompany, newCompany);
     }
 }
