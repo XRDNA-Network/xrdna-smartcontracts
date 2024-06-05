@@ -14,6 +14,12 @@ export interface IAddPortalRequest {
     fee: string
 }
 
+export interface IPortalInfo {
+    destination: string
+    condition: string
+    fee: string
+}
+
 export class PortalRegistry {
     private con: Contract;
     private address: string;
@@ -33,15 +39,15 @@ export class PortalRegistry {
         return await RPCRetryHandler.withRetry(() => this.con.setAvatarRegistry(registry));
     }
 
-   async getPortalInfoById(id: string): Promise<string> {
+   async getPortalInfoById(id: string): Promise<IPortalInfo> {
         return await RPCRetryHandler.withRetry(() => this.con.getPortalInfoById(id));
     }
 
-    async getPortalInfoByAddress(addr: string): Promise<string> {
+    async getPortalInfoByAddress(addr: string): Promise<IPortalInfo> {
         return await RPCRetryHandler.withRetry(() => this.con.getPortalInfoByAddress(addr));
     }
 
-    async getPortalInfoByVectorAddress(vector: VectorAddress): Promise<string> {
+    async getPortalInfoByVectorAddress(vector: VectorAddress): Promise<IPortalInfo> {
         return await RPCRetryHandler.withRetry(() => this.con.getPortalInfoByVectorAddress(vector));
     }
 
