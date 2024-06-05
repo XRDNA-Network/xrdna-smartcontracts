@@ -58,7 +58,7 @@ export class PortalRegistry {
     async getIdForVectorAddress(vector: VectorAddress): Promise<string> {
         return await RPCRetryHandler.withRetry(() => this.con.getIdForVectorAddress(vector));
     }
-
+ 
     async addPortal(req: IAddPortalRequest): Promise<TransactionResponse> {
         return await RPCRetryHandler.withRetry(() => this.con.addPortal(req));
     }
