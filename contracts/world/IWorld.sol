@@ -15,4 +15,5 @@ interface IBasicWorld {
 interface IWorld is IBasicWorld {
     function addSigners(address[] memory sigs) external;
     function removeSigners(address[] memory sigs) external;
+    function isSigner(address signer) external view returns (bool);
 }

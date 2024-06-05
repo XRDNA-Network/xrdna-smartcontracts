@@ -6,7 +6,6 @@
   "repository": "https://github.com/thorium-dev-group/xrdna-smartcontracts",
   "author": "mdcoon <mdcoon1@yahoo.com>",
   "license": "MIT",
-  "private": false,
   "scripts": {
     "clean": "rimraf --glob dist *.tsbuildinfo",
     "deploy": "npx hardhat ignition deploy",
