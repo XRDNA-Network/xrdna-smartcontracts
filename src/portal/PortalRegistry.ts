@@ -60,7 +60,7 @@ export class PortalRegistry {
     }
 
     async addPortal(req: IAddPortalRequest): Promise<TransactionResponse> {
-        return await RPCRetryHandler.withRetry(() => this.con.addPortal(req.destination, req.fee));
+        return await RPCRetryHandler.withRetry(() => this.con.addPortal(req));
     }
 
     async jumpRequest(portalId: string): Promise<TransactionResponse> {
