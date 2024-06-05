@@ -5,21 +5,24 @@ pragma solidity ^0.8.24;
 import {ICompanyFactory} from "./ICompanyFactory.sol";
 import {IBasicCompany} from "./ICompany.sol";
 import {IWorld} from "../world/IWorld.sol";
+import {LibStringCase} from '../LibStringCase.sol';
+
 
 contract CompanyRegistry {
-
+    using LibStringCase for string;
     ICompanyFactory public companyFactory;
 
     mapping (string => address) public companiesByName;
-    mapping (string => address) public companiesByVectorAddress;
-    mapping (address => string) public companiesByAddress;
+    mapping (address => address) public companiesByAddress;
+    mapping (address => address) public companiesRegisteredByWorldAddress;
 
-    modifier onlyWorldSigner(address world, address worldSigner) {
-        require(IWorld(world).isSigner(worldSigner), "CompanyRegistry: invalid world signer");
+    modifier onlyWorldSigner(address world) {
+        require(IWorld(world).isSigner(msg.sender), "CompanyRegistry: invalid world signer");
         _;
     }
     
-    event CompanyRegistered(address indexed company, address indexed owner, VectorAddress vectorAddress);
+    event CompanyRegistered(address indexed company, address indexed owner, address world);
+    event CompanyCreated(address indexed company, address indexed owner);
 
     constructor(ICompanyFactory _companyFactory) {
         companyFactory = _companyFactory;
@@ -29,45 +32,50 @@ contract CompanyRegistry {
         return companiesByAddress[company] != address(0);
     }
 
+    function createCompany(address owner, bytes calldata initData) external returns (address company) {
+        // create the company
+        company = companyFactory.createCompany(owner, initData);
+        require(company != address(0), "CompanyRegistry: failed to create company");
+        string memory nm = IBasicCompany(company).getName().lower();
+        require(companiesByName[nm] == address(0), "CompanyRegistry: company already exists");
+        companiesByName[nm] = company;
+        companiesByAddress[company] = company;
+        emit CompanyCreated(company, owner);
+    }
+
     function register(
         address world,
-        address worldSigner,
-        address _owner,
-        bytes calldata initData,
+        address company,
         bool tokensToOwner
-        ) external onlyWorldSigner(world, worldSigner) payable {
-        // Create the company
-        address c = companyFactory.createCompany(_owner, initData);
-        require(c != address(0), "CompanyRegistry: failed to create company");
+        ) external onlyWorldSigner(world) payable {
         
-        string memory nm = IBasicCompany(c).getName().lower();
-        require(companiesByName[nm] == address(0), "CompanyRegistry: company already exists");
+        // register the company address to the world
+        companiesRegisteredByWorldAddress[world] = company;
 
-        companiesByName[nm] = c;
-        companiesByAddress[c] = c;
-        companiesByVectorAddress[IBasicCompany(c).getBaseVector().toString()] = c;
+        address _owner = IBasicCompany(company).getOwner();
 
         if (msg.value > 0) {
             if (tokensToOwner) {
                 payable(_owner).transfer(msg.value);
             } else {
-                payable(address(c)).transfer(msg.value);
+                payable(address(company)).transfer(msg.value);
             }
         }
 
-        emit CompanyRegistered(c, _owner, IBasicCompany(c).getBaseVector());
+        emit CompanyRegistered(company, _owner, world);
     }
-    function upgradeCompany(address world, address worldSigner, address oldCompany, bytes calldata initData) external onlyWorldSigner(world, worldSigner) {
-        require(isCompany(oldCompany), "CompanyRegistry: invalid company");
-        address owner = IBasicCompany(oldCompany).getOwner();
-        address newCompany = companyFactory.createCompany(owner, initData);
+    function upgradeCompany(address oldCompany, address _owner, bytes calldata initData) external {
+
+        require(this.isCompany(oldCompany), "CompanyRegistry: invalid company");
+
+        bool isSigner = IBasicCompany(oldCompany).isSigner(msg.sender);
+        require(isSigner, "CompanyRegistry: invalid owner");
+
+        address newCompany = companyFactory.createCompany(_owner, initData);
         require(newCompany != address(0x0), "CompanyRegistry: failed to create company");
 
         delete companiesByAddress[oldCompany];
         companiesByAddress[newCompany] = newCompany;
-
-        delete companiesByVectorAddress[IBasicCompany(oldCompany).getBaseVector().asLookupKey()];
-        companiesByVectorAddress[IBasicCompany(newCompany).getBaseVector().asLookupKey()] = newCompany;
 
         delete companiesByName[IBasicCompany(oldCompany).getName().lower()];
 

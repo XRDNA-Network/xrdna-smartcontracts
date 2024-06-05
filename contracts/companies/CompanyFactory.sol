@@ -3,6 +3,7 @@
 pragma solidity ^0.8.24;
 
 import { ICompanyFactory } from "./ICompanyFactory.sol";
+import { IBasicCompany } from "./ICompany.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 
 contract CompanyFactory is ICompanyFactory, AccessControl {
@@ -28,7 +29,7 @@ contract CompanyFactory is ICompanyFactory, AccessControl {
         emit CompanyRegistryChanged(companyRegistry, _companyRegistry);
     }
 
-    function createCompany(address owner, bytes calldata initData) external onlyCompanyRegistry returns (address) {
+    function createCompany(address owner, bytes calldata initData) external onlyCompanyRegistry returns (address proxy) {
         require(companyImplementation != address(0), "CompanyFactory: company implementation not set");
         // Adapted from https://github.com/optionality/clone-factory/blob/32782f82dfc5a00d103a7e61a17a5dedbd1e8e9d/contracts/CloneFactory.sol
         bytes20 targetBytes = bytes20(companyImplementation);
@@ -42,7 +43,7 @@ contract CompanyFactory is ICompanyFactory, AccessControl {
         IBasicCompany(proxy).init(owner, initData);
         emit CompanyCreated(address(proxy));
     }
-    function isCompanyClone(address query) public view override returns (bool result) {
+    function isCompanyClone(address company) public view override returns (bool result) {
         bytes20 targetBytes = bytes20(companyImplementation);
         assembly {
             let clone := mload(0x40)
@@ -51,7 +52,7 @@ contract CompanyFactory is ICompanyFactory, AccessControl {
             mstore(add(clone, 0x1e), 0x5af43d82803e903d91602b57fd5bf30000000000000000000000000000000000)
 
             let other := add(clone, 0x40)
-            extcodecopy(query, other, 0, 0x2d)
+            extcodecopy(company, other, 0, 0x2d)
             result := and(
                 eq(mload(clone), mload(other)),
                 eq(mload(add(clone, 0xd)), mload(add(other, 0xd)))

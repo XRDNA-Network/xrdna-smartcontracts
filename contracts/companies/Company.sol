@@ -2,7 +2,9 @@
 // Compatible with OpenZeppelin Contracts ^5.0.0
 pragma solidity ^0.8.24;
 
-import { ICompany } from "./ICompany.sol";
+import { IBasicCompany } from "./ICompany.sol";
+import { ICompanyFactory } from "./ICompanyFactory.sol";
+import { ICompanyRegistry } from "./ICompanyRegistry.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
@@ -10,10 +12,13 @@ struct CompanyInfo {
     string name;
 }
 
-contract Company is ICompany, AccessControl {
+contract Company is IBasicCompany, AccessControl {
     string public name;
     ICompanyFactory public immutable companyFactory;
     ICompanyRegistry public immutable companyRegistry;
+
+    bool public initialized;
+    address public owner;
 
     modifier onlyCompanyFactory() {
         require(msg.sender == address(companyFactory), "Company: caller is not the company factory");
@@ -90,10 +95,5 @@ contract Company is ICompany, AccessControl {
     function withdraw(uint256 amt) public onlyRole(DEFAULT_ADMIN_ROLE) {
         require(amt <= address(this).balance, "Company: insufficient balance");
         payable(owner).transfer(amt);
-    }
-
-    function withdrawToken(address token, uint256 amt) public onlyRole(DEFAULT_ADMIN_ROLE) {
-        require(IERC20(token).balanceOf(address(this)) >= amt, "Company: insufficient token balance");
-        IERC20(token).transfer(owner, amt);
     }
 }
