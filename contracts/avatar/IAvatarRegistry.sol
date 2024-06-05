@@ -22,6 +22,8 @@ struct AvatarRegistrationRequest {
 
 interface IAvatarRegistry {
 
+    event AvatarCreated(address indexed avatar, address indexed owner, address indexed defaultExperience);
+    
     /**
      * @dev Check if an address is an avatar
      * @param a The address to check
@@ -35,6 +37,11 @@ interface IAvatarRegistry {
      * @return The address of the avatar contract, or address(0) if not found
      */
     function findByUsername(string memory username) external view returns (address);
+
+    /**
+     * @dev Check if a username is available, case insensitive
+     */
+    function nameAvailable(string memory username) external view returns (bool);
 
     /**
      * @dev Register a new avatar. This must be called by a registered World contract. Funds

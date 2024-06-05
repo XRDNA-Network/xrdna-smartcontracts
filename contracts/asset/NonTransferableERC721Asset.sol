@@ -14,6 +14,7 @@ import {IAvatarRegistry} from '../avatar/IAvatarRegistry.sol';
 import {IAvatar} from '../avatar/IAvatar.sol';
 import {VectorAddress} from '../VectorAddress.sol';
 import {IExperience} from '../experience/IExperience.sol';
+import {ReentrancyGuard} from '@openzeppelin/contracts/utils/ReentrancyGuard.sol';
 
 struct ERC721InitData {
     address issuer;
@@ -32,7 +33,7 @@ interface IUpgradedERC721 {
     function setStartingTokenId(uint256 tokenId) external;
 }
 
-contract NonTransferableERC721Asset is IERC721, IERC721Metadata, IERC721Errors {
+contract NonTransferableERC721Asset is ReentrancyGuard, IERC721, IERC721Metadata, IERC721Errors {
     using Strings for uint256;
 
     address public immutable assetFactory;
@@ -267,7 +268,7 @@ contract NonTransferableERC721Asset is IERC721, IERC721Metadata, IERC721Errors {
         revert("NonTransferableERC721: token is non-transferable");
     }
 
-    function mint(address to) public onlyIssuer() returns (uint256 id)  {
+    function mint(address to) public nonReentrant onlyIssuer returns (uint256 id)  {
         //FIXME: if the to address is an Avatar (check with avatar registry once 
         //launched), need to ask the avatar if it allows tokens to minted 
         //outside of its active experience.
@@ -289,7 +290,7 @@ contract NonTransferableERC721Asset is IERC721, IERC721Metadata, IERC721Errors {
         _safeMint(to, id);
     }
 
-    function revoke(address tgt, uint256 tokenId) public onlyIssuer {
+    function revoke(address tgt, uint256 tokenId) public nonReentrant onlyIssuer {
         if(address(hook) != address(0)) {
             bool s = hook.beforeRevoke(address(this), tgt, tokenId);
             if(!s) {

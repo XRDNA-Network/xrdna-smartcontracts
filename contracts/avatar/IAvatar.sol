@@ -3,7 +3,7 @@
 pragma solidity ^0.8.24;
 
 import {VectorAddress} from '../VectorAddress.sol';
-
+import {IAvatarHook} from './IAvatarHook.sol';
 import {IERC721Receiver} from "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
 
 struct AvatarJumpRequest {
@@ -25,9 +25,10 @@ interface IAvatar is IERC721Receiver {
     event SignerRemoved(address indexed signer);
     event WearableAdded(address indexed wearable);
     event WearableRemoved(address indexed wearable);
-    event LocationChanged(VectorAddress location);
-    event AppearanceChanged(bytes appearanceDetails);
-    event JumpSuccess(address experience, bytes connectionDetails);
+    event LocationChanged(VectorAddress indexed location);
+    event AppearanceChanged(bytes indexed appearanceDetails);
+    event JumpSuccess(address indexed experience, bytes indexed connectionDetails);
+    event AvatarUpgraded(address indexed oldVersion, address indexed nextVersion);
 
     /**
      * @dev get the Avatar's unique username
@@ -73,6 +74,11 @@ interface IAvatar is IERC721Receiver {
     function isSigner(address signer) external view returns (bool);
 
     /**
+     * @dev Check whether the avatar is wearing the given wearable asset.
+     */
+    function isWearing(address wearable) external view returns (bool);
+
+    /**
      * @dev Initialize the avatar contract. This is called by the AvatarFactory when the avatar is created.
      * @param owner The address of the avatar owner
      * @param defaultExperience The address of the default experience contract where the avatar starts
@@ -96,6 +102,17 @@ interface IAvatar is IERC721Receiver {
      * @dev Set the appearance details of the avatar. This must be called by the avatar owner.
      */
     function setAppearanceDetails(bytes memory) external;
+
+
+    /**
+     * @dev Set a hook contract for the avatar. This must be called by the avatar owner.
+     */
+    function setHook(IAvatarHook hook) external;
+
+    /**
+     * @dev Remove the hook contract for the avatar. This must be called by the avatar owner.
+     */
+    function removeHook() external;
 
     /**
      * @dev Move the avatar to a new experience. This must be called by the avatar owner.
@@ -140,4 +157,8 @@ interface IAvatar is IERC721Receiver {
      */
     function withdraw(uint256 amount) external;
      
+    /**
+     * Upgrade the avatar implementation to a new version. This must be called by avatar registry.
+     */
+    function upgrade(address nextVersion) external;
 }

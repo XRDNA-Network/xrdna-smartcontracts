@@ -45,9 +45,12 @@ contract ExperienceRegistry is AccessControl {
 
     event ExperienceRegistered(address indexed world, address indexed company, address indexed experience, string name);
 
-    constructor(address[] memory admins, address compRegistry, address portRegistry) {
+    constructor(address mainAdmin, address[] memory admins, address compRegistry, address portRegistry) {
         companyRegistry = ICompanyRegistry(compRegistry);
         portalRegistry = IPortalRegistry(portRegistry);
+        require(mainAdmin != address(0), "ExperienceRegistry: main admin address cannot be 0");
+        require(_grantRole(DEFAULT_ADMIN_ROLE, mainAdmin), "ExperienceRegistry: default admin role grant failed");
+        require(_grantRole(ADMIN_ROLE, mainAdmin), "ExperienceRegistry: admin role grant failed");
         for (uint256 i = 0; i < admins.length; i++) {
             require(admins[i] != address(0), "ExperienceRegistry: admin address cannot be 0");
             require(_grantRole(ADMIN_ROLE, admins[i]), "ExperienceRegistry: admin role grant failed");

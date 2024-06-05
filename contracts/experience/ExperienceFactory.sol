@@ -20,7 +20,10 @@ contract ExperienceFactory is IExperienceFactory, AccessControl {
         _;
     }
 
-    constructor(address[] memory admins) {
+    constructor(address mainAdmin, address[] memory admins) {
+        require(mainAdmin != address(0), "ExperienceFactory: main admin address cannot be 0");
+        require(_grantRole(DEFAULT_ADMIN_ROLE, mainAdmin), "ExperienceFactory: default admin role grant failed");
+        require(_grantRole(ADMIN_ROLE, mainAdmin), "ExperienceFactory: admin role grant failed");
         for (uint256 i = 0; i < admins.length; i++) {
             require(admins[i] != address(0), "ExperienceFactory: admin address cannot be 0");
             require(_grantRole(ADMIN_ROLE, admins[i]), "ExperienceFactory: admin role grant failed");
