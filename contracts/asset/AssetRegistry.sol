@@ -31,12 +31,15 @@ contract AssetRegistry is IAssetRegistry, AccessControl {
     event AssetConditionAdded(address indexed asset, address indexed condition);
     event AssetConditionRemoved(address indexed asset);
 
-    constructor(address[] memory admins, address _assetFactory) {
+    constructor(address mainAdmin, address[] memory admins, address _assetFactory) {
         require(_assetFactory != address(0), "AssetRegistry: asset factory cannot be zero address");
+        require(mainAdmin != address(0), "AssetRegistry: main admin cannot be zero address");
+        _grantRole(DEFAULT_ADMIN_ROLE, mainAdmin);
+        _grantRole(ADMIN_ROLE, mainAdmin);
         assetFactory = IAssetFactory(_assetFactory);
         for (uint256 i = 0; i < admins.length; i++) {
             require(admins[i] != address(0), "AssetRegistry: admin cannot be zero address");
-            require(_grantRole(ADMIN_ROLE, admins[i]), "AssetRegistry: admin role grant failed");
+            _grantRole(ADMIN_ROLE, admins[i]);
         }
     }
 
@@ -64,7 +67,7 @@ contract AssetRegistry is IAssetRegistry, AccessControl {
         emit AssetCreated(asset, assetType);
     }
 
-    function upgradeAsset(address asset, uint256 assetType, bytes calldata initData) external  {
+    function upgradeAsset(address asset, uint256 assetType, bytes calldata initData) external returns (address) {
         require(registeredAssets[asset].issuer != address(0), "AssetRegistry: asset not registered");
         require(registeredAssets[asset].issuer == msg.sender, "AssetRegistry: caller is not the asset issuer");
         AssetInfo storage old = registeredAssets[asset];
@@ -86,6 +89,7 @@ contract AssetRegistry is IAssetRegistry, AccessControl {
         assetsByOriginalAddressAndChain[hash] = newAsset;
         delete registeredAssets[asset];
         emit AssetCreated(newAsset, assetType);
+        return newAsset;
     }
 
     function getAssetCondition(address asset) external view returns (IAssetCondition) {

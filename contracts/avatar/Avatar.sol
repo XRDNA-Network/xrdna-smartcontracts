@@ -11,17 +11,15 @@ import {IPortalRegistry, PortalInfo} from '../portal/IPortalRegistry.sol';
 import {IExperience} from '../experience/IExperience.sol';
 import {AccessControl} from '@openzeppelin/contracts/access/AccessControl.sol';
 import {ICompanyRegistry} from '../company/ICompanyRegistry.sol';
+import {ICompany} from '../company/ICompany.sol';
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
 import {ReentrancyGuard} from '@openzeppelin/contracts/utils/ReentrancyGuard.sol';
+import {IAvatarRegistry} from './IAvatarRegistry.sol';
 
 interface IExperienceRegistry {
     function isExperience(address e) external view returns (bool);
     function getExperienceByVector(VectorAddress memory location) external view returns (address);
-}
-
-interface IBasicCompany {
-    function isSigner(address signer) external view returns (bool);
 }
 
 struct AvatarInitData {
@@ -32,23 +30,24 @@ struct AvatarInitData {
 
 struct BaseContructorArgs {
     address avatarFactory;
+    address avatarRegistry;
     address experienceRegistry;
     address portalRegistry;
     address companyRegistry;
 }
 
-contract Avatar is IAvatar, ReentrancyGuard, AccessControl, AddressLinkedList {
+contract Avatar is IAvatar, ReentrancyGuard, AddressLinkedList {
     using LibStringCase for string;
     using LibVectorAddress for VectorAddress;
     using MessageHashUtils for bytes;
 
-    bytes32 public constant SIGNER_ROLE = keccak256("SIGNER_ROLE");
-
     //set on constructor of master copy of avatar
     address public immutable avatarFactory;
+    IAvatarRegistry public immutable avatarRegistry;
     IExperienceRegistry public immutable experienceRegistry;
     IPortalRegistry public immutable portalRegistry;
     ICompanyRegistry public immutable companyRegistry;
+
 
     modifier onlyFactory {
         require(msg.sender == avatarFactory, "Avatar: only factory can call this function");
@@ -59,8 +58,7 @@ contract Avatar is IAvatar, ReentrancyGuard, AccessControl, AddressLinkedList {
     bool public canReceiveTokensOutsideOfExperience;
     bool public upgraded;
     address public owner;
-    VectorAddress private _location;
-    IExperience expectedJumpExperience;
+    IExperience private _location;
     IAvatarHook public hook;
     string public username;
     bytes public appearanceDetails;
@@ -72,15 +70,27 @@ contract Avatar is IAvatar, ReentrancyGuard, AccessControl, AddressLinkedList {
         _;
     }
 
+    modifier onlyRegistry {
+        require(msg.sender == address(avatarRegistry), "Avatar: only registry can call this function");
+        _;
+    }
+
+    modifier onlyOwner {
+        require(msg.sender == owner, "Avatar: only owner can call this function");
+        _;
+    }
+
     constructor(BaseContructorArgs memory args) {
         require(args.avatarFactory != address(0), "Avatar: avatar factory cannot be zero address");
         require(args.experienceRegistry != address(0), "Avatar: experience registry cannot be zero address");
         require(args.portalRegistry != address(0), "Avatar: portal registry cannot be zero address");
         require(args.companyRegistry != address(0), "Avatar: company registry cannot be zero address");
+        require(args.avatarRegistry != address(0), "Avatar: avatar registry cannot be zero address");
         avatarFactory = args.avatarFactory;
         experienceRegistry = IExperienceRegistry(args.experienceRegistry);
         portalRegistry = IPortalRegistry(args.portalRegistry);
         companyRegistry = ICompanyRegistry(args.companyRegistry);
+        avatarRegistry = IAvatarRegistry(args.avatarRegistry);
     }
 
     receive() external payable {  }
@@ -103,9 +113,7 @@ contract Avatar is IAvatar, ReentrancyGuard, AccessControl, AddressLinkedList {
         require(_owner != address(0), "Avatar: owner cannot be zero address");
         require(experienceRegistry.isExperience(defaultExperience), "Avatar: default experience is not a registered experience");
         username = data.username.lower();
-        _location = IExperience(defaultExperience).vectorAddress();
-        require(_grantRole(SIGNER_ROLE, _owner), "Avatar: signer role grant failed");
-        require(_grantRole(DEFAULT_ADMIN_ROLE, _owner), "Avatar: admin role grant failed");
+        _location = IExperience(defaultExperience);
         canReceiveTokensOutsideOfExperience = data.canReceiveTokensOutsideOfExperience;
         appearanceDetails = data.appearanceDetails;
         owner = _owner;
@@ -114,7 +122,7 @@ contract Avatar is IAvatar, ReentrancyGuard, AccessControl, AddressLinkedList {
     /**
      * @dev get the Avatar's current vector address location (i.e. the experience they are in)
      */
-    function location() public view override returns (VectorAddress memory) {
+    function location() public view override returns (IExperience) {
         return _location;
     }
 
@@ -126,35 +134,18 @@ contract Avatar is IAvatar, ReentrancyGuard, AccessControl, AddressLinkedList {
         return getAllItems();
     }
 
-    /**
-     * @dev Check whether the given address is an authorized signer for the avatar.
-     */
-    function isSigner(address signer) public view override returns (bool) {
-        return hasRole(SIGNER_ROLE, signer);
-    }
-
      /**
      * @dev Set whether the avatar can receive tokens when not in an experience that matches 
      * their current location.
      */
-    function setCanReceiveTokensOutsideOfExperience(bool canReceive) public override onlyRole(SIGNER_ROLE) {
+    function setCanReceiveTokensOutsideOfExperience(bool canReceive) public override onlyOwner {
         canReceiveTokensOutsideOfExperience = canReceive;
-    }
-
-    /**
-     * @dev Set the location of the avatar. This must be called by a registered experience contract.
-     */
-    function setLocation(VectorAddress memory loc) public override notUpgraded {
-        require(address(expectedJumpExperience) == msg.sender, "Avatar: caller is not a expected experience");
-        require(loc.equals(expectedJumpExperience.vectorAddress()), "Avatar: location does not match expected experience location");
-        _location = loc;
-        emit LocationChanged(loc);
     }
 
     /**
      * @dev Set the appearance details of the avatar. This must be called by the avatar owner.
      */
-    function setAppearanceDetails(bytes memory) public override onlyRole(SIGNER_ROLE) notUpgraded {
+    function setAppearanceDetails(bytes memory) public override onlyOwner notUpgraded {
         appearanceDetails = appearanceDetails;
         emit AppearanceChanged(appearanceDetails);
     }
@@ -165,16 +156,15 @@ contract Avatar is IAvatar, ReentrancyGuard, AccessControl, AddressLinkedList {
      * from the avatar contract balance. Only signer of avatar can call this function to 
      * authorize fees and jump.
      */
-    function jump(AvatarJumpRequest memory request) public override payable onlyRole(SIGNER_ROLE) notUpgraded {
+    function jump(AvatarJumpRequest memory request) public override payable onlyOwner notUpgraded {
         
         PortalInfo memory portal = _verifyCompanySignature(request);
         if(portal.fee > 0) {
             uint256 bal = address(this).balance + msg.value;
             require(bal >= portal.fee, "Avatar: insufficient funds for jump fee");
         }
-        expectedJumpExperience = portal.destination;
+        _location = portal.destination;
         bytes memory connectionDetails = portalRegistry.jumpRequest{value: portal.fee}(request.portalId);
-        delete expectedJumpExperience;
         emit JumpSuccess(address(portal.destination), connectionDetails);
     }
 
@@ -197,9 +187,8 @@ contract Avatar is IAvatar, ReentrancyGuard, AccessControl, AddressLinkedList {
             uint256 bal = address(this).balance + msg.value;
             require(bal >= portal.fee, "Avatar: insufficient funds for jump fee");
         }
-        expectedJumpExperience = portal.destination;
+        _location = portal.destination;
         bytes memory connectionDetails = portalRegistry.jumpRequest{value: portal.fee}(request.portalId);
-        delete expectedJumpExperience;
         emit JumpSuccess(address(portal.destination), connectionDetails);
     }
 
@@ -207,14 +196,14 @@ contract Avatar is IAvatar, ReentrancyGuard, AccessControl, AddressLinkedList {
      * @dev Add a wearable asset to the avatar. This must be called by the avatar owner. 
      * This will revert if there are already 200 wearables configured.
      */
-    function addWearable(address wearable) public override  {
+    function addWearable(address wearable) public onlyOwner override  {
         insert(wearable);
     }
 
     /**
      * @dev Remove a wearable asset from the avatar. This must be called by the avatar owner.
      */
-    function removeWearable(address wearable) public override {
+    function removeWearable(address wearable) public onlyOwner override {
         remove(wearable);
     }
 
@@ -222,28 +211,13 @@ contract Avatar is IAvatar, ReentrancyGuard, AccessControl, AddressLinkedList {
         return contains(wearable);
     }
 
-    /**
-     * @dev Add a signer to the avatar. This must be called by the avatar owner.
-     */
-    function addSigner(address signer) public override {
-        require(signer != address(0), "Avatar: signer cannot be zero address");
-        require(_grantRole(SIGNER_ROLE, signer), "Avatar: signer role grant failed");
-    }
 
-    /**
-     * @dev Remove a signer from the avatar. This must be called by the avatar owner.
-     */
-    function removeSigner(address signer) public override {
-        require(signer != address(0), "Avatar: signer cannot be zero address");
-        require(_revokeRole(SIGNER_ROLE, signer), "Avatar: signer role revoke failed");
-    }
-
-    function setHook(IAvatarHook _hook) public override onlyRole(SIGNER_ROLE) {
+    function setHook(IAvatarHook _hook) public override onlyOwner {
         require(address(_hook) != address(0), "Avatar: hook cannot be zero address");
         hook = IAvatarHook(_hook);
     }
 
-    function removeHook() public override onlyRole(SIGNER_ROLE) {
+    function removeHook() public override onlyOwner {
         delete hook;
     }
 
@@ -271,7 +245,7 @@ contract Avatar is IAvatar, ReentrancyGuard, AccessControl, AddressLinkedList {
 
     function _verifyCompanySignature(AvatarJumpRequest memory request) internal returns (PortalInfo memory portal) {
         portal = portalRegistry.getPortalInfoById(request.portalId);
-        IBasicCompany company = IBasicCompany(portal.destination.company());
+        ICompany company = ICompany(portal.destination.company());
         uint256 nonce = companySigningNonce[address(company)];
         ++companySigningNonce[address(company)];
         bytes32 hash = keccak256(abi.encode(request.portalId, request.agreedFee, nonce));
@@ -296,17 +270,26 @@ contract Avatar is IAvatar, ReentrancyGuard, AccessControl, AddressLinkedList {
         }
         bytes32 sigHash = b.toEthSignedMessageHash();
         address r = ECDSA.recover(sigHash, request.avatarOwnerSignature);
-        require(isSigner(r), "Avatar: avatar signer is not authorized");
+        require(r == owner, "Avatar: avatar signer is not owner");
     }
 
-    function withdraw(uint256 amount) public override onlyRole(SIGNER_ROLE) {
+    function withdraw(uint256 amount) public override onlyOwner {
         require(amount <= address(this).balance, "Avatar: insufficient balance for withdrawal");
         payable(owner).transfer(address(this).balance);
     }
 
-    function upgrade(address newVersion) public override onlyRole(DEFAULT_ADMIN_ROLE) {
-        require(newVersion != address(0), "Avatar: new version cannot be zero address");
-        upgraded = true;
-        emit AvatarUpgraded(address(this), newVersion);
+    function upgrade(bytes calldata initData) public override onlyOwner notUpgraded() {
+         upgraded = true;
+        avatarRegistry.upgradeAvatar(initData);
+    }
+
+    function upgradeComplete(address nextVersion) public override onlyRegistry {
+       
+        uint256 bal = address(this).balance;
+        if(bal > 0) {
+            payable(nextVersion).transfer(bal);
+        }
+        require(nextVersion != address(this), "Avatar: next version must be different contract");
+        emit AvatarUpgraded(address(this), nextVersion);
     }
 }

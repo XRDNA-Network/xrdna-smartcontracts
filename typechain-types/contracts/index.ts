@@ -3,8 +3,17 @@
 /* eslint-disable */
 import type * as asset from "./asset";
 export type { asset };
+import type * as avatar from "./avatar";
+export type { avatar };
+import type * as company from "./company";
+export type { company };
+import type * as experience from "./experience";
+export type { experience };
+import type * as portal from "./portal";
+export type { portal };
 import type * as world from "./world";
 export type { world };
+export type { BaseFactory } from "./BaseFactory";
 export type { IRegistrarRegistry } from "./IRegistrarRegistry";
 export type { RegistrarRegistry } from "./RegistrarRegistry";
 export type { XRDNAGasToken } from "./XRDNAGasToken";

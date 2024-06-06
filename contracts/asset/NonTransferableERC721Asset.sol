@@ -14,7 +14,8 @@ import {IAvatarRegistry} from '../avatar/IAvatarRegistry.sol';
 import {IAvatar} from '../avatar/IAvatar.sol';
 import {VectorAddress} from '../VectorAddress.sol';
 import {IExperience} from '../experience/IExperience.sol';
-import {ReentrancyGuard} from '@openzeppelin/contracts/utils/ReentrancyGuard.sol';
+import {BaseAsset, BaseAssetArgs} from './BaseAsset.sol';
+import {AssetType} from './IAssetFactory.sol';
 
 struct ERC721InitData {
     address issuer;
@@ -25,46 +26,13 @@ struct ERC721InitData {
     string baseURI;
 }
 
-interface IExperienceRegistry {
-    function getExperienceByVector(VectorAddress memory va) external view returns (IExperience);
-}
 
 interface IUpgradedERC721 {
     function setStartingTokenId(uint256 tokenId) external;
 }
 
-contract NonTransferableERC721Asset is ReentrancyGuard, IERC721, IERC721Metadata, IERC721Errors {
+contract NonTransferableERC721Asset is BaseAsset, IERC721, IERC721Metadata, IERC721Errors {
     using Strings for uint256;
-
-    address public immutable assetFactory;
-    address public immutable assetRegistry;
-    IAvatarRegistry public immutable avatarRegistry;
-    IExperienceRegistry public experienceRegistry;
-
-    modifier onlyFactory() {
-        require(msg.sender == assetFactory, "NonTransferableERC721: only factory allowed");
-        _;
-    }
-
-    modifier onlyRegistry() {
-        require(msg.sender == assetRegistry, "NonTransferableERC721: only registry allowed");
-        _;
-    }
-
-    //once upgraded, no new tokens can be minted on this base contract
-    bool public upgraded;
-
-    //only authority allowed to issue tokens (refers to company contract)
-    address public issuer;
-
-    //optional hook installed to extend mint and transfer functionality
-    IAssetHook public hook;
-
-    //origin chain contract address
-    address public originAddress;
-
-    //original chain id
-    uint256 public originChainId;
 
     // Token ID counter
     uint256 _tokenIdCounter;
@@ -87,34 +55,11 @@ contract NonTransferableERC721Asset is ReentrancyGuard, IERC721, IERC721Metadata
 
     mapping(address owner => mapping(address operator => bool)) private _operatorApprovals;
 
-    modifier onlyIssuer() {
-        require(issuer != address(0), "NonTransferableERC721: not initialized");
-        _;
-    }
-
-
-    modifier notUpgraded() {
-        require(!upgraded, "NonTransferableERC721: contract has been upgraded");
-        _;
-    }
-
     event ERC721Minted(address indexed to, uint256 tokenId);
     event ERC721Upgraded(address indexed oldAsset, address indexed newAsset);
-    event ERC721HookAdded(address indexed hook);
-    event ERC721HookRemoved(address indexed hook);
-
 
     //called once when master-copy deployed
-    constructor(address factory, address registry, address _avatarRegistry, address _experienceRegistry) {
-        require(factory != address(0), "NonTransferableERC721: factory is the zero address");
-        require(registry != address(0), "NonTransferableERC721: registry is the zero address");
-        require(_avatarRegistry != address(0), "NonTransferableERC721: avatarRegistry is the zero address");
-        require(_experienceRegistry != address(0), "NonTransferableERC721: experienceRegistry is the zero address");
-        assetFactory = factory;
-        assetRegistry = registry;
-        avatarRegistry = IAvatarRegistry(_avatarRegistry);
-        experienceRegistry = IExperienceRegistry(_experienceRegistry);
-    }
+    constructor(BaseAssetArgs memory args) BaseAsset(args) {}
 
     function encodeInitData(ERC721InitData memory data) public pure returns (bytes memory) {
         return abi.encode(data);
@@ -128,6 +73,7 @@ contract NonTransferableERC721Asset is ReentrancyGuard, IERC721, IERC721Metadata
         require(bytes(data.baseURI).length > 0, "NonTransferableERC721: baseURI is empty");
         require(data.originChainAddress != address(0), "NonTransferableERC721: originChainAddress is the zero address");
         require(data.originChainId > 0, "NonTransferableERC721: originChainId is zero");
+        assetType = AssetType.ERC721;
         issuer = data.issuer;
         originAddress = data.originChainAddress;
         originChainId = data.originChainId;
@@ -143,18 +89,6 @@ contract NonTransferableERC721Asset is ReentrancyGuard, IERC721, IERC721Metadata
         IUpgradedERC721(newAsset).setStartingTokenId(_tokenIdCounter);
         upgraded = true;
         emit ERC721Upgraded(address(this), newAsset);
-    }
-
-    function addHook(IAssetHook _hook) public onlyIssuer {
-        require(address(hook) != address(0), "NonTransferableERC721Asset: hook cannot be zero address");
-        hook = _hook;
-        emit ERC721HookAdded(address(_hook));
-    }
-
-    function removeHook() public onlyIssuer {
-        address h = address(hook);
-        emit ERC721HookRemoved(h);
-        delete hook;
     }
 
     /**
@@ -269,9 +203,6 @@ contract NonTransferableERC721Asset is ReentrancyGuard, IERC721, IERC721Metadata
     }
 
     function mint(address to) public nonReentrant onlyIssuer returns (uint256 id)  {
-        //FIXME: if the to address is an Avatar (check with avatar registry once 
-        //launched), need to ask the avatar if it allows tokens to minted 
-        //outside of its active experience.
         if(address(hook) != address(0)) {
             bool s = hook.beforeMint(address(this), to, _tokenIdCounter+1);
             if(!s) {
@@ -290,7 +221,9 @@ contract NonTransferableERC721Asset is ReentrancyGuard, IERC721, IERC721Metadata
         _safeMint(to, id);
     }
 
-    function revoke(address tgt, uint256 tokenId) public nonReentrant onlyIssuer {
+    function revoke(uint256 tokenId) public nonReentrant onlyIssuer {
+        address tgt = _ownerOf(tokenId);
+        require(tgt != address(0), "NonTransferableERC721Asset: token does not exist");
         if(address(hook) != address(0)) {
             bool s = hook.beforeRevoke(address(this), tgt, tokenId);
             if(!s) {
@@ -432,13 +365,6 @@ contract NonTransferableERC721Asset is ReentrancyGuard, IERC721, IERC721Metadata
             revert ERC721InvalidSender(address(0));
         }
         emit ERC721Minted(to, tokenId);
-    }
-
-    function _verifyAvatarLocationMatchesIssuer(IAvatar avatar) internal view {
-        //get the avatar's current location
-        VectorAddress memory va = avatar.location();
-        IExperience exp = experienceRegistry.getExperienceByVector(va);
-        require(exp.company() == issuer, "NonTransferableERC721Asset: avatar does not receive tokens outside of its current experience");
     }
 
     /**

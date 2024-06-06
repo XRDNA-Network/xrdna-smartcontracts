@@ -26,24 +26,34 @@ import type {
 export interface AssetFactoryInterface extends Interface {
   getFunction(
     nameOrSignature:
+      | "ADMIN_ROLE"
       | "DEFAULT_ADMIN_ROLE"
       | "createAsset"
       | "getRoleAdmin"
       | "grantRole"
       | "hasRole"
-      | "isAssetClone"
+      | "isClone"
       | "renounceRole"
       | "revokeRole"
-      | "setAssetRegistry"
+      | "setAuthorizedRegistry"
       | "setERC20Implementation"
       | "setERC721Implementation"
+      | "setImplementation"
       | "supportsInterface"
   ): FunctionFragment;
 
   getEvent(
-    nameOrSignatureOrTopic: "RoleAdminChanged" | "RoleGranted" | "RoleRevoked"
+    nameOrSignatureOrTopic:
+      | "AuthorizedRegistryChanged"
+      | "RoleAdminChanged"
+      | "RoleGranted"
+      | "RoleRevoked"
   ): EventFragment;
 
+  encodeFunctionData(
+    functionFragment: "ADMIN_ROLE",
+    values?: undefined
+  ): string;
   encodeFunctionData(
     functionFragment: "DEFAULT_ADMIN_ROLE",
     values?: undefined
@@ -65,8 +75,8 @@ export interface AssetFactoryInterface extends Interface {
     values: [BytesLike, AddressLike]
   ): string;
   encodeFunctionData(
-    functionFragment: "isAssetClone",
-    values: [BigNumberish, AddressLike]
+    functionFragment: "isClone",
+    values: [AddressLike]
   ): string;
   encodeFunctionData(
     functionFragment: "renounceRole",
@@ -77,7 +87,7 @@ export interface AssetFactoryInterface extends Interface {
     values: [BytesLike, AddressLike]
   ): string;
   encodeFunctionData(
-    functionFragment: "setAssetRegistry",
+    functionFragment: "setAuthorizedRegistry",
     values: [AddressLike]
   ): string;
   encodeFunctionData(
@@ -89,10 +99,15 @@ export interface AssetFactoryInterface extends Interface {
     values: [AddressLike]
   ): string;
   encodeFunctionData(
+    functionFragment: "setImplementation",
+    values: [AddressLike]
+  ): string;
+  encodeFunctionData(
     functionFragment: "supportsInterface",
     values: [BytesLike]
   ): string;
 
+  decodeFunctionResult(functionFragment: "ADMIN_ROLE", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "DEFAULT_ADMIN_ROLE",
     data: BytesLike
@@ -107,17 +122,14 @@ export interface AssetFactoryInterface extends Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "grantRole", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "hasRole", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "isAssetClone",
-    data: BytesLike
-  ): Result;
+  decodeFunctionResult(functionFragment: "isClone", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "renounceRole",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "revokeRole", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "setAssetRegistry",
+    functionFragment: "setAuthorizedRegistry",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -129,9 +141,26 @@ export interface AssetFactoryInterface extends Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "setImplementation",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "supportsInterface",
     data: BytesLike
   ): Result;
+}
+
+export namespace AuthorizedRegistryChangedEvent {
+  export type InputTuple = [oldRegistry: AddressLike, newRegistry: AddressLike];
+  export type OutputTuple = [oldRegistry: string, newRegistry: string];
+  export interface OutputObject {
+    oldRegistry: string;
+    newRegistry: string;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
 }
 
 export namespace RoleAdminChangedEvent {
@@ -235,6 +264,8 @@ export interface AssetFactory extends BaseContract {
     event?: TCEvent
   ): Promise<this>;
 
+  ADMIN_ROLE: TypedContractMethod<[], [string], "view">;
+
   DEFAULT_ADMIN_ROLE: TypedContractMethod<[], [string], "view">;
 
   createAsset: TypedContractMethod<
@@ -257,11 +288,7 @@ export interface AssetFactory extends BaseContract {
     "view"
   >;
 
-  isAssetClone: TypedContractMethod<
-    [assetType: BigNumberish, query: AddressLike],
-    [boolean],
-    "view"
-  >;
+  isClone: TypedContractMethod<[query: AddressLike], [boolean], "view">;
 
   renounceRole: TypedContractMethod<
     [role: BytesLike, callerConfirmation: AddressLike],
@@ -275,8 +302,8 @@ export interface AssetFactory extends BaseContract {
     "nonpayable"
   >;
 
-  setAssetRegistry: TypedContractMethod<
-    [registry: AddressLike],
+  setAuthorizedRegistry: TypedContractMethod<
+    [_registry: AddressLike],
     [void],
     "nonpayable"
   >;
@@ -293,6 +320,12 @@ export interface AssetFactory extends BaseContract {
     "nonpayable"
   >;
 
+  setImplementation: TypedContractMethod<
+    [_implementation: AddressLike],
+    [void],
+    "nonpayable"
+  >;
+
   supportsInterface: TypedContractMethod<
     [interfaceId: BytesLike],
     [boolean],
@@ -303,6 +336,9 @@ export interface AssetFactory extends BaseContract {
     key: string | FunctionFragment
   ): T;
 
+  getFunction(
+    nameOrSignature: "ADMIN_ROLE"
+  ): TypedContractMethod<[], [string], "view">;
   getFunction(
     nameOrSignature: "DEFAULT_ADMIN_ROLE"
   ): TypedContractMethod<[], [string], "view">;
@@ -331,12 +367,8 @@ export interface AssetFactory extends BaseContract {
     "view"
   >;
   getFunction(
-    nameOrSignature: "isAssetClone"
-  ): TypedContractMethod<
-    [assetType: BigNumberish, query: AddressLike],
-    [boolean],
-    "view"
-  >;
+    nameOrSignature: "isClone"
+  ): TypedContractMethod<[query: AddressLike], [boolean], "view">;
   getFunction(
     nameOrSignature: "renounceRole"
   ): TypedContractMethod<
@@ -352,8 +384,8 @@ export interface AssetFactory extends BaseContract {
     "nonpayable"
   >;
   getFunction(
-    nameOrSignature: "setAssetRegistry"
-  ): TypedContractMethod<[registry: AddressLike], [void], "nonpayable">;
+    nameOrSignature: "setAuthorizedRegistry"
+  ): TypedContractMethod<[_registry: AddressLike], [void], "nonpayable">;
   getFunction(
     nameOrSignature: "setERC20Implementation"
   ): TypedContractMethod<[impl: AddressLike], [void], "nonpayable">;
@@ -361,9 +393,19 @@ export interface AssetFactory extends BaseContract {
     nameOrSignature: "setERC721Implementation"
   ): TypedContractMethod<[impl: AddressLike], [void], "nonpayable">;
   getFunction(
+    nameOrSignature: "setImplementation"
+  ): TypedContractMethod<[_implementation: AddressLike], [void], "nonpayable">;
+  getFunction(
     nameOrSignature: "supportsInterface"
   ): TypedContractMethod<[interfaceId: BytesLike], [boolean], "view">;
 
+  getEvent(
+    key: "AuthorizedRegistryChanged"
+  ): TypedContractEvent<
+    AuthorizedRegistryChangedEvent.InputTuple,
+    AuthorizedRegistryChangedEvent.OutputTuple,
+    AuthorizedRegistryChangedEvent.OutputObject
+  >;
   getEvent(
     key: "RoleAdminChanged"
   ): TypedContractEvent<
@@ -387,6 +429,17 @@ export interface AssetFactory extends BaseContract {
   >;
 
   filters: {
+    "AuthorizedRegistryChanged(address,address)": TypedContractEvent<
+      AuthorizedRegistryChangedEvent.InputTuple,
+      AuthorizedRegistryChangedEvent.OutputTuple,
+      AuthorizedRegistryChangedEvent.OutputObject
+    >;
+    AuthorizedRegistryChanged: TypedContractEvent<
+      AuthorizedRegistryChangedEvent.InputTuple,
+      AuthorizedRegistryChangedEvent.OutputTuple,
+      AuthorizedRegistryChangedEvent.OutputObject
+    >;
+
     "RoleAdminChanged(bytes32,bytes32,bytes32)": TypedContractEvent<
       RoleAdminChangedEvent.InputTuple,
       RoleAdminChangedEvent.OutputTuple,
