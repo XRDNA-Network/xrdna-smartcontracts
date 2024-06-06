@@ -2,7 +2,7 @@
 import { buildModule } from "@nomicfoundation/hardhat-ignition/modules";
 import RegistrarModule from './RegistrarRegistry.module';
 import WorldFactoryModule from "./WorldFactory.module";
-import {config} from './config';
+import {config} from '../modules/config';
 
 export default buildModule("WorldRegistry", (m) => {
     

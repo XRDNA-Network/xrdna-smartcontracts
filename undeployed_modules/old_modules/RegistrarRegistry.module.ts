@@ -1,5 +1,5 @@
 import { buildModule } from "@nomicfoundation/hardhat-ignition/modules";
-import {config} from './config';
+import {config} from '../modules/config';
 
 
 export default buildModule("RegistrarRegistry", (m) => {

@@ -61,10 +61,13 @@ contract PortalRegistry is IPortalRegistry, AccessControl {
         _;
     }
 
-    constructor(address[] memory admins) {
+    constructor(address mainAdmin, address[] memory admins) {
+        require(mainAdmin != address(0), "PortalRegistry: main admin address cannot be 0");
+        _grantRole(DEFAULT_ADMIN_ROLE, mainAdmin);
+        _grantRole(ADMIN_ROLE, mainAdmin);
         for (uint256 i = 0; i < admins.length; i++) {
             require(admins[i] != address(0), "PortalRegistry: admin address cannot be 0");
-            require(_grantRole(ADMIN_ROLE, admins[i]), "PortalRegistry: admin role grant failed");
+            _grantRole(ADMIN_ROLE, admins[i]);
         }
     }
 

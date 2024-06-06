@@ -62,12 +62,12 @@ contract CompanyRegistry is ICompanyRegistry, ReentrancyGuard, AccessControl {
         }
     }
 
-    function setCompanyFactory(address factory) public onlyRole(DEFAULT_ADMIN_ROLE) {
+    function setCompanyFactory(address factory) public onlyRole(ADMIN_ROLE) {
         require(factory != address(0), "CompanyRegistry: factory address cannot be 0");
         companyFactory = ICompanyFactory(factory);
     }
 
-    function setWorldRegistry(address registry) public onlyRole(DEFAULT_ADMIN_ROLE) {
+    function setWorldRegistry(address registry) public onlyRole(ADMIN_ROLE) {
         require(registry != address(0), "CompanyRegistry: world registry address cannot be 0");
         worldRegistry = IWorldRegistry0_2(registry);
     }
