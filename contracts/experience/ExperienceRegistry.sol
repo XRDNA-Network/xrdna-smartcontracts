@@ -13,6 +13,14 @@ import {LibStringCase} from '../LibStringCase.sol';
 import {IExperienceRegistry, ExperienceInfo, RegisterExperienceRequest} from './IExperienceRegistry.sol';
 import {ReentrancyGuard} from '@openzeppelin/contracts/utils/ReentrancyGuard.sol';
 
+struct ExperienceRegistryConstructorArgs {
+    address mainAdmin;
+    address experienceFactory;
+    address compRegistry; 
+    address portRegistry;
+    address[] admins;
+}
+
 contract ExperienceRegistry is IExperienceRegistry, ReentrancyGuard, AccessControl {
     using LibVectorAddress for VectorAddress;
     using LibStringCase for string;
@@ -42,15 +50,20 @@ contract ExperienceRegistry is IExperienceRegistry, ReentrancyGuard, AccessContr
         _;
     }
     
-    constructor(address mainAdmin, address[] memory admins, address compRegistry, address portRegistry) {
-        companyRegistry = ICompanyRegistry(compRegistry);
-        portalRegistry = IPortalRegistry(portRegistry);
-        require(mainAdmin != address(0), "ExperienceRegistry: main admin address cannot be 0");
-        require(_grantRole(DEFAULT_ADMIN_ROLE, mainAdmin), "ExperienceRegistry: default admin role grant failed");
-        require(_grantRole(ADMIN_ROLE, mainAdmin), "ExperienceRegistry: admin role grant failed");
-        for (uint256 i = 0; i < admins.length; i++) {
-            require(admins[i] != address(0), "ExperienceRegistry: admin address cannot be 0");
-            require(_grantRole(ADMIN_ROLE, admins[i]), "ExperienceRegistry: admin role grant failed");
+    constructor(ExperienceRegistryConstructorArgs memory args) {
+        require(args.mainAdmin != address(0), "ExperienceRegistry: main admin address cannot be 0");
+        require(args.compRegistry != address(0), "ExperienceRegistry: company registry address cannot be 0");
+        require(args.portRegistry != address(0), "ExperienceRegistry: portal registry address cannot be 0");
+        require(args.experienceFactory != address(0), "ExperienceRegistry: experience factory address cannot be 0");
+       
+        companyRegistry = ICompanyRegistry(args.compRegistry);
+        portalRegistry = IPortalRegistry(args.portRegistry);
+        experienceFactory = IExperienceFactory(args.experienceFactory);
+        _grantRole(DEFAULT_ADMIN_ROLE, args.mainAdmin);
+        _grantRole(ADMIN_ROLE, args.mainAdmin);
+        for (uint256 i = 0; i < args.admins.length; i++) {
+            require(args.admins[i] != address(0), "ExperienceRegistry: admin address cannot be 0");
+            _grantRole(ADMIN_ROLE, args.admins[i]);
         }
     }
 
