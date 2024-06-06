@@ -2,7 +2,12 @@
 /* tslint:disable */
 /* eslint-disable */
 export * as asset from "./asset";
+export * as avatar from "./avatar";
+export * as company from "./company";
+export * as experience from "./experience";
+export * as portal from "./portal";
 export * as world from "./world";
+export { BaseFactory__factory } from "./BaseFactory__factory";
 export { IRegistrarRegistry__factory } from "./IRegistrarRegistry__factory";
 export { RegistrarRegistry__factory } from "./RegistrarRegistry__factory";
 export { XRDNAGasToken__factory } from "./XRDNAGasToken__factory";

@@ -5,12 +5,15 @@ pragma solidity ^0.8.24;
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import {IERC20Errors} from "@openzeppelin/contracts/interfaces/draft-IERC6093.sol";
-import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import {IAssetHook} from './IAssetHook.sol';
+import {IAvatarRegistry} from '../avatar/IAvatarRegistry.sol';
+import {IAvatar} from '../avatar/IAvatar.sol';
+import {BaseAsset, BaseAssetArgs} from './BaseAsset.sol';
+import {AssetType} from './IAssetFactory.sol';
 
 /**
- * @title Asset
- * @dev Asset represents a digital asset held on the XRDNA layer3 network or another 
+ * @title NonTransferableERC20Asset
+ * @dev Represents a digital asset held on the XRDNA layer3 network or another 
  * blockchain network. Assets are registered with the AssetRegistry contract and only
  * those assets are recognized by the XRDNA layer3 protocol. Every asset has an 
  * issuer that is allowed to mint new assets.
@@ -31,49 +34,13 @@ struct ERC20InitData {
     uint256 totalSupply;
     string name;
     string symbol;
-
 }
 
-contract NonTransferableERC20Asset is ReentrancyGuard, IERC20, IERC20Metadata, IERC20Errors {
+contract NonTransferableERC20Asset is BaseAsset, IERC20, IERC20Metadata, IERC20Errors {
 
-
-    /**
-     * Fields initialized by asset constructor
-     */
-    address public immutable assetFactory;
-    address public immutable assetRegistry;
-
-    modifier onlyFactory() {
-        require(msg.sender == assetFactory, "NonTransferableERC20: only factory allowed");
-        _;
-    }
-
-    modifier onlyRegistry() {
-        require(msg.sender == assetRegistry, "NonTransferableERC20: only registry allowed");
-        _;
-    }
-
-
-    /**
-     * Fields for each specific asset instance
-     */
-     //whether the asset has been upgraded to another asset contract version
-    bool public upgraded;
-
-    //the contract address on the origin chain
-    address public originAddress;
-
-    //the address allowed to mint new tokens
-    address public issuer;
-
-    //custom mint/transfer behavior
-    IAssetHook public hook;
 
     //decimals
     uint8  private _decimals;
-
-    //the chain id of the origin chain
-    uint256 public originChainId;
 
     //total supply of the asset
     uint256 private _totalSupply;
@@ -84,30 +51,11 @@ contract NonTransferableERC20Asset is ReentrancyGuard, IERC20, IERC20Metadata, I
     string private _name;
     string private _symbol;
 
-
-    modifier onlyIssuer() {
-        require(issuer != address(0), "NonTransferableERC20: not initialized");
-        require(msg.sender == issuer, "NonTransferableERC20: only issuer allowed");
-        _;
-    }
-
-    modifier notUpgraded() {
-        require(!upgraded, "NonTransferableERC20: asset has been upgraded");
-        _;
-    }
-
     event ERC20Minted(address indexed to, uint256 amt);
     event ERC20Upgraded(address indexed oldAsset, address newAsset);
-    event ERC20HookAdded(address indexed hook);
-    event ERC20HookRemoved(address indexed hook);
 
     //called once at master-copy deployment
-    constructor(address _assetFactory, address _assetRegistry) {
-        require(_assetFactory != address(0), "NonTransferableERC20: asset factory cannot be zero address"); 
-        require(_assetRegistry != address(0), "NonTransferableERC20: asset registry cannot be zero address");
-        assetFactory = _assetFactory;
-        assetRegistry = _assetRegistry;
-    }
+    constructor(BaseAssetArgs memory args) BaseAsset(args) {  }
 
     function encodeInitData(ERC20InitData memory data) public pure returns (bytes memory) {
         return abi.encode(data);
@@ -122,6 +70,7 @@ contract NonTransferableERC20Asset is ReentrancyGuard, IERC20, IERC20Metadata, I
         require(bytes(data.symbol).length > 0, "NonTransferableERC20: symbol cannot be empty");
         require(data.originChainId > 0, "NonTransferableERC20: originChainId must be greater than zero");
 
+        assetType = AssetType.ERC20;
         originAddress = data.originChainAddress;
         issuer = data.issuer;
         originChainId = data.originChainId;
@@ -136,18 +85,6 @@ contract NonTransferableERC20Asset is ReentrancyGuard, IERC20, IERC20Metadata, I
         require(newAsset != address(this), "NonTransferableERC20Asset: new upgrade contract address cannot match original");
         upgraded = true;
         emit ERC20Upgraded(address(this), newAsset);
-    }
-
-    function addHook(IAssetHook _hook) public onlyIssuer {
-        require(address(hook) != address(0), "NonTransferableERC721Asset: hook cannot be zero address");
-        hook = _hook;
-        emit ERC20HookAdded(address(_hook));
-    }
-
-    function removeHook() public onlyIssuer {
-        address h = address(hook);
-        emit ERC20HookRemoved(h);
-        delete hook;
     }
 
     /**
@@ -250,13 +187,17 @@ contract NonTransferableERC20Asset is ReentrancyGuard, IERC20, IERC20Metadata, I
     }
 
     function mint(address to, uint256 amt) public nonReentrant onlyIssuer  {
-        //FIXME: if the to address is an Avatar (check with avatar registry once 
-        //launched), need to ask the avatar if it allows tokens to minted 
-        //outside of its active experience.
+        
         if(address(hook) != address(0)) {
             bool s = hook.beforeMint(address(this), to, amt);
             if(!s) {
                 revert("NonTransferableERC20Asset: beforeMint hook rejected request");
+            }
+        }
+        if(avatarRegistry.isAvatar(to)) {
+            IAvatar avatar = IAvatar(to);
+            if(!avatar.canReceiveTokensOutsideOfExperience()) {
+                _verifyAvatarLocationMatchesIssuer(IAvatar(to));
             }
         }
 

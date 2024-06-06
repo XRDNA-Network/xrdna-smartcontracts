@@ -13,6 +13,30 @@ const _abi = [
     inputs: [
       {
         internalType: "address",
+        name: "original",
+        type: "address",
+      },
+      {
+        internalType: "uint256",
+        name: "chainId",
+        type: "uint256",
+      },
+    ],
+    name: "assetExists",
+    outputs: [
+      {
+        internalType: "bool",
+        name: "",
+        type: "bool",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
         name: "asset",
         type: "address",
       },
@@ -46,6 +70,35 @@ const _abi = [
       {
         internalType: "address",
         name: "asset",
+        type: "address",
+      },
+    ],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "asset",
+        type: "address",
+      },
+      {
+        internalType: "uint256",
+        name: "assetType",
+        type: "uint256",
+      },
+      {
+        internalType: "bytes",
+        name: "initData",
+        type: "bytes",
+      },
+    ],
+    name: "upgradeAsset",
+    outputs: [
+      {
+        internalType: "address",
+        name: "",
         type: "address",
       },
     ],

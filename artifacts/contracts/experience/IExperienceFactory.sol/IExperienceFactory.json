@@ -1,0 +1,72 @@
+{
+  "_format": "hh-sol-artifact-1",
+  "contractName": "IExperienceFactory",
+  "sourceName": "contracts/experience/IExperienceFactory.sol",
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "company",
+          "type": "address"
+        },
+        {
+          "components": [
+            {
+              "internalType": "string",
+              "name": "x",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "y",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "z",
+              "type": "string"
+            },
+            {
+              "internalType": "uint256",
+              "name": "t",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "p",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "p_sub",
+              "type": "uint256"
+            }
+          ],
+          "internalType": "struct VectorAddress",
+          "name": "vector",
+          "type": "tuple"
+        },
+        {
+          "internalType": "bytes",
+          "name": "data",
+          "type": "bytes"
+        }
+      ],
+      "name": "createExperience",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "bytecode": "0x",
+  "deployedBytecode": "0x",
+  "linkReferences": {},
+  "deployedLinkReferences": {}
+}

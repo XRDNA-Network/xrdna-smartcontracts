@@ -2,9 +2,9 @@
 // Compatible with OpenZeppelin Contracts ^5.0.0
 pragma solidity ^0.8.24;
 
-import {VectorAddress} from '../VectorAddress.sol';
 import {IAvatarHook} from './IAvatarHook.sol';
 import {IERC721Receiver} from "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
+import {IExperience} from '../experience/IExperience.sol';
 
 struct AvatarJumpRequest {
     uint256 portalId;
@@ -25,10 +25,15 @@ interface IAvatar is IERC721Receiver {
     event SignerRemoved(address indexed signer);
     event WearableAdded(address indexed wearable);
     event WearableRemoved(address indexed wearable);
-    event LocationChanged(VectorAddress indexed location);
+    event LocationChanged(address indexed location);
     event AppearanceChanged(bytes indexed appearanceDetails);
     event JumpSuccess(address indexed experience, bytes indexed connectionDetails);
     event AvatarUpgraded(address indexed oldVersion, address indexed nextVersion);
+
+    /**
+     * @dev get the address of the avatar owner
+     */
+    function owner() external view returns (address);
 
     /**
      * @dev get the Avatar's unique username
@@ -36,9 +41,9 @@ interface IAvatar is IERC721Receiver {
     function username() external view returns (string memory);
 
     /**
-     * @dev get the Avatar's current vector address location (i.e. the experience they are in)
+     * @dev get the Avatar's current experience location
      */
-    function location() external view returns (VectorAddress memory);
+    function location() external view returns (IExperience);
 
     /**
      * @dev get the Avatar's appearance details. These will be specific to the avatar
@@ -69,11 +74,6 @@ interface IAvatar is IERC721Receiver {
     function getWearables() external view returns (address[] memory);
 
     /**
-     * @dev Check whether the given address is an authorized signer for the avatar.
-     */
-    function isSigner(address signer) external view returns (bool);
-
-    /**
      * @dev Check whether the avatar is wearing the given wearable asset.
      */
     function isWearing(address wearable) external view returns (bool);
@@ -92,11 +92,6 @@ interface IAvatar is IERC721Receiver {
      * their current location.
      */
     function setCanReceiveTokensOutsideOfExperience(bool canReceive) external;
-
-    /**
-     * @dev Set the location of the avatar. This must be called by a registered experience contract.
-     */
-    function setLocation(VectorAddress memory) external;
 
     /**
      * @dev Set the appearance details of the avatar. This must be called by the avatar owner.
@@ -143,22 +138,19 @@ interface IAvatar is IERC721Receiver {
     function removeWearable(address wearable) external;
 
     /**
-     * @dev Add a signer to the avatar. This must be called by the avatar owner.
-     */
-    function addSigner(address signer) external;
-
-    /**
-     * @dev Remove a signer from the avatar. This must be called by the avatar owner.
-     */
-    function removeSigner(address signer) external;
-
-    /**
      * @dev Withdraw funds from the avatar contract. This must be called by the avatar owner.
      */
     function withdraw(uint256 amount) external;
      
     /**
-     * Upgrade the avatar implementation to a new version. This must be called by avatar registry.
+     * @dev Upgrade the avatar implementation to a new version with the encoded init data. 
+     * This must be called by avatar owner.
      */
-    function upgrade(address nextVersion) external;
+    function upgrade(bytes calldata initData) external;
+
+    /**
+     * @dev Called by the AvatarRegistry when the new contract is ready to receive any state 
+     * or funds from old version.
+     */
+    function upgradeComplete(address nextVersion) external;
 }

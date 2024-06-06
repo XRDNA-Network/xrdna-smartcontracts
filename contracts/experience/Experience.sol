@@ -5,9 +5,9 @@ pragma solidity ^0.8.24;
 import {IExperience, JumpEntryRequest} from './IExperience.sol';
 import {VectorAddress} from '../VectorAddress.sol';
 import {IBasicCompany} from './IBasicCompany.sol';
-import {IBasicAvatar} from './IBasicAvatar.sol';
 import {IExperienceHook} from './IExperienceHook.sol';
 import {ReentrancyGuard} from '@openzeppelin/contracts/utils/ReentrancyGuard.sol';
+import {IExperienceRegistry} from './IExperienceRegistry.sol';
 
 struct ExperienceInitData {
     string name;
@@ -15,17 +15,26 @@ struct ExperienceInitData {
     bytes connectionDetails;
 }
 
+struct ExperienceConstructorArgs {
+    address experienceFactory;
+    address portalRegistry;
+    address experienceRegistry;
+}
+
 contract Experience is ReentrancyGuard, IExperience {
 
     //initialized when deploying master copy
-    address public experienceFactory;
-    address public portalRegistry;
+    address public immutable experienceFactory;
+    address public immutable portalRegistry;
+    IExperienceRegistry public immutable experienceRegistry;
 
-    constructor(address _experienceFactory, address _portalRegistry) {
-        require(_experienceFactory != address(0), "Experience: zero address factory");
-        require(_portalRegistry != address(0), "Experience: zero address portalRegistry");
-        experienceFactory = _experienceFactory;
-        portalRegistry = _portalRegistry;
+    constructor(ExperienceConstructorArgs memory args) {
+        require(args.experienceFactory != address(0), "Experience: zero address factory");
+        require(args.portalRegistry != address(0), "Experience: zero address portalRegistry");
+        require(args.experienceRegistry != address(0), "Experience: zero address experienceRegistry");
+        experienceFactory = args.experienceFactory;
+        portalRegistry = args.portalRegistry;
+        experienceRegistry = IExperienceRegistry(args.experienceRegistry);
     }
 
     modifier onlyFactory() {
@@ -38,6 +47,12 @@ contract Experience is ReentrancyGuard, IExperience {
         _;
     }
 
+    modifier onlyRegistry {
+        require(msg.sender == address(experienceRegistry), "Experience: caller is not the registry");
+        _;
+    }
+
+    bool public upgraded;
     IBasicCompany public _company;
     address public override world;
     IExperienceHook public hook;
@@ -53,6 +68,11 @@ contract Experience is ReentrancyGuard, IExperience {
 
     modifier onlyExperience() {
         require(msg.sender == address(this), "Experience: caller is not the experience");
+        _;
+    }
+
+    modifier notUpgraded {
+        require(!upgraded, "Experience: cannot use upgraded contract");
         _;
     }
 
@@ -72,13 +92,13 @@ contract Experience is ReentrancyGuard, IExperience {
         connectionDetails = data.connectionDetails;
     }
 
-    function addHook(IExperienceHook _hook) external override onlyCompany {
+    function addHook(IExperienceHook _hook) external override onlyCompany notUpgraded {
         require(address(_hook) != address(0), "Experience: hook zero address");
         hook = _hook;
         emit HookAdded(address(hook));
     }
 
-    function removeHook() external override onlyCompany {
+    function removeHook() external override onlyCompany notUpgraded {
         require(address(hook) != address(0), "Experience: hook not set");
         address a = address(hook);
         emit HookRemoved(a);
@@ -93,12 +113,24 @@ contract Experience is ReentrancyGuard, IExperience {
         return _vectorAddress;
     }
 
-    function entering(JumpEntryRequest memory request) external payable override nonReentrant onlyPortalRegistry returns (bytes memory)  {
+    function entering(JumpEntryRequest memory request) external payable override nonReentrant onlyPortalRegistry notUpgraded returns (bytes memory)  {
         if(address(hook) != address(0)) {
             bool s = hook.beforeJumpEntry(address(this), request.sourceWorld, request.sourceCompany, request.avatar);
             require(s, "Experience: hook disallowed entry");
         }
-        IBasicAvatar(request.avatar).setLocation(_vectorAddress);
         return connectionDetails;
+    }
+
+    function upgrade(bytes memory initData) external override onlyCompany notUpgraded {
+        upgraded = true;
+        experienceRegistry.upgradeExperience(initData);
+    }
+
+    function experienceUpgraded(address nextVersion) external override onlyRegistry {
+        uint256 bal = address(this).balance;
+        if(bal > 0) {
+            payable(nextVersion).transfer(bal);
+        }
+        emit ExperienceUpgraded(address(this), nextVersion);
     }
 }

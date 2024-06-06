@@ -23,9 +23,17 @@ import type {
 
 export interface IAssetRegistryInterface extends Interface {
   getFunction(
-    nameOrSignature: "isRegisteredAsset" | "registerAsset"
+    nameOrSignature:
+      | "assetExists"
+      | "isRegisteredAsset"
+      | "registerAsset"
+      | "upgradeAsset"
   ): FunctionFragment;
 
+  encodeFunctionData(
+    functionFragment: "assetExists",
+    values: [AddressLike, BigNumberish]
+  ): string;
   encodeFunctionData(
     functionFragment: "isRegisteredAsset",
     values: [AddressLike]
@@ -34,13 +42,25 @@ export interface IAssetRegistryInterface extends Interface {
     functionFragment: "registerAsset",
     values: [BigNumberish, BytesLike]
   ): string;
+  encodeFunctionData(
+    functionFragment: "upgradeAsset",
+    values: [AddressLike, BigNumberish, BytesLike]
+  ): string;
 
+  decodeFunctionResult(
+    functionFragment: "assetExists",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "isRegisteredAsset",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
     functionFragment: "registerAsset",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "upgradeAsset",
     data: BytesLike
   ): Result;
 }
@@ -88,6 +108,12 @@ export interface IAssetRegistry extends BaseContract {
     event?: TCEvent
   ): Promise<this>;
 
+  assetExists: TypedContractMethod<
+    [original: AddressLike, chainId: BigNumberish],
+    [boolean],
+    "view"
+  >;
+
   isRegisteredAsset: TypedContractMethod<
     [asset: AddressLike],
     [boolean],
@@ -100,10 +126,23 @@ export interface IAssetRegistry extends BaseContract {
     "nonpayable"
   >;
 
+  upgradeAsset: TypedContractMethod<
+    [asset: AddressLike, assetType: BigNumberish, initData: BytesLike],
+    [string],
+    "nonpayable"
+  >;
+
   getFunction<T extends ContractMethod = ContractMethod>(
     key: string | FunctionFragment
   ): T;
 
+  getFunction(
+    nameOrSignature: "assetExists"
+  ): TypedContractMethod<
+    [original: AddressLike, chainId: BigNumberish],
+    [boolean],
+    "view"
+  >;
   getFunction(
     nameOrSignature: "isRegisteredAsset"
   ): TypedContractMethod<[asset: AddressLike], [boolean], "view">;
@@ -111,6 +150,13 @@ export interface IAssetRegistry extends BaseContract {
     nameOrSignature: "registerAsset"
   ): TypedContractMethod<
     [assetType: BigNumberish, initData: BytesLike],
+    [string],
+    "nonpayable"
+  >;
+  getFunction(
+    nameOrSignature: "upgradeAsset"
+  ): TypedContractMethod<
+    [asset: AddressLike, assetType: BigNumberish, initData: BytesLike],
     [string],
     "nonpayable"
   >;

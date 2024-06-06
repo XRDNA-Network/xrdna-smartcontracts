@@ -15,6 +15,7 @@ interface IExperience {
     event JumpEntry(address indexed sourceWorld, address indexed sourceCompany, address indexed avatar, uint256 attachedFees);
     event HookAdded(address indexed hook);
     event HookRemoved(address indexed hook);
+    event ExperienceUpgraded(address indexed oldVersion, address indexed newVersion);
     
     function company() external view returns (address);
     function world() external view returns (address);
@@ -27,4 +28,6 @@ interface IExperience {
     function connectionDetails() external view returns (bytes memory);
     function entering(JumpEntryRequest memory request) external payable returns (bytes memory);
     function init(address company, VectorAddress memory vector, bytes memory initData) external;
+    function upgrade(bytes memory initData) external;
+    function experienceUpgraded(address nextVersion) external;
 }

@@ -25,6 +25,7 @@ interface IPortalRegistry {
     event PortalConditionRemoved(uint256 indexed portalId);
     event PortalRegistryUpgraded(address newRegistry);
     event PortalFeeChanged(uint256 portalId, uint256 newFee);
+    event PortalDestinationUpgraded(uint256 portalId, address oldExperience, address newExperience);
 
     /**
      * @dev Returns the portal info for the given portal ID
@@ -88,6 +89,12 @@ interface IPortalRegistry {
      * @dev Changes the fee for a portal. This must be called by the destination experience
      */
     function changePortalFee(uint256 newFee) external;
+
+    /**
+     * @dev Replace the destination experience address for a portal id. This must be 
+     * called by the experience registry when the experience is upgraded.
+     */
+    function upgradeExperiencePortal(address oldExperience, address newExperience) external;
 
     /**
      * If the registry is replaced, this function should be called with thew new registry 

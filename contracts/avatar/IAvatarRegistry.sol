@@ -44,10 +44,22 @@ interface IAvatarRegistry {
     function nameAvailable(string memory username) external view returns (bool);
 
     /**
+     * @dev Set the avatar factory contract address. This can only be called by the main admin.
+     */
+    function setAvatarFactory(address factory) external;
+
+    /**
      * @dev Register a new avatar. This must be called by a registered World contract. Funds
      * can be attached to the txn and will be distributed to avatar contract or owner depending
      * on the registration request.
      * @param registration The registration request
      */
-    function registerAvatar(AvatarRegistrationRequest memory registration) external payable;
+    function registerAvatar(AvatarRegistrationRequest memory registration) external payable returns (address);
+
+    /**
+     * @dev Upgrade an avatar contract to a new version. This must be called by the 
+     * avatar contract itself. 
+     * @param initData The initialization data to pass to the new avatar contract
+     */
+    function upgradeAvatar(bytes calldata initData) external;
 }

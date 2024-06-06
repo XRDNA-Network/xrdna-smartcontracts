@@ -8,20 +8,15 @@ import {IExperience} from './IExperience.sol';
 import {VectorAddress, LibVectorAddress} from '../VectorAddress.sol';
 import {IBasicCompany} from './IBasicCompany.sol';
 import {IPortalRegistry, AddPortalRequest} from '../portal/IPortalRegistry.sol';
+import {ICompanyRegistry} from '../company/ICompanyRegistry.sol';
+import {LibStringCase} from '../LibStringCase.sol';
+import {IExperienceRegistry, ExperienceInfo, RegisterExperienceRequest} from './IExperienceRegistry.sol';
+import {ReentrancyGuard} from '@openzeppelin/contracts/utils/ReentrancyGuard.sol';
 
-interface ICompanyRegistry {
-    function isCompany(address a) external view returns (bool);
-}
-
-struct ExperienceInfo {
-    address company;
-    address world;
-    IExperience experience;
-    uint256 portalId;
-}
-
-contract ExperienceRegistry is AccessControl {
+contract ExperienceRegistry is IExperienceRegistry, ReentrancyGuard, AccessControl {
     using LibVectorAddress for VectorAddress;
+    using LibStringCase for string;
+
     bytes32 constant public ADMIN_ROLE = keccak256("ADMIN_ROLE");
 
     ICompanyRegistry companyRegistry;
@@ -34,17 +29,19 @@ contract ExperienceRegistry is AccessControl {
     //mapping of experience info by its contract address
     mapping(address => ExperienceInfo) public experiencesByAddress;
 
-    //psub counter for each company contract. Used to generate unique vector addresses for
-    //each newly registered experience
-    mapping(address => uint256) public companyVAPSubCounter;
+    //enforce globally unique names
+    mapping(string => ExperienceInfo) public experiencesByName;
 
     modifier onlyCompany() {
-        require(companyRegistry.isCompany(msg.sender), "ExperienceRegistry: caller is not a company");
+        require(companyRegistry.isRegisteredCompany(msg.sender), "ExperienceRegistry: caller is not a company");
         _;
     }
 
-    event ExperienceRegistered(address indexed world, address indexed company, address indexed experience, string name);
-
+    modifier onlyExperience {
+        require(isExperience(msg.sender), "ExperienceRegistry: caller is not an experience");
+        _;
+    }
+    
     constructor(address mainAdmin, address[] memory admins, address compRegistry, address portRegistry) {
         companyRegistry = ICompanyRegistry(compRegistry);
         portalRegistry = IPortalRegistry(portRegistry);
@@ -67,23 +64,21 @@ contract ExperienceRegistry is AccessControl {
         portalRegistry = reg;
     }
 
+    function setExperienceFactory(address factory) public onlyRole(ADMIN_ROLE) {
+        require(factory != address(0), "ExperienceRegistry: zero address not valid");
+        experienceFactory = IExperienceFactory(factory);
+    }
+
     function isExperience(address exp) public view returns (bool) {
         return experiencesByAddress[exp].company != address(0);
     }
 
-    function getExperienceByVector(VectorAddress memory va) public view returns (IExperience) {
-        bytes32 hash = keccak256(abi.encode(va.asLookupKey()));
-        return experiencesByVectorHash[hash].experience;
-    }
-
-    function registerExperience(bytes memory initData) public  onlyCompany {
+    function registerExperience(RegisterExperienceRequest memory request) public  onlyCompany nonReentrant returns(address, uint256) {
         IBasicCompany company = IBasicCompany(msg.sender);
-        ++companyVAPSubCounter[msg.sender];
-        uint256 psub = companyVAPSubCounter[msg.sender];
-        VectorAddress memory va = company.vectorAddress();
-        va.p_sub = psub;
-        IExperience exp = IExperience(experienceFactory.createExperience(msg.sender, va, initData));
-        bytes32 hash = keccak256(abi.encode(va.asLookupKey()));
+        string memory lowerName = request.name.lower();
+        require(experiencesByName[lowerName].company == address(0), "ExperienceRegistry: experience name already exists");
+        IExperience exp = IExperience(experienceFactory.createExperience(msg.sender, request.vector, request.initData));
+        bytes32 hash = keccak256(abi.encode(request.vector.asLookupKey()));
         uint256 portalId = portalRegistry.addPortal(AddPortalRequest({
             destination: exp,
             fee: exp.entryFee()
@@ -96,6 +91,30 @@ contract ExperienceRegistry is AccessControl {
         });
         experiencesByVectorHash[hash] = info;
         experiencesByAddress[address(exp)] = info;
+        experiencesByName[lowerName] = info;
         emit ExperienceRegistered(company.world(), msg.sender, address(exp), exp.name());
+        return (address(exp), portalId);
+    }
+
+    function upgradeExperience(bytes calldata initData) public onlyExperience nonReentrant {
+        IExperience old = IExperience(msg.sender);
+        string memory oldName = old.name();
+        VectorAddress memory oldVa = old.vectorAddress();
+        bytes32 oldHash = keccak256(abi.encode(oldVa.asLookupKey()));
+        address proxy = experienceFactory.createExperience(old.company(), oldVa, initData);
+        portalRegistry.upgradeExperiencePortal(msg.sender, proxy);
+        IExperience newExp = IExperience(proxy);
+        ExperienceInfo memory info = ExperienceInfo({
+            company: old.company(),
+            world: old.world(),
+            experience: newExp,
+            portalId: experiencesByVectorHash[oldHash].portalId
+        });
+        experiencesByAddress[proxy] = info;
+        experiencesByVectorHash[keccak256(abi.encode(newExp.vectorAddress().asLookupKey()))] = info;
+        experiencesByName[oldName.lower()] = info;
+        delete experiencesByAddress[msg.sender];
+        delete experiencesByVectorHash[oldHash];
+        old.experienceUpgraded(proxy);
     }
 }

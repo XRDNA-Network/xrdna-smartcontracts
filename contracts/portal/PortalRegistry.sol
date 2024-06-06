@@ -7,8 +7,8 @@ import {PortalInfo, AddPortalRequest, IPortalRegistry} from './IPortalRegistry.s
 import {IExperience, JumpEntryRequest} from '../experience/IExperience.sol';
 import {VectorAddress, LibVectorAddress} from '../VectorAddress.sol';
 import {IPortalCondition} from './IPortalCondition.sol';
-import {IBasicAvatar} from '../experience/IBasicAvatar.sol';
 import {IAvatarRegistry} from '../avatar/IAvatarRegistry.sol';
+import {IAvatar} from '../avatar/IAvatar.sol';
 
 interface IUpgradeMigration {
     function setStartingPortalIdCounter(uint256 counter) external;
@@ -47,6 +47,17 @@ contract PortalRegistry is IPortalRegistry, AccessControl {
 
     modifier notUpgraded {
         require(!upgraded, "PortalRegistry: contract has been upgraded");
+        _;
+    }
+
+    modifier onlyExperience {
+        uint256 id = portalIdsByExperience[msg.sender];
+        require(id != 0, "PortalRegistry: caller is not a registered experience");
+        _;
+    }
+
+    modifier onlyAvatar {
+        require(avatarRegistry.isAvatar(msg.sender), "PortalRegistry: caller must be an avatar");
         _;
     }
 
@@ -112,7 +123,7 @@ contract PortalRegistry is IPortalRegistry, AccessControl {
         return portalId;
     }
 
-    function jumpRequest(uint256 portalId) external payable notUpgraded returns (bytes memory) {
+    function jumpRequest(uint256 portalId) external payable onlyAvatar notUpgraded returns (bytes memory) {
         
         /**
          * This contract delegates jump request authorization to the avatar. Only the avatar
@@ -120,8 +131,7 @@ contract PortalRegistry is IPortalRegistry, AccessControl {
          * for the transaction and/or fees or the avatar owner is. But the avatar contract must 
          * work out the details of payment and authorization.
          */
-        require(avatarRegistry.isAvatar(msg.sender), "PortalRegistry: caller must be the avatar");
-
+        
         PortalJumpMetadata memory meta = _getExperienceDetails(portalId);
         if(address(meta.destPortal.condition) != address(0)) {
             require(meta.destPortal.condition.canJump(address(meta.destinationExperience), meta.sourceWorld, meta.sourceCompany, address(meta.sourceExperience), msg.sender), "PortalRegistry: portal jump conditions not met");
@@ -159,29 +169,26 @@ contract PortalRegistry is IPortalRegistry, AccessControl {
     }
 
     //NOTE: must be called by a registered destination experience contract
-    function addCondition(IPortalCondition condition) external {
+    function addCondition(IPortalCondition condition) external onlyExperience notUpgraded {
         //NOTE: this can still be called even if upgraded since previously 
         //registered experience may not have migrated to new registry. 
         require(address(condition) != address(0), "PortalRegistry: condition address cannot be 0");
         uint256 id = portalIdsByExperience[msg.sender];
-        require(id != 0, "PortalRegistry: caller is not a registered destination experience");
         portals[id].condition = condition;
         emit PortalConditionAdded(id, address(condition));
     }
 
     //NOTE: must be called by a registered destination experience contract
-    function removeCondition() external {
+    function removeCondition() external onlyExperience {
         //NOTE: this can still be called even if upgraded since previously
         //registered experience may not have migrated to new registry.
         uint256 portalId = portalIdsByExperience[msg.sender];
-        require(portalId != 0, "PortalRegistry: caller is not a registered destination experience");
         portals[portalId].condition = IPortalCondition(address(0));
         emit PortalConditionRemoved(portalId);
     }
 
-    function changePortalFee(uint256 newFee) external {
+    function changePortalFee(uint256 newFee) external onlyExperience notUpgraded {
         uint256 portalId = portalIdsByExperience[msg.sender];
-        require(portalId != 0, "PortalRegistry: caller is not a registered destination experience");
         portals[portalId].fee = newFee;
         emit PortalFeeChanged(portalId, newFee);
     }
@@ -193,16 +200,25 @@ contract PortalRegistry is IPortalRegistry, AccessControl {
         emit PortalRegistryUpgraded(newRegistry);
     }
 
+    function upgradeExperiencePortal(address oldExperience, address newExperience) public onlyRegistry notUpgraded {
+        uint256 portalId = portalIdsByExperience[oldExperience];
+        require(portalId != 0, "PortalRegistry: old experience not found");
+        portalIdsByExperience[newExperience] = portalId;
+        delete portalIdsByExperience[oldExperience];
+        portals[portalId].destination = IExperience(newExperience);
+        emit PortalDestinationUpgraded(portalId, oldExperience, newExperience);
+    }
+
+
     function _getExperienceDetails(uint256 destPortalId) internal view returns (PortalJumpMetadata memory meta) {
         //get avatar's current location
-        IBasicAvatar avatar = IBasicAvatar(msg.sender);
-        VectorAddress memory currentLocation = avatar.location();
+        IAvatar avatar = IAvatar(msg.sender);
+        IExperience exp = avatar.location();
 
         //the avatar has to be located somewhere. Even when registering through a world, the 
         //world must choose a default experience
-        require(currentLocation.p_sub > 0, "PortalRegistry: avatar is not in a valid location");
-        bytes32 hash = keccak256(abi.encode(currentLocation.asLookupKey()));
-        uint256 portalId = portalIdsByVectorHash[hash];
+        require(address(exp) != address(0), "PortalRegistry: avatar is not in a valid location");
+       uint256 portalId = portalIdsByExperience[address(exp)];
         require(portalId != 0, "PortalRegistry: no portal found for the avatar's current location");
         
         require(portalId != destPortalId, "PortalRegistry: cannot jump to the same experience");

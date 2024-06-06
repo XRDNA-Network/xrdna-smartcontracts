@@ -26,6 +26,7 @@ import type {
 export interface AssetRegistryInterface extends Interface {
   getFunction(
     nameOrSignature:
+      | "ADMIN_ROLE"
       | "DEFAULT_ADMIN_ROLE"
       | "addAssetCondition"
       | "assetExists"
@@ -58,6 +59,10 @@ export interface AssetRegistryInterface extends Interface {
       | "RoleRevoked"
   ): EventFragment;
 
+  encodeFunctionData(
+    functionFragment: "ADMIN_ROLE",
+    values?: undefined
+  ): string;
   encodeFunctionData(
     functionFragment: "DEFAULT_ADMIN_ROLE",
     values?: undefined
@@ -139,6 +144,7 @@ export interface AssetRegistryInterface extends Interface {
     values: [AddressLike, BigNumberish, BytesLike]
   ): string;
 
+  decodeFunctionResult(functionFragment: "ADMIN_ROLE", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "DEFAULT_ADMIN_ROLE",
     data: BytesLike
@@ -351,6 +357,8 @@ export interface AssetRegistry extends BaseContract {
     event?: TCEvent
   ): Promise<this>;
 
+  ADMIN_ROLE: TypedContractMethod<[], [string], "view">;
+
   DEFAULT_ADMIN_ROLE: TypedContractMethod<[], [string], "view">;
 
   addAssetCondition: TypedContractMethod<
@@ -465,7 +473,7 @@ export interface AssetRegistry extends BaseContract {
 
   upgradeAsset: TypedContractMethod<
     [asset: AddressLike, assetType: BigNumberish, initData: BytesLike],
-    [void],
+    [string],
     "nonpayable"
   >;
 
@@ -473,6 +481,9 @@ export interface AssetRegistry extends BaseContract {
     key: string | FunctionFragment
   ): T;
 
+  getFunction(
+    nameOrSignature: "ADMIN_ROLE"
+  ): TypedContractMethod<[], [string], "view">;
   getFunction(
     nameOrSignature: "DEFAULT_ADMIN_ROLE"
   ): TypedContractMethod<[], [string], "view">;
@@ -584,7 +595,7 @@ export interface AssetRegistry extends BaseContract {
     nameOrSignature: "upgradeAsset"
   ): TypedContractMethod<
     [asset: AddressLike, assetType: BigNumberish, initData: BytesLike],
-    [void],
+    [string],
     "nonpayable"
   >;
 
