@@ -1,0 +1,50 @@
+{
+  "_format": "hh-sol-artifact-1",
+  "contractName": "IPortalCondition",
+  "sourceName": "contracts/portal/IPortalCondition.sol",
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "experience",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "sourceWorld",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "sourceCompany",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "sourceExperience",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "avatar",
+          "type": "address"
+        }
+      ],
+      "name": "canJump",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "bytecode": "0x",
+  "deployedBytecode": "0x",
+  "linkReferences": {},
+  "deployedLinkReferences": {}
+}
