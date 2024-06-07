@@ -54,7 +54,7 @@ export interface IUpgradeResult {
 
 export class World {
     private address: string;
-    private admin: Provider | Signer;
+    readonly admin: Provider | Signer;
     private world: ethers.Contract;
     private parser: LogParser;
 

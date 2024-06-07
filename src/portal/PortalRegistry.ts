@@ -22,7 +22,7 @@ export interface IPortalInfo {
 
 export class PortalRegistry {
     private con: Contract;
-    private address: string;
+    readonly address: string;
     private admin: Provider | Signer;
 
     constructor(opts: IPortalRegistryOpts) {

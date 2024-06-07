@@ -14,7 +14,7 @@ export const AssetType = {
 
 export class AssetFactory {
     private admin: Provider | Signer;
-    private address: string;
+    readonly address: string;
     private con: Contract;
     constructor(opts: IAssetFactoryOpts) {
         this.admin = opts.admin;

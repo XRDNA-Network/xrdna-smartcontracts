@@ -17,7 +17,7 @@ export interface IAvatarRegistrationRequest {
 
 export class AvatarRegistry {
     private con: Contract;
-    private address: string;
+    readonly address: string;
     private admin: Provider | Signer;
 
     constructor(opts: IAvatarRegistryOpts) {

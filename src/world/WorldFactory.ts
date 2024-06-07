@@ -11,7 +11,7 @@ export interface IWorldFactoryOpts {
 }
 
 export class WorldFactory {
-    private address: string;
+    readonly address: string;
     private factoryAdmin: Signer;
     private factory: ethers.Contract;
 

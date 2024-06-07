@@ -1,10 +1,10 @@
 import { Signer } from "ethers";
-import { World, WorldFactory, WorldRegistry } from "../../src";
+import { World, WorldFactory, WorldRegistry } from "../../../src";
 
 export interface IWorldStack {
 
-    worldFactory: WorldFactory;
-    worldRegistry: WorldRegistry;
-    world: World;
+    getWorldFactory(): WorldFactory;
+    getWorldRegistry(): WorldRegistry;
+    createWorld(): World;
 
 }

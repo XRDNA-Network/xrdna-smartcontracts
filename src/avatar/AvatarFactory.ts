@@ -9,7 +9,7 @@ export interface IAvatarFactoryOpts {
 
 export class AvatarFactory {
     private con: Contract;
-    private address: string;
+    readonly address: string;
     private admin: Provider | Signer;
 
     constructor(opts: IAvatarFactoryOpts) {

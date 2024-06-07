@@ -20,7 +20,7 @@ export type CreateAssetResult = {
 
 export class AssetRegistry {
     private admin: Provider | Signer;
-    private address: string;
+    readonly address: string;
     private con: Contract;
     private logParser: LogParser;
     constructor(opts: IAssetRegistryOpts) {
