@@ -1,8 +1,8 @@
 import { ethers } from "hardhat";
 import { IBasicDeployArgs, IDeployable } from "../IDeployable";
-import { CompanyFactory } from "../../../src/company/CompanyFactory";
+import { CompanyFactory, ICreateCompanyArgs } from "../../../src/company/CompanyFactory";
 import { CompanyRegistry } from "../../../src/company/CompanyRegistry";
-import { ICompanyStack } from "./ICompanyStack";
+import { ICompanyStack, ICreateCompanyRequest } from "./ICompanyStack";
 import { StackCreatorFn, StackType } from "../StackFactory";
 import { WorldRegistry } from "../../../src";
 import { IWorldStack } from "../world/IWorldStack";
@@ -52,20 +52,20 @@ export class CompanyStackImpl implements ICompanyStack, IDeployable {
         }
     }
 
-    async createCompany(): Promise<Company> {
+    async createCompany(req: ICreateCompanyRequest): Promise<Company> {
         this._checkDeployed();
         const worldStack = this.factory(StackType.WORLD) as IWorldStack;
-        const world = worldStack.createWorld();
-        const owner = await ethers.getImpersonatedSigner(HardhatTestKeys[10].address)
+        const world = req.world;
+        
         const companyRegResult = await world.registerCompany({
-            owner: await owner.getAddress(),
-            initData: "",
-            name: "Test Company"
+            owner: req.owner,
+            initData: req.initData,
+            name: req.name
         });
 
         const company = new Company({
             address: companyRegResult.company.toString(),
-            admin: owner
+            admin: await ethers.getImpersonatedSigner(req.owner)
         });
         
         this.companies.set(company.address, company);
