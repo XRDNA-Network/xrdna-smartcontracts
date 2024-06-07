@@ -30,4 +30,12 @@ export class CompanyFactory {
     async createCompany(req: ICreateCompanyArgs): Promise<TransactionResponse> {
         return await RPCRetryHandler.withRetry(() => this.con.createCompany(req.owner, req.world, req.vector, req.initData, req.name));
     }
+
+    async setAuthorizedRegistry(registry: string): Promise<TransactionResponse> {
+        return await RPCRetryHandler.withRetry(() => this.con.setAuthorizedRegistry(registry));
+    }
+
+    async setImplementation(impl: string): Promise<TransactionResponse> {
+        return await RPCRetryHandler.withRetry(() => this.con.setImplementation(impl));
+    }
 }
