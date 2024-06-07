@@ -1,11 +1,14 @@
-import { AssetFactory, AssetRegistry, ERC20Asset, ERC721Asset } from "../../../src";
+import { AssetFactory, AssetRegistry, ERC20Asset, ERC20InitData, ERC721Asset } from "../../../src";
 import { IBasicDeployArgs, IDeployable } from "../IDeployable";
-import { IAssetStack } from "./IAssetStack";
+import { IAssetStack, IERC20CreationRequest, IERC721CreationRequest } from "./IAssetStack";
 import {AssetType} from '../../../src/';
 import { ethers } from "hardhat";
 import {StackFactory, StackCreatorFn, StackType} from '../StackFactory';
 import { IAvatarStack } from "../avatar/IAvatarStack";
 import { IExperienceStack } from "../experience/IExperienceStack";
+import { Company } from "../../../src/company/Company";
+import { throwError } from "../../utils";
+import { Signer } from "ethers";
 
 
 export interface IAssetStackArgs extends IBasicDeployArgs {
@@ -18,7 +21,8 @@ export class AssetStackImpl implements IAssetStack, IDeployable {
     assetFactoryAddress!: string;
     assetRegistry!: AssetRegistry;
     assetRegistryAddress!: string;
-    assets: Map<typeof AssetType, any> = new Map();
+    admin!: Signer;
+    assets: Map<bigint, any> = new Map();
 
     constructor(readonly factory: StackCreatorFn) {
         
@@ -34,17 +38,58 @@ export class AssetStackImpl implements IAssetStack, IDeployable {
         return this.assetRegistry;
     }
 
-    createERC20Asset(): ERC20Asset {
+    async createERC20Asset(request: IERC20CreationRequest): Promise<ERC20Asset> {
         this._checkDeployed();
-        throw new Error("Method not implemented.");
+        const a = this.assets.get(AssetType.ERC20);
+        if(a) {
+            return a;
+        }
+
+        const initData: ERC20InitData = {
+            issuer: request.issuer.address,
+            name: request.name,
+            symbol: request.symbol,
+            decimals: request.decimals,
+            originChainAddress: request.originalChainAddress,
+            originChainId: request.originalChainId,
+            totalSupply: request.totalSupply
+        }
+        const t = await this.assetRegistry.registerAsset(AssetType.ERC20, initData);
+        const asset = new ERC20Asset({
+            address: t.assetAddress.toString() || throwError("Contract address not found"),
+            admin: this.admin
+        });
+        this.assets.set(AssetType.ERC20, asset);
+        return asset;
+        
     }
 
-    createERC721Asset(): ERC721Asset {
+    async createERC721Asset(request: IERC721CreationRequest): Promise<ERC721Asset> {
         this._checkDeployed();
-        throw new Error("Method not implemented.");
+        const a = this.assets.get(AssetType.ERC721);
+        if(a) {
+            return a;
+        }
+        
+        const initData = {
+            issuer: request.issuer.address,
+            originChainAddress: request.originChainAddress,
+            originChainId: request.originChainId,
+            name: request.name,
+            symbol: request.symbol,
+            baseURI: request.baseURI
+        }
+        const t = await this.assetRegistry.registerAsset(AssetType.ERC721, initData);
+        const asset = new ERC721Asset({
+            address: t.assetAddress.toString() || throwError("Contract address not found"),
+            admin: this.admin
+        });
+        this.assets.set(AssetType.ERC721, asset);
+        return asset;
     }
     
     async deploy(args: IAssetStackArgs): Promise<void> {
+        this.admin = args.admin;
         await this._deployFactory(args);
         await this._deployRegistry(args);
         await this._deployMasterAssets();
