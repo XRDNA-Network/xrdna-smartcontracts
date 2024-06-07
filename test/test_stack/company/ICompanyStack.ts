@@ -6,5 +6,5 @@ import { CompanyRegistry } from "../../../src/company/CompanyRegistry";
 export interface ICompanyStack  {
         getCompanyFactory(): CompanyFactory;
         getCompanyRegistry(): CompanyRegistry;
-        createCompany(owner: HardhatEthersSigner): Promise<Company>;
+        createCompany(): Promise<Company>;
     }
