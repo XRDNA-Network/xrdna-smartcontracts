@@ -2,6 +2,8 @@ import { Signer } from "ethers";
 import { AssetStackImpl } from "./asset/AssetStackImpl";
 import { AvatarStackImpl } from "./avatar/AvatarStackImpl";
 import { PortalStackImpl } from "./portal/PortalStackImpl";
+import { ExperienceStackImpl } from "./experience/ExperienceStackImpl";
+import { WorldStackImpl } from "./world/WorldStackImpl";
 
 export enum StackType {
     ASSET = "ASSET",
@@ -28,8 +30,12 @@ export class StackFactory {
                 await a.deploy({admin: StackFactory.admin});
                 return a;
             }
-            case StackType.WORLD:
-                return <T><unknown>new WorldStack();
+            case StackType.WORLD: {
+                const w = new WorldStackImpl(StackFactory.getStack);
+                await w.deploy({admin: StackFactory.admin});
+                return w;
+            }
+                
             case StackType.AVATAR: {
                 const a = new AvatarStackImpl(StackFactory.getStack);
                 await a.deploy({admin: StackFactory.admin});
