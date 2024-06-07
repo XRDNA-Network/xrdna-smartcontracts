@@ -89,6 +89,9 @@ export class AssetStackImpl implements IAssetStack, IDeployable {
     }
     
     async deploy(args: IAssetStackArgs): Promise<void> {
+        if(this.assetFactory && this.assetRegistry) {
+            return;
+        }
         this.admin = args.admin;
         await this._deployFactory(args);
         await this._deployRegistry(args);
@@ -129,8 +132,8 @@ export class AssetStackImpl implements IAssetStack, IDeployable {
     }
 
     async _deployMasterAssets() {
-        const avatarStack: IAvatarStack = this.factory(StackType.AVATAR);
-        const experienceStack:IExperienceStack = this.factory(StackType.EXPERIENCE);
+        const avatarStack: IAvatarStack = await this.factory(StackType.AVATAR);
+        const experienceStack:IExperienceStack = await this.factory(StackType.EXPERIENCE);
 
         const cArgs = {
             assetFactory: this.assetFactory.address,
