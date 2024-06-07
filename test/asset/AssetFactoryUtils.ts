@@ -19,7 +19,7 @@ export class AssetFactoryUtils {
 
         this.factoryAdmin = props.assetFactoryAdmin;
         const Factory = await ethers.getContractFactory("AssetFactory");
-        const factory = await Factory.deploy([props.assetFactoryAdmin.address]);
+        const factory = await Factory.deploy(props.assetFactoryAdmin, [props.assetFactoryAdmin.address]);
         const t = await factory.deploymentTransaction()?.wait();
         this.factoryAddress = t?.contractAddress || "";
         console.log("AssetFactory deployed at", this.factoryAddress);

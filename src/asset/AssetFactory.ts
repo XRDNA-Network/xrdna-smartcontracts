@@ -30,4 +30,8 @@ export class AssetFactory {
         return await RPCRetryHandler.withRetry(()=>this.con.setERC721Implementation(impl));
     }
 
+    async setAuthorizedRegistry(registry: AddressLike): Promise<TransactionResponse> {
+        return await RPCRetryHandler.withRetry(()=>this.con.setAuthorizedRegistry(registry));
+    }
+
 }
