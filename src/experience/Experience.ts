@@ -42,8 +42,4 @@ export class Experience {
         return await RPCRetryHandler.withRetry(() => this.con.vectorAddress());
     }
 
-    async entering(request: IJumpEntryRequest): Promise<TransactionResponse> {
-        return await RPCRetryHandler.withRetry(() => this.con.entering(request));
-    }
-
 }
