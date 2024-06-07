@@ -20,5 +20,6 @@ export default buildModule("CompanyRegistry", (m) => {
     const Registry = m.contract("CompanyRegistry", [args], {
         after: [fac.companyFactory, wReg.worldRegistry]
     });
+    m.call(fac.companyFactory, "setAuthorizedRegistry", [Registry]);
     return {companyRegistry: Registry};
 });

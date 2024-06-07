@@ -23,5 +23,6 @@ export default buildModule("ExperienceRegistry", (m) => {
     const Registry = m.contract("ExperienceRegistry", [args], {
         after: [fac.experienceFactory, cReg.companyRegistry, pReg.portalRegistry]
     });
+    m.call(fac.experienceFactory, "setAuthorizedRegistry", [Registry]);
     return {experienceRegistry: Registry};
 });
