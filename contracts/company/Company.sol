@@ -15,6 +15,7 @@ import {IERC721Asset} from '../asset/IERC721Asset.sol';
 import {ICompanyRegistry} from './ICompanyRegistry.sol';
 import {ReentrancyGuard} from '@openzeppelin/contracts/utils/ReentrancyGuard.sol';
 import {ICompanyHook} from './ICompanyHook.sol';
+import {IPortalCondition} from '../portal/IPortalCondition.sol';
 
 struct CompanyConstructorArgs {
     address companyFactory;
@@ -95,6 +96,7 @@ contract Company is ICompany, ReentrancyGuard, AccessControl {
         world = request.world;
         _vectorAddress = request.vector;
         name = request.name;
+        _grantRole(DEFAULT_ADMIN_ROLE, owner);
         _grantRole(SIGNER_ROLE, owner);
     }
 
@@ -209,5 +211,20 @@ contract Company is ICompany, ReentrancyGuard, AccessControl {
     
     function removeHook() public onlyRole(DEFAULT_ADMIN_ROLE) {
         hook = ICompanyHook(address(0));
+    }
+
+    function addExperienceCondition(address experience, address condition) public onlyRole(DEFAULT_ADMIN_ROLE) {
+        IExperience exp = IExperience(experience);
+        exp.addPortalCondition(IPortalCondition(condition));
+    }
+
+    function removeExperienceCondition(address experience) public onlyRole(DEFAULT_ADMIN_ROLE) {
+        IExperience exp = IExperience(experience);
+        exp.removePortalCondition();
+    }
+
+    function changeExperiencePortalFee(address experience, uint256 fee) public onlyRole(DEFAULT_ADMIN_ROLE) {
+        IExperience exp = IExperience(experience);
+        exp.changePortalFee(fee);
     }
 }

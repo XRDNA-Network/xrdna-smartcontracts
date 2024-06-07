@@ -173,8 +173,6 @@ contract PortalRegistry is IPortalRegistry, AccessControl {
 
     //NOTE: must be called by a registered destination experience contract
     function addCondition(IPortalCondition condition) external onlyExperience notUpgraded {
-        //NOTE: this can still be called even if upgraded since previously 
-        //registered experience may not have migrated to new registry. 
         require(address(condition) != address(0), "PortalRegistry: condition address cannot be 0");
         uint256 id = portalIdsByExperience[msg.sender];
         portals[id].condition = condition;

@@ -18,20 +18,12 @@ export class AvatarFactory {
         this.con = new Contract(this.address, abi, this.admin);
     }
 
-    async setAvatarRegistry(registry: string): Promise<TransactionResponse> {
-        return await RPCRetryHandler.withRetry(() => this.con.setAvatarRegistry(registry));
-    }
-
     async setAvatarImplementation(impl: string): Promise<TransactionResponse> {
         return await RPCRetryHandler.withRetry(() => this.con.setAvatarImplementation(impl));
     }
 
     async createAvatar(owner: string, defaultExperience: string, initData: string): Promise<TransactionResponse> {
         return await RPCRetryHandler.withRetry(() => this.con.createAvatar(owner, defaultExperience, initData));
-    }
-
-    async isAvatarClone(query: string): Promise<boolean> {
-        return await RPCRetryHandler.withRetry(() => this.con.isAvatarClone(query));
     }
 
 }
