@@ -28,7 +28,7 @@ abstract contract BaseFactory is AccessControl {
     }
 
     function setImplementation(address _implementation) public onlyRole(ADMIN_ROLE) {
-        require(implementation != address(0), "BaseFactory: implementation cannot be zero address");
+        require(_implementation != address(0), "BaseFactory: implementation cannot be zero address");
         implementation = _implementation;
         
     }

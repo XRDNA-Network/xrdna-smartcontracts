@@ -23,6 +23,28 @@ import type {
   TypedContractMethod,
 } from "../../common";
 
+export type ExperienceRegistryConstructorArgsStruct = {
+  mainAdmin: AddressLike;
+  experienceFactory: AddressLike;
+  compRegistry: AddressLike;
+  portRegistry: AddressLike;
+  admins: AddressLike[];
+};
+
+export type ExperienceRegistryConstructorArgsStructOutput = [
+  mainAdmin: string,
+  experienceFactory: string,
+  compRegistry: string,
+  portRegistry: string,
+  admins: string[]
+] & {
+  mainAdmin: string;
+  experienceFactory: string;
+  compRegistry: string;
+  portRegistry: string;
+  admins: string[];
+};
+
 export type VectorAddressStruct = {
   x: string;
   y: string;
