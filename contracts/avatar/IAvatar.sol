@@ -5,6 +5,8 @@ pragma solidity ^0.8.24;
 import {IAvatarHook} from './IAvatarHook.sol';
 import {IERC721Receiver} from "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
 import {IExperience} from '../experience/IExperience.sol';
+import {IERC721Asset} from '../asset/IERC721Asset.sol';
+import {Wearable} from './WearableLinkedList.sol';
 
 struct AvatarJumpRequest {
     uint256 portalId;
@@ -23,8 +25,8 @@ interface IAvatar is IERC721Receiver {
 
     event SignerAdded(address indexed signer);
     event SignerRemoved(address indexed signer);
-    event WearableAdded(address indexed wearable);
-    event WearableRemoved(address indexed wearable);
+    event WearableAdded(address indexed wearable, uint256 tokenId);
+    event WearableRemoved(address indexed wearable, uint256 tokenId);
     event LocationChanged(address indexed location);
     event AppearanceChanged(bytes indexed appearanceDetails);
     event JumpSuccess(address indexed experience, bytes indexed connectionDetails);
@@ -68,15 +70,26 @@ interface IAvatar is IERC721Receiver {
     function avatarOwnerSigningNonce() external view returns (uint256);
 
     /**
+     * @dev Add a wearable asset to the avatar. This must be called by the avatar owner. 
+     * This will revert if there are already 200 wearables configured.
+     */
+    function addWearable(Wearable calldata wearable) external;
+
+      /**
+     * @dev Remove a wearable asset from the avatar. This must be called by the avatar owner.
+     */
+    function removeWearable(Wearable calldata wearable) external;
+
+    /**
      * @dev Get the address of all wearable assets configured for the avatar. There is a 
      * limit of 200 wearables per avatar due to gas restrictions.
      */
-    function getWearables() external view returns (address[] memory);
+    function getWearables() external view returns (Wearable[] memory);
 
     /**
      * @dev Check whether the avatar is wearing the given wearable asset.
      */
-    function isWearing(address wearable) external view returns (bool);
+    function isWearing(Wearable calldata wearable) external view returns (bool);
 
     /**
      * @dev Initialize the avatar contract. This is called by the AvatarFactory when the avatar is created.
@@ -126,16 +139,8 @@ interface IAvatar is IERC721Receiver {
      */
     function delegateJump(DelegatedJumpRequest memory request) external payable;
 
-    /**
-     * @dev Add a wearable asset to the avatar. This must be called by the avatar owner. 
-     * This will revert if there are already 200 wearables configured.
-     */
-    function addWearable(address wearable) external;
 
-    /**
-     * @dev Remove a wearable asset from the avatar. This must be called by the avatar owner.
-     */
-    function removeWearable(address wearable) external;
+  
 
     /**
      * @dev Withdraw funds from the avatar contract. This must be called by the avatar owner.

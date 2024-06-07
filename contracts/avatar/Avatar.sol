@@ -3,7 +3,7 @@
 pragma solidity ^0.8.24;
 
 import {IAvatar, AvatarJumpRequest, DelegatedJumpRequest} from './IAvatar.sol';
-import {AddressLinkedList} from './AddressLinkedList.sol';
+import {WearableLinkedList, Wearable} from './WearableLinkedList.sol';
 import {IAvatarHook} from './IAvatarHook.sol';
 import {VectorAddress, LibVectorAddress} from '../VectorAddress.sol';
 import {LibStringCase} from '../LibStringCase.sol';
@@ -16,6 +16,7 @@ import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
 import {ReentrancyGuard} from '@openzeppelin/contracts/utils/ReentrancyGuard.sol';
 import {IAvatarRegistry} from './IAvatarRegistry.sol';
+import {IERC721Asset} from '../asset/IERC721Asset.sol';
 
 interface IExperienceRegistry {
     function isExperience(address e) external view returns (bool);
@@ -36,7 +37,7 @@ struct BaseContructorArgs {
     address companyRegistry;
 }
 
-contract Avatar is IAvatar, ReentrancyGuard, AddressLinkedList {
+contract Avatar is IAvatar, ReentrancyGuard, WearableLinkedList {
     using LibStringCase for string;
     using LibVectorAddress for VectorAddress;
     using MessageHashUtils for bytes;
@@ -130,8 +131,12 @@ contract Avatar is IAvatar, ReentrancyGuard, AddressLinkedList {
      * @dev Get the address of all wearable assets configured for the avatar. There is a 
      * limit of 200 wearables per avatar due to gas restrictions.
      */
-    function getWearables() public view override returns (address[] memory) {
+    function getWearables() public view override returns (Wearable[] memory) {
         return getAllItems();
+    }
+
+    function isWearing(Wearable calldata wearable) public view override returns (bool) {
+        return contains(wearable);
     }
 
      /**
@@ -196,21 +201,20 @@ contract Avatar is IAvatar, ReentrancyGuard, AddressLinkedList {
      * @dev Add a wearable asset to the avatar. This must be called by the avatar owner. 
      * This will revert if there are already 200 wearables configured.
      */
-    function addWearable(address wearable) public onlyOwner override  {
+    function addWearable(Wearable calldata wearable) public onlyOwner override  {
+        require(wearable.asset != address(0), "Avatar: wearable asset cannot be zero address");
+        require(wearable.tokenId > 0, "Avatar: wearable tokenId cannot be zero");
+        IERC721Asset wAsset = IERC721Asset(wearable.asset);
+        require(wAsset.ownerOf(wearable.tokenId) == address(this), "Avatar: wearable token not owned by avatar");
         insert(wearable);
     }
 
     /**
      * @dev Remove a wearable asset from the avatar. This must be called by the avatar owner.
      */
-    function removeWearable(address wearable) public onlyOwner override {
+    function removeWearable(Wearable calldata wearable) public onlyOwner override {
         remove(wearable);
     }
-
-    function isWearing(address wearable) public view override returns (bool) {
-        return contains(wearable);
-    }
-
 
     function setHook(IAvatarHook _hook) public override onlyOwner {
         require(address(_hook) != address(0), "Avatar: hook cannot be zero address");

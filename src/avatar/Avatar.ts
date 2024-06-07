@@ -21,6 +21,11 @@ export interface IDelegatedAvatarJumpRequest {
     avatarOwnerSignature: string,
 }
 
+export interface IWearable  {
+    asset: string;
+    tokenId: bigint;
+}
+
 export class Avatar {
     private con: Contract;
     private address: string;
@@ -36,7 +41,7 @@ export class Avatar {
         return await RPCRetryHandler.withRetry(() => this.con.location());
     }
 
-    async getWearables(): Promise<string[]> {
+    async getWearables(): Promise<IWearable[]> {
         return await RPCRetryHandler.withRetry(() => this.con.getWearables());
     }
 
@@ -60,15 +65,15 @@ export class Avatar {
         return await RPCRetryHandler.withRetry(() => this.con.delegateJump(req));
     }
 
-    async addWearable(wearable: string): Promise<TransactionResponse> {
+    async addWearable(wearable: IWearable): Promise<TransactionResponse> {
         return await RPCRetryHandler.withRetry(() => this.con.addWearable(wearable));
     }
 
-    async removeWearable(wearable: string): Promise<TransactionResponse> {
+    async removeWearable(wearable: IWearable): Promise<TransactionResponse> {
         return await RPCRetryHandler.withRetry(() => this.con.removeWearable(wearable));
     }
 
-    async isWearing(wearable: string): Promise<boolean> {
+    async isWearing(wearable: IWearable): Promise<boolean> {
         return await RPCRetryHandler.withRetry(() => this.con.isWearing(wearable));
     }
 

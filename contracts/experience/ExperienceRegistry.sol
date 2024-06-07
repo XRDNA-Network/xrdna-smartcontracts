@@ -32,7 +32,7 @@ contract ExperienceRegistry is IExperienceRegistry, ReentrancyGuard, AccessContr
     IExperienceFactory experienceFactory;
     
     // Mapping from vector address hash to experience details
-    mapping(bytes32 => ExperienceInfo) public experiencesByVectorHash;
+    mapping(bytes32 => ExperienceInfo) public _experiencesByVectorHash;
 
     //mapping of experience info by its contract address
     mapping(address => ExperienceInfo) public experiencesByAddress;
@@ -86,6 +86,10 @@ contract ExperienceRegistry is IExperienceRegistry, ReentrancyGuard, AccessContr
         return experiencesByAddress[exp].company != address(0);
     }
 
+    function getExperienceByVector(VectorAddress memory vector) public view override returns (ExperienceInfo memory) {
+        return _experiencesByVectorHash[keccak256(abi.encode(vector.asLookupKey()))];
+    }
+
     function registerExperience(RegisterExperienceRequest memory request) public  onlyCompany nonReentrant returns(address, uint256) {
         IBasicCompany company = IBasicCompany(msg.sender);
         string memory lowerName = request.name.lower();
@@ -102,7 +106,7 @@ contract ExperienceRegistry is IExperienceRegistry, ReentrancyGuard, AccessContr
             experience: exp,
             portalId: portalId
         });
-        experiencesByVectorHash[hash] = info;
+        _experiencesByVectorHash[hash] = info;
         experiencesByAddress[address(exp)] = info;
         experiencesByName[lowerName] = info;
         emit ExperienceRegistered(company.world(), msg.sender, address(exp), exp.name());
@@ -121,13 +125,13 @@ contract ExperienceRegistry is IExperienceRegistry, ReentrancyGuard, AccessContr
             company: old.company(),
             world: old.world(),
             experience: newExp,
-            portalId: experiencesByVectorHash[oldHash].portalId
+            portalId: _experiencesByVectorHash[oldHash].portalId
         });
         experiencesByAddress[proxy] = info;
-        experiencesByVectorHash[keccak256(abi.encode(newExp.vectorAddress().asLookupKey()))] = info;
+        _experiencesByVectorHash[keccak256(abi.encode(newExp.vectorAddress().asLookupKey()))] = info;
         experiencesByName[oldName.lower()] = info;
         delete experiencesByAddress[msg.sender];
-        delete experiencesByVectorHash[oldHash];
+        delete _experiencesByVectorHash[oldHash];
         old.experienceUpgraded(proxy);
     }
 }

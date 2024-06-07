@@ -20,10 +20,6 @@ export class ExperienceFactory {
         this.con = new Contract(this.address, abi, this.admin);
     }
 
-    async setExperienceRegistry(registry: string): Promise<TransactionResponse> {
-        return await RPCRetryHandler.withRetry(() => this.con.setExperienceRegistry(registry));
-    }
-
     async setImplementation(impl: string): Promise<TransactionResponse> {
         return await RPCRetryHandler.withRetry(() => this.con.setImplementation(impl));
     }

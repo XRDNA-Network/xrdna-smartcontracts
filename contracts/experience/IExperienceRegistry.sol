@@ -23,7 +23,7 @@ struct ExperienceInfo {
 interface IExperienceRegistry {
     
     event ExperienceRegistered(address indexed world, address indexed company, address indexed experience, string name);
-
+    function getExperienceByVector(VectorAddress memory vector) external view returns (ExperienceInfo memory);
     function setExperienceFactory(address factory) external;
     function setCompanyRegistry(ICompanyRegistry reg) external;
     function setPortalRegistry(IPortalRegistry reg) external;

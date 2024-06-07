@@ -19,5 +19,6 @@ export default buildModule("AvatarRegistry", (m) => {
     const Registry = m.contract("AvatarRegistry", [args], {
         after: [fac.avatarFactory, wReg.worldRegistry]
     });
+    m.call(fac.avatarFactory, "setAuthorizedRegistry", [Registry]);
     return {avatarRegistry: Registry};
 });
