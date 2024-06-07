@@ -9,6 +9,7 @@ import { IWorldStack } from "../world/IWorldStack";
 import { CompanyConstructorArgsStruct } from "../../../typechain-types/contracts/company/Company.sol/Company";
 import { Company } from "../../../src/company/Company";
 import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
+import { HardhatTestKeys } from "../../HardhatTestKeys";
 
 
 export interface ICompanyStackArgs extends IBasicDeployArgs{
@@ -51,10 +52,11 @@ export class CompanyStackImpl implements ICompanyStack, IDeployable {
         }
     }
 
-    async createCompany(owner: HardhatEthersSigner): Promise<Company> {
+    async createCompany(): Promise<Company> {
         this._checkDeployed();
         const worldStack = this.factory(StackType.WORLD) as IWorldStack;
         const world = worldStack.createWorld();
+        const owner = await ethers.getImpersonatedSigner(HardhatTestKeys[10].address)
         const companyRegResult = await world.registerCompany({
             owner: await owner.getAddress(),
             initData: "",
