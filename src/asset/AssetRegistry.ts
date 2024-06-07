@@ -1,4 +1,4 @@
-import { Contract, Provider, Signer, TransactionResponse } from "ethers";
+import { AddressLike, Contract, Provider, Signer, TransactionResponse } from "ethers";
 import {abi} from "../../artifacts/contracts/asset/AssetRegistry.sol/AssetRegistry.json";
 import { ERC20Asset, ERC20InitData } from "./ERC20Asset";
 import { LogParser } from "../LogParser";
@@ -6,6 +6,7 @@ import { LogNames } from "../LogNames";
 import { AssetType } from "./AssetFactory";
 import { ERC721Asset, ERC721InitData } from "./ERC721Asset";
 import { RPCRetryHandler } from "../RPCRetryHandler";
+import { isPromise } from "util/types";
 
 export interface IAssetRegistryOpts {
     admin: Provider | Signer;
@@ -14,7 +15,7 @@ export interface IAssetRegistryOpts {
 
 export type CreateAssetResult = {
     receipt: TransactionResponse;
-    assetAddress: string;
+    assetAddress: AddressLike;
 }
 
 export class AssetRegistry {
@@ -23,21 +24,20 @@ export class AssetRegistry {
     private con: Contract;
     private logParser: LogParser;
     constructor(opts: IAssetRegistryOpts) {
+        if(isPromise(opts.address)) {
+            throw new Error("Cannot pass address promise to AssetRegistry");
+        }
         this.admin = opts.admin;
         this.address = opts.address;
         this.con = new Contract(this.address, abi, this.admin);
         this.logParser = new LogParser(abi, this.address);
     }
 
-    async setAssetFactory(impl: string): Promise<TransactionResponse> {
-       return await  RPCRetryHandler.withRetry(()=>this.con.setAssetFactory(impl));
-    }
-
-    async isRegisteredAsset(assetAddress: string): Promise<boolean> {
+    async isRegisteredAsset(assetAddress: AddressLike): Promise<boolean> {
         return await  RPCRetryHandler.withRetry(()=>this.con.isRegisteredAsset(assetAddress));
     }
 
-    async assetExists(originAddress: string, originChainId: bigint): Promise<boolean> {
+    async assetExists(originAddress: AddressLike, originChainId: bigint): Promise<boolean> {
         return await RPCRetryHandler.withRetry(() => this.con.assetExists(originAddress, originChainId));
     }
 
@@ -73,40 +73,40 @@ export class AssetRegistry {
 
     async addAssetCondition(props: {
         assetIssuer: Signer,
-        assetAddress: string, 
-        condition: string
+        assetAddress: AddressLike, 
+        condition: AddressLike
     }): Promise<TransactionResponse> {
         return await  RPCRetryHandler.withRetry(()=>(this.con.connect(props.assetIssuer) as any).addAssetCondition(props.assetAddress, props.condition));
     }
 
     async removeAssetCondition(props: {
-        assetAddress: string, 
-        condition: string,
+        assetAddress: AddressLike, 
+        condition: AddressLike,
         assetIssuer: Signer
     }): Promise<TransactionResponse> {
         return await  RPCRetryHandler.withRetry(()=>(this.con.connect(props.assetIssuer) as any).removeAssetCondition(props.assetAddress, props.condition));
     }
 
     async canViewAsset(props: {
-        assetAddress: string,
-        worldAddress: string,
-        companyAddress: string,
-        experienceAddress: string
+        assetAddress: AddressLike,
+        worldAddress: AddressLike,
+        companyAddress: AddressLike,
+        experienceAddress: AddressLike
     }): Promise<boolean> {
         return await  RPCRetryHandler.withRetry(()=>this.con.canViewAsset(props.assetAddress, props.worldAddress, props.companyAddress, props.experienceAddress));
     }
 
     async canUseAsset(props: {
-        assetAddress: string,
-        worldAddress: string,
-        companyAddress: string,
-        experienceAddress: string
+        assetAddress: AddressLike,
+        worldAddress: AddressLike,
+        companyAddress: AddressLike,
+        experienceAddress: AddressLike
     }): Promise<boolean> {
         return await  RPCRetryHandler.withRetry(()=>this.con.canUseAsset(props.assetAddress, props.worldAddress, props.companyAddress, props.experienceAddress));
     }
 
     async upgradeAsset(props: {
-        assetAddress: string, 
+        assetAddress: AddressLike, 
         assetType: bigint, 
         initData: ERC20InitData | ERC721InitData,
         assetIssuer: Signer

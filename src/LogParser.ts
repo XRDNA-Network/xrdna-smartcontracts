@@ -1,11 +1,11 @@
-import { Interface, TransactionReceipt } from "ethers";
+import { AddressLike, Interface, TransactionReceipt } from "ethers";
 
 export class LogParser {
 
     ifc: Interface;
     constructor(
         readonly abi: any,
-        readonly contractAddress: string
+        readonly contractAddress: AddressLike
     ) {
         this.ifc = new Interface(abi);
     }

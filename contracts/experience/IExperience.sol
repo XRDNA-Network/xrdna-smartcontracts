@@ -4,6 +4,7 @@ pragma solidity ^0.8.24;
 
 import {VectorAddress} from '../VectorAddress.sol';
 import {IExperienceHook} from './IExperienceHook.sol';
+import {IPortalCondition} from '../portal/IPortalCondition.sol';
 
 struct JumpEntryRequest {
     address sourceWorld;
@@ -16,6 +17,7 @@ interface IExperience {
     event HookAdded(address indexed hook);
     event HookRemoved(address indexed hook);
     event ExperienceUpgraded(address indexed oldVersion, address indexed newVersion);
+    event PortalFeeChanged(uint256 newFee);
     
     function company() external view returns (address);
     function world() external view returns (address);
@@ -24,6 +26,9 @@ interface IExperience {
     function entryFee() external view returns (uint256);
     function addHook(IExperienceHook hook) external;
     function removeHook() external;
+    function addPortalCondition(IPortalCondition condition) external;
+    function removePortalCondition() external;
+    function changePortalFee(uint256 fee) external;
 
     function connectionDetails() external view returns (bytes memory);
     function entering(JumpEntryRequest memory request) external payable returns (bytes memory);

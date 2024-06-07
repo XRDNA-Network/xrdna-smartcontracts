@@ -1,4 +1,4 @@
-import { Contract, Provider, Signer, TransactionResponse } from "ethers";
+import { AddressLike, Contract, Provider, Signer, TransactionResponse } from "ethers";
 import {abi} from "../../artifacts/contracts/asset/AssetFactory.sol/AssetFactory.json";
 import { RPCRetryHandler } from "../RPCRetryHandler";
 
@@ -22,15 +22,12 @@ export class AssetFactory {
         this.con = new Contract(this.address, abi, this.admin);
     }
 
-    async setERC20Implementation(impl: string): Promise<TransactionResponse> {
+    async setERC20Implementation(impl: AddressLike): Promise<TransactionResponse> {
        return await RPCRetryHandler.withRetry(()=>this.con.setERC20Implementation(impl));
     }
 
-    async setERC721Implementation(impl: string): Promise<TransactionResponse> {
+    async setERC721Implementation(impl: AddressLike): Promise<TransactionResponse> {
         return await RPCRetryHandler.withRetry(()=>this.con.setERC721Implementation(impl));
     }
 
-    async setAssetRegistry(registry: string): Promise<TransactionResponse> {
-        return await  RPCRetryHandler.withRetry(()=>this.con.setAssetRegistry(registry));
-    }
 }

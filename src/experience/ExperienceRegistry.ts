@@ -1,4 +1,4 @@
-import { Contract, Provider, Signer, TransactionResponse } from "ethers";
+import { AddressLike, Contract, Provider, Signer, TransactionResponse } from "ethers";
 import {abi} from "../../artifacts/contracts/experience/ExperienceRegistry.sol/ExperienceRegistry.json";
 import { RPCRetryHandler } from "../RPCRetryHandler";
 import { VectorAddress } from "../VectorAddress";
@@ -19,15 +19,7 @@ export class ExperienceRegistry {
         this.con = new Contract(this.address, abi, this.admin);
     }
 
-    async setCompanyRegistry(registry: string): Promise<TransactionResponse> {
-        return await RPCRetryHandler.withRetry(() => this.con.setCompanyRegistry(registry));
-    }
-
-    async setPortalRegistry(registry: string): Promise<TransactionResponse> {
-        return await RPCRetryHandler.withRetry(() => this.con.setPortalRegistry(registry));
-    }
-
-    async isExperience(exp: string): Promise<boolean> {
+    async isExperience(exp: AddressLike): Promise<boolean> {
         return await RPCRetryHandler.withRetry(() => this.con.isExperience(exp));
     }
 

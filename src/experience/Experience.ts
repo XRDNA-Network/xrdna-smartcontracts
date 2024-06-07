@@ -1,4 +1,4 @@
-import { Contract, Provider, Signer, TransactionResponse } from "ethers";
+import { AddressLike, Contract, Provider, Signer, TransactionResponse } from "ethers";
 import {abi} from "../../artifacts/contracts/experience/Experience.sol/Experience.json";
 import { RPCRetryHandler } from "../RPCRetryHandler";
 import { VectorAddress } from "../VectorAddress";
@@ -10,9 +10,9 @@ export interface IExperienceOpts {
 }
 
 export interface IJumpEntryRequest {
-    sourceWorld: string
-    sourceCompany: string
-    avatar: string
+    sourceWorld: AddressLike;
+    sourceCompany: AddressLike;
+    avatar: AddressLike;
 }
 
 
@@ -25,16 +25,19 @@ export class Experience {
         this.address = opts.address;
         this.admin = opts.admin;
         this.con = new Contract(this.address, abi, this.admin);
+
     }
 
-    async addHook(hook: string): Promise<TransactionResponse> {
+    async addHook(hook: AddressLike): Promise<TransactionResponse> {
         return await RPCRetryHandler.withRetry(() => this.con.addHook(hook));
     }
 
-    async removeHook(hook: string): Promise<TransactionResponse> {
+    async removeHook(hook: AddressLike): Promise<TransactionResponse> {
         return await RPCRetryHandler.withRetry(() => this.con.removeHook(hook));
     }
-    async company(): Promise<string> {
+
+
+    async company(): Promise<AddressLike> {
         return await RPCRetryHandler.withRetry(() => this.con.company());
     }
 

@@ -6,6 +6,11 @@ export const LogNames = {
     WorldRegistered: "WorldRegistered",
     SignerAdded: "SignerAdded",
     SignerRemoved: "SignerRemoved",
+    CompanyRegistered: "CompanyRegistered",
+    AvatarRegistered: "AvatarRegistered",
+    WorldHookSet: "WorldHookSet",
+    WorldHookRemoved: "WorldHookRemoved",
+    WorldUpgraded: "WorldUpgraded",
 
     //asset logs
     ERC20Minted: "ERC20Minted",
@@ -13,5 +18,6 @@ export const LogNames = {
     ERC20Upgraded: "ERC20Upgraded",
     ERC721Upgraded: "ERC721Upgraded",
     AssetCreated: "AssetCreated",
+
 
 }

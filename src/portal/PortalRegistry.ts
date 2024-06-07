@@ -1,4 +1,4 @@
-import { Contract, Provider, Signer, TransactionResponse } from "ethers";
+import { AddressLike, Contract, Provider, Signer, TransactionResponse } from "ethers";
 import {abi} from "../../artifacts/contracts/portal/PortalRegistry.sol/PortalRegistry.json";
 import { RPCRetryHandler } from "../RPCRetryHandler";
 import { VectorAddress } from "../VectorAddress";
@@ -10,13 +10,13 @@ export interface IPortalRegistryOpts {
 }
 
 export interface IAddPortalRequest {
-    destination: string
+    destination: AddressLike
     fee: string
 }
 
 export interface IPortalInfo {
-    destination: string
-    condition: string
+    destination: AddressLike
+    condition: AddressLike
     fee: string
 }
 
@@ -31,19 +31,11 @@ export class PortalRegistry {
         this.con = new Contract(this.address, abi, this.admin);
     }
 
-    async setExperienceRegistry(registry: string): Promise<TransactionResponse> {
-        return await RPCRetryHandler.withRetry(() => this.con.setExperienceRegistry(registry));
-    }
-
-    async setAvatarRegistry(registry: string): Promise<TransactionResponse> {
-        return await RPCRetryHandler.withRetry(() => this.con.setAvatarRegistry(registry));
-    }
-
-   async getPortalInfoById(id: string): Promise<IPortalInfo> {
+   async getPortalInfoById(id: bigint): Promise<IPortalInfo> {
         return await RPCRetryHandler.withRetry(() => this.con.getPortalInfoById(id));
     }
 
-    async getPortalInfoByAddress(addr: string): Promise<IPortalInfo> {
+    async getPortalInfoByAddress(addr: AddressLike): Promise<IPortalInfo> {
         return await RPCRetryHandler.withRetry(() => this.con.getPortalInfoByAddress(addr));
     }
 
@@ -51,36 +43,12 @@ export class PortalRegistry {
         return await RPCRetryHandler.withRetry(() => this.con.getPortalInfoByVectorAddress(vector));
     }
 
-    async getIdForExperience(experience: string): Promise<string> {
+    async getIdForExperience(experience: AddressLike): Promise<bigint> {
         return await RPCRetryHandler.withRetry(() => this.con.getIdForExperience(experience));
     }
 
-    async getIdForVectorAddress(vector: VectorAddress): Promise<string> {
+    async getIdForVectorAddress(vector: VectorAddress): Promise<bigint> {
         return await RPCRetryHandler.withRetry(() => this.con.getIdForVectorAddress(vector));
-    }
- 
-    async addPortal(req: IAddPortalRequest): Promise<TransactionResponse> {
-        return await RPCRetryHandler.withRetry(() => this.con.addPortal(req));
-    }
-
-    async jumpRequest(portalId: string): Promise<TransactionResponse> {
-        return await RPCRetryHandler.withRetry(() => this.con.jumpRequest(portalId));
-    }
-
-    async addCondition(condition: string): Promise<TransactionResponse> {
-        return await RPCRetryHandler.withRetry(() => this.con.addCondition(condition));
-    }
-
-    async removeCondition(): Promise<TransactionResponse> {
-        return await RPCRetryHandler.withRetry(() => this.con.removeCondition());
-    }
-
-    async changePortalFee(newFee: string): Promise<TransactionResponse> {
-        return await RPCRetryHandler.withRetry(() => this.con.changePortalFee(newFee));
-    }
-
-    async upgradeRegistry(newRegistry: string): Promise<TransactionResponse> {
-        return await RPCRetryHandler.withRetry(() => this.con.upgradeRegistry(newRegistry));
     }
 
 }

@@ -29,6 +29,7 @@ interface IWorld0_2 {
     function getName() external view returns (string memory);
     function addSigners(address[] memory sigs) external;
     function removeSigners(address[] memory sigs) external;
+    function version() external view returns (string memory);
     
     function registerCompany(CompanyRegistrationArgs memory args) external returns (address company);
     function registerAvatar(AvatarRegistrationRequest memory args) external returns (address avatar);

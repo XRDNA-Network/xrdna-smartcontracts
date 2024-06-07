@@ -26,6 +26,8 @@ contract World0_2 is IWorld0_2, ReentrancyGuard, AccessControl {
 
     bytes32 public constant SIGNER_ROLE = keccak256("SIGNER_ROLE");
 
+    string public constant override version = "0.2";
+    
     //Fields populated at master copy deploy time
     IWorldRegistry0_2 public worldRegistry;
     address public worldFactory;

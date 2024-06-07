@@ -1,4 +1,4 @@
-import { Provider, Signer, TransactionResponse, ethers } from "ethers";
+import { AddressLike, Provider, Signer, TransactionResponse, ethers } from "ethers";
 import {abi} from "../../artifacts/contracts/asset/NonTransferableERC721Asset.sol/NonTransferableERC721Asset.json";
 import { LogParser } from "../LogParser";
 import { LogNames } from "../LogNames";
@@ -10,8 +10,8 @@ export interface IERC721Opts {
 }
 
 export type ERC721InitData = {
-    issuer: string;
-    originChainAddress: string;
+    issuer: AddressLike;
+    originChainAddress: AddressLike;
     name: string;
     symbol: string;
     baseURI: string;
@@ -51,7 +51,7 @@ export class ERC721Asset {
         return await  RPCRetryHandler.withRetry(()=>this.asset.symbol());
     }
 
-    async balanceOf(account: string): Promise<bigint> {
+    async balanceOf(account: AddressLike): Promise<bigint> {
         return await  RPCRetryHandler.withRetry(()=>this.asset.balanceOf(account));
     }
 
@@ -67,26 +67,11 @@ export class ERC721Asset {
         return await  RPCRetryHandler.withRetry(()=>this.asset.decimals());
     }
 
-    async mint(account: string): Promise<ERC721MintResult> {
-        const t = await  RPCRetryHandler.withRetry(()=>this.asset.mint(account));
-        const r = await t.wait();
-        if(!r.status) {
-            throw new Error("Mint failed with txn status 0");
-        }
-        const logs = this.logParser.parseLogs(r);
-        const args = logs.get(LogNames.ERC721Minted);
-        if(!args) {
-            throw new Error("Mint failed");
-        }
-
-        return {tokenId: args[1], receipt: r};
-    }
-
-    async addHook(address: string): Promise<TransactionResponse> {
+    async addHook(address: AddressLike): Promise<TransactionResponse> {
         return await RPCRetryHandler.withRetry(() => this.asset.addHook(address));
     }
 
-    async removeHook(address: string): Promise<TransactionResponse> {
+    async removeHook(address: AddressLike): Promise<TransactionResponse> {
         return await RPCRetryHandler.withRetry(() => this.asset.removeHook(address));
     }
 }

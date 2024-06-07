@@ -1,4 +1,4 @@
-import { Provider, Signer, TransactionResponse, ethers } from "ethers";
+import { AddressLike, Provider, Signer, TransactionResponse, ethers } from "ethers";
 import {abi} from "../../artifacts/contracts/asset/NonTransferableERC20Asset.sol/NonTransferableERC20Asset.json";
 import { RPCRetryHandler } from "../RPCRetryHandler";
 
@@ -8,8 +8,8 @@ export interface IERC20Opts {
 }
 
 export type ERC20InitData = {
-    originChainAddress: string;
-    issuer: string;
+    originChainAddress: AddressLike;
+    issuer: AddressLike;
     originChainId: bigint;
     totalSupply: bigint;
     decimals: number;
@@ -35,11 +35,11 @@ export class ERC20Asset {
         this.asset = new ethers.Contract(this.address, abi, this.admin);
     }
 
-    async addHook(address: string): Promise<TransactionResponse> {
+    async addHook(address: AddressLike): Promise<TransactionResponse> {
         return await RPCRetryHandler.withRetry(() => this.asset.addHook(address));
     }
 
-    async removeHook(address: string): Promise<TransactionResponse> {
+    async removeHook(address: AddressLike): Promise<TransactionResponse> {
         return await RPCRetryHandler.withRetry(() => this.asset.removeHook(address));
     }
 
@@ -59,16 +59,12 @@ export class ERC20Asset {
         return await  RPCRetryHandler.withRetry(()=>this.asset.totalSupply());
     }
 
-    async balanceOf(account: string): Promise<bigint> {
+    async balanceOf(account: AddressLike): Promise<bigint> {
         return await  RPCRetryHandler.withRetry(()=>this.asset.balanceOf(account));
     }
 
     async decimals(): Promise<number> {
         return await  RPCRetryHandler.withRetry(()=>this.asset.decimals());
-    }
-
-    async mint(account: string, amount: bigint): Promise<TransactionResponse> {
-        return await  RPCRetryHandler.withRetry(()=>this.asset.mint(account, amount));
     }
 
 }

@@ -58,5 +58,8 @@ interface ICompany {
     function withdraw(uint256 amount) external;
     function setHook(ICompanyHook hook) external;
     function removeHook() external;
+
+    function addExperienceCondition(address experience, address condition) external;
+    function removeExperienceCondition(address experience) external;
     
 }

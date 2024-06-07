@@ -8,6 +8,8 @@ import {IBasicCompany} from './IBasicCompany.sol';
 import {IExperienceHook} from './IExperienceHook.sol';
 import {ReentrancyGuard} from '@openzeppelin/contracts/utils/ReentrancyGuard.sol';
 import {IExperienceRegistry} from './IExperienceRegistry.sol';
+import {IPortalRegistry} from '../portal/IPortalRegistry.sol';
+import {IPortalCondition} from '../portal/IPortalCondition.sol';
 
 struct ExperienceInitData {
     string name;
@@ -25,7 +27,7 @@ contract Experience is ReentrancyGuard, IExperience {
 
     //initialized when deploying master copy
     address public immutable experienceFactory;
-    address public immutable portalRegistry;
+    IPortalRegistry public immutable portalRegistry;
     IExperienceRegistry public immutable experienceRegistry;
 
     constructor(ExperienceConstructorArgs memory args) {
@@ -33,7 +35,7 @@ contract Experience is ReentrancyGuard, IExperience {
         require(args.portalRegistry != address(0), "Experience: zero address portalRegistry");
         require(args.experienceRegistry != address(0), "Experience: zero address experienceRegistry");
         experienceFactory = args.experienceFactory;
-        portalRegistry = args.portalRegistry;
+        portalRegistry = IPortalRegistry(args.portalRegistry);
         experienceRegistry = IExperienceRegistry(args.experienceRegistry);
     }
 
@@ -43,7 +45,7 @@ contract Experience is ReentrancyGuard, IExperience {
     }
 
     modifier onlyPortalRegistry() {
-        require(msg.sender == portalRegistry, "Experience: caller is not the portal registry");
+        require(msg.sender == address(portalRegistry), "Experience: caller is not the portal registry");
         _;
     }
 
@@ -103,6 +105,20 @@ contract Experience is ReentrancyGuard, IExperience {
         address a = address(hook);
         emit HookRemoved(a);
         delete hook;
+    }
+
+    function addPortalCondition(IPortalCondition condition) public onlyCompany notUpgraded {
+        portalRegistry.addCondition(condition);
+    }
+
+    function removePortalCondition() public onlyCompany {
+        portalRegistry.removeCondition();
+    }
+
+    function changePortalFee(uint256 fee) public onlyCompany {
+        entryFee = fee;
+        portalRegistry.changePortalFee(fee);
+        emit PortalFeeChanged(fee);
     }
 
     function company() external view override returns (address) {
