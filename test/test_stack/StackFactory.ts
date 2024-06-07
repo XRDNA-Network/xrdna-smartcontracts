@@ -4,6 +4,7 @@ import { AvatarStackImpl } from "./avatar/AvatarStackImpl";
 import { PortalStackImpl } from "./portal/PortalStackImpl";
 import { ExperienceStackImpl } from "./experience/ExperienceStackImpl";
 import { WorldStackImpl } from "./world/WorldStackImpl";
+import { CompanyStackImpl } from "./company/CompanyStackImpl";
 
 export enum StackType {
     ASSET = "ASSET",
@@ -54,7 +55,9 @@ export class StackFactory {
                 return e;
             }
             case StackType.COMPANY:
-                return <T><unknown>new CompanyStack();
+                const c = new CompanyStackImpl(StackFactory.getStack);
+                await c.deploy({admin: StackFactory.admin});
+                return c
             default:
                 throw new Error(`Unsupported stack type: ${type}`);
         }
