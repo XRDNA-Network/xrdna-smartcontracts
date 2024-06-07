@@ -35,12 +35,17 @@ export class StackFactory {
                 await a.deploy({admin: StackFactory.admin});
                 return a;
             }
-            
+
             case StackType.PORTAL: {
                 const p = new PortalStackImpl(StackFactory.getStack);
                 await p.deploy({admin: StackFactory.admin});
                 return p;
             
+            }
+            case StackType.EXPERIENCE: {
+                const e = new ExperienceStackImpl(StackFactory.getStack);
+                await e.deploy({admin: StackFactory.admin});
+                return e;
             }
             case StackType.COMPANY:
                 return <T><unknown>new CompanyStack();
