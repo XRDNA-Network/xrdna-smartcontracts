@@ -93,11 +93,20 @@ export class World {
         return await RPCRetryHandler.withRetry(() => this.world.version());
     }
 
-    async _only0_2(): Promise<void> {
-
+    async _onlyV2(): Promise<void> {
+        try {
+            const v = await this.version();
+            if(v && v != '0.2') {
+                throw new Error(`Unsupported version number: ${v}`);
+            }
+        } catch (e:any) {
+            throw new Error(`This function only supported in V2 contracts: ${e.message}`);
+        }
     }
 
     async registerCompany(request: ICompanyRegistrationRequest): Promise<ICompanyRegistrationResult> {
+        await this._onlyV2();
+
         const t = await RPCRetryHandler.withRetry(() => this.world.registerCompany(request));
         const receipt = await t.wait();
         if(!receipt.status) {
@@ -116,6 +125,8 @@ export class World {
     }
 
     async registerAvatar(request: IAvatarRegistrationRequest): Promise<IAvatarRegistrationResult> {
+        await this._onlyV2();
+
         const t = await RPCRetryHandler.withRetry(() => this.world.registerAvatar(request));
         const receipt = await t.wait();
         if(!receipt.status) {
@@ -133,6 +144,8 @@ export class World {
     }
 
     async upgrade(newWorldInitData: string): Promise<IUpgradeResult> {
+        await this._onlyV2();
+
         const t = await RPCRetryHandler.withRetry(() => this.world.upgrade(newWorldInitData));
         const receipt = await t.wait();
         if(!receipt.status) {
@@ -147,5 +160,15 @@ export class World {
             receipt,
             newWorldAddress: args[1]
         };
+    }
+
+    async setHook(hook: AddressLike): Promise<TransactionResponse> {
+        await this._onlyV2();
+        return await RPCRetryHandler.withRetry(() => this.world.setHook(hook));
+    }
+
+    async removeHook(): Promise<TransactionResponse> {
+        await this._onlyV2();
+        return await RPCRetryHandler.withRetry(() => this.world.removeHook());
     }
 }
