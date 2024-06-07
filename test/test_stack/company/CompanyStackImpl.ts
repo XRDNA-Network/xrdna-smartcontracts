@@ -1,8 +1,8 @@
-import { ethers } from "hardhat";
+import { ethers, ignition } from "hardhat";
 import { IBasicDeployArgs, IDeployable } from "../IDeployable";
-import { CompanyFactory } from "../../../src/company/CompanyFactory";
+import { CompanyFactory, ICreateCompanyArgs } from "../../../src/company/CompanyFactory";
 import { CompanyRegistry } from "../../../src/company/CompanyRegistry";
-import { ICompanyStack } from "./ICompanyStack";
+import { ICompanyStack, ICreateCompanyRequest } from "./ICompanyStack";
 import { StackCreatorFn, StackType } from "../StackFactory";
 import { WorldRegistry } from "../../../src";
 import { IWorldStack } from "../world/IWorldStack";
@@ -10,6 +10,9 @@ import { CompanyConstructorArgsStruct } from "../../../typechain-types/contracts
 import { Company } from "../../../src/company/Company";
 import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
 import { HardhatTestKeys } from "../../HardhatTestKeys";
+import CompanyFactoryModule from "../../../ignition/modules/company/CompanyFactory.module";
+import CompanyRegistryModule from "../../../ignition/modules/company/CompanyRegistry.module";
+import CompanyModule from "../../../ignition/modules/company/Company.module";
 
 
 export interface ICompanyStackArgs extends IBasicDeployArgs{
@@ -52,20 +55,19 @@ export class CompanyStackImpl implements ICompanyStack, IDeployable {
         }
     }
 
-    async createCompany(): Promise<Company> {
+    async createCompany(req: ICreateCompanyRequest): Promise<Company> {
         this._checkDeployed();
-        const worldStack = this.factory(StackType.WORLD) as IWorldStack;
-        const world = worldStack.createWorld();
-        const owner = await ethers.getImpersonatedSigner(HardhatTestKeys[10].address)
+        const world = req.world;
+        
         const companyRegResult = await world.registerCompany({
-            owner: await owner.getAddress(),
-            initData: "",
-            name: "Test Company"
+            owner: req.owner,
+            initData: req.initData,
+            name: req.name
         });
 
         const company = new Company({
             address: companyRegResult.company.toString(),
-            admin: owner
+            admin: await ethers.getImpersonatedSigner(req.owner)
         });
         
         this.companies.set(company.address, company);
@@ -77,12 +79,11 @@ export class CompanyStackImpl implements ICompanyStack, IDeployable {
         if(this.companyFactory) {
             return;
         }
-        const Factory = await ethers.getContractFactory("CompanyFactory");
-        const factory = await Factory.deploy(args.admin.getAddress(), [args.admin.getAddress()]);
-        const t = await factory.deploymentTransaction()?.wait();
-        this.companyFactoryAddress = t?.contractAddress || "";
+        const {companyFactory} = await ignition.deploy(CompanyFactoryModule);
+        const address  = await companyFactory.getAddress();
+
         this.companyFactory = new CompanyFactory({
-            address: this.companyFactoryAddress,
+            address,
             admin: args.admin
         });
     }
@@ -91,48 +92,22 @@ export class CompanyStackImpl implements ICompanyStack, IDeployable {
         if(this.companyRegistry) {
             return;
         }
-        const worldStack: IWorldStack = this.factory(StackType.WORLD)
-        const Registry = await ethers.getContractFactory("CompanyRegistry");
-        const registry = await Registry.deploy({
-            mainAdmin: args.admin.getAddress(),
-            companyFactory: this.companyFactoryAddress,
-            worldRegistry: worldStack.getWorldRegistry().address,
-            admins: [args.admin.getAddress()]
-        
-        });
-        const t = await registry.deploymentTransaction()?.wait();
-        this.companyRegistryAddress = t?.contractAddress || "";
+        const {companyRegistry} = await ignition.deploy(CompanyRegistryModule);
+        const address = await companyRegistry.getAddress();
         this.companyRegistry = new CompanyRegistry({
-            address: this.companyRegistryAddress,
+            address,
             admin: args.admin
         });
 
-        await this.companyFactory.setAuthorizedRegistry(this.companyRegistryAddress);
+        await this.companyFactory.setAuthorizedRegistry(address);
 
     }
 
     async _deployMasterCompany() {
 
-        const experienceStack = this.factory(StackType.EXPERIENCE);
-        const assetStack = this.factory(StackType.ASSET);
-        const avatarStack = this.factory(StackType.AVATAR);
-
-
-        const cArgs: CompanyConstructorArgsStruct = {
-            companyFactory: this.companyFactoryAddress,
-            companyRegistry: this.companyRegistryAddress,
-            experienceRegistry: experienceStack.getExperienceRegistry().address,
-            assetRegistry: assetStack.getAssetRegistry().address,
-            avatarRegistry: avatarStack.getAvatarRegistry().address
-        }
-        const Company = await ethers.getContractFactory("Company");
-        const company = await Company.deploy(cArgs);
-        const t = await company.deploymentTransaction()?.wait();
-        const companyAddress = t?.contractAddress || "";
-        await this.companyFactory.setImplementation(companyAddress);
-        this.masterCompanyAddress = companyAddress;
+        const {companyMasterCopy} = await ignition.deploy(CompanyModule);
+        this.masterCompanyAddress = await companyMasterCopy.getAddress();
+        await this.companyFactory.setImplementation(this.masterCompanyAddress);
+        
     }
-
-
-
 }
