@@ -4,6 +4,8 @@ import AvatarRegistryModule from "./AvatarRegistry.module";
 import CompanyRegistryModule from "../company/CompanyRegistry.module";
 import ExperienceRegistryModule from "../experience/ExperienceRegistry.module";
 import PortalRegistryModule from "../portal/PortalRegistry.module";
+import WorldModule from "../world/World.module";
+import NTAssetMasterModule from "../asset/NTAssetMaster.module";
 
 
 
@@ -14,6 +16,7 @@ export default buildModule("Avatar", (m) => {
     const companyReg = m.useModule(CompanyRegistryModule);
     const expReg = m.useModule(ExperienceRegistryModule);
     const portalReg = m.useModule(PortalRegistryModule);
+    const assets = m.useModule(NTAssetMasterModule);
 
     const args = {
         avatarFactory: fac.avatarFactory,
@@ -27,8 +30,15 @@ export default buildModule("Avatar", (m) => {
                 reg.avatarRegistry, 
                 expReg.experienceRegistry,
                 portalReg.portalRegistry,
-                companyReg.companyRegistry]
+                companyReg.companyRegistry,
+                assets.erc20Master,
+                assets.erc721Master
+            ]
     });
     m.call(fac.avatarFactory, "setImplementation", [master]);
-    return {avatarMasterCopy: master}
+    return {
+        avatarMasterCopy: master,
+        avatarRegistry: reg.avatarRegistry,
+        avatarFactory: fac.avatarFactory,
+    }
 });

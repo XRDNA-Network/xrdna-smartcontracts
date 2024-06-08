@@ -16,6 +16,7 @@ import {ICompanyRegistry} from './ICompanyRegistry.sol';
 import {ReentrancyGuard} from '@openzeppelin/contracts/utils/ReentrancyGuard.sol';
 import {ICompanyHook} from './ICompanyHook.sol';
 import {IPortalCondition} from '../portal/IPortalCondition.sol';
+import {IAssetHook} from '../asset/IAssetHook.sol';
 
 struct CompanyConstructorArgs {
     address companyFactory;
@@ -28,6 +29,8 @@ struct CompanyConstructorArgs {
 interface IBaseAsset {
     function issuer() external view returns (address);
     function assetType () external view returns (uint256);
+    function addHook(IAssetHook hook) external;
+    function removeHook() external;
 }
 
 interface INextVersion {
@@ -43,7 +46,7 @@ contract Company is ICompany, ReentrancyGuard, AccessControl {
     ICompanyRegistry public immutable companyRegistry;
     IExperienceRegistry public immutable experienceRegistry;
     IAssetRegistry public immutable assetRegistry;
-    IAvatarRegistry public avatarRegistry;
+    IAvatarRegistry public immutable avatarRegistry;
 
 
     //Fields initialized by initialize function
@@ -226,5 +229,13 @@ contract Company is ICompany, ReentrancyGuard, AccessControl {
     function changeExperiencePortalFee(address experience, uint256 fee) public onlyRole(DEFAULT_ADMIN_ROLE) {
         IExperience exp = IExperience(experience);
         exp.changePortalFee(fee);
+    }
+
+    function addAssetHook(address asset, IAssetHook aHook) public onlyRole(DEFAULT_ADMIN_ROLE) {
+        IBaseAsset(asset).addHook(aHook);
+    }
+
+    function removeAssetHook(address asset) public onlyRole(DEFAULT_ADMIN_ROLE) {
+        IBaseAsset(asset).removeHook();
     }
 }

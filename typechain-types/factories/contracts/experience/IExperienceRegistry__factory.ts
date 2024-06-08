@@ -43,6 +43,79 @@ const _abi = [
   {
     inputs: [
       {
+        components: [
+          {
+            internalType: "string",
+            name: "x",
+            type: "string",
+          },
+          {
+            internalType: "string",
+            name: "y",
+            type: "string",
+          },
+          {
+            internalType: "string",
+            name: "z",
+            type: "string",
+          },
+          {
+            internalType: "uint256",
+            name: "t",
+            type: "uint256",
+          },
+          {
+            internalType: "uint256",
+            name: "p",
+            type: "uint256",
+          },
+          {
+            internalType: "uint256",
+            name: "p_sub",
+            type: "uint256",
+          },
+        ],
+        internalType: "struct VectorAddress",
+        name: "vector",
+        type: "tuple",
+      },
+    ],
+    name: "getExperienceByVector",
+    outputs: [
+      {
+        components: [
+          {
+            internalType: "address",
+            name: "company",
+            type: "address",
+          },
+          {
+            internalType: "address",
+            name: "world",
+            type: "address",
+          },
+          {
+            internalType: "contract IExperience",
+            name: "experience",
+            type: "address",
+          },
+          {
+            internalType: "uint256",
+            name: "portalId",
+            type: "uint256",
+          },
+        ],
+        internalType: "struct ExperienceInfo",
+        name: "",
+        type: "tuple",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
         internalType: "address",
         name: "exp",
         type: "address",

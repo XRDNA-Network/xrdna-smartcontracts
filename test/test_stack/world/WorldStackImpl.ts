@@ -1,20 +1,38 @@
 import { ignition } from "hardhat";
-import WorldFactoryModule from "../../../ignition/modules/world/WorldFactory.module";
-import { World, WorldFactory, WorldRegistry } from "../../../src";
-import { IBasicDeployArgs, IDeployable } from "../IDeployable";
-import { StackCreatorFn } from "../StackFactory";
+import {  AssetFactory, AssetRegistry, RegistrarRegistry, WorldFactory, WorldRegistry } from "../../../src";
+import {  IDeployable } from "../IDeployable";
+import {  StackFactory } from "../StackFactory";
 import { IWorldStack } from "./IWorldStack";
-import WorldRegistryModule from "../../../ignition/modules/world/WorldRegistry.module";
 import WorldModule from "../../../ignition/modules/world/World.module";
-import { Signer } from "ethers";
+import { AvatarRegistry } from "../../../src/avatar/AvatarRegistry";
+import { AvatarFactory } from "../../../src/avatar/AvatarFactory";
+import { CompanyRegistry } from "../../../src/company/CompanyRegistry";
+import { CompanyFactory } from "../../../src/company/CompanyFactory";
+import { ExperienceFactory, ExperienceRegistry } from "../../../src/experience";
+import { PortalRegistry } from "../../../src/portal";
 
+export interface IWorldStackDeployment {
+    assetRegistry: AssetRegistry;
+    assetFactory: AssetFactory;
+    avatarRegistry: AvatarRegistry;
+    avatarFactory: AvatarFactory;
+    companyRegistry: CompanyRegistry;
+    companyFactory: CompanyFactory;
+    experienceRegistry: ExperienceRegistry;
+    experienceFactory: ExperienceFactory;
+    portalRegistry: PortalRegistry;
+    registrarRegistry: RegistrarRegistry;
+    worldFactory: WorldFactory;
+    worldRegistry: WorldRegistry;
+}
 export class WorldStackImpl implements IWorldStack, IDeployable {
     
         worldFactory!: WorldFactory;
         worldRegistry!: WorldRegistry;
         deployed: boolean = false;
+        result?: IWorldStackDeployment;
     
-        constructor(readonly factory: StackCreatorFn) {}
+        constructor(readonly factory: StackFactory) {}
     
         getWorldFactory(): WorldFactory {
             if(!this.deployed) {
@@ -33,36 +51,67 @@ export class WorldStackImpl implements IWorldStack, IDeployable {
         }
 
     
-        async deploy(args: IBasicDeployArgs): Promise<void> {
+        async deploy(): Promise<IWorldStackDeployment> {
             if(this.deployed) {
-                return;
+                return this.result!;
             }
-            await this._deployFactory(args);
-            await this._deployRegistry(args);
-            await this._deployMasterWorld(args);
+            
+            const mod = await ignition.deploy(WorldModule);
+            const r = {
+                assetFactory: new AssetFactory({
+                    address: await mod.assetFactory.getAddress(),
+                    admin: this.factory.admins.assetRegistryAdmin
+                }),
+                assetRegistry: new AssetRegistry({
+                    address: await mod.assetRegistry.getAddress(),
+                    admin: this.factory.admins.assetRegistryAdmin
+                }),
+                avatarFactory: new AvatarFactory({
+                    address: await mod.avatarFactory.getAddress(),
+                    admin: this.factory.admins.avatarRegistryAdmin
+                }),
+                avatarRegistry: new AvatarRegistry({
+                    address: await mod.avatarRegistry.getAddress(),
+                    admin: this.factory.admins.avatarRegistryAdmin
+                }),
+                companyFactory: new CompanyFactory({
+                    address: await mod.companyFactory.getAddress(),
+                    admin: this.factory.admins.companyRegistryAdmin
+                }),
+                companyRegistry: new CompanyRegistry({
+                    address: await mod.companyRegistry.getAddress(),
+                    admin: this.factory.admins.companyRegistryAdmin
+                }),
+                experienceFactory: new ExperienceFactory({
+                    address: await mod.experienceFactory.getAddress(),
+                    admin: this.factory.admins.experienceRegistryAdmin
+                }),
+                experienceRegistry: new ExperienceRegistry({
+                    address: await mod.experienceRegistry.getAddress(),
+                    admin: this.factory.admins.experienceRegistryAdmin
+                }),
+                portalRegistry: new PortalRegistry({
+                    address: await mod.portalRegistry.getAddress(),
+                    admin: this.factory.admins.portalRegistryAdmin
+                }),
+                registrarRegistry: new RegistrarRegistry({
+                    address: await mod.registrarRegistry.getAddress(),
+                    admin: this.factory.admins.registrarAdmin
+                }),
+                worldFactory: new WorldFactory({
+                    address: await mod.worldFactory.getAddress(),
+                    admin: this.factory.admins.worldRegistryAdmin
+                }),
+                worldRegistry: new WorldRegistry({
+                    address: await mod.worldRegistry.getAddress(),
+                    admin: this.factory.admins.worldRegistryAdmin
+                })
+            } as IWorldStackDeployment;
+            this.worldFactory = r.worldFactory;
+            this.worldRegistry = r.worldRegistry;
+            this.result = r;
             this.deployed = true;
-        }
-    
-        async _deployFactory(args: IBasicDeployArgs): Promise<void> {
-            const {worldFactory} = await ignition.deploy(WorldFactoryModule);
-            const address = await worldFactory.getAddress();
-            this.worldFactory = new WorldFactory({
-                address,
-                factoryAdmin: args.admin
-            });
-        }
-
-        async _deployRegistry(args: IBasicDeployArgs): Promise<void> {
-            const {worldRegistry} = await ignition.deploy(WorldRegistryModule);
-            const address = await worldRegistry.getAddress();
-            this.worldRegistry = new WorldRegistry({
-                address,
-                admin: args.admin
-            });
-        }
-
-        async _deployMasterWorld(args: IBasicDeployArgs): Promise<void> {
-            await ignition.deploy(WorldModule);
+            return r;
         }
 
 }

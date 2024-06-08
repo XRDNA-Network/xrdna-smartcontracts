@@ -3,6 +3,7 @@ import AssetRegistryModule from "./AssetRegistry.module";
 import AssetFactoryModule from "./AssetFactory.module";
 import AvatarRegistryModule from "../avatar/AvatarRegistry.module";
 import ExperienceRegistryModule from "../experience/ExperienceRegistry.module";
+import CompanyModule from "../company/Company.module";
 
 export default buildModule("NTAssets", (m) => {
     
@@ -18,13 +19,25 @@ export default buildModule("NTAssets", (m) => {
         experienceRegistry: experienceRegistry.experienceRegistry
     }
     
+    const afterSet = [
+        fac.assetFactory, 
+        reg.assetRegistry, 
+        avatarRegistry.avatarRegistry, 
+        experienceRegistry.experienceRegistry
+    ]
     const masterERC20 = m.contract("NonTransferableERC20Asset", [args], {
-        after: [avatarRegistry.avatarRegistry, experienceRegistry.experienceRegistry, fac.assetFactory, reg.assetRegistry]
+        after: afterSet
     });
     const masterERC721 = m.contract("NonTransferableERC721Asset", [args], {
-        after: [avatarRegistry.avatarRegistry, experienceRegistry.experienceRegistry, fac.assetFactory, reg.assetRegistry]
+        after: afterSet
     });
     m.call(fac.assetFactory, "setERC20Implementation", [masterERC20]);
     m.call(fac.assetFactory, "setERC721Implementation", [masterERC721]);
-    return {erc20Master: masterERC20, erc721Master: masterERC721}
+    return {
+        assetRegistry: reg.assetRegistry,
+        assetFactory: fac.assetFactory,
+        experienceRegistry: experienceRegistry.experienceRegistry,
+        avatarRegistry: avatarRegistry.avatarRegistry,
+        erc20Master: masterERC20, 
+        erc721Master: masterERC721}
 });

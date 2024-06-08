@@ -6,7 +6,7 @@ import { RPCRetryHandler } from "../RPCRetryHandler";
 
 export interface IERC721Opts {
     address: string;
-    admin: Signer;
+    provider: Provider;
 }
 
 export type ERC721InitData = {
@@ -32,14 +32,14 @@ export class ERC721Asset {
     }
 
     readonly address: string;
-    readonly admin: Provider | Signer;
+    readonly provider: Provider;
     readonly asset: ethers.Contract;
     
     private logParser: LogParser;
     constructor(opts: IERC721Opts) {
         this.address = opts.address;
-        this.admin = opts.admin;
-        this.asset = new ethers.Contract(this.address, abi, this.admin);
+        this.provider = opts.provider;
+        this.asset = new ethers.Contract(this.address, abi, this.provider);
         this.logParser = new LogParser(abi, this.address);
     }
 
@@ -65,13 +65,5 @@ export class ERC721Asset {
 
     async decimals(): Promise<number> {
         return await  RPCRetryHandler.withRetry(()=>this.asset.decimals());
-    }
-
-    async addHook(address: AddressLike): Promise<TransactionResponse> {
-        return await RPCRetryHandler.withRetry(() => this.asset.addHook(address));
-    }
-
-    async removeHook(address: AddressLike): Promise<TransactionResponse> {
-        return await RPCRetryHandler.withRetry(() => this.asset.removeHook(address));
     }
 }

@@ -132,6 +132,7 @@ export interface World0_2Interface extends Interface {
       | "hasRole"
       | "hook"
       | "init"
+      | "isSigner"
       | "name"
       | "registerAvatar"
       | "registerCompany"
@@ -144,6 +145,8 @@ export interface World0_2Interface extends Interface {
       | "upgrade"
       | "upgradeComplete"
       | "upgraded"
+      | "version"
+      | "withdraw"
       | "worldFactory"
       | "worldRegistry"
   ): FunctionFragment;
@@ -206,6 +209,10 @@ export interface World0_2Interface extends Interface {
     functionFragment: "init",
     values: [WorldCreateRequestStruct]
   ): string;
+  encodeFunctionData(
+    functionFragment: "isSigner",
+    values: [AddressLike]
+  ): string;
   encodeFunctionData(functionFragment: "name", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "registerAvatar",
@@ -245,6 +252,11 @@ export interface World0_2Interface extends Interface {
     values: [AddressLike]
   ): string;
   encodeFunctionData(functionFragment: "upgraded", values?: undefined): string;
+  encodeFunctionData(functionFragment: "version", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: "withdraw",
+    values: [BigNumberish]
+  ): string;
   encodeFunctionData(
     functionFragment: "worldFactory",
     values?: undefined
@@ -285,6 +297,7 @@ export interface World0_2Interface extends Interface {
   decodeFunctionResult(functionFragment: "hasRole", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "hook", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "init", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "isSigner", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "name", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "registerAvatar",
@@ -315,6 +328,8 @@ export interface World0_2Interface extends Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "upgraded", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "version", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "withdraw", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "worldFactory",
     data: BytesLike
@@ -571,6 +586,8 @@ export interface World0_2 extends BaseContract {
     "nonpayable"
   >;
 
+  isSigner: TypedContractMethod<[signer: AddressLike], [boolean], "view">;
+
   name: TypedContractMethod<[], [string], "view">;
 
   registerAvatar: TypedContractMethod<
@@ -622,6 +639,10 @@ export interface World0_2 extends BaseContract {
   >;
 
   upgraded: TypedContractMethod<[], [boolean], "view">;
+
+  version: TypedContractMethod<[], [string], "view">;
+
+  withdraw: TypedContractMethod<[amount: BigNumberish], [void], "nonpayable">;
 
   worldFactory: TypedContractMethod<[], [string], "view">;
 
@@ -683,6 +704,9 @@ export interface World0_2 extends BaseContract {
     "nonpayable"
   >;
   getFunction(
+    nameOrSignature: "isSigner"
+  ): TypedContractMethod<[signer: AddressLike], [boolean], "view">;
+  getFunction(
     nameOrSignature: "name"
   ): TypedContractMethod<[], [string], "view">;
   getFunction(
@@ -734,6 +758,12 @@ export interface World0_2 extends BaseContract {
   getFunction(
     nameOrSignature: "upgraded"
   ): TypedContractMethod<[], [boolean], "view">;
+  getFunction(
+    nameOrSignature: "version"
+  ): TypedContractMethod<[], [string], "view">;
+  getFunction(
+    nameOrSignature: "withdraw"
+  ): TypedContractMethod<[amount: BigNumberish], [void], "nonpayable">;
   getFunction(
     nameOrSignature: "worldFactory"
   ): TypedContractMethod<[], [string], "view">;

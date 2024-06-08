@@ -4,6 +4,19 @@
   "sourceName": "contracts/company/Company.sol",
   "abi": [
     {
+      "inputs": [
+        {
+          "internalType": "contract IAssetHook",
+          "name": "hook",
+          "type": "address"
+        }
+      ],
+      "name": "addHook",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
       "inputs": [],
       "name": "assetType",
       "outputs": [
@@ -27,6 +40,13 @@
         }
       ],
       "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "removeHook",
+      "outputs": [],
+      "stateMutability": "nonpayable",
       "type": "function"
     }
   ],

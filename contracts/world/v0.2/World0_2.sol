@@ -29,10 +29,10 @@ contract World0_2 is IWorld0_2, ReentrancyGuard, AccessControl {
     string public constant override version = "0.2";
     
     //Fields populated at master copy deploy time
-    IWorldRegistry0_2 public worldRegistry;
-    address public worldFactory;
-    ICompanyRegistry public companyRegistry;
-    IAvatarRegistry public avatarRegistry;
+    IWorldRegistry0_2 public immutable worldRegistry;
+    address public immutable worldFactory;
+    ICompanyRegistry public immutable companyRegistry;
+    IAvatarRegistry public immutable avatarRegistry;
 
     modifier onlyFactory {
         require(worldFactory != address(0), "World0_2: worldFactory not set");
@@ -146,6 +146,10 @@ contract World0_2 is IWorld0_2, ReentrancyGuard, AccessControl {
         }
     }
 
+    function isSigner(address signer) external view override returns (bool) {
+        return hasRole(SIGNER_ROLE, signer);
+    }
+
     function registerCompany(CompanyRegistrationArgs memory args) public  onlySigner nonReentrant returns (address company) {
         require(args.owner != address(0), "World0_2: company owner cannot be zero address");
         require(bytes(args.name).length > 0, "World0_2: company name cannot be empty");
@@ -197,6 +201,11 @@ contract World0_2 is IWorld0_2, ReentrancyGuard, AccessControl {
     function removeHook() external onlyRole(DEFAULT_ADMIN_ROLE) {
         hook = IWorldHook(address(0));
         emit WorldHookRemoved();
+    }
+
+    function withdraw(uint256 amount) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        require(amount <= address(this).balance, "World0_2: amount exceeds balance");
+        payable(owner).transfer(amount);
     }
     
 }

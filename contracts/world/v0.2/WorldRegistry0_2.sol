@@ -67,7 +67,11 @@ contract WorldRegistry0_2 is IWorldRegistry0_2, ReentrancyGuard, AccessControl {
         previousRegistry = IWorldRegistry0_1(args.oldWorldRegistry);
         registrarRegistry = IRegistrarRegistry(args.registrarRegistry);
         _grantRole(DEFAULT_ADMIN_ROLE, args.defaultAdmin);
-        _grantRole(VECTOR_AUTHORITY_ROLE, args.vectorAuthority);
+        _grantRole(ADMIN_ROLE, args.defaultAdmin);
+    }
+
+    receive() external payable {
+       
     }
 
     function getWorldByName(string memory name) external view returns (address) {
@@ -125,6 +129,13 @@ contract WorldRegistry0_2 is IWorldRegistry0_2, ReentrancyGuard, AccessControl {
         _worldsByName[name] = world;
         _worlds[world] = true;
         _worldsByVector[keccak256(bytes(va.asLookupKey()))] = world;
+        if(msg.value > 0) {
+            if(request.sendTokensToWorldOwner) {
+                payable(request.owner).transfer(msg.value);
+            } else {
+                payable(address(world)).transfer(msg.value);
+            }
+        }
         emit WorldRegistered(world, request.owner, va);
     }
 

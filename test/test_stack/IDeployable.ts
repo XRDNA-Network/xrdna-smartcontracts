@@ -1,12 +1,14 @@
-import { Signer } from "ethers";
 
 
 export interface IBasicDeployArgs {
-    admin: Signer;
+    validate(): void;
 }
 
+export interface IDeployResult {
+
+}
 export interface IDeployable {
 
-    deploy<T extends IBasicDeployArgs>(args: T): Promise<void>;
+    deploy(): Promise<any>;
     
 }

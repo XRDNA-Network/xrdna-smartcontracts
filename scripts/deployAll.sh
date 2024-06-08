@@ -7,11 +7,8 @@ if [ -z "$NETWORK" ]; then
 fi
 CWD=`pwd`
 echo "Deploying to $NETWORK from $CWD"
-MODULES=(./ignition/modules/asset/NTAssetMaster.module.ts \
-         ./ignition/modules/avatar/Avatar.module.ts \
-         ./ignition/modules/company/Company.module.ts \
-         ./ignition/modules/experience/Experience.module.ts \
-         ./ignition/modules/world/World.module.ts)
+# World module encapsulates all other modules so deploying it deploys all
+MODULES=(./ignition/modules/asset/World.module.ts)
 
 for module in ${MODULES[@]};
 do

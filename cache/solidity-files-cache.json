@@ -1607,8 +1607,8 @@
       ]
     },
     "/Users/mdcoon/git/xrdna-smartcontracts/contracts/world/v0.2/IWorld0_2.sol": {
-      "lastModificationDate": 1717697344399,
-      "contentHash": "1ab9077c398af7089050254bec1d433e",
+      "lastModificationDate": 1717871306744,
+      "contentHash": "2b907d2ba79edcf54da1381063f863c7",
       "sourceName": "contracts/world/v0.2/IWorld0_2.sol",
       "solcConfig": {
         "version": "0.8.24",
@@ -1723,8 +1723,8 @@
       ]
     },
     "/Users/mdcoon/git/xrdna-smartcontracts/contracts/world/v0.2/WorldRegistry0_2.sol": {
-      "lastModificationDate": 1717692659096,
-      "contentHash": "2221c696fcf958a8356ab4ab5ea45cd1",
+      "lastModificationDate": 1717871818875,
+      "contentHash": "29da9abd47335ee3ac058f83c11eb44e",
       "sourceName": "contracts/world/v0.2/WorldRegistry0_2.sol",
       "solcConfig": {
         "version": "0.8.24",
@@ -1883,8 +1883,8 @@
       ]
     },
     "/Users/mdcoon/git/xrdna-smartcontracts/contracts/avatar/IAvatar.sol": {
-      "lastModificationDate": 1717685271450,
-      "contentHash": "5db3f9aeceaa2e91ab09bc0194361d5b",
+      "lastModificationDate": 1717773008044,
+      "contentHash": "c821c7e9bdc371cfb56120a357073a53",
       "sourceName": "contracts/avatar/IAvatar.sol",
       "solcConfig": {
         "version": "0.8.24",
@@ -1913,7 +1913,9 @@
       "imports": [
         "./IAvatarHook.sol",
         "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol",
-        "../experience/IExperience.sol"
+        "../experience/IExperience.sol",
+        "../asset/IERC721Asset.sol",
+        "./WearableLinkedList.sol"
       ],
       "versionPragmas": [
         "^0.8.24"
@@ -1923,8 +1925,8 @@
       ]
     },
     "/Users/mdcoon/git/xrdna-smartcontracts/contracts/experience/IExperience.sol": {
-      "lastModificationDate": 1717686055057,
-      "contentHash": "37866849edaa547ae4423760222feddc",
+      "lastModificationDate": 1717774978816,
+      "contentHash": "e2fe7d8de3d6281be2018336650e06dc",
       "sourceName": "contracts/experience/IExperience.sol",
       "solcConfig": {
         "version": "0.8.24",
@@ -1952,7 +1954,8 @@
       },
       "imports": [
         "../VectorAddress.sol",
-        "./IExperienceHook.sol"
+        "./IExperienceHook.sol",
+        "../portal/IPortalCondition.sol"
       ],
       "versionPragmas": [
         "^0.8.24"
@@ -1962,8 +1965,8 @@
       ]
     },
     "/Users/mdcoon/git/xrdna-smartcontracts/contracts/asset/BaseAsset.sol": {
-      "lastModificationDate": 1717695266436,
-      "contentHash": "8a3c93303bd7b20e6dadcfa3e413f900",
+      "lastModificationDate": 1717870701230,
+      "contentHash": "032665f61eaab4e895b776734f0208df",
       "sourceName": "contracts/asset/BaseAsset.sol",
       "solcConfig": {
         "version": "0.8.24",
@@ -2079,8 +2082,8 @@
       ]
     },
     "/Users/mdcoon/git/xrdna-smartcontracts/contracts/portal/PortalRegistry.sol": {
-      "lastModificationDate": 1717702481102,
-      "contentHash": "67670b3136c26f71cbd5f4afb9632db9",
+      "lastModificationDate": 1717774806827,
+      "contentHash": "1b1c96c74dafae8eb784d59def347076",
       "sourceName": "contracts/portal/PortalRegistry.sol",
       "solcConfig": {
         "version": "0.8.24",
@@ -2200,8 +2203,8 @@
       ]
     },
     "/Users/mdcoon/git/xrdna-smartcontracts/contracts/world/v0.2/World0_2.sol": {
-      "lastModificationDate": 1717697430457,
-      "contentHash": "4a4a60d4d92e0ac0d5273695a9f10fd8",
+      "lastModificationDate": 1717871835178,
+      "contentHash": "835837f7c1f89bf654ca93ceb42d3746",
       "sourceName": "contracts/world/v0.2/World0_2.sol",
       "solcConfig": {
         "version": "0.8.24",
@@ -2286,8 +2289,8 @@
       ]
     },
     "/Users/mdcoon/git/xrdna-smartcontracts/contracts/experience/ExperienceRegistry.sol": {
-      "lastModificationDate": 1717702861055,
-      "contentHash": "741781276fb6987811cea263aa3d2118",
+      "lastModificationDate": 1717771475917,
+      "contentHash": "b2d301d39e9e89f5cfc8efd72ae4acc0",
       "sourceName": "contracts/experience/ExperienceRegistry.sol",
       "solcConfig": {
         "version": "0.8.24",
@@ -2409,8 +2412,8 @@
       ]
     },
     "/Users/mdcoon/git/xrdna-smartcontracts/contracts/experience/IExperienceRegistry.sol": {
-      "lastModificationDate": 1717694926801,
-      "contentHash": "ef5cd81c22d8f7720a92a5e09d04d37c",
+      "lastModificationDate": 1717771427245,
+      "contentHash": "41cc5ca5c0b5c233b253575f24ffafee",
       "sourceName": "contracts/experience/IExperienceRegistry.sol",
       "solcConfig": {
         "version": "0.8.24",
@@ -2450,8 +2453,8 @@
       ]
     },
     "/Users/mdcoon/git/xrdna-smartcontracts/contracts/experience/Experience.sol": {
-      "lastModificationDate": 1717687240601,
-      "contentHash": "93b7e14a2e41f5923cef20dae5d356b8",
+      "lastModificationDate": 1717775027938,
+      "contentHash": "fe345de0918814ff65fcd100145f9608",
       "sourceName": "contracts/experience/Experience.sol",
       "solcConfig": {
         "version": "0.8.24",
@@ -2483,7 +2486,9 @@
         "./IBasicCompany.sol",
         "./IExperienceHook.sol",
         "@openzeppelin/contracts/utils/ReentrancyGuard.sol",
-        "./IExperienceRegistry.sol"
+        "./IExperienceRegistry.sol",
+        "../portal/IPortalRegistry.sol",
+        "../portal/IPortalCondition.sol"
       ],
       "versionPragmas": [
         "^0.8.24"
@@ -2535,8 +2540,8 @@
       ]
     },
     "/Users/mdcoon/git/xrdna-smartcontracts/contracts/company/Company.sol": {
-      "lastModificationDate": 1717697834901,
-      "contentHash": "46ef94e94dbd8da8568e7c420a80b3e4",
+      "lastModificationDate": 1717870676202,
+      "contentHash": "9bf848a4ee294c8b031ddc0306d055c9",
       "sourceName": "contracts/company/Company.sol",
       "solcConfig": {
         "version": "0.8.24",
@@ -2576,7 +2581,9 @@
         "../asset/IERC721Asset.sol",
         "./ICompanyRegistry.sol",
         "@openzeppelin/contracts/utils/ReentrancyGuard.sol",
-        "./ICompanyHook.sol"
+        "./ICompanyHook.sol",
+        "../portal/IPortalCondition.sol",
+        "../asset/IAssetHook.sol"
       ],
       "versionPragmas": [
         "^0.8.24"
@@ -2588,8 +2595,8 @@
       ]
     },
     "/Users/mdcoon/git/xrdna-smartcontracts/contracts/company/ICompany.sol": {
-      "lastModificationDate": 1717697663092,
-      "contentHash": "5bc64e70fa0d460a39fedec7747b4da3",
+      "lastModificationDate": 1717864437016,
+      "contentHash": "4ba989997eeffc15999111a35424e8b7",
       "sourceName": "contracts/company/ICompany.sol",
       "solcConfig": {
         "version": "0.8.24",
@@ -2618,7 +2625,8 @@
       "imports": [
         "../VectorAddress.sol",
         "../asset/AssetFactory.sol",
-        "./ICompanyHook.sol"
+        "./ICompanyHook.sol",
+        "../asset/IAssetHook.sol"
       ],
       "versionPragmas": [
         "^0.8.24"
@@ -2826,8 +2834,8 @@
       ]
     },
     "/Users/mdcoon/git/xrdna-smartcontracts/contracts/avatar/Avatar.sol": {
-      "lastModificationDate": 1717687263575,
-      "contentHash": "65cfae4e40c07f2b7ce380dfac750ab3",
+      "lastModificationDate": 1717773034487,
+      "contentHash": "c2e1a55bf3c4ff302f12702164e4314b",
       "sourceName": "contracts/avatar/Avatar.sol",
       "solcConfig": {
         "version": "0.8.24",
@@ -2855,7 +2863,7 @@
       },
       "imports": [
         "./IAvatar.sol",
-        "./AddressLinkedList.sol",
+        "./WearableLinkedList.sol",
         "./IAvatarHook.sol",
         "../VectorAddress.sol",
         "../LibStringCase.sol",
@@ -2867,7 +2875,8 @@
         "@openzeppelin/contracts/utils/cryptography/ECDSA.sol",
         "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol",
         "@openzeppelin/contracts/utils/ReentrancyGuard.sol",
-        "./IAvatarRegistry.sol"
+        "./IAvatarRegistry.sol",
+        "../asset/IERC721Asset.sol"
       ],
       "versionPragmas": [
         "^0.8.24"
@@ -2875,42 +2884,6 @@
       "artifacts": [
         "Avatar",
         "IExperienceRegistry"
-      ]
-    },
-    "/Users/mdcoon/git/xrdna-smartcontracts/contracts/avatar/AddressLinkedList.sol": {
-      "lastModificationDate": 1717607146486,
-      "contentHash": "7c31f57a7f4f04e391174aa74216da33",
-      "sourceName": "contracts/avatar/AddressLinkedList.sol",
-      "solcConfig": {
-        "version": "0.8.24",
-        "settings": {
-          "optimizer": {
-            "enabled": true,
-            "runs": 200
-          },
-          "outputSelection": {
-            "*": {
-              "*": [
-                "metadata",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "abi",
-                "evm.methodIdentifiers"
-              ],
-              "": [
-                "ast"
-              ]
-            }
-          },
-          "evmVersion": "paris"
-        }
-      },
-      "imports": [],
-      "versionPragmas": [
-        "^0.8.24"
-      ],
-      "artifacts": [
-        "AddressLinkedList"
       ]
     },
     "/Users/mdcoon/git/xrdna-smartcontracts/contracts/avatar/AvatarRegistry.sol": {
@@ -3277,6 +3250,42 @@
       ],
       "artifacts": [
         "IBasicAvatarRegistry"
+      ]
+    },
+    "/Users/mdcoon/git/xrdna-smartcontracts/contracts/avatar/WearableLinkedList.sol": {
+      "lastModificationDate": 1717772772741,
+      "contentHash": "812a6798a0ff2af2844c4ee85226f472",
+      "sourceName": "contracts/avatar/WearableLinkedList.sol",
+      "solcConfig": {
+        "version": "0.8.24",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "metadata",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "abi",
+                "evm.methodIdentifiers"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          },
+          "evmVersion": "paris"
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.24"
+      ],
+      "artifacts": [
+        "WearableLinkedList"
       ]
     }
   }

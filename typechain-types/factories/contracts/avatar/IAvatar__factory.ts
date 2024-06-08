@@ -108,6 +108,12 @@ const _abi = [
         name: "wearable",
         type: "address",
       },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "tokenId",
+        type: "uint256",
+      },
     ],
     name: "WearableAdded",
     type: "event",
@@ -121,6 +127,12 @@ const _abi = [
         name: "wearable",
         type: "address",
       },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "tokenId",
+        type: "uint256",
+      },
     ],
     name: "WearableRemoved",
     type: "event",
@@ -128,9 +140,21 @@ const _abi = [
   {
     inputs: [
       {
-        internalType: "address",
+        components: [
+          {
+            internalType: "address",
+            name: "asset",
+            type: "address",
+          },
+          {
+            internalType: "uint256",
+            name: "tokenId",
+            type: "uint256",
+          },
+        ],
+        internalType: "struct Wearable",
         name: "wearable",
-        type: "address",
+        type: "tuple",
       },
     ],
     name: "addWearable",
@@ -231,9 +255,21 @@ const _abi = [
     name: "getWearables",
     outputs: [
       {
-        internalType: "address[]",
+        components: [
+          {
+            internalType: "address",
+            name: "asset",
+            type: "address",
+          },
+          {
+            internalType: "uint256",
+            name: "tokenId",
+            type: "uint256",
+          },
+        ],
+        internalType: "struct Wearable[]",
         name: "",
-        type: "address[]",
+        type: "tuple[]",
       },
     ],
     stateMutability: "view",
@@ -265,9 +301,21 @@ const _abi = [
   {
     inputs: [
       {
-        internalType: "address",
+        components: [
+          {
+            internalType: "address",
+            name: "asset",
+            type: "address",
+          },
+          {
+            internalType: "uint256",
+            name: "tokenId",
+            type: "uint256",
+          },
+        ],
+        internalType: "struct Wearable",
         name: "wearable",
-        type: "address",
+        type: "tuple",
       },
     ],
     name: "isWearing",
@@ -381,9 +429,21 @@ const _abi = [
   {
     inputs: [
       {
-        internalType: "address",
+        components: [
+          {
+            internalType: "address",
+            name: "asset",
+            type: "address",
+          },
+          {
+            internalType: "uint256",
+            name: "tokenId",
+            type: "uint256",
+          },
+        ],
+        internalType: "struct Wearable",
         name: "wearable",
-        type: "address",
+        type: "tuple",
       },
     ],
     name: "removeWearable",

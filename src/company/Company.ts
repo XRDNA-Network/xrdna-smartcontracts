@@ -1,4 +1,4 @@
-import { Contract, Provider, Signer, TransactionResponse } from "ethers";
+import { AddressLike, Contract, Provider, Signer, TransactionResponse } from "ethers";
 import {abi} from "../../artifacts/contracts/company/Company.sol/Company.json";
 import { RPCRetryHandler } from "../RPCRetryHandler";
 import { VectorAddress } from "../VectorAddress";
@@ -98,5 +98,12 @@ export class Company {
 
     async removeExperienceCondition(exp: string, condition: string): Promise<TransactionResponse> {
         return await RPCRetryHandler.withRetry(() => this.con.removeExperienceCondition(exp, condition));
+    }
+
+    async addAssetHook(asset: AddressLike, hook: AddressLike): Promise<TransactionResponse> {
+        return await RPCRetryHandler.withRetry(() => this.con.addAssetHook(asset, hook));
+    }
+    async removeAssetHook(asset: AddressLike ): Promise<TransactionResponse> {
+        return await RPCRetryHandler.withRetry(() => this.con.removeAssetHook(asset));
     }
 }

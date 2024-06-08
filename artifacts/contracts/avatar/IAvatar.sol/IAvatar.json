@@ -101,6 +101,12 @@
           "internalType": "address",
           "name": "wearable",
           "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "tokenId",
+          "type": "uint256"
         }
       ],
       "name": "WearableAdded",
@@ -114,6 +120,12 @@
           "internalType": "address",
           "name": "wearable",
           "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "tokenId",
+          "type": "uint256"
         }
       ],
       "name": "WearableRemoved",
@@ -122,9 +134,21 @@
     {
       "inputs": [
         {
-          "internalType": "address",
+          "components": [
+            {
+              "internalType": "address",
+              "name": "asset",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256",
+              "name": "tokenId",
+              "type": "uint256"
+            }
+          ],
+          "internalType": "struct Wearable",
           "name": "wearable",
-          "type": "address"
+          "type": "tuple"
         }
       ],
       "name": "addWearable",
@@ -225,9 +249,21 @@
       "name": "getWearables",
       "outputs": [
         {
-          "internalType": "address[]",
+          "components": [
+            {
+              "internalType": "address",
+              "name": "asset",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256",
+              "name": "tokenId",
+              "type": "uint256"
+            }
+          ],
+          "internalType": "struct Wearable[]",
           "name": "",
-          "type": "address[]"
+          "type": "tuple[]"
         }
       ],
       "stateMutability": "view",
@@ -259,9 +295,21 @@
     {
       "inputs": [
         {
-          "internalType": "address",
+          "components": [
+            {
+              "internalType": "address",
+              "name": "asset",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256",
+              "name": "tokenId",
+              "type": "uint256"
+            }
+          ],
+          "internalType": "struct Wearable",
           "name": "wearable",
-          "type": "address"
+          "type": "tuple"
         }
       ],
       "name": "isWearing",
@@ -375,9 +423,21 @@
     {
       "inputs": [
         {
-          "internalType": "address",
+          "components": [
+            {
+              "internalType": "address",
+              "name": "asset",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256",
+              "name": "tokenId",
+              "type": "uint256"
+            }
+          ],
+          "internalType": "struct Wearable",
           "name": "wearable",
-          "type": "address"
+          "type": "tuple"
         }
       ],
       "name": "removeWearable",

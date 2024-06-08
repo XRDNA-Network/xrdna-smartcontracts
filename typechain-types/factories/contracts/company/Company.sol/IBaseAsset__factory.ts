@@ -10,6 +10,19 @@ import type {
 
 const _abi = [
   {
+    inputs: [
+      {
+        internalType: "contract IAssetHook",
+        name: "hook",
+        type: "address",
+      },
+    ],
+    name: "addHook",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
     inputs: [],
     name: "assetType",
     outputs: [
@@ -33,6 +46,13 @@ const _abi = [
       },
     ],
     stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "removeHook",
+    outputs: [],
+    stateMutability: "nonpayable",
     type: "function",
   },
 ] as const;

@@ -74,6 +74,8 @@ export interface ExperienceInterface extends Interface {
     nameOrSignature:
       | "_company"
       | "addHook"
+      | "addPortalCondition"
+      | "changePortalFee"
       | "company"
       | "connectionDetails"
       | "entering"
@@ -86,6 +88,7 @@ export interface ExperienceInterface extends Interface {
       | "name"
       | "portalRegistry"
       | "removeHook"
+      | "removePortalCondition"
       | "upgrade"
       | "upgraded"
       | "vectorAddress"
@@ -98,12 +101,21 @@ export interface ExperienceInterface extends Interface {
       | "HookAdded"
       | "HookRemoved"
       | "JumpEntry"
+      | "PortalFeeChanged"
   ): EventFragment;
 
   encodeFunctionData(functionFragment: "_company", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "addHook",
     values: [AddressLike]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "addPortalCondition",
+    values: [AddressLike]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "changePortalFee",
+    values: [BigNumberish]
   ): string;
   encodeFunctionData(functionFragment: "company", values?: undefined): string;
   encodeFunctionData(
@@ -141,6 +153,10 @@ export interface ExperienceInterface extends Interface {
     functionFragment: "removeHook",
     values?: undefined
   ): string;
+  encodeFunctionData(
+    functionFragment: "removePortalCondition",
+    values?: undefined
+  ): string;
   encodeFunctionData(functionFragment: "upgrade", values: [BytesLike]): string;
   encodeFunctionData(functionFragment: "upgraded", values?: undefined): string;
   encodeFunctionData(
@@ -151,6 +167,14 @@ export interface ExperienceInterface extends Interface {
 
   decodeFunctionResult(functionFragment: "_company", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "addHook", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "addPortalCondition",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "changePortalFee",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "company", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "connectionDetails",
@@ -178,6 +202,10 @@ export interface ExperienceInterface extends Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "removeHook", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "removePortalCondition",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "upgrade", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "upgraded", data: BytesLike): Result;
   decodeFunctionResult(
@@ -249,6 +277,18 @@ export namespace JumpEntryEvent {
   export type LogDescription = TypedLogDescription<Event>;
 }
 
+export namespace PortalFeeChangedEvent {
+  export type InputTuple = [newFee: BigNumberish];
+  export type OutputTuple = [newFee: bigint];
+  export interface OutputObject {
+    newFee: bigint;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
+}
+
 export interface Experience extends BaseContract {
   connect(runner?: ContractRunner | null): Experience;
   waitForDeployment(): Promise<this>;
@@ -296,6 +336,18 @@ export interface Experience extends BaseContract {
 
   addHook: TypedContractMethod<[_hook: AddressLike], [void], "nonpayable">;
 
+  addPortalCondition: TypedContractMethod<
+    [condition: AddressLike],
+    [void],
+    "nonpayable"
+  >;
+
+  changePortalFee: TypedContractMethod<
+    [fee: BigNumberish],
+    [void],
+    "nonpayable"
+  >;
+
   company: TypedContractMethod<[], [string], "view">;
 
   connectionDetails: TypedContractMethod<[], [string], "view">;
@@ -332,6 +384,8 @@ export interface Experience extends BaseContract {
 
   removeHook: TypedContractMethod<[], [void], "nonpayable">;
 
+  removePortalCondition: TypedContractMethod<[], [void], "nonpayable">;
+
   upgrade: TypedContractMethod<[initData: BytesLike], [void], "nonpayable">;
 
   upgraded: TypedContractMethod<[], [boolean], "view">;
@@ -350,6 +404,12 @@ export interface Experience extends BaseContract {
   getFunction(
     nameOrSignature: "addHook"
   ): TypedContractMethod<[_hook: AddressLike], [void], "nonpayable">;
+  getFunction(
+    nameOrSignature: "addPortalCondition"
+  ): TypedContractMethod<[condition: AddressLike], [void], "nonpayable">;
+  getFunction(
+    nameOrSignature: "changePortalFee"
+  ): TypedContractMethod<[fee: BigNumberish], [void], "nonpayable">;
   getFunction(
     nameOrSignature: "company"
   ): TypedContractMethod<[], [string], "view">;
@@ -395,6 +455,9 @@ export interface Experience extends BaseContract {
     nameOrSignature: "removeHook"
   ): TypedContractMethod<[], [void], "nonpayable">;
   getFunction(
+    nameOrSignature: "removePortalCondition"
+  ): TypedContractMethod<[], [void], "nonpayable">;
+  getFunction(
     nameOrSignature: "upgrade"
   ): TypedContractMethod<[initData: BytesLike], [void], "nonpayable">;
   getFunction(
@@ -434,6 +497,13 @@ export interface Experience extends BaseContract {
     JumpEntryEvent.InputTuple,
     JumpEntryEvent.OutputTuple,
     JumpEntryEvent.OutputObject
+  >;
+  getEvent(
+    key: "PortalFeeChanged"
+  ): TypedContractEvent<
+    PortalFeeChangedEvent.InputTuple,
+    PortalFeeChangedEvent.OutputTuple,
+    PortalFeeChangedEvent.OutputObject
   >;
 
   filters: {
@@ -479,6 +549,17 @@ export interface Experience extends BaseContract {
       JumpEntryEvent.InputTuple,
       JumpEntryEvent.OutputTuple,
       JumpEntryEvent.OutputObject
+    >;
+
+    "PortalFeeChanged(uint256)": TypedContractEvent<
+      PortalFeeChangedEvent.InputTuple,
+      PortalFeeChangedEvent.OutputTuple,
+      PortalFeeChangedEvent.OutputObject
+    >;
+    PortalFeeChanged: TypedContractEvent<
+      PortalFeeChangedEvent.InputTuple,
+      PortalFeeChangedEvent.OutputTuple,
+      PortalFeeChangedEvent.OutputObject
     >;
   };
 }

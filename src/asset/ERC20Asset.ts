@@ -4,7 +4,7 @@ import { RPCRetryHandler } from "../RPCRetryHandler";
 
 export interface IERC20Opts {
     address: string;
-    admin: Signer;
+    provider: Provider;
 }
 
 export type ERC20InitData = {
@@ -20,7 +20,7 @@ export type ERC20InitData = {
 export class ERC20Asset {
 
     readonly address: string;
-    readonly admin: Provider | Signer;
+    readonly provider: Provider;
     readonly asset: ethers.Contract;
 
     static encodeInitData(data: ERC20InitData): string {
@@ -31,16 +31,8 @@ export class ERC20Asset {
 
     constructor(opts: IERC20Opts) {
         this.address = opts.address;
-        this.admin = opts.admin;
-        this.asset = new ethers.Contract(this.address, abi, this.admin);
-    }
-
-    async addHook(address: AddressLike): Promise<TransactionResponse> {
-        return await RPCRetryHandler.withRetry(() => this.asset.addHook(address));
-    }
-
-    async removeHook(address: AddressLike): Promise<TransactionResponse> {
-        return await RPCRetryHandler.withRetry(() => this.asset.removeHook(address));
+        this.provider = opts.provider;
+        this.asset = new ethers.Contract(this.address, abi, this.provider);
     }
 
     async name(): Promise<string> {

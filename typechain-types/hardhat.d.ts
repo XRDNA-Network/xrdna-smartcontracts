@@ -170,10 +170,6 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.FilterByWorld__factory>;
     getContractFactory(
-      name: "AddressLinkedList",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.AddressLinkedList__factory>;
-    getContractFactory(
       name: "Avatar",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.Avatar__factory>;
@@ -209,6 +205,10 @@ declare module "hardhat/types/runtime" {
       name: "IAvatarRegistry",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IAvatarRegistry__factory>;
+    getContractFactory(
+      name: "WearableLinkedList",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.WearableLinkedList__factory>;
     getContractFactory(
       name: "BaseFactory",
       signerOrOptions?: ethers.Signer | FactoryOptions
@@ -570,11 +570,6 @@ declare module "hardhat/types/runtime" {
       signer?: ethers.Signer
     ): Promise<Contracts.FilterByWorld>;
     getContractAt(
-      name: "AddressLinkedList",
-      address: string | ethers.Addressable,
-      signer?: ethers.Signer
-    ): Promise<Contracts.AddressLinkedList>;
-    getContractAt(
       name: "Avatar",
       address: string | ethers.Addressable,
       signer?: ethers.Signer
@@ -619,6 +614,11 @@ declare module "hardhat/types/runtime" {
       address: string | ethers.Addressable,
       signer?: ethers.Signer
     ): Promise<Contracts.IAvatarRegistry>;
+    getContractAt(
+      name: "WearableLinkedList",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.WearableLinkedList>;
     getContractAt(
       name: "BaseFactory",
       address: string | ethers.Addressable,
@@ -982,10 +982,6 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.FilterByWorld>;
     deployContract(
-      name: "AddressLinkedList",
-      signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.AddressLinkedList>;
-    deployContract(
       name: "Avatar",
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.Avatar>;
@@ -1021,6 +1017,10 @@ declare module "hardhat/types/runtime" {
       name: "IAvatarRegistry",
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.IAvatarRegistry>;
+    deployContract(
+      name: "WearableLinkedList",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.WearableLinkedList>;
     deployContract(
       name: "BaseFactory",
       signerOrOptions?: ethers.Signer | DeployContractOptions
@@ -1382,11 +1382,6 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.FilterByWorld>;
     deployContract(
-      name: "AddressLinkedList",
-      args: any[],
-      signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.AddressLinkedList>;
-    deployContract(
       name: "Avatar",
       args: any[],
       signerOrOptions?: ethers.Signer | DeployContractOptions
@@ -1431,6 +1426,11 @@ declare module "hardhat/types/runtime" {
       args: any[],
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.IAvatarRegistry>;
+    deployContract(
+      name: "WearableLinkedList",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.WearableLinkedList>;
     deployContract(
       name: "BaseFactory",
       args: any[],

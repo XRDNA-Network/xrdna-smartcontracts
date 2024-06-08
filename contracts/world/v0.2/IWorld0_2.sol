@@ -29,6 +29,7 @@ interface IWorld0_2 {
     function getName() external view returns (string memory);
     function addSigners(address[] memory sigs) external;
     function removeSigners(address[] memory sigs) external;
+    function isSigner(address signer) external view returns (bool);
     function version() external view returns (string memory);
     
     function registerCompany(CompanyRegistrationArgs memory args) external returns (address company);
@@ -39,4 +40,5 @@ interface IWorld0_2 {
     function upgradeComplete(address nextVersion) external;
     function setHook(IWorldHook hook) external;
     function removeHook() external;
+    function withdraw(uint256 amount) external;
 }

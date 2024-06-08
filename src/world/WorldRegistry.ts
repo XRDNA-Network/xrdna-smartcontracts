@@ -51,6 +51,8 @@ export class WorldRegistry {
         
 
         const {registrarSigner, details} = props;
+        
+        
         const t = await RPCRetryHandler.withRetry(() => (this.registry.connect(registrarSigner) as any).register(details, {
             value: props.tokens
         }));

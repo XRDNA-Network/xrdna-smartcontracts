@@ -1,9 +1,8 @@
 import { ethers } from "hardhat";
-import { WorldUtils } from "./world/WorldUtils";
 import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
 import { IWorldInfo, RegistrarRegistry, VectorAddress, World, WorldRegistry, signVectorAddress } from "../src";
 import { expect } from "chai";
-import { ZeroAddress } from "ethers";
+import { ZeroAddress, } from "ethers";
 
 
 //deployed to local network
@@ -86,16 +85,19 @@ describe("World Registration", () => {
 
         const sig = await signVectorAddress(baseVector, vectorAddressAuthority);
         
-        const worldInfo: IWorldInfo = {
+        const worldInfo = {
+            sendTokensToWorldOwner: false,
+            oldWorld: ZeroAddress,
+            owner: worldOwner.address,
             baseVector,
-            name: "TestWorld",
-            vectorAuthorizedSignature: sig
-        };
+            name: "Test World",
+            registrarId,
+            initData: "",
+            vectorAuthoritySignature: sig
+        }
+
         const r = await worldRegistry.createWorld({
             registrarSigner,
-            registrarId,
-            owner: worldOwner.address,
-            tokensToOwner: false,
             details: worldInfo,
             tokens: BigInt("1000000000000000000")
         });

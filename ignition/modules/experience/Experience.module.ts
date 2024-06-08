@@ -23,5 +23,9 @@ export default buildModule("Experience", (m) => {
                 portalReg.portalRegistry]
     });
     m.call(fac.experienceFactory, "setImplementation", [master]);
-    return {experienceMasterCopy: master}
+    return {
+        experienceRegistry: reg.experienceRegistry,
+        experienceFactory: fac.experienceFactory,
+        experienceMasterCopy: master
+    }
 });

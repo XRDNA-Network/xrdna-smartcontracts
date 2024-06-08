@@ -41,6 +41,20 @@ export type VectorAddressStructOutput = [
   p_sub: bigint
 ] & { x: string; y: string; z: string; t: bigint; p: bigint; p_sub: bigint };
 
+export type ExperienceInfoStruct = {
+  company: AddressLike;
+  world: AddressLike;
+  experience: AddressLike;
+  portalId: BigNumberish;
+};
+
+export type ExperienceInfoStructOutput = [
+  company: string,
+  world: string,
+  experience: string,
+  portalId: bigint
+] & { company: string; world: string; experience: string; portalId: bigint };
+
 export type RegisterExperienceRequestStruct = {
   vector: VectorAddressStruct;
   initData: BytesLike;
@@ -56,6 +70,7 @@ export type RegisterExperienceRequestStructOutput = [
 export interface IExperienceRegistryInterface extends Interface {
   getFunction(
     nameOrSignature:
+      | "getExperienceByVector"
       | "isExperience"
       | "registerExperience"
       | "setCompanyRegistry"
@@ -66,6 +81,10 @@ export interface IExperienceRegistryInterface extends Interface {
 
   getEvent(nameOrSignatureOrTopic: "ExperienceRegistered"): EventFragment;
 
+  encodeFunctionData(
+    functionFragment: "getExperienceByVector",
+    values: [VectorAddressStruct]
+  ): string;
   encodeFunctionData(
     functionFragment: "isExperience",
     values: [AddressLike]
@@ -91,6 +110,10 @@ export interface IExperienceRegistryInterface extends Interface {
     values: [BytesLike]
   ): string;
 
+  decodeFunctionResult(
+    functionFragment: "getExperienceByVector",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "isExperience",
     data: BytesLike
@@ -185,6 +208,12 @@ export interface IExperienceRegistry extends BaseContract {
     event?: TCEvent
   ): Promise<this>;
 
+  getExperienceByVector: TypedContractMethod<
+    [vector: VectorAddressStruct],
+    [ExperienceInfoStructOutput],
+    "view"
+  >;
+
   isExperience: TypedContractMethod<[exp: AddressLike], [boolean], "view">;
 
   registerExperience: TypedContractMethod<
@@ -221,6 +250,13 @@ export interface IExperienceRegistry extends BaseContract {
     key: string | FunctionFragment
   ): T;
 
+  getFunction(
+    nameOrSignature: "getExperienceByVector"
+  ): TypedContractMethod<
+    [vector: VectorAddressStruct],
+    [ExperienceInfoStructOutput],
+    "view"
+  >;
   getFunction(
     nameOrSignature: "isExperience"
   ): TypedContractMethod<[exp: AddressLike], [boolean], "view">;

@@ -3,9 +3,9 @@
 /* eslint-disable */
 export * as avatarSol from "./Avatar.sol";
 export * as avatarRegistrySol from "./AvatarRegistry.sol";
-export { AddressLinkedList__factory } from "./AddressLinkedList__factory";
 export { AvatarFactory__factory } from "./AvatarFactory__factory";
 export { IAvatar__factory } from "./IAvatar__factory";
 export { IAvatarFactory__factory } from "./IAvatarFactory__factory";
 export { IAvatarHook__factory } from "./IAvatarHook__factory";
 export { IAvatarRegistry__factory } from "./IAvatarRegistry__factory";
+export { WearableLinkedList__factory } from "./WearableLinkedList__factory";

@@ -63,6 +63,20 @@ export type VectorAddressStructOutput = [
   p_sub: bigint
 ] & { x: string; y: string; z: string; t: bigint; p: bigint; p_sub: bigint };
 
+export type ExperienceInfoStruct = {
+  company: AddressLike;
+  world: AddressLike;
+  experience: AddressLike;
+  portalId: BigNumberish;
+};
+
+export type ExperienceInfoStructOutput = [
+  company: string,
+  world: string,
+  experience: string,
+  portalId: bigint
+] & { company: string; world: string; experience: string; portalId: bigint };
+
 export type RegisterExperienceRequestStruct = {
   vector: VectorAddressStruct;
   initData: BytesLike;
@@ -80,9 +94,10 @@ export interface ExperienceRegistryInterface extends Interface {
     nameOrSignature:
       | "ADMIN_ROLE"
       | "DEFAULT_ADMIN_ROLE"
+      | "_experiencesByVectorHash"
       | "experiencesByAddress"
       | "experiencesByName"
-      | "experiencesByVectorHash"
+      | "getExperienceByVector"
       | "getRoleAdmin"
       | "grantRole"
       | "hasRole"
@@ -114,6 +129,10 @@ export interface ExperienceRegistryInterface extends Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
+    functionFragment: "_experiencesByVectorHash",
+    values: [BytesLike]
+  ): string;
+  encodeFunctionData(
     functionFragment: "experiencesByAddress",
     values: [AddressLike]
   ): string;
@@ -122,8 +141,8 @@ export interface ExperienceRegistryInterface extends Interface {
     values: [string]
   ): string;
   encodeFunctionData(
-    functionFragment: "experiencesByVectorHash",
-    values: [BytesLike]
+    functionFragment: "getExperienceByVector",
+    values: [VectorAddressStruct]
   ): string;
   encodeFunctionData(
     functionFragment: "getRoleAdmin",
@@ -180,6 +199,10 @@ export interface ExperienceRegistryInterface extends Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "_experiencesByVectorHash",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "experiencesByAddress",
     data: BytesLike
   ): Result;
@@ -188,7 +211,7 @@ export interface ExperienceRegistryInterface extends Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "experiencesByVectorHash",
+    functionFragment: "getExperienceByVector",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -362,6 +385,19 @@ export interface ExperienceRegistry extends BaseContract {
 
   DEFAULT_ADMIN_ROLE: TypedContractMethod<[], [string], "view">;
 
+  _experiencesByVectorHash: TypedContractMethod<
+    [arg0: BytesLike],
+    [
+      [string, string, string, bigint] & {
+        company: string;
+        world: string;
+        experience: string;
+        portalId: bigint;
+      }
+    ],
+    "view"
+  >;
+
   experiencesByAddress: TypedContractMethod<
     [arg0: AddressLike],
     [
@@ -388,16 +424,9 @@ export interface ExperienceRegistry extends BaseContract {
     "view"
   >;
 
-  experiencesByVectorHash: TypedContractMethod<
-    [arg0: BytesLike],
-    [
-      [string, string, string, bigint] & {
-        company: string;
-        world: string;
-        experience: string;
-        portalId: bigint;
-      }
-    ],
+  getExperienceByVector: TypedContractMethod<
+    [vector: VectorAddressStruct],
+    [ExperienceInfoStructOutput],
     "view"
   >;
 
@@ -476,6 +505,20 @@ export interface ExperienceRegistry extends BaseContract {
     nameOrSignature: "DEFAULT_ADMIN_ROLE"
   ): TypedContractMethod<[], [string], "view">;
   getFunction(
+    nameOrSignature: "_experiencesByVectorHash"
+  ): TypedContractMethod<
+    [arg0: BytesLike],
+    [
+      [string, string, string, bigint] & {
+        company: string;
+        world: string;
+        experience: string;
+        portalId: bigint;
+      }
+    ],
+    "view"
+  >;
+  getFunction(
     nameOrSignature: "experiencesByAddress"
   ): TypedContractMethod<
     [arg0: AddressLike],
@@ -504,17 +547,10 @@ export interface ExperienceRegistry extends BaseContract {
     "view"
   >;
   getFunction(
-    nameOrSignature: "experiencesByVectorHash"
+    nameOrSignature: "getExperienceByVector"
   ): TypedContractMethod<
-    [arg0: BytesLike],
-    [
-      [string, string, string, bigint] & {
-        company: string;
-        world: string;
-        experience: string;
-        portalId: bigint;
-      }
-    ],
+    [vector: VectorAddressStruct],
+    [ExperienceInfoStructOutput],
     "view"
   >;
   getFunction(

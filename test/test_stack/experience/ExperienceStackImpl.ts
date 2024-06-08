@@ -5,64 +5,26 @@ import { IExperienceStack } from "./IExperienceStack";
 import ExperienceFactoryModule from "../../../ignition/modules/experience/ExperienceFactory.module";
 import ExperienceRegistryModule from "../../../ignition/modules/experience/ExperienceRegistry.module";
 import ExperienceModule from "../../../ignition/modules/experience/Experience.module";
-import { StackCreatorFn } from "../StackFactory";
+import { StackFactory } from "../StackFactory";
+import { IWorldStackDeployment } from "../world/WorldStackImpl";
 
 
 export class ExperienceStackImpl implements IExperienceStack, IDeployable {
 
-    deployed: boolean = false;
-    experienceFactory!: ExperienceFactory;
-    experienceRegistry!: ExperienceRegistry;
+   
 
-    constructor(readonly factory: StackCreatorFn) {}
+    constructor(readonly factory: StackFactory, readonly world: IWorldStackDeployment) {}
 
     getExperienceFactory(): ExperienceFactory {
-        if(!this.deployed) {
-            throw new Error("ExperienceStack not deployed");
-        }
-
-        return this.experienceFactory;
+        return this.world.experienceFactory;
     }
 
     getExperienceRegistry(): ExperienceRegistry {
-        if(!this.deployed) {
-            throw new Error("ExperienceStack not deployed");
-        }
-
-        return this.experienceRegistry;
+        return this.world.experienceRegistry;
     }
 
-    async deploy(args: IBasicDeployArgs): Promise<void> {
-        if(this.deployed) {
-            return;
-        }
-
-        await this._deployFactory(args);
-        await this._deployRegistry(args);
-        await this._deployMasterExperience(args);
-        this.deployed = true;
-    }
-
-    async _deployFactory(args: IBasicDeployArgs): Promise<void> {
-        const {experienceFactory} = await ignition.deploy(ExperienceFactoryModule);
-        const address = await experienceFactory.getAddress();
-        this.experienceFactory = new ExperienceFactory({
-            address,
-            admin: args.admin
-        });
-    }
-
-    async _deployRegistry(args: IBasicDeployArgs): Promise<void> {
-        const {experienceRegistry} = await ignition.deploy(ExperienceRegistryModule);
-        const address = await experienceRegistry.getAddress();
-        this.experienceRegistry = new ExperienceRegistry({
-            address,
-            admin: args.admin
-        });
-    }
-
-    async _deployMasterExperience(args: IBasicDeployArgs): Promise<void> {
-        await ignition.deploy(ExperienceModule);
+    async deploy(): Promise<void> {
+        
     }
     
 }

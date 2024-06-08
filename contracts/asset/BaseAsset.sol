@@ -33,7 +33,7 @@ abstract contract BaseAsset is ReentrancyGuard {
     address public immutable assetFactory;
     address public immutable assetRegistry;
     IAvatarRegistry public immutable avatarRegistry;
-    IExperienceRegistry public experienceRegistry;
+    IExperienceRegistry public immutable experienceRegistry;
 
 
     modifier onlyFactory() {

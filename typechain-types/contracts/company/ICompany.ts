@@ -73,7 +73,9 @@ export type CompanyInitArgsStructOutput = [
 export interface ICompanyInterface extends Interface {
   getFunction(
     nameOrSignature:
+      | "addAssetHook"
       | "addExperience"
+      | "addExperienceCondition"
       | "addSigner"
       | "canMint"
       | "init"
@@ -81,6 +83,8 @@ export interface ICompanyInterface extends Interface {
       | "mint"
       | "name"
       | "owner"
+      | "removeAssetHook"
+      | "removeExperienceCondition"
       | "removeHook"
       | "removeSigner"
       | "revoke"
@@ -106,8 +110,16 @@ export interface ICompanyInterface extends Interface {
   ): EventFragment;
 
   encodeFunctionData(
+    functionFragment: "addAssetHook",
+    values: [AddressLike, AddressLike]
+  ): string;
+  encodeFunctionData(
     functionFragment: "addExperience",
     values: [AddExperienceArgsStruct]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "addExperienceCondition",
+    values: [AddressLike, AddressLike]
   ): string;
   encodeFunctionData(
     functionFragment: "addSigner",
@@ -131,6 +143,14 @@ export interface ICompanyInterface extends Interface {
   ): string;
   encodeFunctionData(functionFragment: "name", values?: undefined): string;
   encodeFunctionData(functionFragment: "owner", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: "removeAssetHook",
+    values: [AddressLike]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "removeExperienceCondition",
+    values: [AddressLike]
+  ): string;
   encodeFunctionData(
     functionFragment: "removeHook",
     values?: undefined
@@ -164,7 +184,15 @@ export interface ICompanyInterface extends Interface {
   encodeFunctionData(functionFragment: "world", values?: undefined): string;
 
   decodeFunctionResult(
+    functionFragment: "addAssetHook",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "addExperience",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "addExperienceCondition",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "addSigner", data: BytesLike): Result;
@@ -174,6 +202,14 @@ export interface ICompanyInterface extends Interface {
   decodeFunctionResult(functionFragment: "mint", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "name", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "removeAssetHook",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "removeExperienceCondition",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "removeHook", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "removeSigner",
@@ -354,8 +390,20 @@ export interface ICompany extends BaseContract {
     event?: TCEvent
   ): Promise<this>;
 
+  addAssetHook: TypedContractMethod<
+    [asset: AddressLike, hook: AddressLike],
+    [void],
+    "nonpayable"
+  >;
+
   addExperience: TypedContractMethod<
     [args: AddExperienceArgsStruct],
+    [void],
+    "nonpayable"
+  >;
+
+  addExperienceCondition: TypedContractMethod<
+    [experience: AddressLike, condition: AddressLike],
     [void],
     "nonpayable"
   >;
@@ -385,6 +433,18 @@ export interface ICompany extends BaseContract {
   name: TypedContractMethod<[], [string], "view">;
 
   owner: TypedContractMethod<[], [string], "view">;
+
+  removeAssetHook: TypedContractMethod<
+    [asset: AddressLike],
+    [void],
+    "nonpayable"
+  >;
+
+  removeExperienceCondition: TypedContractMethod<
+    [experience: AddressLike],
+    [void],
+    "nonpayable"
+  >;
 
   removeHook: TypedContractMethod<[], [void], "nonpayable">;
 
@@ -423,8 +483,22 @@ export interface ICompany extends BaseContract {
   ): T;
 
   getFunction(
+    nameOrSignature: "addAssetHook"
+  ): TypedContractMethod<
+    [asset: AddressLike, hook: AddressLike],
+    [void],
+    "nonpayable"
+  >;
+  getFunction(
     nameOrSignature: "addExperience"
   ): TypedContractMethod<[args: AddExperienceArgsStruct], [void], "nonpayable">;
+  getFunction(
+    nameOrSignature: "addExperienceCondition"
+  ): TypedContractMethod<
+    [experience: AddressLike, condition: AddressLike],
+    [void],
+    "nonpayable"
+  >;
   getFunction(
     nameOrSignature: "addSigner"
   ): TypedContractMethod<[signer: AddressLike], [void], "nonpayable">;
@@ -454,6 +528,12 @@ export interface ICompany extends BaseContract {
   getFunction(
     nameOrSignature: "owner"
   ): TypedContractMethod<[], [string], "view">;
+  getFunction(
+    nameOrSignature: "removeAssetHook"
+  ): TypedContractMethod<[asset: AddressLike], [void], "nonpayable">;
+  getFunction(
+    nameOrSignature: "removeExperienceCondition"
+  ): TypedContractMethod<[experience: AddressLike], [void], "nonpayable">;
   getFunction(
     nameOrSignature: "removeHook"
   ): TypedContractMethod<[], [void], "nonpayable">;

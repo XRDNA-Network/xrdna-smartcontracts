@@ -45,6 +45,13 @@ export type BaseContructorArgsStructOutput = [
   companyRegistry: string;
 };
 
+export type WearableStruct = { asset: AddressLike; tokenId: BigNumberish };
+
+export type WearableStructOutput = [asset: string, tokenId: bigint] & {
+  asset: string;
+  tokenId: bigint;
+};
+
 export type DelegatedJumpRequestStruct = {
   portalId: BigNumberish;
   agreedFee: BigNumberish;
@@ -140,7 +147,7 @@ export interface AvatarInterface extends Interface {
   encodeFunctionData(functionFragment: "MAX_SIZE", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "addWearable",
-    values: [AddressLike]
+    values: [WearableStruct]
   ): string;
   encodeFunctionData(
     functionFragment: "appearanceDetails",
@@ -193,7 +200,7 @@ export interface AvatarInterface extends Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "isWearing",
-    values: [AddressLike]
+    values: [WearableStruct]
   ): string;
   encodeFunctionData(
     functionFragment: "jump",
@@ -215,7 +222,7 @@ export interface AvatarInterface extends Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "removeWearable",
-    values: [AddressLike]
+    values: [WearableStruct]
   ): string;
   encodeFunctionData(
     functionFragment: "setAppearanceDetails",
@@ -406,10 +413,11 @@ export namespace SignerRemovedEvent {
 }
 
 export namespace WearableAddedEvent {
-  export type InputTuple = [wearable: AddressLike];
-  export type OutputTuple = [wearable: string];
+  export type InputTuple = [wearable: AddressLike, tokenId: BigNumberish];
+  export type OutputTuple = [wearable: string, tokenId: bigint];
   export interface OutputObject {
     wearable: string;
+    tokenId: bigint;
   }
   export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
   export type Filter = TypedDeferredTopicFilter<Event>;
@@ -418,10 +426,11 @@ export namespace WearableAddedEvent {
 }
 
 export namespace WearableRemovedEvent {
-  export type InputTuple = [wearable: AddressLike];
-  export type OutputTuple = [wearable: string];
+  export type InputTuple = [wearable: AddressLike, tokenId: BigNumberish];
+  export type OutputTuple = [wearable: string, tokenId: bigint];
   export interface OutputObject {
     wearable: string;
+    tokenId: bigint;
   }
   export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
   export type Filter = TypedDeferredTopicFilter<Event>;
@@ -475,7 +484,7 @@ export interface Avatar extends BaseContract {
   MAX_SIZE: TypedContractMethod<[], [bigint], "view">;
 
   addWearable: TypedContractMethod<
-    [wearable: AddressLike],
+    [wearable: WearableStruct],
     [void],
     "nonpayable"
   >;
@@ -516,7 +525,7 @@ export interface Avatar extends BaseContract {
 
   experienceRegistry: TypedContractMethod<[], [string], "view">;
 
-  getWearables: TypedContractMethod<[], [string[]], "view">;
+  getWearables: TypedContractMethod<[], [WearableStructOutput[]], "view">;
 
   hook: TypedContractMethod<[], [string], "view">;
 
@@ -526,7 +535,7 @@ export interface Avatar extends BaseContract {
     "nonpayable"
   >;
 
-  isWearing: TypedContractMethod<[wearable: AddressLike], [boolean], "view">;
+  isWearing: TypedContractMethod<[wearable: WearableStruct], [boolean], "view">;
 
   jump: TypedContractMethod<
     [request: AvatarJumpRequestStruct],
@@ -554,7 +563,7 @@ export interface Avatar extends BaseContract {
   removeHook: TypedContractMethod<[], [void], "nonpayable">;
 
   removeWearable: TypedContractMethod<
-    [wearable: AddressLike],
+    [wearable: WearableStruct],
     [void],
     "nonpayable"
   >;
@@ -596,7 +605,7 @@ export interface Avatar extends BaseContract {
   ): TypedContractMethod<[], [bigint], "view">;
   getFunction(
     nameOrSignature: "addWearable"
-  ): TypedContractMethod<[wearable: AddressLike], [void], "nonpayable">;
+  ): TypedContractMethod<[wearable: WearableStruct], [void], "nonpayable">;
   getFunction(
     nameOrSignature: "appearanceDetails"
   ): TypedContractMethod<[], [string], "view">;
@@ -633,7 +642,7 @@ export interface Avatar extends BaseContract {
   ): TypedContractMethod<[], [string], "view">;
   getFunction(
     nameOrSignature: "getWearables"
-  ): TypedContractMethod<[], [string[]], "view">;
+  ): TypedContractMethod<[], [WearableStructOutput[]], "view">;
   getFunction(
     nameOrSignature: "hook"
   ): TypedContractMethod<[], [string], "view">;
@@ -646,7 +655,7 @@ export interface Avatar extends BaseContract {
   >;
   getFunction(
     nameOrSignature: "isWearing"
-  ): TypedContractMethod<[wearable: AddressLike], [boolean], "view">;
+  ): TypedContractMethod<[wearable: WearableStruct], [boolean], "view">;
   getFunction(
     nameOrSignature: "jump"
   ): TypedContractMethod<[request: AvatarJumpRequestStruct], [void], "payable">;
@@ -676,7 +685,7 @@ export interface Avatar extends BaseContract {
   ): TypedContractMethod<[], [void], "nonpayable">;
   getFunction(
     nameOrSignature: "removeWearable"
-  ): TypedContractMethod<[wearable: AddressLike], [void], "nonpayable">;
+  ): TypedContractMethod<[wearable: WearableStruct], [void], "nonpayable">;
   getFunction(
     nameOrSignature: "setAppearanceDetails"
   ): TypedContractMethod<[arg0: BytesLike], [void], "nonpayable">;
@@ -826,7 +835,7 @@ export interface Avatar extends BaseContract {
       SignerRemovedEvent.OutputObject
     >;
 
-    "WearableAdded(address)": TypedContractEvent<
+    "WearableAdded(address,uint256)": TypedContractEvent<
       WearableAddedEvent.InputTuple,
       WearableAddedEvent.OutputTuple,
       WearableAddedEvent.OutputObject
@@ -837,7 +846,7 @@ export interface Avatar extends BaseContract {
       WearableAddedEvent.OutputObject
     >;
 
-    "WearableRemoved(address)": TypedContractEvent<
+    "WearableRemoved(address,uint256)": TypedContractEvent<
       WearableRemovedEvent.InputTuple,
       WearableRemovedEvent.OutputTuple,
       WearableRemovedEvent.OutputObject

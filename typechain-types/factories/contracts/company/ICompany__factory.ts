@@ -145,6 +145,24 @@ const _abi = [
   {
     inputs: [
       {
+        internalType: "address",
+        name: "asset",
+        type: "address",
+      },
+      {
+        internalType: "contract IAssetHook",
+        name: "hook",
+        type: "address",
+      },
+    ],
+    name: "addAssetHook",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
         components: [
           {
             internalType: "string",
@@ -163,6 +181,24 @@ const _abi = [
       },
     ],
     name: "addExperience",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "experience",
+        type: "address",
+      },
+      {
+        internalType: "address",
+        name: "condition",
+        type: "address",
+      },
+    ],
+    name: "addExperienceCondition",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
@@ -347,6 +383,32 @@ const _abi = [
       },
     ],
     stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "asset",
+        type: "address",
+      },
+    ],
+    name: "removeAssetHook",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "experience",
+        type: "address",
+      },
+    ],
+    name: "removeExperienceCondition",
+    outputs: [],
+    stateMutability: "nonpayable",
     type: "function",
   },
   {

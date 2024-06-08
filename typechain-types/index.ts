@@ -82,8 +82,6 @@ export type { NonTransferableERC721Asset } from "./contracts/asset/NonTransferab
 export { NonTransferableERC721Asset__factory } from "./factories/contracts/asset/NonTransferableERC721Asset.sol/NonTransferableERC721Asset__factory";
 export type { FilterByWorld } from "./contracts/asset/sample_conditions/FilterByWorld";
 export { FilterByWorld__factory } from "./factories/contracts/asset/sample_conditions/FilterByWorld__factory";
-export type { AddressLinkedList } from "./contracts/avatar/AddressLinkedList";
-export { AddressLinkedList__factory } from "./factories/contracts/avatar/AddressLinkedList__factory";
 export type { Avatar } from "./contracts/avatar/Avatar.sol/Avatar";
 export { Avatar__factory } from "./factories/contracts/avatar/Avatar.sol/Avatar__factory";
 export type { AvatarFactory } from "./contracts/avatar/AvatarFactory";
@@ -100,6 +98,8 @@ export type { IAvatarHook } from "./contracts/avatar/IAvatarHook";
 export { IAvatarHook__factory } from "./factories/contracts/avatar/IAvatarHook__factory";
 export type { IAvatarRegistry } from "./contracts/avatar/IAvatarRegistry";
 export { IAvatarRegistry__factory } from "./factories/contracts/avatar/IAvatarRegistry__factory";
+export type { WearableLinkedList } from "./contracts/avatar/WearableLinkedList";
+export { WearableLinkedList__factory } from "./factories/contracts/avatar/WearableLinkedList__factory";
 export type { BaseFactory } from "./contracts/BaseFactory";
 export { BaseFactory__factory } from "./factories/contracts/BaseFactory__factory";
 export type { Company } from "./contracts/company/Company.sol/Company";

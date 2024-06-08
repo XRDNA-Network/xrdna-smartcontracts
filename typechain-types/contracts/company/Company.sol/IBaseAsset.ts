@@ -7,6 +7,7 @@ import type {
   FunctionFragment,
   Result,
   Interface,
+  AddressLike,
   ContractRunner,
   ContractMethod,
   Listener,
@@ -20,13 +21,25 @@ import type {
 } from "../../../common";
 
 export interface IBaseAssetInterface extends Interface {
-  getFunction(nameOrSignature: "assetType" | "issuer"): FunctionFragment;
+  getFunction(
+    nameOrSignature: "addHook" | "assetType" | "issuer" | "removeHook"
+  ): FunctionFragment;
 
+  encodeFunctionData(
+    functionFragment: "addHook",
+    values: [AddressLike]
+  ): string;
   encodeFunctionData(functionFragment: "assetType", values?: undefined): string;
   encodeFunctionData(functionFragment: "issuer", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: "removeHook",
+    values?: undefined
+  ): string;
 
+  decodeFunctionResult(functionFragment: "addHook", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "assetType", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "issuer", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "removeHook", data: BytesLike): Result;
 }
 
 export interface IBaseAsset extends BaseContract {
@@ -72,20 +85,30 @@ export interface IBaseAsset extends BaseContract {
     event?: TCEvent
   ): Promise<this>;
 
+  addHook: TypedContractMethod<[hook: AddressLike], [void], "nonpayable">;
+
   assetType: TypedContractMethod<[], [bigint], "view">;
 
   issuer: TypedContractMethod<[], [string], "view">;
+
+  removeHook: TypedContractMethod<[], [void], "nonpayable">;
 
   getFunction<T extends ContractMethod = ContractMethod>(
     key: string | FunctionFragment
   ): T;
 
   getFunction(
+    nameOrSignature: "addHook"
+  ): TypedContractMethod<[hook: AddressLike], [void], "nonpayable">;
+  getFunction(
     nameOrSignature: "assetType"
   ): TypedContractMethod<[], [bigint], "view">;
   getFunction(
     nameOrSignature: "issuer"
   ): TypedContractMethod<[], [string], "view">;
+  getFunction(
+    nameOrSignature: "removeHook"
+  ): TypedContractMethod<[], [void], "nonpayable">;
 
   filters: {};
 }

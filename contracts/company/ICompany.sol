@@ -5,6 +5,7 @@ pragma solidity ^0.8.24;
 import {VectorAddress} from '../VectorAddress.sol';
 import {AssetType} from '../asset/AssetFactory.sol';
 import {ICompanyHook} from './ICompanyHook.sol';
+import {IAssetHook} from '../asset/IAssetHook.sol';
 
 struct AddExperienceArgs {
     string name;
@@ -61,5 +62,8 @@ interface ICompany {
 
     function addExperienceCondition(address experience, address condition) external;
     function removeExperienceCondition(address experience) external;
+
+    function addAssetHook(address asset, IAssetHook hook) external;
+    function removeAssetHook(address asset) external;
     
 }

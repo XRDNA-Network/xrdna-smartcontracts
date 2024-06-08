@@ -105,6 +105,7 @@ export interface IWorld0_2Interface extends Interface {
       | "getName"
       | "getOwner"
       | "init"
+      | "isSigner"
       | "registerAvatar"
       | "registerCompany"
       | "removeHook"
@@ -113,6 +114,8 @@ export interface IWorld0_2Interface extends Interface {
       | "upgrade"
       | "upgradeComplete"
       | "upgraded"
+      | "version"
+      | "withdraw"
   ): FunctionFragment;
 
   getEvent(
@@ -142,6 +145,10 @@ export interface IWorld0_2Interface extends Interface {
     values: [WorldCreateRequestStruct]
   ): string;
   encodeFunctionData(
+    functionFragment: "isSigner",
+    values: [AddressLike]
+  ): string;
+  encodeFunctionData(
     functionFragment: "registerAvatar",
     values: [AvatarRegistrationRequestStruct]
   ): string;
@@ -167,6 +174,11 @@ export interface IWorld0_2Interface extends Interface {
     values: [AddressLike]
   ): string;
   encodeFunctionData(functionFragment: "upgraded", values?: undefined): string;
+  encodeFunctionData(functionFragment: "version", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: "withdraw",
+    values: [BigNumberish]
+  ): string;
 
   decodeFunctionResult(functionFragment: "addSigners", data: BytesLike): Result;
   decodeFunctionResult(
@@ -176,6 +188,7 @@ export interface IWorld0_2Interface extends Interface {
   decodeFunctionResult(functionFragment: "getName", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "getOwner", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "init", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "isSigner", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "registerAvatar",
     data: BytesLike
@@ -196,6 +209,8 @@ export interface IWorld0_2Interface extends Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "upgraded", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "version", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "withdraw", data: BytesLike): Result;
 }
 
 export namespace AvatarRegisteredEvent {
@@ -362,6 +377,8 @@ export interface IWorld0_2 extends BaseContract {
     "nonpayable"
   >;
 
+  isSigner: TypedContractMethod<[signer: AddressLike], [boolean], "view">;
+
   registerAvatar: TypedContractMethod<
     [args: AvatarRegistrationRequestStruct],
     [string],
@@ -394,6 +411,10 @@ export interface IWorld0_2 extends BaseContract {
 
   upgraded: TypedContractMethod<[], [boolean], "view">;
 
+  version: TypedContractMethod<[], [string], "view">;
+
+  withdraw: TypedContractMethod<[amount: BigNumberish], [void], "nonpayable">;
+
   getFunction<T extends ContractMethod = ContractMethod>(
     key: string | FunctionFragment
   ): T;
@@ -417,6 +438,9 @@ export interface IWorld0_2 extends BaseContract {
     [void],
     "nonpayable"
   >;
+  getFunction(
+    nameOrSignature: "isSigner"
+  ): TypedContractMethod<[signer: AddressLike], [boolean], "view">;
   getFunction(
     nameOrSignature: "registerAvatar"
   ): TypedContractMethod<
@@ -449,6 +473,12 @@ export interface IWorld0_2 extends BaseContract {
   getFunction(
     nameOrSignature: "upgraded"
   ): TypedContractMethod<[], [boolean], "view">;
+  getFunction(
+    nameOrSignature: "version"
+  ): TypedContractMethod<[], [string], "view">;
+  getFunction(
+    nameOrSignature: "withdraw"
+  ): TypedContractMethod<[amount: BigNumberish], [void], "nonpayable">;
 
   getEvent(
     key: "AvatarRegistered"

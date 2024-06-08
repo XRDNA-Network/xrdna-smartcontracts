@@ -1,119 +1,71 @@
 import { ethers } from "hardhat";
-import { WorldUtils } from "./world/WorldUtils";
 import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
-import { IWorldInfo, VectorAddress, signVectorAddress } from "../src";
+import { IWorldInfo, IWorldRegistration, VectorAddress, World, signVectorAddress } from "../src";
 import { expect } from "chai";
+import { IWorldStack } from "./test_stack/world/IWorldStack";
+import { StackFactory, StackType } from "./test_stack/StackFactory";
+import { Signer, ZeroAddress } from "ethers";
+import { IRegistrarStack } from "./test_stack/registrar/IRegistrarStack";
 
 describe("World Registration", () => {
 
     let signers: HardhatEthersSigner[];
-    let worldUtils: WorldUtils;
-    let registrarAdmin: HardhatEthersSigner;
-    let registrarSigner: HardhatEthersSigner;
-    let worldFactoryAdmin: HardhatEthersSigner;
+    let worldStack: IWorldStack;
+    let registrarAdmin: Signer;
+    let registrarSigner: Signer;
     let worldRegistryAdmin: HardhatEthersSigner;
     let worldOwner: HardhatEthersSigner;
     let vectorAddressAuthority: HardhatEthersSigner;
     let registrarId: bigint;
+    let worldRegistration: IWorldRegistration;
+    let stack: StackFactory;
+    let world: World;
     
     before(async () => {
-        worldUtils = new WorldUtils();
+        
         signers = await ethers.getSigners();
+        
         registrarAdmin = signers[0];
-        registrarSigner = signers[1];
-        worldFactoryAdmin = signers[2];
-        worldRegistryAdmin = signers[3];
-        worldOwner = signers[4];
-        vectorAddressAuthority = signers[5];
-        await worldUtils.deployWorldMaster({
-            vectorAddressAuthority: vectorAddressAuthority.address,
+        registrarSigner = signers[0];
+        worldRegistryAdmin = signers[0];
+        worldOwner = signers[1];
+        vectorAddressAuthority = signers[2];
+        stack = new StackFactory({
+            assetRegistryAdmin: signers[0],
+            avatarRegistryAdmin: signers[0],
+            companyRegistryAdmin: signers[0],
+            experienceRegistryAdmin: signers[0],
+            portalRegistryAdmin: signers[0],
             registrarAdmin,
             registrarSigner,
-            worldFactoryAdmin,
-            worldRegistryAdmin
+            worldRegistryAdmin,
+            worldOwner
         });
-
-        const r = await worldUtils.registrarUtils?.registerRegistrar({
-            admin: registrarAdmin,
-            signer: registrarSigner.address,
-            tokens: BigInt("1000000000000000000")
-        });
-        const regId = r?.registrarId;
-        if(!regId) {
-            throw new Error("Registrar not registered");
-        }
-        registrarId = regId;
+        const {world: w, worldRegistration: wr} = await stack.init();
+        world = w;
+        worldRegistration = wr;
+        //reset the registrar admins since those are linked to XRDNA signer
+        registrarAdmin = stack.admins.registrarAdmin;
+        registrarSigner = stack.admins.registrarSigner;
+        worldStack = stack.getStack<IWorldStack>(StackType.WORLD);
+        
     });
-
 
     it("Should register a world", async () => {
         
-        const baseVector = {
-            x: "1",
-            y: "1",
-            z: "1",
-            t: 0n,
-            p: 0n,
-            p_sub: 0n
-        } as VectorAddress;
-
-        const sig = await signVectorAddress(baseVector, vectorAddressAuthority);
-        
-        const worldInfo: IWorldInfo = {
-            baseVector,
-            name: "TestWorld",
-            vectorAuthorizedSignature: sig
-        };
-
-        const r = await worldUtils.worldRegistryUtils?.createWorld({
-            registrarSigner,
-            registrarId,
-            owner: worldOwner.address,
-            tokensToOwner: false,
-            details: worldInfo,
-            tokens: BigInt("1000000000000000000")
-        });
-        
-        expect(r).to.not.be.undefined;
-
-        expect(r?.worldAddress).to.not.be.undefined;
-        expect(r?.worldAddress).to.not.equal("0x0000000000000000000000000000000000000000000000000000000000000000");
-        
-        //should be able to lookup world by name
-        const addr = await worldUtils.worldRegistryUtils?.lookupWorldAddress("tEsTwOrLd");
-        expect(addr).to.not.be.undefined;
-        expect(addr).to.equal(r?.worldAddress);
-        console.log("World registered at", r?.worldAddress);
-
-        
+        expect(world).to.not.be.undefined;
+        console.log("World deployed at: ", world.address);
     });
 
+    
     it("Should not allow duplicate registration", async () => {
         let fail = false;
         try {
-            const baseVector = {
-                x: "1",
-                y: "1",
-                z: "1",
-                t: 0n,
-                p: 0n,
-                p_sub: 0n
-            } as VectorAddress;
-    
-            const sig = await signVectorAddress(baseVector, vectorAddressAuthority);
-            
-            const worldInfo: IWorldInfo = {
-                baseVector,
-                name: "TestWorld",
-                vectorAuthorizedSignature: sig
-            };
-
-            const r = await worldUtils.worldRegistryUtils?.createWorld({
+        
+            const worldReg = worldStack.getWorldRegistry();
+            const r = await worldReg.createWorld({
                 registrarSigner,
-                registrarId,
-                owner: worldOwner.address,
-                tokensToOwner: false,
-                details: worldInfo,
+                details: worldRegistration,
             });
             if(r) {
                 fail = true;
@@ -124,32 +76,32 @@ describe("World Registration", () => {
                 throw e;
             }
         }
+        if(fail) {
+            throw new Error("Duplicate registration should not have been allowed");
+        }
     });
 
+    
     it("Should allow signers to be added", async () => {
-        const r = await worldUtils.addSigners({
-            worldSigner: worldOwner,
-            newSigners: [signers[8].address],
-            worldName: "tEsTwOrLd"
-        });
+        
+        const t = await world.addSigners([signers[8].address]);
+        const r = await t.wait();
         expect(r).to.not.be.undefined;
-        expect(r.status).to.equal(1);
-        const is = await worldUtils.isSigner({
-            address: signers[8].address,
-            worldName: "tEsTwOrLd"
-        });
+        expect(r!.status).to.equal(1);
+        const is = await world.isSigner(signers[8].address);
         expect(is).to.equal(true);
 
     });
 
+    
     it("Should not allow signers to be added by non-owner", async () => {
         let fail = false;
         try {
-            const r = await worldUtils.addSigners({
-                worldSigner: signers[9],
-                newSigners: [signers[9].address],
-                worldName: "tEsTwOrLd"
+            const fakeWorld = new World({
+                address: world.address,
+                admin: signers[0]
             });
+            const r = await fakeWorld.addSigners([signers[9].address]);
             if(r) {
                 fail = true;
             }
@@ -162,34 +114,25 @@ describe("World Registration", () => {
     });
 
     it("Should remove signers", async () => {
-        const b4 = await worldUtils.isSigner({
-            address: signers[8].address,
-            worldName: "tEsTwOrLd"
-        });
+        const b4 = await world.isSigner(signers[8].address);
         expect(b4).to.equal(true);
 
-        const r = await worldUtils.removeSigners({
-            worldSigner: worldOwner,
-            signers: [signers[8].address],
-            worldName: "tEsTwOrLd"
-        });
+        const t = await world.removeSigners([signers[8].address]);
+        const r = await t.wait();
         expect(r).to.not.be.undefined;
-        expect(r.status).to.equal(1);
-        const is = await worldUtils.isSigner({
-            address: signers[8].address,
-            worldName: "tEsTwOrLd"
-        });
+        expect(r!.status).to.equal(1);
+        const is = await world.isSigner(signers[8].address);
         expect(is).to.equal(false);
     });
 
     it("Should not allow non-signer to withdraw funds", async () => {
         let fail = false;
         try {
-            const r = await worldUtils.withdraw({
-                worldSigner: signers[9],
-                worldName: "tEsTwOrLd",
-                amount: BigInt("1000000000000000000")
+            const fakeWorld = new World({
+                address: world.address,
+                admin: signers[9]
             });
+            const r = await fakeWorld.withdraw(BigInt("1000000000000000000"));
             if(r) {
                 fail = true;
             }
@@ -203,14 +146,12 @@ describe("World Registration", () => {
 
     it("Should allow owner to withdraw funds", async () => {
         const b4 = await ethers.provider.getBalance(worldOwner.address);
-        const r = await worldUtils.withdraw({
-            worldSigner: worldOwner,
-            worldName: "tEsTwOrLd",
-            amount: BigInt("1000000000000000000")
-        });
+        const t = await world.withdraw(ethers.parseEther("1.0"));
+        const r  = await t.wait();
         expect(r).to.not.be.undefined;
-        expect(r.status).to.equal(1);
+        expect(r!.status).to.equal(1);
         const after = await ethers.provider.getBalance(worldOwner.address);
         expect(after).to.be.greaterThan(b4);
     });
+    
 });

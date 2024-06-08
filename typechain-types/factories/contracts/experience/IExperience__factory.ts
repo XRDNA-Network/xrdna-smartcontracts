@@ -86,6 +86,19 @@ const _abi = [
     type: "event",
   },
   {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "newFee",
+        type: "uint256",
+      },
+    ],
+    name: "PortalFeeChanged",
+    type: "event",
+  },
+  {
     inputs: [
       {
         internalType: "contract IExperienceHook",
@@ -94,6 +107,32 @@ const _abi = [
       },
     ],
     name: "addHook",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "contract IPortalCondition",
+        name: "condition",
+        type: "address",
+      },
+    ],
+    name: "addPortalCondition",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "fee",
+        type: "uint256",
+      },
+    ],
+    name: "changePortalFee",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
@@ -257,6 +296,13 @@ const _abi = [
   {
     inputs: [],
     name: "removeHook",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "removePortalCondition",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",

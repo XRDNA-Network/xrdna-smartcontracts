@@ -7,18 +7,18 @@ import { RPCRetryHandler } from "../RPCRetryHandler";
  */
 export interface IWorldFactoryOpts {
     address: string;
-    factoryAdmin: Signer;
+    admin: Signer;
 }
 
 export class WorldFactory {
     readonly address: string;
-    private factoryAdmin: Signer;
+    private admin: Signer;
     private factory: ethers.Contract;
 
     constructor(opts: IWorldFactoryOpts) {
         this.address = opts.address;
-        this.factoryAdmin = opts.factoryAdmin;
-        this.factory = new ethers.Contract(this.address, WorldFactoryABI, this.factoryAdmin);
+        this.admin = opts.admin;
+        this.factory = new ethers.Contract(this.address, WorldFactoryABI, this.admin);
     }
 
     /**
