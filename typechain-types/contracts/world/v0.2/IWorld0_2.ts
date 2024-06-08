@@ -86,16 +86,23 @@ export type AvatarRegistrationRequestStructOutput = [
 };
 
 export type CompanyRegistrationArgsStruct = {
+  sendTokensToCompanyOwner: boolean;
   owner: AddressLike;
   name: string;
   initData: BytesLike;
 };
 
 export type CompanyRegistrationArgsStructOutput = [
+  sendTokensToCompanyOwner: boolean,
   owner: string,
   name: string,
   initData: string
-] & { owner: string; name: string; initData: string };
+] & {
+  sendTokensToCompanyOwner: boolean;
+  owner: string;
+  name: string;
+  initData: string;
+};
 
 export interface IWorld0_2Interface extends Interface {
   getFunction(
@@ -382,13 +389,13 @@ export interface IWorld0_2 extends BaseContract {
   registerAvatar: TypedContractMethod<
     [args: AvatarRegistrationRequestStruct],
     [string],
-    "nonpayable"
+    "payable"
   >;
 
   registerCompany: TypedContractMethod<
     [args: CompanyRegistrationArgsStruct],
     [string],
-    "nonpayable"
+    "payable"
   >;
 
   removeHook: TypedContractMethod<[], [void], "nonpayable">;
@@ -446,14 +453,14 @@ export interface IWorld0_2 extends BaseContract {
   ): TypedContractMethod<
     [args: AvatarRegistrationRequestStruct],
     [string],
-    "nonpayable"
+    "payable"
   >;
   getFunction(
     nameOrSignature: "registerCompany"
   ): TypedContractMethod<
     [args: CompanyRegistrationArgsStruct],
     [string],
-    "nonpayable"
+    "payable"
   >;
   getFunction(
     nameOrSignature: "removeHook"

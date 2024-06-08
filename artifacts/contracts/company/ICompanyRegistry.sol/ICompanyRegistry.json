@@ -78,6 +78,11 @@
         {
           "components": [
             {
+              "internalType": "bool",
+              "name": "sendTokensToCompanyOwner",
+              "type": "bool"
+            },
+            {
               "internalType": "address",
               "name": "owner",
               "type": "address"
@@ -143,7 +148,7 @@
           "type": "address"
         }
       ],
-      "stateMutability": "nonpayable",
+      "stateMutability": "payable",
       "type": "function"
     },
     {

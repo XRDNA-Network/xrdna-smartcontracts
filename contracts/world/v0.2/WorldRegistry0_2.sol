@@ -68,6 +68,7 @@ contract WorldRegistry0_2 is IWorldRegistry0_2, ReentrancyGuard, AccessControl {
         registrarRegistry = IRegistrarRegistry(args.registrarRegistry);
         _grantRole(DEFAULT_ADMIN_ROLE, args.defaultAdmin);
         _grantRole(ADMIN_ROLE, args.defaultAdmin);
+        _grantRole(VECTOR_AUTHORITY_ROLE, args.defaultAdmin);
     }
 
     receive() external payable {

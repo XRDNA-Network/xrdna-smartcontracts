@@ -386,13 +386,18 @@ const _abi = [
         type: "address",
       },
     ],
-    stateMutability: "nonpayable",
+    stateMutability: "payable",
     type: "function",
   },
   {
     inputs: [
       {
         components: [
+          {
+            internalType: "bool",
+            name: "sendTokensToCompanyOwner",
+            type: "bool",
+          },
           {
             internalType: "address",
             name: "owner",
@@ -422,7 +427,7 @@ const _abi = [
         type: "address",
       },
     ],
-    stateMutability: "nonpayable",
+    stateMutability: "payable",
     type: "function",
   },
   {

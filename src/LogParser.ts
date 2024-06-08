@@ -15,10 +15,11 @@ export class LogParser {
         const parsedLogs = new Map<string, any>();
         logs.forEach((l:any) => {
             try {
-                if(l.address !== this.contractAddress) {
+                if(l.address.toLowerCase() !== this.contractAddress.toString().toLowerCase()) {
                     return;
                 }
                 const parsed = this.ifc.parseLog(l);
+
                 if(parsed) {
                     parsedLogs.set(parsed.name, parsed.args);
                 }

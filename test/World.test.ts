@@ -15,9 +15,8 @@ describe("World Registration", () => {
     let registrarSigner: Signer;
     let worldRegistryAdmin: HardhatEthersSigner;
     let worldOwner: HardhatEthersSigner;
-    let vectorAddressAuthority: HardhatEthersSigner;
-    let registrarId: bigint;
     let worldRegistration: IWorldRegistration;
+    let companyOwner: HardhatEthersSigner;
     let stack: StackFactory;
     let world: World;
     
@@ -29,7 +28,7 @@ describe("World Registration", () => {
         registrarSigner = signers[0];
         worldRegistryAdmin = signers[0];
         worldOwner = signers[1];
-        vectorAddressAuthority = signers[2];
+        companyOwner = signers[2];
         stack = new StackFactory({
             assetRegistryAdmin: signers[0],
             avatarRegistryAdmin: signers[0],
@@ -152,6 +151,39 @@ describe("World Registration", () => {
         expect(r!.status).to.equal(1);
         const after = await ethers.provider.getBalance(worldOwner.address);
         expect(after).to.be.greaterThan(b4);
+    });
+
+    ///////////////////////////////////////////////////////////////////////
+    // Company registration through world
+    ///////////////////////////////////////////////////////////////////////
+    it("Should register a company", async () => {
+        const res = await world.registerCompany({
+            initData: "0x",
+            name: "My Company",
+            owner: companyOwner.address,
+            sendTokensToCompanyOwner: false
+        }, ethers.parseEther("1.0"));
+        expect(res).to.not.be.undefined;
+        expect(res.receipt.status).to.equal(1);
+        expect(res.companyAddress).to.not.be.undefined;
+        expect(res.vectorAddress).to.not.be.undefined;
+    });
+
+    it("Should not allow  a duplicate company", async () => {
+        try {
+           await world.registerCompany({
+                initData: "0x",
+                name: "My Company",
+                owner: companyOwner.address,
+                sendTokensToCompanyOwner: false
+            }, ethers.parseEther("1.0"));
+            throw new Error("Should not have allowed creation");
+        } catch(e:any) {
+            expect(e.message).to.not.be.undefined;
+            if(e.message.indexOf("company name already taken") < 0) {
+                throw e;
+            }
+        }
     });
     
 });

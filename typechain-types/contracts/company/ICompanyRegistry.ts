@@ -42,6 +42,7 @@ export type VectorAddressStructOutput = [
 ] & { x: string; y: string; z: string; t: bigint; p: bigint; p_sub: bigint };
 
 export type CompanyRegistrationRequestStruct = {
+  sendTokensToCompanyOwner: boolean;
   owner: AddressLike;
   vector: VectorAddressStruct;
   initData: BytesLike;
@@ -49,11 +50,13 @@ export type CompanyRegistrationRequestStruct = {
 };
 
 export type CompanyRegistrationRequestStructOutput = [
+  sendTokensToCompanyOwner: boolean,
   owner: string,
   vector: VectorAddressStructOutput,
   initData: string,
   name: string
 ] & {
+  sendTokensToCompanyOwner: boolean;
   owner: string;
   vector: VectorAddressStructOutput;
   initData: string;
@@ -180,7 +183,7 @@ export interface ICompanyRegistry extends BaseContract {
   registerCompany: TypedContractMethod<
     [request: CompanyRegistrationRequestStruct],
     [string],
-    "nonpayable"
+    "payable"
   >;
 
   setCompanyFactory: TypedContractMethod<
@@ -213,7 +216,7 @@ export interface ICompanyRegistry extends BaseContract {
   ): TypedContractMethod<
     [request: CompanyRegistrationRequestStruct],
     [string],
-    "nonpayable"
+    "payable"
   >;
   getFunction(
     nameOrSignature: "setCompanyFactory"

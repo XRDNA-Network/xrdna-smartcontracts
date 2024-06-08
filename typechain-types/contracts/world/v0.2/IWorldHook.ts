@@ -43,16 +43,23 @@ export type AvatarRegistrationRequestStructOutput = [
 };
 
 export type CompanyRegistrationArgsStruct = {
+  sendTokensToCompanyOwner: boolean;
   owner: AddressLike;
   name: string;
   initData: BytesLike;
 };
 
 export type CompanyRegistrationArgsStructOutput = [
+  sendTokensToCompanyOwner: boolean,
   owner: string,
   name: string,
   initData: string
-] & { owner: string; name: string; initData: string };
+] & {
+  sendTokensToCompanyOwner: boolean;
+  owner: string;
+  name: string;
+  initData: string;
+};
 
 export interface IWorldHookInterface extends Interface {
   getFunction(

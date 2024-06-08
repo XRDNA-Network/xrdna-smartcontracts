@@ -60,6 +60,11 @@ const _abi = [
       {
         components: [
           {
+            internalType: "bool",
+            name: "sendTokensToCompanyOwner",
+            type: "bool",
+          },
+          {
             internalType: "address",
             name: "owner",
             type: "address",

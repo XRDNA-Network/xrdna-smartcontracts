@@ -1607,8 +1607,8 @@
       ]
     },
     "/Users/mdcoon/git/xrdna-smartcontracts/contracts/world/v0.2/IWorld0_2.sol": {
-      "lastModificationDate": 1717871306744,
-      "contentHash": "2b907d2ba79edcf54da1381063f863c7",
+      "lastModificationDate": 1717872375921,
+      "contentHash": "cc5c613269979333ce32ae55cd035250",
       "sourceName": "contracts/world/v0.2/IWorld0_2.sol",
       "solcConfig": {
         "version": "0.8.24",
@@ -1723,8 +1723,8 @@
       ]
     },
     "/Users/mdcoon/git/xrdna-smartcontracts/contracts/world/v0.2/WorldRegistry0_2.sol": {
-      "lastModificationDate": 1717871818875,
-      "contentHash": "29da9abd47335ee3ac058f83c11eb44e",
+      "lastModificationDate": 1717872020192,
+      "contentHash": "4dc965ea84ce16ee81d4adf5f4099187",
       "sourceName": "contracts/world/v0.2/WorldRegistry0_2.sol",
       "solcConfig": {
         "version": "0.8.24",
@@ -2203,8 +2203,8 @@
       ]
     },
     "/Users/mdcoon/git/xrdna-smartcontracts/contracts/world/v0.2/World0_2.sol": {
-      "lastModificationDate": 1717871835178,
-      "contentHash": "835837f7c1f89bf654ca93ceb42d3746",
+      "lastModificationDate": 1717872406403,
+      "contentHash": "422b68b8f7a1667b31b08f01de85397f",
       "sourceName": "contracts/world/v0.2/World0_2.sol",
       "solcConfig": {
         "version": "0.8.24",
@@ -2251,8 +2251,8 @@
       ]
     },
     "/Users/mdcoon/git/xrdna-smartcontracts/contracts/company/ICompanyRegistry.sol": {
-      "lastModificationDate": 1717698400287,
-      "contentHash": "9d15a79204769aa61e602ee0d706fba0",
+      "lastModificationDate": 1717872281128,
+      "contentHash": "fdfbb8d1a0e8976aac3a130725d2de38",
       "sourceName": "contracts/company/ICompanyRegistry.sol",
       "solcConfig": {
         "version": "0.8.24",
@@ -2788,8 +2788,8 @@
       ]
     },
     "/Users/mdcoon/git/xrdna-smartcontracts/contracts/company/CompanyRegistry.sol": {
-      "lastModificationDate": 1717702052442,
-      "contentHash": "3474b0d4f3f91fbefbf07ee1a5534d5e",
+      "lastModificationDate": 1717872291460,
+      "contentHash": "8d4b5eb8667da72604d24ce9daa3147c",
       "sourceName": "contracts/company/CompanyRegistry.sol",
       "solcConfig": {
         "version": "0.8.24",

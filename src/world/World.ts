@@ -14,13 +14,14 @@ export interface IWorldOpts {
 }
 
 export interface ICompanyRegistrationRequest {
+    sendTokensToCompanyOwner: boolean;
     owner: AddressLike;
     name: string;
     initData: string;
 }
 
 export interface ICompanyRegistrationResult {
-    company: AddressLike;
+    companyAddress: AddressLike;
     vectorAddress: VectorAddress;
     receipt: TransactionReceipt;
 }
@@ -104,21 +105,23 @@ export class World {
         }
     }
 
-    async registerCompany(request: ICompanyRegistrationRequest): Promise<ICompanyRegistrationResult> {
+    async registerCompany(request: ICompanyRegistrationRequest, tokens?: bigint): Promise<ICompanyRegistrationResult> {
         await this._onlyV2();
 
-        const t = await RPCRetryHandler.withRetry(() => this.world.registerCompany(request));
+        const t = await RPCRetryHandler.withRetry(() => this.world.registerCompany(request, {
+            value: tokens
+        }));
         const receipt = await t.wait();
         if(!receipt.status) {
             throw new Error(`Transaction failed: ${receipt.transactionHash}`);
         }
         const logs = this.parser.parseLogs(receipt);
-        const args = logs[LogNames.CompanyRegistered];
+        const args = logs.get(LogNames.CompanyRegistered);
         if (!args) {
             throw new Error("CompanyRegistered event not found in logs");
         }
         return {
-            company: args[0],
+            companyAddress: args[0],
             vectorAddress: args[1],
             receipt
         };

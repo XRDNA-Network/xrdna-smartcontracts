@@ -150,7 +150,7 @@ contract World0_2 is IWorld0_2, ReentrancyGuard, AccessControl {
         return hasRole(SIGNER_ROLE, signer);
     }
 
-    function registerCompany(CompanyRegistrationArgs memory args) public  onlySigner nonReentrant returns (address company) {
+    function registerCompany(CompanyRegistrationArgs memory args) public payable onlySigner nonReentrant returns (address company) {
         require(args.owner != address(0), "World0_2: company owner cannot be zero address");
         require(bytes(args.name).length > 0, "World0_2: company name cannot be empty");
         if(address(hook) != address(0)) {
@@ -166,16 +166,17 @@ contract World0_2 is IWorld0_2, ReentrancyGuard, AccessControl {
             p: nextP,
             p_sub: 0
         });
-        company = companyRegistry.registerCompany(CompanyRegistrationRequest({
+        company = companyRegistry.registerCompany{value: msg.value}(CompanyRegistrationRequest({
             owner: args.owner,
             vector: vector,
             name: args.name,
-            initData: args.initData
+            initData: args.initData,
+            sendTokensToCompanyOwner: args.sendTokensToCompanyOwner
         }));
         emit CompanyRegistered(company, vector, args.name);
     }
 
-    function registerAvatar(AvatarRegistrationRequest memory args) external onlySigner nonReentrant returns (address avatar) {
+    function registerAvatar(AvatarRegistrationRequest memory args) external payable onlySigner nonReentrant returns (address avatar) {
         require(args.avatarOwner != address(0), "World0_2: avatar owner cannot be zero address");
         require(bytes(args.username).length > 0, "World0_2: avatar username cannot be empty");
         if(address(hook) != address(0)) {

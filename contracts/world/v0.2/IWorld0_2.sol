@@ -8,6 +8,7 @@ import {VectorAddress} from '../../VectorAddress.sol';
 import {IWorldHook} from './IWorldHook.sol';
 
 struct CompanyRegistrationArgs {
+    bool sendTokensToCompanyOwner;
     address owner;
     string name;
     bytes initData;
@@ -32,8 +33,8 @@ interface IWorld0_2 {
     function isSigner(address signer) external view returns (bool);
     function version() external view returns (string memory);
     
-    function registerCompany(CompanyRegistrationArgs memory args) external returns (address company);
-    function registerAvatar(AvatarRegistrationRequest memory args) external returns (address avatar);
+    function registerCompany(CompanyRegistrationArgs memory args) external payable returns (address company);
+    function registerAvatar(AvatarRegistrationRequest memory args) external payable returns (address avatar);
     function upgrade(bytes calldata initData) external;
     function upgraded() external view returns (bool);
     function init(WorldCreateRequest memory request) external;

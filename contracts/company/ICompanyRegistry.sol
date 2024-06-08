@@ -6,6 +6,10 @@ import {VectorAddress} from '../VectorAddress.sol';
 
 
 struct CompanyRegistrationRequest {
+
+    //whether to send any attached tokens to the owner wallet or company contract
+    bool sendTokensToCompanyOwner;
+
     //the address of the company owner
     address owner;
 
@@ -26,6 +30,6 @@ interface ICompanyRegistry {
     function setCompanyFactory(address factory) external;
     function setWorldRegistry(address registry) external;
     function isRegisteredCompany(address company) external view returns (bool);
-    function registerCompany(CompanyRegistrationRequest memory request) external returns (address);
+    function registerCompany(CompanyRegistrationRequest memory request) external payable returns (address);
     function upgradeCompany(bytes calldata initData) external;
 }

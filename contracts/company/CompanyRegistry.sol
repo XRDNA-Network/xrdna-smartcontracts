@@ -62,6 +62,8 @@ contract CompanyRegistry is ICompanyRegistry, ReentrancyGuard, AccessControl {
         }
     }
 
+    receive() external payable {}
+
     function setCompanyFactory(address factory) public onlyRole(ADMIN_ROLE) {
         require(factory != address(0), "CompanyRegistry: factory address cannot be 0");
         companyFactory = ICompanyFactory(factory);
@@ -76,7 +78,7 @@ contract CompanyRegistry is ICompanyRegistry, ReentrancyGuard, AccessControl {
         return _companies[company];
     }
 
-    function registerCompany(CompanyRegistrationRequest memory request) external onlyWorld nonReentrant returns (address) {
+    function registerCompany(CompanyRegistrationRequest memory request) external payable onlyWorld nonReentrant returns (address) {
         string memory nm = request.name.lower();
         require(_companiesByName[nm] == address(0), "CompanyRegistry: company name already taken");
         address company = companyFactory.createCompany(CompanyInitArgs({
@@ -90,6 +92,13 @@ contract CompanyRegistry is ICompanyRegistry, ReentrancyGuard, AccessControl {
         _companiesByName[nm] = company;
         _companies[company] = true;
         _companiesByVector[keccak256(bytes(request.vector.asLookupKey()))] = company;
+        if(msg.value > 0) {
+            if(request.sendTokensToCompanyOwner) {
+                payable(request.owner).transfer(msg.value);
+            } else {
+                payable(company).transfer(msg.value);
+            }
+        }
         emit CompanyRegistered(company, request.vector);
         return company;
     }
