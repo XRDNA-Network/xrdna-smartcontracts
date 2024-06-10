@@ -18,7 +18,6 @@ export interface ICompanyRegistrationRequest {
     sendTokensToCompanyOwner: boolean;
     owner: AddressLike;
     name: string;
-    initData: string;
 }
 
 export interface ICompanyRegistrationResult {
@@ -92,14 +91,14 @@ export class World {
         return await RPCRetryHandler.withRetry(() => this.world.withdraw(amount));
     }
 
-    async version(): Promise<string> {
+    async version(): Promise<bigint> {
         return await RPCRetryHandler.withRetry(() => this.world.version());
     }
 
     async _onlyV2(): Promise<void> {
         try {
             const v = await this.version();
-            if(v && v != '0.2') {
+            if(v && v != 2n) {
                 throw new Error(`Unsupported version number: ${v}`);
             }
         } catch (e:any) {
@@ -110,7 +109,12 @@ export class World {
     async registerCompany(request: ICompanyRegistrationRequest, tokens?: bigint): Promise<ICompanyRegistrationResult> {
         await this._onlyV2();
         
-        const t = await RPCRetryHandler.withRetry(() => this.world.registerCompany(request, {
+        const t = await RPCRetryHandler.withRetry(() => this.world.registerCompany({
+            owner: request.owner,
+            sendTokensToCompanyOwner: request.sendTokensToCompanyOwner,
+            name: request.name,
+            initData: "0x"
+        }, {
             value: tokens
         }));
         const receipt = await t.wait();

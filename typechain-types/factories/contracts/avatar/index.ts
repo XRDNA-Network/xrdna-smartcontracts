@@ -4,6 +4,7 @@
 export * as avatarSol from "./Avatar.sol";
 export * as avatarRegistrySol from "./AvatarRegistry.sol";
 export { AvatarFactory__factory } from "./AvatarFactory__factory";
+export { AvatarProxy__factory } from "./AvatarProxy__factory";
 export { IAvatar__factory } from "./IAvatar__factory";
 export { IAvatarFactory__factory } from "./IAvatarFactory__factory";
 export { IAvatarHook__factory } from "./IAvatarHook__factory";

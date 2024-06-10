@@ -370,7 +370,11 @@ export interface IWorld0_2 extends BaseContract {
     event?: TCEvent
   ): Promise<this>;
 
-  addSigners: TypedContractMethod<[sigs: AddressLike[]], [void], "nonpayable">;
+  addSigners: TypedContractMethod<
+    [signers: AddressLike[]],
+    [void],
+    "nonpayable"
+  >;
 
   getBaseVector: TypedContractMethod<[], [VectorAddressStructOutput], "view">;
 
@@ -401,7 +405,7 @@ export interface IWorld0_2 extends BaseContract {
   removeHook: TypedContractMethod<[], [void], "nonpayable">;
 
   removeSigners: TypedContractMethod<
-    [sigs: AddressLike[]],
+    [signers: AddressLike[]],
     [void],
     "nonpayable"
   >;
@@ -418,7 +422,7 @@ export interface IWorld0_2 extends BaseContract {
 
   upgraded: TypedContractMethod<[], [boolean], "view">;
 
-  version: TypedContractMethod<[], [string], "view">;
+  version: TypedContractMethod<[], [bigint], "view">;
 
   withdraw: TypedContractMethod<[amount: BigNumberish], [void], "nonpayable">;
 
@@ -428,7 +432,7 @@ export interface IWorld0_2 extends BaseContract {
 
   getFunction(
     nameOrSignature: "addSigners"
-  ): TypedContractMethod<[sigs: AddressLike[]], [void], "nonpayable">;
+  ): TypedContractMethod<[signers: AddressLike[]], [void], "nonpayable">;
   getFunction(
     nameOrSignature: "getBaseVector"
   ): TypedContractMethod<[], [VectorAddressStructOutput], "view">;
@@ -467,7 +471,7 @@ export interface IWorld0_2 extends BaseContract {
   ): TypedContractMethod<[], [void], "nonpayable">;
   getFunction(
     nameOrSignature: "removeSigners"
-  ): TypedContractMethod<[sigs: AddressLike[]], [void], "nonpayable">;
+  ): TypedContractMethod<[signers: AddressLike[]], [void], "nonpayable">;
   getFunction(
     nameOrSignature: "setHook"
   ): TypedContractMethod<[hook: AddressLike], [void], "nonpayable">;
@@ -482,7 +486,7 @@ export interface IWorld0_2 extends BaseContract {
   ): TypedContractMethod<[], [boolean], "view">;
   getFunction(
     nameOrSignature: "version"
-  ): TypedContractMethod<[], [string], "view">;
+  ): TypedContractMethod<[], [bigint], "view">;
   getFunction(
     nameOrSignature: "withdraw"
   ): TypedContractMethod<[amount: BigNumberish], [void], "nonpayable">;

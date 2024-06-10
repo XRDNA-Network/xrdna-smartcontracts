@@ -3,6 +3,7 @@
 /* eslint-disable */
 export type { Experience } from "./Experience";
 export type { ExperienceFactory } from "./ExperienceFactory";
+export type { ExperienceProxy } from "./ExperienceProxy";
 export type { ExperienceRegistry } from "./ExperienceRegistry";
 export type { IBasicCompany } from "./IBasicCompany";
 export type { IExperience } from "./IExperience";

@@ -84,9 +84,9 @@ const _abi = [
     name: "assetType",
     outputs: [
       {
-        internalType: "enum AssetType",
+        internalType: "uint256",
         name: "",
-        type: "uint8",
+        type: "uint256",
       },
     ],
     stateMutability: "view",
@@ -111,19 +111,6 @@ const _abi = [
     outputs: [
       {
         internalType: "contract IExperienceRegistry",
-        name: "",
-        type: "address",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "hook",
-    outputs: [
-      {
-        internalType: "contract IAssetHook",
         name: "",
         type: "address",
       },
@@ -178,13 +165,26 @@ const _abi = [
     type: "function",
   },
   {
+    inputs: [
+      {
+        internalType: "address",
+        name: "newAsset",
+        type: "address",
+      },
+    ],
+    name: "upgrade",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
     inputs: [],
-    name: "upgraded",
+    name: "version",
     outputs: [
       {
-        internalType: "bool",
+        internalType: "uint256",
         name: "",
-        type: "bool",
+        type: "uint256",
       },
     ],
     stateMutability: "view",

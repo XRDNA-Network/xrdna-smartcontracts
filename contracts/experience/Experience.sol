@@ -10,6 +10,8 @@ import {ReentrancyGuard} from '@openzeppelin/contracts/utils/ReentrancyGuard.sol
 import {IExperienceRegistry} from './IExperienceRegistry.sol';
 import {IPortalRegistry} from '../portal/IPortalRegistry.sol';
 import {IPortalCondition} from '../portal/IPortalCondition.sol';
+import {ExperienceV1Storage, LibExperienceV1Storage} from '../libraries/LibExperienceV1Storage.sol';    
+import {BaseProxyStorage, LibBaseProxy, LibProxyAccess} from '../libraries/LibBaseProxy.sol';
 
 struct ExperienceInitData {
     uint256 entryFee;
@@ -24,10 +26,13 @@ struct ExperienceConstructorArgs {
 
 contract Experience is ReentrancyGuard, IExperience {
 
+    using LibProxyAccess for BaseProxyStorage;
+
     //initialized when deploying master copy
     address public immutable experienceFactory;
     IPortalRegistry public immutable portalRegistry;
     IExperienceRegistry public immutable experienceRegistry;
+    uint256 public constant override version = 1;
 
     constructor(ExperienceConstructorArgs memory args) {
         require(args.experienceFactory != address(0), "Experience: zero address factory");
@@ -53,61 +58,75 @@ contract Experience is ReentrancyGuard, IExperience {
         _;
     }
 
-    bool public upgraded;
-    IBasicCompany public _company;
-    address public override world;
-    IExperienceHook public hook;
-    VectorAddress _vectorAddress;
-    string public override name;
-    uint256 public override entryFee;
-    bytes public override connectionDetails;
+    
 
     modifier onlyCompany() {
-        require(msg.sender == address(_company), "Experience: caller is not the company");
-        _;
-    }
-
-    modifier onlyExperience() {
-        require(msg.sender == address(this), "Experience: caller is not the experience");
+        ExperienceV1Storage storage s = LibExperienceV1Storage.load();
+        require(msg.sender == address(s.company), "Experience: caller is not the company");
         _;
     }
 
     modifier notUpgraded {
-        require(!upgraded, "Experience: cannot use upgraded contract");
+        ExperienceV1Storage storage s = LibExperienceV1Storage.load();
+        require(!s.upgraded, "Experience: cannot use upgraded contract");
         _;
     }
 
     //all fees go to the company
     receive() external payable {
-        payable(address(_company)).transfer(msg.value);
+        
     }
 
     function encodeInitData(ExperienceInitData memory data) external pure returns (bytes memory) {
         return abi.encode(data);
     }
 
-    function init(address __company, string memory _name, VectorAddress memory vector, bytes memory initData) external onlyFactory override {
-        require(address(_company) == address(0), "Experience: already initialized");
-        _company = IBasicCompany(__company);
+    function init(address _company, string memory _name, VectorAddress memory vector, bytes memory initData) external onlyFactory override {
+        ExperienceV1Storage storage s = LibExperienceV1Storage.load();
+        require(address(s.company) == address(0), "Experience: already initialized");
+        
+        s.company = IBasicCompany(_company);
         ExperienceInitData memory data = abi.decode(initData, (ExperienceInitData));
-        _vectorAddress = vector;
-        world = _company.world();
-        name = _name;
-        entryFee = data.entryFee;
-        connectionDetails = data.connectionDetails;
+        s.vectorAddress = vector;
+        s.world = s.company.world();
+        s.name = _name;
+        s.entryFee = data.entryFee;
+        s.connectionDetails = data.connectionDetails;
+    }
+
+    function world() external view returns (address) {
+        ExperienceV1Storage storage s = LibExperienceV1Storage.load();
+        return s.world;
+    }
+
+    function name() external view returns (string memory) {
+        ExperienceV1Storage storage s = LibExperienceV1Storage.load();
+        return s.name;
+    }
+
+    function entryFee() external view returns (uint256) {
+        ExperienceV1Storage storage s = LibExperienceV1Storage.load();
+        return s.entryFee;
+    }
+
+    function connectionDetails() external view returns (bytes memory) {
+        ExperienceV1Storage storage s = LibExperienceV1Storage.load();
+        return s.connectionDetails;
     }
 
     function addHook(IExperienceHook _hook) external override onlyCompany notUpgraded {
         require(address(_hook) != address(0), "Experience: hook zero address");
-        hook = _hook;
-        emit HookAdded(address(hook));
+        ExperienceV1Storage storage s = LibExperienceV1Storage.load();
+        s.hook = _hook;
+        emit HookAdded(address(_hook));
     }
 
     function removeHook() external override onlyCompany notUpgraded {
-        require(address(hook) != address(0), "Experience: hook not set");
-        address a = address(hook);
+        ExperienceV1Storage storage s = LibExperienceV1Storage.load();
+        require(address(s.hook) != address(0), "Experience: hook not set");
+        address a = address(s.hook);
         emit HookRemoved(a);
-        delete hook;
+        delete s.hook;
     }
 
     function addPortalCondition(IPortalCondition condition) public onlyCompany notUpgraded {
@@ -119,37 +138,40 @@ contract Experience is ReentrancyGuard, IExperience {
     }
 
     function changePortalFee(uint256 fee) public onlyCompany {
-        entryFee = fee;
+        ExperienceV1Storage storage s = LibExperienceV1Storage.load();
+        s.entryFee = fee;
         portalRegistry.changePortalFee(fee);
         emit PortalFeeChanged(fee);
     }
 
     function company() external view override returns (address) {
-        return address(_company);
+        ExperienceV1Storage storage s = LibExperienceV1Storage.load();
+        return address(s.company);
     }
 
     function vectorAddress() external view override returns (VectorAddress memory) {
-        return _vectorAddress;
+        ExperienceV1Storage storage s = LibExperienceV1Storage.load();
+        return s.vectorAddress;
     }
 
     function entering(JumpEntryRequest memory request) external payable override nonReentrant onlyPortalRegistry notUpgraded returns (bytes memory)  {
-        if(address(hook) != address(0)) {
-            bool s = hook.beforeJumpEntry(address(this), request.sourceWorld, request.sourceCompany, request.avatar);
-            require(s, "Experience: hook disallowed entry");
+        ExperienceV1Storage storage s = LibExperienceV1Storage.load();
+        if(address(s.hook) != address(0)) {
+            bool ok = s.hook.beforeJumpEntry(address(this), request.sourceWorld, request.sourceCompany, request.avatar);
+            require(ok, "Experience: hook disallowed entry");
         }
-        return connectionDetails;
+        return s.connectionDetails;
     }
 
     function upgrade(bytes memory initData) external override onlyCompany notUpgraded {
-        upgraded = true;
+        ExperienceV1Storage storage s = LibExperienceV1Storage.load();
+        s.upgraded = true;
         experienceRegistry.upgradeExperience(initData);
     }
 
     function experienceUpgraded(address nextVersion) external override onlyRegistry {
-        uint256 bal = address(this).balance;
-        if(bal > 0) {
-            payable(nextVersion).transfer(bal);
-        }
+        BaseProxyStorage storage ps = LibBaseProxy.load();
+        ps.implementation = nextVersion;
         emit ExperienceUpgraded(address(this), nextVersion);
     }
 }

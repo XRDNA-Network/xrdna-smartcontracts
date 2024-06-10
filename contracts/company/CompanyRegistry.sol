@@ -31,7 +31,7 @@ contract CompanyRegistry is ICompanyRegistry, ReentrancyGuard, AccessControl {
     mapping(string => address) _companiesByName;
     mapping(address => bool) _companies;
     mapping(bytes32 => address) _companiesByVector;
-
+    string public override currentCompanyVersion = "0.1";
 
     modifier onlyFactory {
         require(msg.sender == address(companyFactory), "CompanyRegistry: caller is not factory");
@@ -120,5 +120,9 @@ contract CompanyRegistry is ICompanyRegistry, ReentrancyGuard, AccessControl {
         _companiesByVector[keccak256(bytes(args.vector.asLookupKey()))] = company;
         old.upgradeComplete(company);
         delete _companies[msg.sender];
+    }
+
+    function setCurrentCompanyVersion(string memory version) public onlyRole(ADMIN_ROLE) {
+        currentCompanyVersion = version;
     }
 }

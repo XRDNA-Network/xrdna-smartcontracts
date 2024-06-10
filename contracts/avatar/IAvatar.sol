@@ -31,6 +31,8 @@ interface IAvatar is IERC721Receiver {
     event AppearanceChanged(bytes indexed appearanceDetails);
     event JumpSuccess(address indexed experience, bytes indexed connectionDetails);
     event AvatarUpgraded(address indexed oldVersion, address indexed nextVersion);
+    event HookSet(address indexed hook);
+    event HookRemoved();
 
     /**
      * @dev get the address of the avatar owner

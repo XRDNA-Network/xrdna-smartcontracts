@@ -13,6 +13,9 @@ import {LibStringCase} from '../../LibStringCase.sol';
 import {IWorld} from '../v0.1/IWorld.sol';
 import {IWorldHook} from './IWorldHook.sol';
 import {ReentrancyGuard} from '@openzeppelin/contracts/utils/ReentrancyGuard.sol';
+import {BaseProxyStorage, LibProxyAccess, LibBaseProxy} from '../../libraries/LibBaseProxy.sol';
+import {WorldV2Storage, LibWorldV2Storage} from '../../libraries/LibWorldV2Storage.sol';
+import {BaseAccess} from '../../BaseAccess.sol';
 
 struct WorldConstructorArgs {
     address worldFactory;
@@ -21,12 +24,13 @@ struct WorldConstructorArgs {
     address avatarRegistry;
 }
 
-contract World0_2 is IWorld0_2, ReentrancyGuard, AccessControl {
+contract World0_2 is IWorld0_2, BaseAccess, ReentrancyGuard {
     using LibStringCase for string;
+    using LibProxyAccess for BaseProxyStorage;
 
     bytes32 public constant SIGNER_ROLE = keccak256("SIGNER_ROLE");
 
-    string public constant override version = "0.2";
+    uint256 public constant override version = 2;
     
     //Fields populated at master copy deploy time
     IWorldRegistry0_2 public immutable worldRegistry;
@@ -46,22 +50,10 @@ contract World0_2 is IWorld0_2, ReentrancyGuard, AccessControl {
         _;
     }
 
-    //fields populated by init function
-    bool public upgraded;
-    address owner;
-    address oldVersion;
-    IWorldHook public hook;
-    VectorAddress baseVector;
-    string public name;
-    uint256 nextP;
 
     modifier notUpgraded {
-        require(!upgraded, "World0_2: world already upgraded");
-        _;
-    }
-
-    modifier onlySigner {
-        require(hasRole(SIGNER_ROLE, msg.sender), "World0_2: caller is not signer");
+        WorldV2Storage storage ws = LibWorldV2Storage.load();
+        require(!ws.upgraded, "World0_2: world already upgraded");
         _;
     }
 
@@ -80,90 +72,41 @@ contract World0_2 is IWorld0_2, ReentrancyGuard, AccessControl {
         emit ReceivedFunds(msg.sender, msg.value);
     }
 
-    function init(WorldCreateRequest memory request) external onlyFactory {
-        require(request.owner != address(0), "World0_2: owner cannot be zero address");
-        require(bytes(request.baseVector.x).length != 0, "World0_2: baseVector.x cannot be zero");
-        require(bytes(request.baseVector.y).length != 0, "World0_2: baseVector.y cannot be zero");
-        require(bytes(request.baseVector.z).length != 0, "World0_2: baseVector.z cannot be zero");
-        require(request.baseVector.p == 0, "World0_2: baseVector.p must be zero");
-        require(request.baseVector.p_sub == 0, "World0_2: baseVector.p_sub must be zero");
-        require(bytes(request.name).length > 0, "World0_2: name cannot be empty");
-        owner = request.owner;
-        baseVector = request.baseVector;
-        name = request.name;
-        nextP = 0;
-        oldVersion = request.oldWorld;
-        _grantRole(DEFAULT_ADMIN_ROLE, owner);
-        _grantRole(SIGNER_ROLE, owner);
-        if(request.oldWorld != address(0)) {
-            address oldOwner = IWorld(request.oldWorld).getOwner();
-            if(oldOwner != owner) {
-                //only grant old owner signer role to mitigate security implications. 
-                _grantRole(SIGNER_ROLE, oldOwner);
-            }
-        }
-    }
-
     function getOwner() external view returns (address) {
-        return owner;
+        WorldV2Storage storage ws = LibWorldV2Storage.load();
+        return ws.owner;
     }
 
     function getBaseVector() external view returns (VectorAddress memory) {
-        return baseVector;
+        WorldV2Storage storage ws = LibWorldV2Storage.load();
+        return ws.baseVector;
     }
 
     function getName() external view returns (string memory) {
-        return name;
+        WorldV2Storage storage ws = LibWorldV2Storage.load();
+        return ws.name;
     }
 
-    function upgrade(bytes calldata initData) public onlyRole(SIGNER_ROLE) notUpgraded {
-        upgraded = true;
-        worldRegistry.worldUpgradeSelf(initData);
-    }
-
-    function upgradeComplete(address nextVersion) public onlyRegistry {
-        upgraded = true;
-        uint256 bal = address(this).balance;
-        if(bal > 0) {
-            payable(nextVersion).transfer(bal);
-        }
-        emit WorldUpgraded(address(this), nextVersion);
-    }
-    
-    function addSigners(address[] memory sigs) external onlyRole(DEFAULT_ADMIN_ROLE) notUpgraded {
-        for (uint256 i = 0; i < sigs.length; i++) {
-            require(sigs[i] != address(0), "World0_2: signer cannot be zero address");
-            require(_grantRole(SIGNER_ROLE, sigs[i]), "World0_2: signer role failed");
-            emit SignerAdded(sigs[i]);
-        }
-    }
-
-    function removeSigners(address[] memory sigs) external onlyRole(DEFAULT_ADMIN_ROLE) {
-        for (uint256 i = 0; i < sigs.length; i++) {
-            require(sigs[i] != address(0), "World0_2: signer cannot be zero address");
-            _revokeRole(SIGNER_ROLE, sigs[i]);
-            emit SignerRemoved(sigs[i]);
-        }
-    }
-
-    function isSigner(address signer) external view override returns (bool) {
-        return hasRole(SIGNER_ROLE, signer);
+    function upgraded() external view override returns (bool) {
+        WorldV2Storage storage ws = LibWorldV2Storage.load();
+        return ws.upgraded;
     }
 
     function registerCompany(CompanyRegistrationArgs memory args) public payable onlySigner nonReentrant returns (address company) {
         require(args.owner != address(0), "World0_2: company owner cannot be zero address");
         require(bytes(args.name).length > 0, "World0_2: company name cannot be empty");
-        if(address(hook) != address(0)) {
-            require(hook.beforeRegisterCompany(args), "World0_2: hook rejected company registration");
+        WorldV2Storage storage ws = LibWorldV2Storage.load();
+        if(address(ws.hook) != address(0)) {
+            require(ws.hook.beforeRegisterCompany(args), "World0_2: hook rejected company registration");
         }
 
-        ++nextP;
+        ++ws.nextP;
         VectorAddress memory vector = VectorAddress({
-            x: baseVector.x,
-            y: baseVector.y,
-            z: baseVector.z,
-            t: baseVector.t,
-            p: nextP,
+            x: ws.baseVector.x,
+            y: ws.baseVector.y,
+            z: ws.baseVector.z,
+            t: ws.baseVector.t,
+            p: ws.nextP,
             p_sub: 0
         });
         company = companyRegistry.registerCompany{value: msg.value}(CompanyRegistrationRequest({
@@ -179,8 +122,9 @@ contract World0_2 is IWorld0_2, ReentrancyGuard, AccessControl {
     function registerAvatar(AvatarRegistrationRequest memory args) external payable onlySigner nonReentrant returns (address avatar) {
         require(args.avatarOwner != address(0), "World0_2: avatar owner cannot be zero address");
         require(bytes(args.username).length > 0, "World0_2: avatar username cannot be empty");
-        if(address(hook) != address(0)) {
-            require(hook.beforeRegisterAvatar(args), "World0_2: hook rejected avatar registration");
+        WorldV2Storage storage ws = LibWorldV2Storage.load();
+        if(address(ws.hook) != address(0)) {
+            require(ws.hook.beforeRegisterAvatar(args), "World0_2: hook rejected avatar registration");
         }
 
         avatar = avatarRegistry.registerAvatar(AvatarRegistrationRequest({
@@ -193,20 +137,61 @@ contract World0_2 is IWorld0_2, ReentrancyGuard, AccessControl {
         emit AvatarRegistered(avatar, args.defaultExperience);
     }
 
-    function setHook(IWorldHook _hook) external onlyRole(DEFAULT_ADMIN_ROLE) {
+    function init(WorldCreateRequest memory request) external onlyFactory {
+        BaseProxyStorage storage bs = LibBaseProxy.load();
+
+        require(request.owner != address(0), "World0_2: owner cannot be zero address");
+        require(bytes(request.baseVector.x).length != 0, "World0_2: baseVector.x cannot be zero");
+        require(bytes(request.baseVector.y).length != 0, "World0_2: baseVector.y cannot be zero");
+        require(bytes(request.baseVector.z).length != 0, "World0_2: baseVector.z cannot be zero");
+        require(request.baseVector.p == 0, "World0_2: baseVector.p must be zero");
+        require(request.baseVector.p_sub == 0, "World0_2: baseVector.p_sub must be zero");
+        require(bytes(request.name).length > 0, "World0_2: name cannot be empty");
+        WorldV2Storage storage ws = LibWorldV2Storage.load();
+        ws.owner = request.owner;
+        ws.baseVector = request.baseVector;
+        ws.name = request.name;
+        ws.nextP = 0;
+        ws.oldVersion = request.oldWorld;
+        bs.setRole(LibProxyAccess.ADMIN_ROLE, ws.owner, true);
+        bs.setRole(LibProxyAccess.SIGNER_ROLE, ws.owner, true);
+        if(request.oldWorld != address(0)) {
+            address oldOwner = IWorld(request.oldWorld).getOwner();
+            if(oldOwner != ws.owner) {
+                //only grant old owner signer role to mitigate security implications. 
+                bs.setRole(LibProxyAccess.SIGNER_ROLE, oldOwner, true);
+            }
+        }
+    }
+
+    function upgrade(bytes calldata initData) public onlyAdmin notUpgraded {
+        WorldV2Storage storage ws = LibWorldV2Storage.load();
+        ws.upgraded = true;
+        worldRegistry.worldUpgradeSelf(initData);
+    }
+
+    function upgradeComplete(address nextVersion) public onlyRegistry {
+        BaseProxyStorage storage bs = LibBaseProxy.load();
+        bs.implementation = nextVersion;
+    }
+
+    function setHook(IWorldHook _hook) external onlyAdmin {
         require(address(_hook) != address(0), "World0_2: hook cannot be zero address");
-        hook = _hook;
+        WorldV2Storage storage ws = LibWorldV2Storage.load();
+        ws.hook = _hook;
         emit WorldHookSet(address(_hook));
     }
 
-    function removeHook() external onlyRole(DEFAULT_ADMIN_ROLE) {
-        hook = IWorldHook(address(0));
+    function removeHook() external onlyAdmin {
+        WorldV2Storage storage ws = LibWorldV2Storage.load();
+        ws.hook = IWorldHook(address(0));
         emit WorldHookRemoved();
     }
 
-    function withdraw(uint256 amount) external onlyRole(DEFAULT_ADMIN_ROLE) {
+    function withdraw(uint256 amount) external onlyAdmin {
         require(amount <= address(this).balance, "World0_2: amount exceeds balance");
-        payable(owner).transfer(amount);
+        WorldV2Storage storage ws = LibWorldV2Storage.load();
+        payable(ws.owner).transfer(amount);
     }
     
 }

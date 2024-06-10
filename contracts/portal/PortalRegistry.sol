@@ -180,9 +180,7 @@ contract PortalRegistry is IPortalRegistry, AccessControl {
     }
 
     //NOTE: must be called by a registered destination experience contract
-    function removeCondition() external onlyExperience {
-        //NOTE: this can still be called even if upgraded since previously
-        //registered experience may not have migrated to new registry.
+    function removeCondition() external onlyExperience notUpgraded {
         uint256 portalId = portalIdsByExperience[msg.sender];
         portals[portalId].condition = IPortalCondition(address(0));
         emit PortalConditionRemoved(portalId);

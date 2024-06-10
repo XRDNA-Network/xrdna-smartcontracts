@@ -17,6 +17,8 @@ import "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
 import {ReentrancyGuard} from '@openzeppelin/contracts/utils/ReentrancyGuard.sol';
 import {IAvatarRegistry} from './IAvatarRegistry.sol';
 import {IERC721Asset} from '../asset/IERC721Asset.sol';
+import {AvatarV1Storage, LibAvatarV1Storage} from '../libraries/LibAvatarV1Storage.sol';
+import {BaseProxyStorage, LibBaseProxy, LibProxyAccess} from '../libraries/LibBaseProxy.sol';
 
 interface IExperienceRegistry {
     function isExperience(address e) external view returns (bool);
@@ -47,6 +49,7 @@ contract Avatar is IAvatar, ReentrancyGuard, WearableLinkedList {
     IExperienceRegistry public immutable experienceRegistry;
     IPortalRegistry public immutable portalRegistry;
     ICompanyRegistry public immutable companyRegistry;
+    string public constant version = "0.1";
 
 
     modifier onlyFactory {
@@ -54,19 +57,9 @@ contract Avatar is IAvatar, ReentrancyGuard, WearableLinkedList {
         _;
     }
 
-    //fields set by init data
-    bool public canReceiveTokensOutsideOfExperience;
-    bool public upgraded;
-    address public owner;
-    IExperience private _location;
-    IAvatarHook public hook;
-    string public username;
-    bytes public appearanceDetails;
-    mapping (address => uint256) public companySigningNonce;
-    uint256 public avatarOwnerSigningNonce;
-
     modifier notUpgraded {
-        require(!upgraded, "Avatar: contract has been upgraded");
+        AvatarV1Storage storage s = LibAvatarV1Storage.load();
+        require(!s.upgraded, "Avatar: contract has been upgraded");
         _;
     }
 
@@ -76,7 +69,8 @@ contract Avatar is IAvatar, ReentrancyGuard, WearableLinkedList {
     }
 
     modifier onlyOwner {
-        require(msg.sender == owner, "Avatar: only owner can call this function");
+        AvatarV1Storage storage s = LibAvatarV1Storage.load();
+        require(msg.sender == s.owner, "Avatar: only owner can call this function");
         _;
     }
 
@@ -95,6 +89,46 @@ contract Avatar is IAvatar, ReentrancyGuard, WearableLinkedList {
 
     receive() external payable {  }
 
+    function canReceiveTokensOutsideOfExperience() public view override returns (bool) {
+        AvatarV1Storage storage s = LibAvatarV1Storage.load();
+        return s.canReceiveTokensOutsideOfExperience;
+    }
+
+    function upgraded() public view returns (bool) {
+        AvatarV1Storage storage s = LibAvatarV1Storage.load();
+        return s.upgraded;
+    }
+
+    function owner() public view override returns (address) {
+        AvatarV1Storage storage s = LibAvatarV1Storage.load();
+        return s.owner;
+    }
+
+    function hook() public view returns (IAvatarHook) {
+        AvatarV1Storage storage s = LibAvatarV1Storage.load();
+        return s.hook;
+    }
+
+    function username() public view override returns (string memory) {
+        AvatarV1Storage storage s = LibAvatarV1Storage.load();
+        return s.username;
+    }
+
+    function appearanceDetails() public view override returns (bytes memory) {
+        AvatarV1Storage storage s = LibAvatarV1Storage.load();
+        return s.appearanceDetails;
+    }
+
+    function companySigningNonce(address company) public view override returns (uint256) {
+        AvatarV1Storage storage s = LibAvatarV1Storage.load();
+        return s.companySigningNonce[company];
+    }
+
+    function avatarOwnerSigningNonce() public view override returns (uint256) {
+        AvatarV1Storage storage s = LibAvatarV1Storage.load();
+        return s.avatarOwnerSigningNonce;
+    }
+
     function encodeInitData(AvatarInitData memory data) public pure returns (bytes memory) {
         return abi.encode(data);
     }
@@ -106,24 +140,26 @@ contract Avatar is IAvatar, ReentrancyGuard, WearableLinkedList {
      * @param initData Initialization data to pass to the avatar contract
      */
     function init(address _owner, address defaultExperience, string memory _name, bytes memory initData) public override onlyFactory {
-        require(owner == address(0), "Avatar: contract already initialized");
+        AvatarV1Storage storage s = LibAvatarV1Storage.load();
+        require(s.owner == address(0), "Avatar: contract already initialized");
 
         AvatarInitData memory data = abi.decode(initData, (AvatarInitData));
         require(bytes(_name).length > 0, "Avatar: username cannot be empty");
         require(_owner != address(0), "Avatar: owner cannot be zero address");
         require(experienceRegistry.isExperience(defaultExperience), "Avatar: default experience is not a registered experience");
-        username = _name.lower();
-        _location = IExperience(defaultExperience);
-        canReceiveTokensOutsideOfExperience = data.canReceiveTokensOutsideOfExperience;
-        appearanceDetails = data.appearanceDetails;
-        owner = _owner;
+        s.username = _name.lower();
+        s.location = IExperience(defaultExperience);
+        s.canReceiveTokensOutsideOfExperience = data.canReceiveTokensOutsideOfExperience;
+        s.appearanceDetails = data.appearanceDetails;
+        s.owner = _owner;
     }
 
     /**
      * @dev get the Avatar's current vector address location (i.e. the experience they are in)
      */
     function location() public view override returns (IExperience) {
-        return _location;
+        AvatarV1Storage storage s = LibAvatarV1Storage.load();
+        return s.location;
     }
 
     /**
@@ -143,15 +179,17 @@ contract Avatar is IAvatar, ReentrancyGuard, WearableLinkedList {
      * their current location.
      */
     function setCanReceiveTokensOutsideOfExperience(bool canReceive) public override onlyOwner {
-        canReceiveTokensOutsideOfExperience = canReceive;
+        AvatarV1Storage storage s = LibAvatarV1Storage.load();
+        s.canReceiveTokensOutsideOfExperience = canReceive;
     }
 
     /**
      * @dev Set the appearance details of the avatar. This must be called by the avatar owner.
      */
-    function setAppearanceDetails(bytes memory) public override onlyOwner notUpgraded {
-        appearanceDetails = appearanceDetails;
-        emit AppearanceChanged(appearanceDetails);
+    function setAppearanceDetails(bytes memory details) public override onlyOwner notUpgraded {
+        AvatarV1Storage storage s = LibAvatarV1Storage.load();
+        s.appearanceDetails = details;
+        emit AppearanceChanged(details);
     }
 
     /**
@@ -167,7 +205,8 @@ contract Avatar is IAvatar, ReentrancyGuard, WearableLinkedList {
             uint256 bal = address(this).balance + msg.value;
             require(bal >= portal.fee, "Avatar: insufficient funds for jump fee");
         }
-        _location = portal.destination;
+        AvatarV1Storage storage s = LibAvatarV1Storage.load();
+        s.location = portal.destination;
         bytes memory connectionDetails = portalRegistry.jumpRequest{value: portal.fee}(request.portalId);
         emit JumpSuccess(address(portal.destination), connectionDetails);
     }
@@ -191,7 +230,8 @@ contract Avatar is IAvatar, ReentrancyGuard, WearableLinkedList {
             uint256 bal = address(this).balance + msg.value;
             require(bal >= portal.fee, "Avatar: insufficient funds for jump fee");
         }
-        _location = portal.destination;
+        AvatarV1Storage storage s = LibAvatarV1Storage.load();
+        s.location = portal.destination;
         bytes memory connectionDetails = portalRegistry.jumpRequest{value: portal.fee}(request.portalId);
         emit JumpSuccess(address(portal.destination), connectionDetails);
     }
@@ -217,11 +257,15 @@ contract Avatar is IAvatar, ReentrancyGuard, WearableLinkedList {
 
     function setHook(IAvatarHook _hook) public override onlyOwner {
         require(address(_hook) != address(0), "Avatar: hook cannot be zero address");
-        hook = IAvatarHook(_hook);
+        AvatarV1Storage storage s = LibAvatarV1Storage.load();
+        s.hook = IAvatarHook(_hook);
+        emit HookSet(address(_hook));
     }
 
     function removeHook() public override onlyOwner {
-        delete hook;
+        AvatarV1Storage storage s = LibAvatarV1Storage.load();
+        delete s.hook;
+        emit HookRemoved();
     }
 
     /**
@@ -240,8 +284,9 @@ contract Avatar is IAvatar, ReentrancyGuard, WearableLinkedList {
         uint256 tokenId,
         bytes calldata 
     ) public override nonReentrant returns (bytes4) {
-        if(address(hook) != address(0)) {
-            require(hook.onReceiveERC721(address(this), msg.sender, tokenId), "Avatar: hook rejected ERC721 token");
+        AvatarV1Storage storage s = LibAvatarV1Storage.load();
+        if(address(s.hook) != address(0)) {
+            require(s.hook.onReceiveERC721(address(this), msg.sender, tokenId), "Avatar: hook rejected ERC721 token");
         }
         return this.onERC721Received.selector;
     }
@@ -249,8 +294,9 @@ contract Avatar is IAvatar, ReentrancyGuard, WearableLinkedList {
     function _verifyCompanySignature(AvatarJumpRequest memory request) internal returns (PortalInfo memory portal) {
         portal = portalRegistry.getPortalInfoById(request.portalId);
         ICompany company = ICompany(portal.destination.company());
-        uint256 nonce = companySigningNonce[address(company)];
-        ++companySigningNonce[address(company)];
+        AvatarV1Storage storage s = LibAvatarV1Storage.load();
+        uint256 nonce = s.companySigningNonce[address(company)];
+        ++s.companySigningNonce[address(company)];
         bytes32 hash = keccak256(abi.encode(request.portalId, request.agreedFee, nonce));
 
         bytes memory b = new bytes(32);
@@ -263,8 +309,9 @@ contract Avatar is IAvatar, ReentrancyGuard, WearableLinkedList {
     }
 
     function _verifyAvatarSignature(DelegatedJumpRequest memory request) internal {
-        uint256 nonce = avatarOwnerSigningNonce;
-        ++avatarOwnerSigningNonce;
+        AvatarV1Storage storage s = LibAvatarV1Storage.load();
+        uint256 nonce = s.avatarOwnerSigningNonce;
+        ++s.avatarOwnerSigningNonce;
         bytes32 hash = keccak256(abi.encode(request.portalId, request.agreedFee, nonce));
 
         bytes memory b = new bytes(32);
@@ -273,26 +320,24 @@ contract Avatar is IAvatar, ReentrancyGuard, WearableLinkedList {
         }
         bytes32 sigHash = b.toEthSignedMessageHash();
         address r = ECDSA.recover(sigHash, request.avatarOwnerSignature);
-        require(r == owner, "Avatar: avatar signer is not owner");
+        require(r == s.owner, "Avatar: avatar signer is not owner");
     }
 
     function withdraw(uint256 amount) public override onlyOwner {
         require(amount <= address(this).balance, "Avatar: insufficient balance for withdrawal");
-        payable(owner).transfer(address(this).balance);
+        AvatarV1Storage storage s = LibAvatarV1Storage.load();
+        payable(s.owner).transfer(address(this).balance);
     }
 
     function upgrade(bytes calldata initData) public override onlyOwner notUpgraded() {
-         upgraded = true;
+        AvatarV1Storage storage s = LibAvatarV1Storage.load();
+        s.upgraded = true;
         avatarRegistry.upgradeAvatar(initData);
     }
 
     function upgradeComplete(address nextVersion) public override onlyRegistry {
-       
-        uint256 bal = address(this).balance;
-        if(bal > 0) {
-            payable(nextVersion).transfer(bal);
-        }
-        require(nextVersion != address(this), "Avatar: next version must be different contract");
-        emit AvatarUpgraded(address(this), nextVersion);
+       BaseProxyStorage storage ps = LibBaseProxy.load();
+       ps.implementation = nextVersion;
+       emit AvatarUpgraded(address(this), nextVersion);
     }
 }

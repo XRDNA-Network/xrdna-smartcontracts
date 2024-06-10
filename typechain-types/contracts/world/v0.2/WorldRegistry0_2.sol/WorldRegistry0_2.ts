@@ -101,6 +101,7 @@ export interface WorldRegistry0_2Interface extends Interface {
       | "DEFAULT_ADMIN_ROLE"
       | "VECTOR_AUTHORITY_ROLE"
       | "addVectorAddressAuthority"
+      | "currentWorldVersion"
       | "getRoleAdmin"
       | "getWorldByName"
       | "grantRole"
@@ -114,6 +115,7 @@ export interface WorldRegistry0_2Interface extends Interface {
       | "removeVectorAddressAuthority"
       | "renounceRole"
       | "revokeRole"
+      | "setCurrentWorldVersion"
       | "setWorldFactory"
       | "supportsInterface"
       | "vectorAuthority"
@@ -146,6 +148,10 @@ export interface WorldRegistry0_2Interface extends Interface {
   encodeFunctionData(
     functionFragment: "addVectorAddressAuthority",
     values: [AddressLike]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "currentWorldVersion",
+    values?: undefined
   ): string;
   encodeFunctionData(
     functionFragment: "getRoleAdmin",
@@ -200,6 +206,10 @@ export interface WorldRegistry0_2Interface extends Interface {
     values: [BytesLike, AddressLike]
   ): string;
   encodeFunctionData(
+    functionFragment: "setCurrentWorldVersion",
+    values: [string]
+  ): string;
+  encodeFunctionData(
     functionFragment: "setWorldFactory",
     values: [AddressLike]
   ): string;
@@ -231,6 +241,10 @@ export interface WorldRegistry0_2Interface extends Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "addVectorAddressAuthority",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "currentWorldVersion",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -270,6 +284,10 @@ export interface WorldRegistry0_2Interface extends Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "revokeRole", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "setCurrentWorldVersion",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "setWorldFactory",
     data: BytesLike
@@ -451,6 +469,8 @@ export interface WorldRegistry0_2 extends BaseContract {
     "nonpayable"
   >;
 
+  currentWorldVersion: TypedContractMethod<[], [string], "view">;
+
   getRoleAdmin: TypedContractMethod<[role: BytesLike], [string], "view">;
 
   getWorldByName: TypedContractMethod<[name: string], [string], "view">;
@@ -509,6 +529,12 @@ export interface WorldRegistry0_2 extends BaseContract {
     "nonpayable"
   >;
 
+  setCurrentWorldVersion: TypedContractMethod<
+    [version: string],
+    [void],
+    "nonpayable"
+  >;
+
   setWorldFactory: TypedContractMethod<
     [factory: AddressLike],
     [void],
@@ -547,6 +573,9 @@ export interface WorldRegistry0_2 extends BaseContract {
   getFunction(
     nameOrSignature: "addVectorAddressAuthority"
   ): TypedContractMethod<[auth: AddressLike], [void], "nonpayable">;
+  getFunction(
+    nameOrSignature: "currentWorldVersion"
+  ): TypedContractMethod<[], [string], "view">;
   getFunction(
     nameOrSignature: "getRoleAdmin"
   ): TypedContractMethod<[role: BytesLike], [string], "view">;
@@ -610,6 +639,9 @@ export interface WorldRegistry0_2 extends BaseContract {
     [void],
     "nonpayable"
   >;
+  getFunction(
+    nameOrSignature: "setCurrentWorldVersion"
+  ): TypedContractMethod<[version: string], [void], "nonpayable">;
   getFunction(
     nameOrSignature: "setWorldFactory"
   ): TypedContractMethod<[factory: AddressLike], [void], "nonpayable">;

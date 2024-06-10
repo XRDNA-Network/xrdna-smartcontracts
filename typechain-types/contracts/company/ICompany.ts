@@ -93,6 +93,7 @@ export interface ICompanyInterface extends Interface {
       | "upgradeComplete"
       | "upgraded"
       | "vectorAddress"
+      | "version"
       | "withdraw"
       | "world"
   ): FunctionFragment;
@@ -177,6 +178,7 @@ export interface ICompanyInterface extends Interface {
     functionFragment: "vectorAddress",
     values?: undefined
   ): string;
+  encodeFunctionData(functionFragment: "version", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "withdraw",
     values: [BigNumberish]
@@ -227,6 +229,7 @@ export interface ICompanyInterface extends Interface {
     functionFragment: "vectorAddress",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "version", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "withdraw", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "world", data: BytesLike): Result;
 }
@@ -474,6 +477,8 @@ export interface ICompany extends BaseContract {
 
   vectorAddress: TypedContractMethod<[], [VectorAddressStructOutput], "view">;
 
+  version: TypedContractMethod<[], [bigint], "view">;
+
   withdraw: TypedContractMethod<[amount: BigNumberish], [void], "nonpayable">;
 
   world: TypedContractMethod<[], [string], "view">;
@@ -562,6 +567,9 @@ export interface ICompany extends BaseContract {
   getFunction(
     nameOrSignature: "vectorAddress"
   ): TypedContractMethod<[], [VectorAddressStructOutput], "view">;
+  getFunction(
+    nameOrSignature: "version"
+  ): TypedContractMethod<[], [bigint], "view">;
   getFunction(
     nameOrSignature: "withdraw"
   ): TypedContractMethod<[amount: BigNumberish], [void], "nonpayable">;

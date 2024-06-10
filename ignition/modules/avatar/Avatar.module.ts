@@ -4,30 +4,29 @@ import AvatarRegistryModule from "./AvatarRegistry.module";
 import CompanyRegistryModule from "../company/CompanyRegistry.module";
 import ExperienceRegistryModule from "../experience/ExperienceRegistry.module";
 import PortalRegistryModule from "../portal/PortalRegistry.module";
-import WorldModule from "../world/World.module";
+import AvatarProxyModule from './AvatarProxy.module';
 import NTAssetMasterModule from "../asset/NTAssetMaster.module";
 
 
 
 export default buildModule("Avatar", (m) => {
     
-    const reg = m.useModule(AvatarRegistryModule);
-    const fac = m.useModule(AvatarFactoryModule);
+    const proxy = m.useModule(AvatarProxyModule);
     const companyReg = m.useModule(CompanyRegistryModule);
     const expReg = m.useModule(ExperienceRegistryModule);
     const portalReg = m.useModule(PortalRegistryModule);
     const assets = m.useModule(NTAssetMasterModule);
 
     const args = {
-        avatarFactory: fac.avatarFactory,
-        avatarRegistry: reg.avatarRegistry,
+        avatarFactory: proxy.avatarFactory,
+        avatarRegistry: proxy.avatarRegistry,
         experienceRegistry: expReg.experienceRegistry,
         portalRegistry: portalReg.portalRegistry,
         companyRegistry: companyReg.companyRegistry
     }
     const master = m.contract("Avatar", [args], {
-        after: [fac.avatarFactory, 
-                reg.avatarRegistry, 
+        after: [proxy.avatarFactory, 
+                proxy.avatarRegistry, 
                 expReg.experienceRegistry,
                 portalReg.portalRegistry,
                 companyReg.companyRegistry,
@@ -35,10 +34,10 @@ export default buildModule("Avatar", (m) => {
                 assets.erc721Master
             ]
     });
-    m.call(fac.avatarFactory, "setImplementation", [master]);
+    m.call(proxy.avatarFactory, "setImplementation", [master]);
     return {
         avatarMasterCopy: master,
-        avatarRegistry: reg.avatarRegistry,
-        avatarFactory: fac.avatarFactory,
+        avatarRegistry: proxy.avatarRegistry,
+        avatarFactory: proxy.avatarFactory,
     }
 });

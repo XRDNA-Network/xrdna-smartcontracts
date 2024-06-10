@@ -4,6 +4,7 @@
 import type * as companySol from "./Company.sol";
 export type { companySol };
 export type { CompanyFactory } from "./CompanyFactory";
+export type { CompanyProxy } from "./CompanyProxy";
 export type { CompanyRegistry } from "./CompanyRegistry";
 export type { ICompany } from "./ICompany";
 export type { ICompanyFactory } from "./ICompanyFactory";

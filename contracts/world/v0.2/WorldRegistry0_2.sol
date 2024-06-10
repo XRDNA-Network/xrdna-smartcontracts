@@ -40,6 +40,7 @@ contract WorldRegistry0_2 is IWorldRegistry0_2, ReentrancyGuard, AccessControl {
     mapping(string => address) _worldsByName;
     mapping(address => bool) _worlds;
     mapping(bytes32 => address) _worldsByVector;
+    string public currentWorldVersion = "0.2";
 
     modifier onlyAdmin {
         require(hasRole(ADMIN_ROLE, msg.sender), "WorldRegistry0_2: caller is not admin");
@@ -75,6 +76,10 @@ contract WorldRegistry0_2 is IWorldRegistry0_2, ReentrancyGuard, AccessControl {
        
     }
 
+    function setCurrentWorldVersion(string memory version) external onlyAdmin {
+        currentWorldVersion = version;
+    }
+
     function getWorldByName(string memory name) external view returns (address) {
         return _worldsByName[name.lower()];
     }
@@ -105,6 +110,10 @@ contract WorldRegistry0_2 is IWorldRegistry0_2, ReentrancyGuard, AccessControl {
     function register(WorldRegistrationRequest memory request) external payable onlyRegistrar(request.registrarId) nonReentrant  {
         string memory name = request.name.lower();
         require(_worldsByName[name] == address(0), "WorldRegistry0_2: name already in use");
+        if(address(previousRegistry) != address(0) &&
+           request.oldWorld != address(0)) {
+            require(previousRegistry.isWorld(request.oldWorld), "WorldRegistry0_2: oldWorld is not a valid world from previous registry");
+        }
         address signer = request.baseVector.getSigner(request.vectorAuthoritySignature);
         require(hasRole(VECTOR_AUTHORITY_ROLE, signer), "WorldRegistry0_2: vector signer is not a valid vector address authority");
 
@@ -112,13 +121,15 @@ contract WorldRegistry0_2 is IWorldRegistry0_2, ReentrancyGuard, AccessControl {
         require(bytes(request.baseVector.y).length != 0, "WorldRegistry0_2: baseVector.y cannot be zero");
         require(bytes(request.baseVector.z).length != 0, "WorldRegistry0_2: baseVector.z cannot be zero");
         VectorAddress memory va = VectorAddress({
-                x: request.baseVector.x,
-                y: request.baseVector.y,
-                z: request.baseVector.z,
-                t: request.baseVector.t,
-                p: 0,
-                p_sub: 0
-            });
+            x: request.baseVector.x,
+            y: request.baseVector.y,
+            z: request.baseVector.z,
+            t: request.baseVector.t,
+            p: 0,
+            p_sub: 0
+        });
+        bytes32 vHash = keccak256(bytes(va.asLookupKey()));
+        require(_worldsByVector[vHash] == address(0), "WorldRegistry0_2: vector already in use");
         address world = worldFactory.createWorld(WorldCreateRequest({
             owner: request.owner,
             oldWorld: request.oldWorld,
@@ -129,7 +140,7 @@ contract WorldRegistry0_2 is IWorldRegistry0_2, ReentrancyGuard, AccessControl {
         require(world != address(0), "WorldRegistry0_2: world creation failed");
         _worldsByName[name] = world;
         _worlds[world] = true;
-        _worldsByVector[keccak256(bytes(va.asLookupKey()))] = world;
+        _worldsByVector[vHash] = world;
         if(msg.value > 0) {
             if(request.sendTokensToWorldOwner) {
                 payable(request.owner).transfer(msg.value);

@@ -295,6 +295,19 @@ const _abi = [
   {
     inputs: [
       {
+        internalType: "address",
+        name: "_proxyImplementation",
+        type: "address",
+      },
+    ],
+    name: "setProxyImplementation",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
         internalType: "bytes4",
         name: "interfaceId",
         type: "bytes4",

@@ -2,7 +2,6 @@
 // Compatible with OpenZeppelin Contracts ^5.0.0
 pragma solidity ^0.8.24;
 
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import {IERC20Errors} from "@openzeppelin/contracts/interfaces/draft-IERC6093.sol";
 import {IAssetHook} from './IAssetHook.sol';
@@ -10,6 +9,9 @@ import {IAvatarRegistry} from '../avatar/IAvatarRegistry.sol';
 import {IAvatar} from '../avatar/IAvatar.sol';
 import {BaseAsset, BaseAssetArgs} from './BaseAsset.sol';
 import {AssetType} from './IAssetFactory.sol';
+import {IERC20Asset} from './IERC20Asset.sol';
+import {CommonAssetV1Storage, ERC20V1Storage, LibAssetV1Storage} from '../libraries/LibAssetV1Storage.sol';
+import {BaseProxyStorage, LibBaseProxy} from '../libraries/LibBaseProxy.sol';
 
 /**
  * @title NonTransferableERC20Asset
@@ -36,20 +38,10 @@ struct ERC20InitData {
     string symbol;
 }
 
-contract NonTransferableERC20Asset is BaseAsset, IERC20, IERC20Metadata, IERC20Errors {
+contract NonTransferableERC20Asset is BaseAsset, IERC20Asset, IERC20Metadata, IERC20Errors {
 
 
-    //decimals
-    uint8  private _decimals;
-
-    //total supply of the asset
-    uint256 private _totalSupply;
-
-    mapping(address account => uint256) private _balances;
-    mapping(address account => mapping(address spender => uint256)) private _allowances;
-
-    string private _name;
-    string private _symbol;
+    uint256 public override version = 1;
 
     event ERC20Minted(address indexed to, uint256 amt);
     event ERC20Upgraded(address indexed oldAsset, address newAsset);
@@ -69,21 +61,29 @@ contract NonTransferableERC20Asset is BaseAsset, IERC20, IERC20Metadata, IERC20E
         require(bytes(data.name).length > 0, "NonTransferableERC20: name cannot be empty");
         require(bytes(data.symbol).length > 0, "NonTransferableERC20: symbol cannot be empty");
         require(data.originChainId > 0, "NonTransferableERC20: originChainId must be greater than zero");
+        ERC20V1Storage storage s = LibAssetV1Storage.loadERC20Storage();
 
-        assetType = AssetType.ERC20;
-        originAddress = data.originChainAddress;
-        issuer = data.issuer;
-        originChainId = data.originChainId;
-        _totalSupply = data.totalSupply;
-        _name = data.name;
-        _symbol = data.symbol;
-        _decimals = data.decimals > 0 ? data.decimals : 18;
+        s.attributes.assetType = AssetType.ERC20;
+        s.attributes.originAddress = data.originChainAddress;
+        s.attributes.issuer = data.issuer;
+        s.attributes.originChainId = data.originChainId;
+        s.totalSupply = data.totalSupply;
+        s.attributes.name = data.name;
+        s.attributes.symbol = data.symbol;
+        s.attributes.decimals = data.decimals > 0 ? data.decimals : 18;
+    }
+
+    function _loadCommonAttributes() internal view override returns (CommonAssetV1Storage storage) {
+        return LibAssetV1Storage.loadERC20Storage().attributes;
     }
 
     function upgrade(address newAsset) public onlyRegistry() {
         //no-op
         require(newAsset != address(this), "NonTransferableERC20Asset: new upgrade contract address cannot match original");
-        upgraded = true;
+        ERC20V1Storage storage s = LibAssetV1Storage.loadERC20Storage();
+        s.attributes.upgraded = true;
+        BaseProxyStorage storage ps = LibBaseProxy.load();
+        ps.implementation = newAsset;
         emit ERC20Upgraded(address(this), newAsset);
     }
 
@@ -91,7 +91,7 @@ contract NonTransferableERC20Asset is BaseAsset, IERC20, IERC20Metadata, IERC20E
      * @dev Returns the name of the token.
      */
     function name() public view virtual returns (string memory) {
-        return _name;
+        return _loadCommonAttributes().name;
     }
 
     /**
@@ -99,7 +99,7 @@ contract NonTransferableERC20Asset is BaseAsset, IERC20, IERC20Metadata, IERC20E
      * name.
      */
     function symbol() public view virtual returns (string memory) {
-        return _symbol;
+        return _loadCommonAttributes().symbol;
     }
 
     /**
@@ -116,21 +116,21 @@ contract NonTransferableERC20Asset is BaseAsset, IERC20, IERC20Metadata, IERC20E
      * {IERC20-balanceOf} and {IERC20-transfer}.
      */
     function decimals() public view virtual returns (uint8) {
-        return _decimals;
+        return _loadCommonAttributes().decimals;
     }
 
     /**
      * @dev See {IERC20-totalSupply}.
      */
     function totalSupply() public view virtual returns (uint256) {
-        return _totalSupply;
+        return LibAssetV1Storage.loadERC20Storage().totalSupply;
     }
 
     /**
      * @dev See {IERC20-balanceOf}.
      */
     function balanceOf(address account) public view virtual returns (uint256) {
-        return _balances[account];
+        return LibAssetV1Storage.loadERC20Storage().balances[account];
     }
 
     /**
@@ -149,7 +149,7 @@ contract NonTransferableERC20Asset is BaseAsset, IERC20, IERC20Metadata, IERC20E
      * @dev See {IERC20-allowance}.
      */
     function allowance(address owner, address spender) public view virtual returns (uint256) {
-        return _allowances[owner][spender];
+        return LibAssetV1Storage.loadERC20Storage().allowances[owner][spender];
     }
 
     /**
@@ -187,10 +187,10 @@ contract NonTransferableERC20Asset is BaseAsset, IERC20, IERC20Metadata, IERC20E
     }
 
     function mint(address to, uint256 amt) public nonReentrant onlyIssuer  {
-        
-        if(address(hook) != address(0)) {
-            bool s = hook.beforeMint(address(this), to, amt);
-            if(!s) {
+        CommonAssetV1Storage storage s = _loadCommonAttributes();
+        if(address(s.hook) != address(0)) {
+            bool ok = s.hook.beforeMint(address(this), to, amt);
+            if(!ok) {
                 revert("NonTransferableERC20Asset: beforeMint hook rejected request");
             }
         }
@@ -205,6 +205,7 @@ contract NonTransferableERC20Asset is BaseAsset, IERC20, IERC20Metadata, IERC20E
     }
 
     function revoke(address tgt, uint256 amt) public nonReentrant onlyIssuer {
+        IAssetHook hook = _loadCommonAttributes().hook;
         if(address(hook) != address(0)) {
             bool s = hook.beforeRevoke(address(this), tgt, amt);
             if(!s) {
@@ -223,29 +224,30 @@ contract NonTransferableERC20Asset is BaseAsset, IERC20, IERC20Metadata, IERC20E
      * Emits a {Transfer} event.
      */
     function _update(address from, address to, uint256 value) internal virtual {
+        ERC20V1Storage storage s = LibAssetV1Storage.loadERC20Storage();
         if (from == address(0)) {
             // Overflow check required: The rest of the code assumes that totalSupply never overflows
-            _totalSupply += value;
+            s.totalSupply += value;
         } else {
-            uint256 fromBalance = _balances[from];
+            uint256 fromBalance = s.balances[from];
             if (fromBalance < value) {
                 revert ERC20InsufficientBalance(from, fromBalance, value);
             }
             unchecked {
                 // Overflow not possible: value <= fromBalance <= totalSupply.
-                _balances[from] = fromBalance - value;
+                s.balances[from] = fromBalance - value;
             }
         }
 
         if (to == address(0)) {
             unchecked {
                 // Overflow not possible: value <= totalSupply or value <= fromBalance <= totalSupply.
-                _totalSupply -= value;
+                s.totalSupply -= value;
             }
         } else {
             unchecked {
                 // Overflow not possible: balance + value is at most totalSupply, which we know fits into a uint256.
-                _balances[to] += value;
+                s.balances[to] += value;
             }
         }
 

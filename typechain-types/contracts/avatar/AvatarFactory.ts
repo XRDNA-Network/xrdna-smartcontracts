@@ -36,6 +36,7 @@ export interface AvatarFactoryInterface extends Interface {
       | "revokeRole"
       | "setAuthorizedRegistry"
       | "setImplementation"
+      | "setProxyImplementation"
       | "supportsInterface"
   ): FunctionFragment;
 
@@ -92,6 +93,10 @@ export interface AvatarFactoryInterface extends Interface {
     values: [AddressLike]
   ): string;
   encodeFunctionData(
+    functionFragment: "setProxyImplementation",
+    values: [AddressLike]
+  ): string;
+  encodeFunctionData(
     functionFragment: "supportsInterface",
     values: [BytesLike]
   ): string;
@@ -123,6 +128,10 @@ export interface AvatarFactoryInterface extends Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "setImplementation",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "setProxyImplementation",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -300,6 +309,12 @@ export interface AvatarFactory extends BaseContract {
     "nonpayable"
   >;
 
+  setProxyImplementation: TypedContractMethod<
+    [_proxyImplementation: AddressLike],
+    [void],
+    "nonpayable"
+  >;
+
   supportsInterface: TypedContractMethod<
     [interfaceId: BytesLike],
     [boolean],
@@ -368,6 +383,13 @@ export interface AvatarFactory extends BaseContract {
   getFunction(
     nameOrSignature: "setImplementation"
   ): TypedContractMethod<[_implementation: AddressLike], [void], "nonpayable">;
+  getFunction(
+    nameOrSignature: "setProxyImplementation"
+  ): TypedContractMethod<
+    [_proxyImplementation: AddressLike],
+    [void],
+    "nonpayable"
+  >;
   getFunction(
     nameOrSignature: "supportsInterface"
   ): TypedContractMethod<[interfaceId: BytesLike], [boolean], "view">;

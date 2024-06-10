@@ -1,40 +1,36 @@
 import { buildModule } from "@nomicfoundation/ignition-core";
-import CompanyFactoryModule from "./CompanyFactory.module";
-import CompanyRegistryModule from "./CompanyRegistry.module";
-import ExperienceRegistryModule from "../experience/ExperienceRegistry.module";
 import AssetRegistryModule from "../asset/AssetRegistry.module";
 import AvatarRegistryModule from "../avatar/AvatarRegistry.module";
-import WorldModule from "../world/World.module";
 import ExperienceModule from "../experience/Experience.module";
+import CompanyProxyModule from './CompanyProxy.module';
 
 
 
 export default buildModule("Company", (m) => {
     
-    const reg = m.useModule(CompanyRegistryModule);
-    const fac = m.useModule(CompanyFactoryModule);
+    const proxy = m.useModule(CompanyProxyModule);
     const assetReg = m.useModule(AssetRegistryModule);
     const avatarReg = m.useModule(AvatarRegistryModule);
     const exp = m.useModule(ExperienceModule);
 
     const args = {
-        companyFactory: fac.companyFactory,
-        companyRegistry: reg.companyRegistry,
+        companyFactory: proxy.companyFactory,
+        companyRegistry: proxy.companyRegistry,
         experienceRegistry: exp.experienceRegistry,
         assetRegistry: assetReg.assetRegistry,
         avatarRegistry: avatarReg.avatarRegistry
     }
     const master = m.contract("Company", [args], {
-        after: [fac.companyFactory, 
-                reg.companyRegistry, 
+        after: [proxy.companyFactory, 
+                proxy.companyRegistry, 
                 exp.experienceRegistry,
                 assetReg.assetRegistry,
                 avatarReg.avatarRegistry]
     });
-    m.call(fac.companyFactory, "setImplementation", [master]);
+    m.call(proxy.companyFactory, "setImplementation", [master]);
     return {
-        companyRegistry: reg.companyRegistry,
-        companyFactory: fac.companyFactory,
+        companyRegistry: proxy.companyRegistry,
+        companyFactory: proxy.companyFactory,
         experienceRegistry: exp.experienceRegistry,
         experienceFactory: exp.experienceFactory,
         assetRegistry: assetReg.assetRegistry,

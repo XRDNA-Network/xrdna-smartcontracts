@@ -37,8 +37,11 @@ export interface AssetFactoryInterface extends Interface {
       | "revokeRole"
       | "setAuthorizedRegistry"
       | "setERC20Implementation"
+      | "setERC20ProxyImplementation"
       | "setERC721Implementation"
+      | "setERC721ProxyImplementation"
       | "setImplementation"
+      | "setProxyImplementation"
       | "supportsInterface"
   ): FunctionFragment;
 
@@ -95,11 +98,23 @@ export interface AssetFactoryInterface extends Interface {
     values: [AddressLike]
   ): string;
   encodeFunctionData(
+    functionFragment: "setERC20ProxyImplementation",
+    values: [AddressLike]
+  ): string;
+  encodeFunctionData(
     functionFragment: "setERC721Implementation",
     values: [AddressLike]
   ): string;
   encodeFunctionData(
+    functionFragment: "setERC721ProxyImplementation",
+    values: [AddressLike]
+  ): string;
+  encodeFunctionData(
     functionFragment: "setImplementation",
+    values: [AddressLike]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setProxyImplementation",
     values: [AddressLike]
   ): string;
   encodeFunctionData(
@@ -137,11 +152,23 @@ export interface AssetFactoryInterface extends Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "setERC20ProxyImplementation",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "setERC721Implementation",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "setERC721ProxyImplementation",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "setImplementation",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "setProxyImplementation",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -314,7 +341,19 @@ export interface AssetFactory extends BaseContract {
     "nonpayable"
   >;
 
+  setERC20ProxyImplementation: TypedContractMethod<
+    [impl: AddressLike],
+    [void],
+    "nonpayable"
+  >;
+
   setERC721Implementation: TypedContractMethod<
+    [impl: AddressLike],
+    [void],
+    "nonpayable"
+  >;
+
+  setERC721ProxyImplementation: TypedContractMethod<
     [impl: AddressLike],
     [void],
     "nonpayable"
@@ -322,6 +361,12 @@ export interface AssetFactory extends BaseContract {
 
   setImplementation: TypedContractMethod<
     [_implementation: AddressLike],
+    [void],
+    "nonpayable"
+  >;
+
+  setProxyImplementation: TypedContractMethod<
+    [_proxyImplementation: AddressLike],
     [void],
     "nonpayable"
   >;
@@ -390,11 +435,24 @@ export interface AssetFactory extends BaseContract {
     nameOrSignature: "setERC20Implementation"
   ): TypedContractMethod<[impl: AddressLike], [void], "nonpayable">;
   getFunction(
+    nameOrSignature: "setERC20ProxyImplementation"
+  ): TypedContractMethod<[impl: AddressLike], [void], "nonpayable">;
+  getFunction(
     nameOrSignature: "setERC721Implementation"
+  ): TypedContractMethod<[impl: AddressLike], [void], "nonpayable">;
+  getFunction(
+    nameOrSignature: "setERC721ProxyImplementation"
   ): TypedContractMethod<[impl: AddressLike], [void], "nonpayable">;
   getFunction(
     nameOrSignature: "setImplementation"
   ): TypedContractMethod<[_implementation: AddressLike], [void], "nonpayable">;
+  getFunction(
+    nameOrSignature: "setProxyImplementation"
+  ): TypedContractMethod<
+    [_proxyImplementation: AddressLike],
+    [void],
+    "nonpayable"
+  >;
   getFunction(
     nameOrSignature: "supportsInterface"
   ): TypedContractMethod<[interfaceId: BytesLike], [boolean], "view">;

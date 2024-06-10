@@ -8,6 +8,7 @@ import PortalRegistryModule from "../portal/PortalRegistry.module";
 import { NamedArtifactContractDeploymentFuture } from "@nomicfoundation/ignition-core";
 import { RegistrarRegistry } from "../../../src";
 import RegistrarRegistryModule from "../RegistrarRegistry.module";
+import WorldProxyModule from './WorldProxy.module';
 
 export interface IWorldDeploymentResult {
     assetRegistry: NamedArtifactContractDeploymentFuture<"AssetRegistry">;
@@ -31,8 +32,8 @@ export interface IWorldDeploymentResult {
 
 export default buildModule("World0_2", (m) => {
     
-    const reg = m.useModule(WorldRegistryModule0_2);
-    const fac = m.useModule(WorldFactoryModule0_2);
+    const proxy = m.useModule(WorldProxyModule);
+    
     const comp = m.useModule(CompanyModule);
     const avatar = m.useModule(AvatarModule);
     const assets = m.useModule(NTAssetMasterModule);
@@ -40,15 +41,15 @@ export default buildModule("World0_2", (m) => {
     const registrar = m.useModule(RegistrarRegistryModule);
     
     const args = {
-        worldFactory: fac.worldFactory,
-        worldRegistry: reg.worldRegistry,
+        worldFactory: proxy.worldFactory,
+        worldRegistry: proxy.worldRegistry,
         companyRegistry: comp.companyRegistry,
         avatarRegistry: avatar.avatarRegistry
     }
     const master = m.contract("World0_2", [args], {
-        after: [fac.worldFactory, reg.worldRegistry, avatar.avatarRegistry, comp.companyRegistry]
+        after: [proxy.worldFactory, proxy.worldRegistry, avatar.avatarRegistry, comp.companyRegistry]
     });
-    m.call(fac.worldFactory, "setImplementation", [master]);
+    m.call(proxy.worldFactory, "setImplementation", [master]);
     return {
         assetRegistry: assets.assetRegistry,
         assetFactory: assets.assetFactory,
@@ -65,7 +66,7 @@ export default buildModule("World0_2", (m) => {
         portalRegistry: portal.portalRegistry,
         registrarRegistry: registrar.registry,
         worldMasterCopy: master,
-        worldRegistry: reg.worldRegistry,
-        worldFactory: fac.worldFactory
+        worldRegistry: proxy.worldRegistry,
+        worldFactory: proxy.worldFactory
     }
 });

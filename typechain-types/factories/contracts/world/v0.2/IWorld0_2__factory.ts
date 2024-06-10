@@ -172,7 +172,7 @@ const _abi = [
     inputs: [
       {
         internalType: "address[]",
-        name: "sigs",
+        name: "signers",
         type: "address[]",
       },
     ],
@@ -441,7 +441,7 @@ const _abi = [
     inputs: [
       {
         internalType: "address[]",
-        name: "sigs",
+        name: "signers",
         type: "address[]",
       },
     ],
@@ -507,9 +507,9 @@ const _abi = [
     name: "version",
     outputs: [
       {
-        internalType: "string",
+        internalType: "uint256",
         name: "",
-        type: "string",
+        type: "uint256",
       },
     ],
     stateMutability: "view",

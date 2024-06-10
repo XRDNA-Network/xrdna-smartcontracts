@@ -17,6 +17,9 @@ import {ReentrancyGuard} from '@openzeppelin/contracts/utils/ReentrancyGuard.sol
 import {ICompanyHook} from './ICompanyHook.sol';
 import {IPortalCondition} from '../portal/IPortalCondition.sol';
 import {IAssetHook} from '../asset/IAssetHook.sol';
+import {CompanyV1Storage, LibCompanyV1Storage} from '../libraries/LibCompanyV1Storage.sol';
+import {BaseProxyStorage, LibBaseProxy, LibProxyAccess} from '../libraries/LibBaseProxy.sol';
+import {IBasicAsset} from '../asset/IBasicAsset.sol';
 
 struct CompanyConstructorArgs {
     address companyFactory;
@@ -26,20 +29,13 @@ struct CompanyConstructorArgs {
     IAvatarRegistry avatarRegistry;
 }
 
-interface IBaseAsset {
-    function issuer() external view returns (address);
-    function assetType () external view returns (uint256);
-    function addHook(IAssetHook hook) external;
-    function removeHook() external;
-}
 
 interface INextVersion {
     function setStartingPSub(uint256 psub) external;
 }
 
-contract Company is ICompany, ReentrancyGuard, AccessControl {
-
-    bytes32 public constant SIGNER_ROLE = keccak256("SIGNER_ROLE");
+contract Company is ICompany, ReentrancyGuard {
+    using LibProxyAccess for BaseProxyStorage;
 
     //Fields initialized at deployment time
     address public immutable companyFactory;
@@ -47,19 +43,14 @@ contract Company is ICompany, ReentrancyGuard, AccessControl {
     IExperienceRegistry public immutable experienceRegistry;
     IAssetRegistry public immutable assetRegistry;
     IAvatarRegistry public immutable avatarRegistry;
+    uint256 public constant override version = 1;
 
 
-    //Fields initialized by initialize function
-    bool public upgraded;
-    address public override owner;
-    address public override world;
-    ICompanyHook public hook;
-    VectorAddress _vectorAddress;
-    string public override name;
-    uint256 nextPsub;
+    
 
     modifier notUpgraded {
-        require(!upgraded, "Company: contract has been upgraded");
+        CompanyV1Storage storage s = LibCompanyV1Storage.load();
+        require(!s.upgraded, "Company: contract has been upgraded");
         _;
     }
 
@@ -72,6 +63,18 @@ contract Company is ICompany, ReentrancyGuard, AccessControl {
     modifier onlyRegistry {
         require(address(companyRegistry) != address(0), "Company: registry not set");
         require(msg.sender == address(companyRegistry), "Company: caller is not the registry");
+        _;
+    }
+
+    modifier onlyAdmin {
+        BaseProxyStorage storage ps = LibBaseProxy.load();
+        require(ps.hasRole(LibProxyAccess.ADMIN_ROLE, msg.sender), "Company: caller is not an admin");
+        _;
+    }
+
+    modifier onlySigner {
+        BaseProxyStorage storage ps = LibBaseProxy.load();
+        require(ps.hasRole(LibProxyAccess.SIGNER_ROLE, msg.sender), "Company: caller is not a signer");
         _;
     }
 
@@ -90,36 +93,63 @@ contract Company is ICompany, ReentrancyGuard, AccessControl {
 
     receive() external payable {}
 
+
+    function upgraded() external view override returns (bool) {
+        CompanyV1Storage storage s = LibCompanyV1Storage.load();
+        return s.upgraded;
+    }
+
+    function owner() external view returns (address) {
+        CompanyV1Storage storage s = LibCompanyV1Storage.load();
+        return s.owner;
+    }
+
+    function name() external view returns (string memory) {
+        CompanyV1Storage storage s = LibCompanyV1Storage.load();
+        return s.name;
+    }
+
+    function world() external view returns (address) {
+        CompanyV1Storage storage s = LibCompanyV1Storage.load();
+        return s.world;
+    }
+
     function init(CompanyInitArgs memory request) public onlyFactory {
-        require(owner == address(0), "Company: already initialized");
+        CompanyV1Storage storage s = LibCompanyV1Storage.load();
+        require(s.owner == address(0), "Company: already initialized");
         require(request.owner != address(0), "Company: owner cannot be 0x0");
         require(bytes(request.name).length > 0, "Company: name cannot be empty");
         require(request.world != address(0), "Company: world cannot be 0x0");
-        owner = request.owner;
-        world = request.world;
-        _vectorAddress = request.vector;
-        name = request.name;
-        _grantRole(DEFAULT_ADMIN_ROLE, owner);
-        _grantRole(SIGNER_ROLE, owner);
+        s.owner = request.owner;
+        s.world = request.world;
+        s.vectorAddress = request.vector;
+        s.name = request.name;
+
+        BaseProxyStorage storage ps = LibBaseProxy.load();
+        ps.setRole(LibProxyAccess.ADMIN_ROLE, request.owner, true);
+        ps.setRole(LibProxyAccess.SIGNER_ROLE, request.owner, true);
     }
 
     function vectorAddress() external view returns (VectorAddress memory) {
-        return _vectorAddress;
+        CompanyV1Storage storage s = LibCompanyV1Storage.load();
+        return s.vectorAddress;
     }
 
     function isSigner(address signer) external view returns (bool) {
-        return hasRole(SIGNER_ROLE, signer);
+        BaseProxyStorage storage ps = LibBaseProxy.load();
+        return ps.hasRole(LibProxyAccess.SIGNER_ROLE, signer);
     }
 
     function canMint(address asset, address to, uint256) public view returns (bool) {
-        if(upgraded) {
+        CompanyV1Storage storage s = LibCompanyV1Storage.load();
+        if(s.upgraded) {
             return false;
         }
 
         if(!assetRegistry.isRegisteredAsset(asset)) {
             return false;
         }
-        if(IBaseAsset(asset).issuer() != address(this)) {
+        if(IBasicAsset(asset).issuer() != address(this)) {
             return false;
         }
         if(!avatarRegistry.isAvatar(to)) {
@@ -130,15 +160,17 @@ contract Company is ICompany, ReentrancyGuard, AccessControl {
         return exp.company() == address(this);
     }
 
-    function addSigner(address signer) external onlyRole(DEFAULT_ADMIN_ROLE) notUpgraded {
+    function addSigner(address signer) external onlyAdmin notUpgraded {
         require(signer != address(0), "Company: signer cannot be 0x0");
-        _grantRole(SIGNER_ROLE, signer);
+        BaseProxyStorage storage ps = LibBaseProxy.load();
+        ps.setRole(LibProxyAccess.SIGNER_ROLE, signer, true);
         emit SignerAdded(signer);
     }
 
-    function removeSigner(address signer) external onlyRole(DEFAULT_ADMIN_ROLE) {
+    function removeSigner(address signer) external onlyAdmin {
         require(signer != address(0), "Company: signer cannot be 0x0");
-        _revokeRole(SIGNER_ROLE, signer);
+        BaseProxyStorage storage ps = LibBaseProxy.load();
+        ps.setRole(LibProxyAccess.SIGNER_ROLE, signer, false);
         emit SignerRemoved(signer);
     }
 
@@ -146,15 +178,16 @@ contract Company is ICompany, ReentrancyGuard, AccessControl {
         return abi.encode(args);
     }
 
-    function addExperience(AddExperienceArgs memory args) external onlyRole(SIGNER_ROLE) notUpgraded nonReentrant {
-        ++nextPsub;
+    function addExperience(AddExperienceArgs memory args) external onlySigner notUpgraded nonReentrant {
+        CompanyV1Storage storage s = LibCompanyV1Storage.load();
+        ++s.nextPsub;
         VectorAddress memory expVector = VectorAddress({
-            x: _vectorAddress.x,
-            y: _vectorAddress.y,
-            z: _vectorAddress.z,
-            t: _vectorAddress.t,
-            p: _vectorAddress.p,
-            p_sub: nextPsub
+            x: s.vectorAddress.x,
+            y: s.vectorAddress.y,
+            z: s.vectorAddress.z,
+            t: s.vectorAddress.t,
+            p: s.vectorAddress.p,
+            p_sub: s.nextPsub
         });
         RegisterExperienceRequest memory req = RegisterExperienceRequest({
             name: args.name,
@@ -165,9 +198,10 @@ contract Company is ICompany, ReentrancyGuard, AccessControl {
         emit ExperienceAdded(exp, portalId);
         
     }
-    function mint(address asset, address to, uint256 amount) public onlyRole(SIGNER_ROLE) notUpgraded nonReentrant {
+    function mint(address asset, address to, uint256 amount) public onlySigner notUpgraded nonReentrant {
         require(canMint(asset, to, amount), "Company: cannot mint asset");
-        AssetType at = AssetType(IBaseAsset(asset).assetType());
+        
+        AssetType at = AssetType(IBasicAsset(asset).assetType());
         if(at == AssetType.ERC20) {
             IERC20Asset(asset).mint(to, amount);
             emit AssetMinted(asset, to, amount);
@@ -180,8 +214,8 @@ contract Company is ICompany, ReentrancyGuard, AccessControl {
         
     }
 
-    function revoke(address asset, address holder, uint256 amountOrTokenId) public onlyRole(SIGNER_ROLE) notUpgraded nonReentrant {
-        AssetType at = AssetType(IBaseAsset(asset).assetType());
+    function revoke(address asset, address holder, uint256 amountOrTokenId) public onlySigner notUpgraded nonReentrant {
+        AssetType at = AssetType(IBasicAsset(asset).assetType());
         if(at == AssetType.ERC20) {
             IERC20Asset(asset).revoke(holder, amountOrTokenId);
         } else if(at == AssetType.ERC721) {
@@ -192,54 +226,55 @@ contract Company is ICompany, ReentrancyGuard, AccessControl {
         emit AssetRevoked(asset, holder, amountOrTokenId);
     }
 
-    function upgrade(bytes memory initData) public onlyRole(DEFAULT_ADMIN_ROLE) notUpgraded {
-        upgraded = true;
+    function upgrade(bytes memory initData) public onlyAdmin notUpgraded {
+        
+        CompanyV1Storage storage s = LibCompanyV1Storage.load();
+        s.upgraded = true;
         companyRegistry.upgradeCompany(initData);
     }
 
     function upgradeComplete(address nextVersion) public onlyRegistry nonReentrant {
-        uint256 bal = address(this).balance;
-        if(bal > 0) {
-            payable(nextVersion).transfer(bal);
-        }
-        INextVersion(nextVersion).setStartingPSub(nextPsub);
-        emit CompanyUpgraded(address(this), nextVersion);
+        BaseProxyStorage storage bs = LibBaseProxy.load();
+        bs.implementation = nextVersion;
     }
 
-    function withdraw (uint256 amount) public onlyRole(DEFAULT_ADMIN_ROLE) {
+    function withdraw (uint256 amount) public onlyAdmin {
         require(amount <= address(this).balance, "Company: insufficient balance");
-        payable(owner).transfer(amount);
+        CompanyV1Storage storage s = LibCompanyV1Storage.load();
+        payable(s.owner).transfer(amount);
     }
 
-    function setHook(ICompanyHook _hook) public onlyRole(DEFAULT_ADMIN_ROLE) {
+    function setHook(ICompanyHook _hook) public onlyAdmin {
         require(address(_hook) != address(0), "Company: hook cannot be 0x0");
-        hook = _hook;
+        CompanyV1Storage storage s = LibCompanyV1Storage.load();
+        s.hook = _hook;
     }
     
-    function removeHook() public onlyRole(DEFAULT_ADMIN_ROLE) {
-        hook = ICompanyHook(address(0));
+    function removeHook() public onlyAdmin {
+        CompanyV1Storage storage s = LibCompanyV1Storage.load();
+        s.hook = ICompanyHook(address(0));
     }
 
-    function addExperienceCondition(address experience, address condition) public onlyRole(DEFAULT_ADMIN_ROLE) {
+    function addExperienceCondition(address experience, address condition) public onlyAdmin {
         IExperience exp = IExperience(experience);
         exp.addPortalCondition(IPortalCondition(condition));
     }
 
-    function removeExperienceCondition(address experience) public onlyRole(DEFAULT_ADMIN_ROLE) {
+    function removeExperienceCondition(address experience) public onlyAdmin {
         IExperience exp = IExperience(experience);
         exp.removePortalCondition();
     }
 
-    function changeExperiencePortalFee(address experience, uint256 fee) public onlyRole(DEFAULT_ADMIN_ROLE) {
+    function changeExperiencePortalFee(address experience, uint256 fee) public onlyAdmin {
         IExperience exp = IExperience(experience);
         exp.changePortalFee(fee);
     }
 
-    function addAssetHook(address asset, IAssetHook aHook) public onlyRole(DEFAULT_ADMIN_ROLE) {
-        IBaseAsset(asset).addHook(aHook);
+    function addAssetHook(address asset, IAssetHook aHook) public onlyAdmin {
+        IBasicAsset(asset).addHook(aHook);
     }
 
-    function removeAssetHook(address asset) public onlyRole(DEFAULT_ADMIN_ROLE) {
-        IBaseAsset(asset).removeHook();
+    function removeAssetHook(address asset) public onlyAdmin {
+        IBasicAsset(asset).removeHook();
     }
 }

@@ -6,6 +6,7 @@ import {IAvatarFactory} from './IAvatarFactory.sol';
 import {IAvatar} from './IAvatar.sol';
 import {AccessControl} from '@openzeppelin/contracts/access/AccessControl.sol';
 import {BaseFactory} from '../BaseFactory.sol';
+import {IBaseProxy} from '../IBaseProxy.sol';
 
 contract AvatarFactory is BaseFactory, IAvatarFactory {
 
@@ -13,7 +14,9 @@ contract AvatarFactory is BaseFactory, IAvatarFactory {
     constructor(address mainAdmin, address[] memory admins) BaseFactory(mainAdmin, admins) {}
 
     function createAvatar(address owner, address defaultExperience, string memory username, bytes memory initData) external onlyAuthorizedRegistry returns (address proxy) {
-        proxy = create();
+        address avatar = create();
+        proxy = createProxy();
+        IBaseProxy(proxy).initProxy(avatar);
         IAvatar(proxy).init(owner, defaultExperience, username, initData);
     }
 

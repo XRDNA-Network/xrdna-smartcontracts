@@ -30,6 +30,7 @@ contract AvatarRegistry is IAvatarRegistry, AccessControl {
     IWorldRegistry public worldRegistry;
     mapping(string => address) private _avatarsByName;
     mapping(address => bool) private _avatarsByAddress;
+    string public override currentAvatarVersion = '0.1';
 
     modifier onlyAvatar {
         require(_avatarsByAddress[msg.sender], 'AvatarRegistry: caller is not an avatar');
@@ -77,8 +78,10 @@ contract AvatarRegistry is IAvatarRegistry, AccessControl {
     }
 
     function setAvatarFactory(address factory) external onlyRole(ADMIN_ROLE) {
+        address old = address(avatarFactory);
         require(factory != address(0), 'AvatarRegistry: factory address cannot be 0');
         avatarFactory = IAvatarFactory(factory);
+        emit AvatarFactoryChanged(old, factory);
     }
 
     /**
@@ -116,5 +119,9 @@ contract AvatarRegistry is IAvatarRegistry, AccessControl {
         delete _avatarsByAddress[msg.sender];
         _avatarsByName[name] = proxy;
         _avatarsByAddress[proxy] = true;
+    }
+
+    function setCurrentAvatarVersion(string memory v) public onlyRole(ADMIN_ROLE) {
+        currentAvatarVersion = v;
     }
 }

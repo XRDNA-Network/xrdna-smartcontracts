@@ -70,10 +70,12 @@ export type RegisterExperienceRequestStructOutput = [
 export interface IExperienceRegistryInterface extends Interface {
   getFunction(
     nameOrSignature:
+      | "currentExperienceVersion"
       | "getExperienceByVector"
       | "isExperience"
       | "registerExperience"
       | "setCompanyRegistry"
+      | "setCurrentExperienceVersion"
       | "setExperienceFactory"
       | "setPortalRegistry"
       | "upgradeExperience"
@@ -81,6 +83,10 @@ export interface IExperienceRegistryInterface extends Interface {
 
   getEvent(nameOrSignatureOrTopic: "ExperienceRegistered"): EventFragment;
 
+  encodeFunctionData(
+    functionFragment: "currentExperienceVersion",
+    values?: undefined
+  ): string;
   encodeFunctionData(
     functionFragment: "getExperienceByVector",
     values: [VectorAddressStruct]
@@ -98,6 +104,10 @@ export interface IExperienceRegistryInterface extends Interface {
     values: [AddressLike]
   ): string;
   encodeFunctionData(
+    functionFragment: "setCurrentExperienceVersion",
+    values: [string]
+  ): string;
+  encodeFunctionData(
     functionFragment: "setExperienceFactory",
     values: [AddressLike]
   ): string;
@@ -110,6 +120,10 @@ export interface IExperienceRegistryInterface extends Interface {
     values: [BytesLike]
   ): string;
 
+  decodeFunctionResult(
+    functionFragment: "currentExperienceVersion",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "getExperienceByVector",
     data: BytesLike
@@ -124,6 +138,10 @@ export interface IExperienceRegistryInterface extends Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "setCompanyRegistry",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "setCurrentExperienceVersion",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -208,6 +226,8 @@ export interface IExperienceRegistry extends BaseContract {
     event?: TCEvent
   ): Promise<this>;
 
+  currentExperienceVersion: TypedContractMethod<[], [string], "view">;
+
   getExperienceByVector: TypedContractMethod<
     [vector: VectorAddressStruct],
     [ExperienceInfoStructOutput],
@@ -224,6 +244,12 @@ export interface IExperienceRegistry extends BaseContract {
 
   setCompanyRegistry: TypedContractMethod<
     [reg: AddressLike],
+    [void],
+    "nonpayable"
+  >;
+
+  setCurrentExperienceVersion: TypedContractMethod<
+    [version: string],
     [void],
     "nonpayable"
   >;
@@ -251,6 +277,9 @@ export interface IExperienceRegistry extends BaseContract {
   ): T;
 
   getFunction(
+    nameOrSignature: "currentExperienceVersion"
+  ): TypedContractMethod<[], [string], "view">;
+  getFunction(
     nameOrSignature: "getExperienceByVector"
   ): TypedContractMethod<
     [vector: VectorAddressStruct],
@@ -270,6 +299,9 @@ export interface IExperienceRegistry extends BaseContract {
   getFunction(
     nameOrSignature: "setCompanyRegistry"
   ): TypedContractMethod<[reg: AddressLike], [void], "nonpayable">;
+  getFunction(
+    nameOrSignature: "setCurrentExperienceVersion"
+  ): TypedContractMethod<[version: string], [void], "nonpayable">;
   getFunction(
     nameOrSignature: "setExperienceFactory"
   ): TypedContractMethod<[factory: AddressLike], [void], "nonpayable">;

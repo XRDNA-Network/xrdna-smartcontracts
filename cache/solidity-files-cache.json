@@ -1017,10 +1017,10 @@
         "ERC721"
       ]
     },
-    "/Users/mdcoon/git/xrdna-smartcontracts/contracts/BaseFactory.sol": {
-      "lastModificationDate": 1717767636618,
-      "contentHash": "15cf814f6c78aaa9f0259fadde664f49",
-      "sourceName": "contracts/BaseFactory.sol",
+    "/Users/mdcoon/git/xrdna-smartcontracts/contracts/BaseAccess.sol": {
+      "lastModificationDate": 1718052152269,
+      "contentHash": "61757c51efe9641961d3765fb901a445",
+      "sourceName": "contracts/BaseAccess.sol",
       "solcConfig": {
         "version": "0.8.24",
         "settings": {
@@ -1046,19 +1046,20 @@
         }
       },
       "imports": [
-        "@openzeppelin/contracts/access/AccessControl.sol"
+        "./libraries/LibBaseProxy.sol",
+        "./IBaseAccess.sol"
       ],
       "versionPragmas": [
         "^0.8.24"
       ],
       "artifacts": [
-        "BaseFactory"
+        "BaseAccess"
       ]
     },
-    "/Users/mdcoon/git/xrdna-smartcontracts/contracts/world/v0.2/WorldFactory0_2.sol": {
-      "lastModificationDate": 1717688420880,
-      "contentHash": "9a039bd901dfca5f9dfd9033c5986c63",
-      "sourceName": "contracts/world/v0.2/WorldFactory0_2.sol",
+    "/Users/mdcoon/git/xrdna-smartcontracts/contracts/libraries/LibBaseProxy.sol": {
+      "lastModificationDate": 1718048535518,
+      "contentHash": "24f38ba227d7702156b575181b047e87",
+      "sourceName": "contracts/libraries/LibBaseProxy.sol",
       "solcConfig": {
         "version": "0.8.24",
         "settings": {
@@ -1083,22 +1084,19 @@
           "evmVersion": "paris"
         }
       },
-      "imports": [
-        "../../BaseFactory.sol",
-        "./IWorldFactory0_2.sol",
-        "./IWorld0_2.sol"
-      ],
+      "imports": [],
       "versionPragmas": [
         "^0.8.24"
       ],
       "artifacts": [
-        "WorldFactory0_2"
+        "LibBaseProxy",
+        "LibProxyAccess"
       ]
     },
-    "/Users/mdcoon/git/xrdna-smartcontracts/contracts/world/v0.2/IWorldFactory0_2.sol": {
-      "lastModificationDate": 1717689425675,
-      "contentHash": "ff1024507b3685265eb26f16c1c124b8",
-      "sourceName": "contracts/world/v0.2/IWorldFactory0_2.sol",
+    "/Users/mdcoon/git/xrdna-smartcontracts/contracts/IBaseAccess.sol": {
+      "lastModificationDate": 1718053428859,
+      "contentHash": "f31b87240798ed81ce7bc8f10d94c15e",
+      "sourceName": "contracts/IBaseAccess.sol",
       "solcConfig": {
         "version": "0.8.24",
         "settings": {
@@ -1123,20 +1121,18 @@
           "evmVersion": "paris"
         }
       },
-      "imports": [
-        "../../VectorAddress.sol"
-      ],
+      "imports": [],
       "versionPragmas": [
         "^0.8.24"
       ],
       "artifacts": [
-        "IWorldFactory0_2"
+        "IBaseAccess"
       ]
     },
-    "/Users/mdcoon/git/xrdna-smartcontracts/contracts/world/v0.2/IWorld0_2.sol": {
-      "lastModificationDate": 1717872375921,
-      "contentHash": "cc5c613269979333ce32ae55cd035250",
-      "sourceName": "contracts/world/v0.2/IWorld0_2.sol",
+    "/Users/mdcoon/git/xrdna-smartcontracts/contracts/world/v0.2/World0_2.sol": {
+      "lastModificationDate": 1718055515618,
+      "contentHash": "1b88a4466a7129b99090bccdf81f494f",
+      "sourceName": "contracts/world/v0.2/World0_2.sol",
       "solcConfig": {
         "version": "0.8.24",
         "settings": {
@@ -1162,16 +1158,26 @@
         }
       },
       "imports": [
+        "./IWorld0_2.sol",
+        "@openzeppelin/contracts/access/AccessControl.sol",
+        "../../VectorAddress.sol",
         "../../avatar/IAvatarRegistry.sol",
         "./IWorldFactory0_2.sol",
-        "../../VectorAddress.sol",
-        "./IWorldHook.sol"
+        "../../company/ICompanyRegistry.sol",
+        "./IWorldRegistry0_2.sol",
+        "../../LibStringCase.sol",
+        "../v0.1/IWorld.sol",
+        "./IWorldHook.sol",
+        "@openzeppelin/contracts/utils/ReentrancyGuard.sol",
+        "../../libraries/LibBaseProxy.sol",
+        "../../libraries/LibWorldV2Storage.sol",
+        "../../BaseAccess.sol"
       ],
       "versionPragmas": [
         "^0.8.24"
       ],
       "artifacts": [
-        "IWorld0_2"
+        "World0_2"
       ]
     },
     "/Users/mdcoon/git/xrdna-smartcontracts/contracts/VectorAddress.sol": {
@@ -1216,8 +1222,8 @@
       ]
     },
     "/Users/mdcoon/git/xrdna-smartcontracts/contracts/avatar/IAvatarRegistry.sol": {
-      "lastModificationDate": 1717688153510,
-      "contentHash": "48bbd3fba0731a153c588e4ce93801c5",
+      "lastModificationDate": 1718038664989,
+      "contentHash": "d9cc5bae045beb633a622ed122be315e",
       "sourceName": "contracts/avatar/IAvatarRegistry.sol",
       "solcConfig": {
         "version": "0.8.24",
@@ -1249,6 +1255,199 @@
       ],
       "artifacts": [
         "IAvatarRegistry"
+      ]
+    },
+    "/Users/mdcoon/git/xrdna-smartcontracts/contracts/company/ICompanyRegistry.sol": {
+      "lastModificationDate": 1718038616098,
+      "contentHash": "dc77de1d3105c261878aa3ec5587927d",
+      "sourceName": "contracts/company/ICompanyRegistry.sol",
+      "solcConfig": {
+        "version": "0.8.24",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "metadata",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "abi",
+                "evm.methodIdentifiers"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          },
+          "evmVersion": "paris"
+        }
+      },
+      "imports": [
+        "../VectorAddress.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.24"
+      ],
+      "artifacts": [
+        "ICompanyRegistry"
+      ]
+    },
+    "/Users/mdcoon/git/xrdna-smartcontracts/contracts/LibStringCase.sol": {
+      "lastModificationDate": 1716559926696,
+      "contentHash": "3f10952655d728e900336716c1c96dab",
+      "sourceName": "contracts/LibStringCase.sol",
+      "solcConfig": {
+        "version": "0.8.24",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "metadata",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "abi",
+                "evm.methodIdentifiers"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          },
+          "evmVersion": "paris"
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.24"
+      ],
+      "artifacts": [
+        "LibStringCase"
+      ]
+    },
+    "/Users/mdcoon/git/xrdna-smartcontracts/contracts/world/v0.1/IWorld.sol": {
+      "lastModificationDate": 1717617036400,
+      "contentHash": "1338f51160aeef0b5b2514caf2810ca1",
+      "sourceName": "contracts/world/v0.1/IWorld.sol",
+      "solcConfig": {
+        "version": "0.8.24",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "metadata",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "abi",
+                "evm.methodIdentifiers"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          },
+          "evmVersion": "paris"
+        }
+      },
+      "imports": [
+        "../../VectorAddress.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.24"
+      ],
+      "artifacts": [
+        "IBasicWorld",
+        "IWorld"
+      ]
+    },
+    "/Users/mdcoon/git/xrdna-smartcontracts/contracts/world/v0.2/IWorld0_2.sol": {
+      "lastModificationDate": 1718053378507,
+      "contentHash": "224fd9a7d956cf336cbc47fe3611baf7",
+      "sourceName": "contracts/world/v0.2/IWorld0_2.sol",
+      "solcConfig": {
+        "version": "0.8.24",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "metadata",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "abi",
+                "evm.methodIdentifiers"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          },
+          "evmVersion": "paris"
+        }
+      },
+      "imports": [
+        "../../avatar/IAvatarRegistry.sol",
+        "./IWorldFactory0_2.sol",
+        "../../VectorAddress.sol",
+        "./IWorldHook.sol",
+        "../../IBaseAccess.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.24"
+      ],
+      "artifacts": [
+        "IWorld0_2"
+      ]
+    },
+    "/Users/mdcoon/git/xrdna-smartcontracts/contracts/world/v0.2/IWorldFactory0_2.sol": {
+      "lastModificationDate": 1717689425675,
+      "contentHash": "ff1024507b3685265eb26f16c1c124b8",
+      "sourceName": "contracts/world/v0.2/IWorldFactory0_2.sol",
+      "solcConfig": {
+        "version": "0.8.24",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "metadata",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "abi",
+                "evm.methodIdentifiers"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          },
+          "evmVersion": "paris"
+        }
+      },
+      "imports": [
+        "../../VectorAddress.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.24"
+      ],
+      "artifacts": [
+        "IWorldFactory0_2"
       ]
     },
     "/Users/mdcoon/git/xrdna-smartcontracts/contracts/world/v0.2/IWorldHook.sol": {
@@ -1290,9 +1489,47 @@
         "IWorldHook"
       ]
     },
+    "/Users/mdcoon/git/xrdna-smartcontracts/contracts/world/v0.2/IWorldRegistry0_2.sol": {
+      "lastModificationDate": 1717692169646,
+      "contentHash": "f77851021fd0f1b98056f0cc0cec833d",
+      "sourceName": "contracts/world/v0.2/IWorldRegistry0_2.sol",
+      "solcConfig": {
+        "version": "0.8.24",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "metadata",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "abi",
+                "evm.methodIdentifiers"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          },
+          "evmVersion": "paris"
+        }
+      },
+      "imports": [
+        "../../VectorAddress.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.24"
+      ],
+      "artifacts": [
+        "IWorldRegistry0_2"
+      ]
+    },
     "/Users/mdcoon/git/xrdna-smartcontracts/contracts/world/v0.2/WorldRegistry0_2.sol": {
-      "lastModificationDate": 1717872020192,
-      "contentHash": "4dc965ea84ce16ee81d4adf5f4099187",
+      "lastModificationDate": 1718039624392,
+      "contentHash": "67966c1041deb49c6a9244281a4c6c4d",
       "sourceName": "contracts/world/v0.2/WorldRegistry0_2.sol",
       "solcConfig": {
         "version": "0.8.24",
@@ -1337,42 +1574,6 @@
         "WorldRegistry0_2"
       ]
     },
-    "/Users/mdcoon/git/xrdna-smartcontracts/contracts/LibStringCase.sol": {
-      "lastModificationDate": 1716559926696,
-      "contentHash": "3f10952655d728e900336716c1c96dab",
-      "sourceName": "contracts/LibStringCase.sol",
-      "solcConfig": {
-        "version": "0.8.24",
-        "settings": {
-          "optimizer": {
-            "enabled": true,
-            "runs": 200
-          },
-          "outputSelection": {
-            "*": {
-              "*": [
-                "metadata",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "abi",
-                "evm.methodIdentifiers"
-              ],
-              "": [
-                "ast"
-              ]
-            }
-          },
-          "evmVersion": "paris"
-        }
-      },
-      "imports": [],
-      "versionPragmas": [
-        "^0.8.24"
-      ],
-      "artifacts": [
-        "LibStringCase"
-      ]
-    },
     "/Users/mdcoon/git/xrdna-smartcontracts/contracts/IRegistrarRegistry.sol": {
       "lastModificationDate": 1716492715734,
       "contentHash": "f051790a3bdd921368bd0bdfe20a7f1d",
@@ -1409,86 +1610,9 @@
         "IRegistrarRegistry"
       ]
     },
-    "/Users/mdcoon/git/xrdna-smartcontracts/contracts/world/v0.1/IWorld.sol": {
-      "lastModificationDate": 1717617036400,
-      "contentHash": "1338f51160aeef0b5b2514caf2810ca1",
-      "sourceName": "contracts/world/v0.1/IWorld.sol",
-      "solcConfig": {
-        "version": "0.8.24",
-        "settings": {
-          "optimizer": {
-            "enabled": true,
-            "runs": 200
-          },
-          "outputSelection": {
-            "*": {
-              "*": [
-                "metadata",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "abi",
-                "evm.methodIdentifiers"
-              ],
-              "": [
-                "ast"
-              ]
-            }
-          },
-          "evmVersion": "paris"
-        }
-      },
-      "imports": [
-        "../../VectorAddress.sol"
-      ],
-      "versionPragmas": [
-        "^0.8.24"
-      ],
-      "artifacts": [
-        "IBasicWorld",
-        "IWorld"
-      ]
-    },
-    "/Users/mdcoon/git/xrdna-smartcontracts/contracts/world/v0.2/IWorldRegistry0_2.sol": {
-      "lastModificationDate": 1717692169646,
-      "contentHash": "f77851021fd0f1b98056f0cc0cec833d",
-      "sourceName": "contracts/world/v0.2/IWorldRegistry0_2.sol",
-      "solcConfig": {
-        "version": "0.8.24",
-        "settings": {
-          "optimizer": {
-            "enabled": true,
-            "runs": 200
-          },
-          "outputSelection": {
-            "*": {
-              "*": [
-                "metadata",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "abi",
-                "evm.methodIdentifiers"
-              ],
-              "": [
-                "ast"
-              ]
-            }
-          },
-          "evmVersion": "paris"
-        }
-      },
-      "imports": [
-        "../../VectorAddress.sol"
-      ],
-      "versionPragmas": [
-        "^0.8.24"
-      ],
-      "artifacts": [
-        "IWorldRegistry0_2"
-      ]
-    },
     "/Users/mdcoon/git/xrdna-smartcontracts/contracts/asset/NonTransferableERC721Asset.sol": {
-      "lastModificationDate": 1717697725186,
-      "contentHash": "415fda2aaf5eb30a26857ce73c628825",
+      "lastModificationDate": 1718061208743,
+      "contentHash": "86427465e409d29ff97bccd593535cda",
       "sourceName": "contracts/asset/NonTransferableERC721Asset.sol",
       "solcConfig": {
         "version": "0.8.24",
@@ -1527,7 +1651,10 @@
         "../VectorAddress.sol",
         "../experience/IExperience.sol",
         "./BaseAsset.sol",
-        "./IAssetFactory.sol"
+        "./IAssetFactory.sol",
+        "./IERC721Asset.sol",
+        "../libraries/LibAssetV1Storage.sol",
+        "../libraries/LibBaseProxy.sol"
       ],
       "versionPragmas": [
         "^0.8.24"
@@ -1538,8 +1665,8 @@
       ]
     },
     "/Users/mdcoon/git/xrdna-smartcontracts/contracts/avatar/IAvatar.sol": {
-      "lastModificationDate": 1718025957111,
-      "contentHash": "f4cb66edc1bdbb1215f9757726232dd3",
+      "lastModificationDate": 1718058267932,
+      "contentHash": "c316c7111d7edcc789a365bec125f38e",
       "sourceName": "contracts/avatar/IAvatar.sol",
       "solcConfig": {
         "version": "0.8.24",
@@ -1580,8 +1707,8 @@
       ]
     },
     "/Users/mdcoon/git/xrdna-smartcontracts/contracts/experience/IExperience.sol": {
-      "lastModificationDate": 1718025051574,
-      "contentHash": "3fb4d63ea4df005f62f9a3120ddcc1ff",
+      "lastModificationDate": 1718056305108,
+      "contentHash": "3fc3a9bb01a2e7807b961d9e00ec98db",
       "sourceName": "contracts/experience/IExperience.sol",
       "solcConfig": {
         "version": "0.8.24",
@@ -1655,51 +1782,6 @@
         "IAssetHook"
       ]
     },
-    "/Users/mdcoon/git/xrdna-smartcontracts/contracts/asset/BaseAsset.sol": {
-      "lastModificationDate": 1717870701230,
-      "contentHash": "032665f61eaab4e895b776734f0208df",
-      "sourceName": "contracts/asset/BaseAsset.sol",
-      "solcConfig": {
-        "version": "0.8.24",
-        "settings": {
-          "optimizer": {
-            "enabled": true,
-            "runs": 200
-          },
-          "outputSelection": {
-            "*": {
-              "*": [
-                "metadata",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "abi",
-                "evm.methodIdentifiers"
-              ],
-              "": [
-                "ast"
-              ]
-            }
-          },
-          "evmVersion": "paris"
-        }
-      },
-      "imports": [
-        "@openzeppelin/contracts/utils/ReentrancyGuard.sol",
-        "../avatar/IAvatarRegistry.sol",
-        "./IAssetHook.sol",
-        "../avatar/IAvatar.sol",
-        "../VectorAddress.sol",
-        "../experience/IExperience.sol",
-        "./IAssetFactory.sol"
-      ],
-      "versionPragmas": [
-        "^0.8.24"
-      ],
-      "artifacts": [
-        "BaseAsset",
-        "IExperienceRegistry"
-      ]
-    },
     "/Users/mdcoon/git/xrdna-smartcontracts/contracts/asset/IAssetFactory.sol": {
       "lastModificationDate": 1717606702716,
       "contentHash": "41889b616a9526cc76a93348a4d4c7c0",
@@ -1737,8 +1819,8 @@
       ]
     },
     "/Users/mdcoon/git/xrdna-smartcontracts/contracts/asset/IERC721Asset.sol": {
-      "lastModificationDate": 1717697718889,
-      "contentHash": "76e198a60e4987a21a6f43eee211d99b",
+      "lastModificationDate": 1718061048808,
+      "contentHash": "9d34944c9aff7b31349358b0e9cc726f",
       "sourceName": "contracts/asset/IERC721Asset.sol",
       "solcConfig": {
         "version": "0.8.24",
@@ -1765,7 +1847,8 @@
         }
       },
       "imports": [
-        "@openzeppelin/contracts/token/ERC721/IERC721.sol"
+        "@openzeppelin/contracts/token/ERC721/IERC721.sol",
+        "./IBasicAsset.sol"
       ],
       "versionPragmas": [
         "^0.8.24"
@@ -1774,10 +1857,10 @@
         "IERC721Asset"
       ]
     },
-    "/Users/mdcoon/git/xrdna-smartcontracts/contracts/avatar/WearableLinkedList.sol": {
-      "lastModificationDate": 1717772772741,
-      "contentHash": "812a6798a0ff2af2844c4ee85226f472",
-      "sourceName": "contracts/avatar/WearableLinkedList.sol",
+    "/Users/mdcoon/git/xrdna-smartcontracts/contracts/asset/BaseAsset.sol": {
+      "lastModificationDate": 1718061757653,
+      "contentHash": "614877d434a39970f31994c4511ed7cb",
+      "sourceName": "contracts/asset/BaseAsset.sol",
       "solcConfig": {
         "version": "0.8.24",
         "settings": {
@@ -1802,12 +1885,23 @@
           "evmVersion": "paris"
         }
       },
-      "imports": [],
+      "imports": [
+        "@openzeppelin/contracts/utils/ReentrancyGuard.sol",
+        "../avatar/IAvatarRegistry.sol",
+        "./IAssetHook.sol",
+        "../avatar/IAvatar.sol",
+        "../VectorAddress.sol",
+        "../experience/IExperience.sol",
+        "./IAssetFactory.sol",
+        "../libraries/LibAssetV1Storage.sol",
+        "./IBasicAsset.sol"
+      ],
       "versionPragmas": [
         "^0.8.24"
       ],
       "artifacts": [
-        "WearableLinkedList"
+        "BaseAsset",
+        "IExperienceRegistry"
       ]
     },
     "/Users/mdcoon/git/xrdna-smartcontracts/contracts/avatar/IAvatarHook.sol": {
@@ -1844,6 +1938,44 @@
       ],
       "artifacts": [
         "IAvatarHook"
+      ]
+    },
+    "/Users/mdcoon/git/xrdna-smartcontracts/contracts/avatar/WearableLinkedList.sol": {
+      "lastModificationDate": 1718058152582,
+      "contentHash": "9cce312500f988d45315bb09a9f27803",
+      "sourceName": "contracts/avatar/WearableLinkedList.sol",
+      "solcConfig": {
+        "version": "0.8.24",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "metadata",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "abi",
+                "evm.methodIdentifiers"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          },
+          "evmVersion": "paris"
+        }
+      },
+      "imports": [
+        "../libraries/LibAvatarV1Storage.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.24"
+      ],
+      "artifacts": [
+        "WearableLinkedList"
       ]
     },
     "/Users/mdcoon/git/xrdna-smartcontracts/contracts/portal/IPortalCondition.sol": {
@@ -1919,8 +2051,8 @@
       ]
     },
     "/Users/mdcoon/git/xrdna-smartcontracts/contracts/company/Company.sol": {
-      "lastModificationDate": 1718025258134,
-      "contentHash": "e2fc1bc64a6906773af6075ade6daa22",
+      "lastModificationDate": 1718061717212,
+      "contentHash": "bd56a1cbebe7eceaf46593911077d92d",
       "sourceName": "contracts/company/Company.sol",
       "solcConfig": {
         "version": "0.8.24",
@@ -1962,20 +2094,22 @@
         "@openzeppelin/contracts/utils/ReentrancyGuard.sol",
         "./ICompanyHook.sol",
         "../portal/IPortalCondition.sol",
-        "../asset/IAssetHook.sol"
+        "../asset/IAssetHook.sol",
+        "../libraries/LibCompanyV1Storage.sol",
+        "../libraries/LibBaseProxy.sol",
+        "../asset/IBasicAsset.sol"
       ],
       "versionPragmas": [
         "^0.8.24"
       ],
       "artifacts": [
         "Company",
-        "IBaseAsset",
         "INextVersion"
       ]
     },
     "/Users/mdcoon/git/xrdna-smartcontracts/contracts/company/ICompany.sol": {
-      "lastModificationDate": 1717872311884,
-      "contentHash": "4ba989997eeffc15999111a35424e8b7",
+      "lastModificationDate": 1718055273371,
+      "contentHash": "83d4d1efed3b97975c6e2e83e4a4c6da",
       "sourceName": "contracts/company/ICompany.sol",
       "solcConfig": {
         "version": "0.8.24",
@@ -2015,8 +2149,8 @@
       ]
     },
     "/Users/mdcoon/git/xrdna-smartcontracts/contracts/asset/AssetFactory.sol": {
-      "lastModificationDate": 1717616942117,
-      "contentHash": "1bb1b70e398dc681ccad865a30757e9d",
+      "lastModificationDate": 1718054892575,
+      "contentHash": "53f6feca208f9d6c772b80af97097e06",
       "sourceName": "contracts/asset/AssetFactory.sol",
       "solcConfig": {
         "version": "0.8.24",
@@ -2045,7 +2179,8 @@
       "imports": [
         "./IAssetFactory.sol",
         "../BaseFactory.sol",
-        "@openzeppelin/contracts/access/AccessControl.sol"
+        "@openzeppelin/contracts/access/AccessControl.sol",
+        "../IBaseProxy.sol"
       ],
       "versionPragmas": [
         "^0.8.24"
@@ -2056,8 +2191,8 @@
       ]
     },
     "/Users/mdcoon/git/xrdna-smartcontracts/contracts/experience/IExperienceRegistry.sol": {
-      "lastModificationDate": 1717771427245,
-      "contentHash": "41cc5ca5c0b5c233b253575f24ffafee",
+      "lastModificationDate": 1718038536101,
+      "contentHash": "c1dd23d0125a55f21f9e2f8cf24c72cb",
       "sourceName": "contracts/experience/IExperienceRegistry.sol",
       "solcConfig": {
         "version": "0.8.24",
@@ -2097,8 +2232,8 @@
       ]
     },
     "/Users/mdcoon/git/xrdna-smartcontracts/contracts/asset/IAssetRegistry.sol": {
-      "lastModificationDate": 1717694241296,
-      "contentHash": "ca3e49659e110eb274826e7a39ad5fd0",
+      "lastModificationDate": 1718038886459,
+      "contentHash": "3be9e5089cc24db40050f62c229ce072",
       "sourceName": "contracts/asset/IAssetRegistry.sol",
       "solcConfig": {
         "version": "0.8.24",
@@ -2133,8 +2268,8 @@
       ]
     },
     "/Users/mdcoon/git/xrdna-smartcontracts/contracts/asset/IERC20Asset.sol": {
-      "lastModificationDate": 1717695601371,
-      "contentHash": "07c91849ba104981a94b96530ae48552",
+      "lastModificationDate": 1718061056050,
+      "contentHash": "c851f0f44750494429ad18544ab71525",
       "sourceName": "contracts/asset/IERC20Asset.sol",
       "solcConfig": {
         "version": "0.8.24",
@@ -2161,6 +2296,7 @@
         }
       },
       "imports": [
+        "./IBasicAsset.sol",
         "@openzeppelin/contracts/token/ERC20/IERC20.sol"
       ],
       "versionPragmas": [
@@ -2168,44 +2304,6 @@
       ],
       "artifacts": [
         "IERC20Asset"
-      ]
-    },
-    "/Users/mdcoon/git/xrdna-smartcontracts/contracts/company/ICompanyRegistry.sol": {
-      "lastModificationDate": 1717872281128,
-      "contentHash": "fdfbb8d1a0e8976aac3a130725d2de38",
-      "sourceName": "contracts/company/ICompanyRegistry.sol",
-      "solcConfig": {
-        "version": "0.8.24",
-        "settings": {
-          "optimizer": {
-            "enabled": true,
-            "runs": 200
-          },
-          "outputSelection": {
-            "*": {
-              "*": [
-                "metadata",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "abi",
-                "evm.methodIdentifiers"
-              ],
-              "": [
-                "ast"
-              ]
-            }
-          },
-          "evmVersion": "paris"
-        }
-      },
-      "imports": [
-        "../VectorAddress.sol"
-      ],
-      "versionPragmas": [
-        "^0.8.24"
-      ],
-      "artifacts": [
-        "ICompanyRegistry"
       ]
     },
     "/Users/mdcoon/git/xrdna-smartcontracts/contracts/company/ICompanyHook.sol": {
@@ -2244,6 +2342,44 @@
       ],
       "artifacts": [
         "ICompanyHook"
+      ]
+    },
+    "/Users/mdcoon/git/xrdna-smartcontracts/contracts/BaseFactory.sol": {
+      "lastModificationDate": 1718053758782,
+      "contentHash": "cf09b042f353d54cddfb13237687ddd8",
+      "sourceName": "contracts/BaseFactory.sol",
+      "solcConfig": {
+        "version": "0.8.24",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "metadata",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "abi",
+                "evm.methodIdentifiers"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          },
+          "evmVersion": "paris"
+        }
+      },
+      "imports": [
+        "@openzeppelin/contracts/access/AccessControl.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.24"
+      ],
+      "artifacts": [
+        "BaseFactory"
       ]
     },
     "/Users/mdcoon/git/xrdna-smartcontracts/contracts/portal/IPortalRegistry.sol": {
@@ -2286,10 +2422,10 @@
         "IPortalRegistry"
       ]
     },
-    "/Users/mdcoon/git/xrdna-smartcontracts/contracts/world/v0.2/World0_2.sol": {
-      "lastModificationDate": 1717872406403,
-      "contentHash": "422b68b8f7a1667b31b08f01de85397f",
-      "sourceName": "contracts/world/v0.2/World0_2.sol",
+    "/Users/mdcoon/git/xrdna-smartcontracts/contracts/company/ICompanyFactory.sol": {
+      "lastModificationDate": 1717696713489,
+      "contentHash": "ea9ed53b2715da40843cfa25263c1568",
+      "sourceName": "contracts/company/ICompanyFactory.sol",
       "solcConfig": {
         "version": "0.8.24",
         "settings": {
@@ -2315,73 +2451,18 @@
         }
       },
       "imports": [
-        "./IWorld0_2.sol",
-        "@openzeppelin/contracts/access/AccessControl.sol",
-        "../../VectorAddress.sol",
-        "../../avatar/IAvatarRegistry.sol",
-        "./IWorldFactory0_2.sol",
-        "../../company/ICompanyRegistry.sol",
-        "./IWorldRegistry0_2.sol",
-        "../../LibStringCase.sol",
-        "../v0.1/IWorld.sol",
-        "./IWorldHook.sol",
-        "@openzeppelin/contracts/utils/ReentrancyGuard.sol"
+        "./ICompany.sol"
       ],
       "versionPragmas": [
         "^0.8.24"
       ],
       "artifacts": [
-        "World0_2"
-      ]
-    },
-    "/Users/mdcoon/git/xrdna-smartcontracts/contracts/portal/PortalRegistry.sol": {
-      "lastModificationDate": 1717774806827,
-      "contentHash": "1b1c96c74dafae8eb784d59def347076",
-      "sourceName": "contracts/portal/PortalRegistry.sol",
-      "solcConfig": {
-        "version": "0.8.24",
-        "settings": {
-          "optimizer": {
-            "enabled": true,
-            "runs": 200
-          },
-          "outputSelection": {
-            "*": {
-              "*": [
-                "metadata",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "abi",
-                "evm.methodIdentifiers"
-              ],
-              "": [
-                "ast"
-              ]
-            }
-          },
-          "evmVersion": "paris"
-        }
-      },
-      "imports": [
-        "@openzeppelin/contracts/access/AccessControl.sol",
-        "./IPortalRegistry.sol",
-        "../experience/IExperience.sol",
-        "../VectorAddress.sol",
-        "./IPortalCondition.sol",
-        "../avatar/IAvatarRegistry.sol",
-        "../avatar/IAvatar.sol"
-      ],
-      "versionPragmas": [
-        "^0.8.24"
-      ],
-      "artifacts": [
-        "IUpgradeMigration",
-        "PortalRegistry"
+        "ICompanyFactory"
       ]
     },
     "/Users/mdcoon/git/xrdna-smartcontracts/contracts/company/CompanyRegistry.sol": {
-      "lastModificationDate": 1717872291460,
-      "contentHash": "8d4b5eb8667da72604d24ce9daa3147c",
+      "lastModificationDate": 1718038632997,
+      "contentHash": "cc355fbfe049aff5d4358c5a051e0e82",
       "sourceName": "contracts/company/CompanyRegistry.sol",
       "solcConfig": {
         "version": "0.8.24",
@@ -2425,10 +2506,10 @@
         "CompanyRegistry"
       ]
     },
-    "/Users/mdcoon/git/xrdna-smartcontracts/contracts/company/ICompanyFactory.sol": {
-      "lastModificationDate": 1717696713489,
-      "contentHash": "ea9ed53b2715da40843cfa25263c1568",
-      "sourceName": "contracts/company/ICompanyFactory.sol",
+    "/Users/mdcoon/git/xrdna-smartcontracts/contracts/portal/PortalRegistry.sol": {
+      "lastModificationDate": 1718034086334,
+      "contentHash": "fbad5daf4558bf4e46f934ef239c4640",
+      "sourceName": "contracts/portal/PortalRegistry.sol",
       "solcConfig": {
         "version": "0.8.24",
         "settings": {
@@ -2454,60 +2535,26 @@
         }
       },
       "imports": [
-        "./ICompany.sol"
-      ],
-      "versionPragmas": [
-        "^0.8.24"
-      ],
-      "artifacts": [
-        "ICompanyFactory"
-      ]
-    },
-    "/Users/mdcoon/git/xrdna-smartcontracts/contracts/company/CompanyFactory.sol": {
-      "lastModificationDate": 1717696719618,
-      "contentHash": "ddc078e729ab5bbd3440dfacd7563171",
-      "sourceName": "contracts/company/CompanyFactory.sol",
-      "solcConfig": {
-        "version": "0.8.24",
-        "settings": {
-          "optimizer": {
-            "enabled": true,
-            "runs": 200
-          },
-          "outputSelection": {
-            "*": {
-              "*": [
-                "metadata",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "abi",
-                "evm.methodIdentifiers"
-              ],
-              "": [
-                "ast"
-              ]
-            }
-          },
-          "evmVersion": "paris"
-        }
-      },
-      "imports": [
-        "./ICompanyFactory.sol",
-        "./ICompany.sol",
         "@openzeppelin/contracts/access/AccessControl.sol",
-        "../BaseFactory.sol"
+        "./IPortalRegistry.sol",
+        "../experience/IExperience.sol",
+        "../VectorAddress.sol",
+        "./IPortalCondition.sol",
+        "../avatar/IAvatarRegistry.sol",
+        "../avatar/IAvatar.sol"
       ],
       "versionPragmas": [
         "^0.8.24"
       ],
       "artifacts": [
-        "CompanyFactory"
+        "IUpgradeMigration",
+        "PortalRegistry"
       ]
     },
-    "/Users/mdcoon/git/xrdna-smartcontracts/contracts/asset/NonTransferableERC20Asset.sol": {
-      "lastModificationDate": 1717695318056,
-      "contentHash": "4f459388831f55dc872134d3dbf75897",
-      "sourceName": "contracts/asset/NonTransferableERC20Asset.sol",
+    "/Users/mdcoon/git/xrdna-smartcontracts/contracts/experience/Experience.sol": {
+      "lastModificationDate": 1718057391329,
+      "contentHash": "55a5f507baf7c9e3774d47829522ecf6",
+      "sourceName": "contracts/experience/Experience.sol",
       "solcConfig": {
         "version": "0.8.24",
         "settings": {
@@ -2533,25 +2580,342 @@
         }
       },
       "imports": [
-        "@openzeppelin/contracts/token/ERC20/IERC20.sol",
-        "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol",
-        "@openzeppelin/contracts/interfaces/draft-IERC6093.sol",
-        "./IAssetHook.sol",
-        "../avatar/IAvatarRegistry.sol",
-        "../avatar/IAvatar.sol",
-        "./BaseAsset.sol",
-        "./IAssetFactory.sol"
+        "./IExperience.sol",
+        "../VectorAddress.sol",
+        "./IBasicCompany.sol",
+        "./IExperienceHook.sol",
+        "@openzeppelin/contracts/utils/ReentrancyGuard.sol",
+        "./IExperienceRegistry.sol",
+        "../portal/IPortalRegistry.sol",
+        "../portal/IPortalCondition.sol",
+        "../libraries/LibExperienceV1Storage.sol",
+        "../libraries/LibBaseProxy.sol"
       ],
       "versionPragmas": [
         "^0.8.24"
       ],
       "artifacts": [
-        "NonTransferableERC20Asset"
+        "Experience"
+      ]
+    },
+    "/Users/mdcoon/git/xrdna-smartcontracts/contracts/experience/IBasicCompany.sol": {
+      "lastModificationDate": 1717606702718,
+      "contentHash": "3086e729ab78065faef69cd3786fc932",
+      "sourceName": "contracts/experience/IBasicCompany.sol",
+      "solcConfig": {
+        "version": "0.8.24",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "metadata",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "abi",
+                "evm.methodIdentifiers"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          },
+          "evmVersion": "paris"
+        }
+      },
+      "imports": [
+        "../VectorAddress.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.24"
+      ],
+      "artifacts": [
+        "IBasicCompany"
+      ]
+    },
+    "/Users/mdcoon/git/xrdna-smartcontracts/contracts/world/v0.2/WorldFactory0_2.sol": {
+      "lastModificationDate": 1718053843578,
+      "contentHash": "e0085670781293418ff9612c0f791a6d",
+      "sourceName": "contracts/world/v0.2/WorldFactory0_2.sol",
+      "solcConfig": {
+        "version": "0.8.24",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "metadata",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "abi",
+                "evm.methodIdentifiers"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          },
+          "evmVersion": "paris"
+        }
+      },
+      "imports": [
+        "../../BaseFactory.sol",
+        "../../IBaseProxy.sol",
+        "./IWorldFactory0_2.sol",
+        "./IWorld0_2.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.24"
+      ],
+      "artifacts": [
+        "WorldFactory0_2"
+      ]
+    },
+    "/Users/mdcoon/git/xrdna-smartcontracts/contracts/IBaseProxy.sol": {
+      "lastModificationDate": 1718053425012,
+      "contentHash": "93f41b9395cb3080e901f082caa89302",
+      "sourceName": "contracts/IBaseProxy.sol",
+      "solcConfig": {
+        "version": "0.8.24",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "metadata",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "abi",
+                "evm.methodIdentifiers"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          },
+          "evmVersion": "paris"
+        }
+      },
+      "imports": [
+        "./IBaseAccess.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.24"
+      ],
+      "artifacts": [
+        "IBaseProxy"
+      ]
+    },
+    "/Users/mdcoon/git/xrdna-smartcontracts/contracts/world/v0.2/IWorldProxy.sol": {
+      "lastModificationDate": 1718052953292,
+      "contentHash": "c6624587af302f2b45f1cf428b418475",
+      "sourceName": "contracts/world/v0.2/IWorldProxy.sol",
+      "solcConfig": {
+        "version": "0.8.24",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "metadata",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "abi",
+                "evm.methodIdentifiers"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          },
+          "evmVersion": "paris"
+        }
+      },
+      "imports": [
+        "../../IBaseProxy.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.24"
+      ],
+      "artifacts": [
+        "IWorldProxy"
+      ]
+    },
+    "/Users/mdcoon/git/xrdna-smartcontracts/contracts/BaseProxy.sol": {
+      "lastModificationDate": 1718056806872,
+      "contentHash": "d54470a5894b9146184f48880241adc0",
+      "sourceName": "contracts/BaseProxy.sol",
+      "solcConfig": {
+        "version": "0.8.24",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "metadata",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "abi",
+                "evm.methodIdentifiers"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          },
+          "evmVersion": "paris"
+        }
+      },
+      "imports": [
+        "./IBaseProxy.sol",
+        "./libraries/LibBaseProxy.sol",
+        "./BaseAccess.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.24"
+      ],
+      "artifacts": [
+        "BaseProxy"
+      ]
+    },
+    "/Users/mdcoon/git/xrdna-smartcontracts/contracts/world/v0.2/WorldProxy.sol": {
+      "lastModificationDate": 1718056886597,
+      "contentHash": "549d5f2535989792d3b04e75c69ee6eb",
+      "sourceName": "contracts/world/v0.2/WorldProxy.sol",
+      "solcConfig": {
+        "version": "0.8.24",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "metadata",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "abi",
+                "evm.methodIdentifiers"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          },
+          "evmVersion": "paris"
+        }
+      },
+      "imports": [
+        "../../BaseProxy.sol",
+        "../../libraries/LibBaseProxy.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.24"
+      ],
+      "artifacts": [
+        "WorldProxy"
+      ]
+    },
+    "/Users/mdcoon/git/xrdna-smartcontracts/contracts/experience/ExperienceFactory.sol": {
+      "lastModificationDate": 1718054442622,
+      "contentHash": "6044f2558c54064316a3c2cb5cd85b19",
+      "sourceName": "contracts/experience/ExperienceFactory.sol",
+      "solcConfig": {
+        "version": "0.8.24",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "metadata",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "abi",
+                "evm.methodIdentifiers"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          },
+          "evmVersion": "paris"
+        }
+      },
+      "imports": [
+        "@openzeppelin/contracts/access/AccessControl.sol",
+        "./IExperience.sol",
+        "../VectorAddress.sol",
+        "./IExperienceFactory.sol",
+        "../BaseFactory.sol",
+        "../IBaseProxy.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.24"
+      ],
+      "artifacts": [
+        "ExperienceFactory"
+      ]
+    },
+    "/Users/mdcoon/git/xrdna-smartcontracts/contracts/experience/IExperienceFactory.sol": {
+      "lastModificationDate": 1718025146928,
+      "contentHash": "6646c36bf965b0266ab5b0b140d25cc9",
+      "sourceName": "contracts/experience/IExperienceFactory.sol",
+      "solcConfig": {
+        "version": "0.8.24",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "metadata",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "abi",
+                "evm.methodIdentifiers"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          },
+          "evmVersion": "paris"
+        }
+      },
+      "imports": [
+        "../VectorAddress.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.24"
+      ],
+      "artifacts": [
+        "IExperienceFactory"
       ]
     },
     "/Users/mdcoon/git/xrdna-smartcontracts/contracts/experience/ExperienceRegistry.sol": {
-      "lastModificationDate": 1718025172315,
-      "contentHash": "225e3663970641dafce03ddef84252b3",
+      "lastModificationDate": 1718038570233,
+      "contentHash": "43c124517f27a70ff3516b2efecef340",
       "sourceName": "contracts/experience/ExperienceRegistry.sol",
       "solcConfig": {
         "version": "0.8.24",
@@ -2594,169 +2958,6 @@
       ],
       "artifacts": [
         "ExperienceRegistry"
-      ]
-    },
-    "/Users/mdcoon/git/xrdna-smartcontracts/contracts/experience/IBasicCompany.sol": {
-      "lastModificationDate": 1717606702718,
-      "contentHash": "3086e729ab78065faef69cd3786fc932",
-      "sourceName": "contracts/experience/IBasicCompany.sol",
-      "solcConfig": {
-        "version": "0.8.24",
-        "settings": {
-          "optimizer": {
-            "enabled": true,
-            "runs": 200
-          },
-          "outputSelection": {
-            "*": {
-              "*": [
-                "metadata",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "abi",
-                "evm.methodIdentifiers"
-              ],
-              "": [
-                "ast"
-              ]
-            }
-          },
-          "evmVersion": "paris"
-        }
-      },
-      "imports": [
-        "../VectorAddress.sol"
-      ],
-      "versionPragmas": [
-        "^0.8.24"
-      ],
-      "artifacts": [
-        "IBasicCompany"
-      ]
-    },
-    "/Users/mdcoon/git/xrdna-smartcontracts/contracts/experience/IExperienceFactory.sol": {
-      "lastModificationDate": 1718025146928,
-      "contentHash": "6646c36bf965b0266ab5b0b140d25cc9",
-      "sourceName": "contracts/experience/IExperienceFactory.sol",
-      "solcConfig": {
-        "version": "0.8.24",
-        "settings": {
-          "optimizer": {
-            "enabled": true,
-            "runs": 200
-          },
-          "outputSelection": {
-            "*": {
-              "*": [
-                "metadata",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "abi",
-                "evm.methodIdentifiers"
-              ],
-              "": [
-                "ast"
-              ]
-            }
-          },
-          "evmVersion": "paris"
-        }
-      },
-      "imports": [
-        "../VectorAddress.sol"
-      ],
-      "versionPragmas": [
-        "^0.8.24"
-      ],
-      "artifacts": [
-        "IExperienceFactory"
-      ]
-    },
-    "/Users/mdcoon/git/xrdna-smartcontracts/contracts/experience/ExperienceFactory.sol": {
-      "lastModificationDate": 1718025176856,
-      "contentHash": "6ca655a2527859e9ccb19eedb6b41498",
-      "sourceName": "contracts/experience/ExperienceFactory.sol",
-      "solcConfig": {
-        "version": "0.8.24",
-        "settings": {
-          "optimizer": {
-            "enabled": true,
-            "runs": 200
-          },
-          "outputSelection": {
-            "*": {
-              "*": [
-                "metadata",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "abi",
-                "evm.methodIdentifiers"
-              ],
-              "": [
-                "ast"
-              ]
-            }
-          },
-          "evmVersion": "paris"
-        }
-      },
-      "imports": [
-        "@openzeppelin/contracts/access/AccessControl.sol",
-        "./IExperience.sol",
-        "../VectorAddress.sol",
-        "./IExperienceFactory.sol",
-        "../BaseFactory.sol"
-      ],
-      "versionPragmas": [
-        "^0.8.24"
-      ],
-      "artifacts": [
-        "ExperienceFactory"
-      ]
-    },
-    "/Users/mdcoon/git/xrdna-smartcontracts/contracts/experience/Experience.sol": {
-      "lastModificationDate": 1718026437420,
-      "contentHash": "10b09093168acd53e47b542bea46af3d",
-      "sourceName": "contracts/experience/Experience.sol",
-      "solcConfig": {
-        "version": "0.8.24",
-        "settings": {
-          "optimizer": {
-            "enabled": true,
-            "runs": 200
-          },
-          "outputSelection": {
-            "*": {
-              "*": [
-                "metadata",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "abi",
-                "evm.methodIdentifiers"
-              ],
-              "": [
-                "ast"
-              ]
-            }
-          },
-          "evmVersion": "paris"
-        }
-      },
-      "imports": [
-        "./IExperience.sol",
-        "../VectorAddress.sol",
-        "./IBasicCompany.sol",
-        "./IExperienceHook.sol",
-        "@openzeppelin/contracts/utils/ReentrancyGuard.sol",
-        "./IExperienceRegistry.sol",
-        "../portal/IPortalRegistry.sol",
-        "../portal/IPortalCondition.sol"
-      ],
-      "versionPragmas": [
-        "^0.8.24"
-      ],
-      "artifacts": [
-        "Experience"
       ]
     },
     "/Users/mdcoon/git/xrdna-smartcontracts/contracts/world/v0.1/WorldRegistry.sol": {
@@ -2964,8 +3165,8 @@
       ]
     },
     "/Users/mdcoon/git/xrdna-smartcontracts/contracts/avatar/AvatarRegistry.sol": {
-      "lastModificationDate": 1718026389722,
-      "contentHash": "d9679c2d927285257992aacb9e47dda2",
+      "lastModificationDate": 1718038693218,
+      "contentHash": "b78e417ce42bde6a9bac748f96512eab",
       "sourceName": "contracts/avatar/AvatarRegistry.sol",
       "solcConfig": {
         "version": "0.8.24",
@@ -3045,8 +3246,8 @@
       ]
     },
     "/Users/mdcoon/git/xrdna-smartcontracts/contracts/avatar/Avatar.sol": {
-      "lastModificationDate": 1718028927894,
-      "contentHash": "bb62b3e5367167bc61403181d98a0964",
+      "lastModificationDate": 1718058362017,
+      "contentHash": "cdf12e88b933ec150cc6dc01ab5441aa",
       "sourceName": "contracts/avatar/Avatar.sol",
       "solcConfig": {
         "version": "0.8.24",
@@ -3087,7 +3288,9 @@
         "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol",
         "@openzeppelin/contracts/utils/ReentrancyGuard.sol",
         "./IAvatarRegistry.sol",
-        "../asset/IERC721Asset.sol"
+        "../asset/IERC721Asset.sol",
+        "../libraries/LibAvatarV1Storage.sol",
+        "../libraries/LibBaseProxy.sol"
       ],
       "versionPragmas": [
         "^0.8.24"
@@ -3098,8 +3301,8 @@
       ]
     },
     "/Users/mdcoon/git/xrdna-smartcontracts/contracts/avatar/AvatarFactory.sol": {
-      "lastModificationDate": 1718026352733,
-      "contentHash": "6922d802e7ebe564883fb1387d17a383",
+      "lastModificationDate": 1718054309367,
+      "contentHash": "bc3642467681034dc96d98e9050b210a",
       "sourceName": "contracts/avatar/AvatarFactory.sol",
       "solcConfig": {
         "version": "0.8.24",
@@ -3129,7 +3332,8 @@
         "./IAvatarFactory.sol",
         "./IAvatar.sol",
         "@openzeppelin/contracts/access/AccessControl.sol",
-        "../BaseFactory.sol"
+        "../BaseFactory.sol",
+        "../IBaseProxy.sol"
       ],
       "versionPragmas": [
         "^0.8.24"
@@ -3138,9 +3342,56 @@
         "AvatarFactory"
       ]
     },
+    "/Users/mdcoon/git/xrdna-smartcontracts/contracts/asset/NonTransferableERC20Asset.sol": {
+      "lastModificationDate": 1718061393733,
+      "contentHash": "135de82a9b76964afcce6644363291ae",
+      "sourceName": "contracts/asset/NonTransferableERC20Asset.sol",
+      "solcConfig": {
+        "version": "0.8.24",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "metadata",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "abi",
+                "evm.methodIdentifiers"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          },
+          "evmVersion": "paris"
+        }
+      },
+      "imports": [
+        "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol",
+        "@openzeppelin/contracts/interfaces/draft-IERC6093.sol",
+        "./IAssetHook.sol",
+        "../avatar/IAvatarRegistry.sol",
+        "../avatar/IAvatar.sol",
+        "./BaseAsset.sol",
+        "./IAssetFactory.sol",
+        "./IERC20Asset.sol",
+        "../libraries/LibAssetV1Storage.sol",
+        "../libraries/LibBaseProxy.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.24"
+      ],
+      "artifacts": [
+        "NonTransferableERC20Asset"
+      ]
+    },
     "/Users/mdcoon/git/xrdna-smartcontracts/contracts/asset/AssetRegistry.sol": {
-      "lastModificationDate": 1717694253990,
-      "contentHash": "63647bc70075dd29ae670ae6d3820cc3",
+      "lastModificationDate": 1718061101838,
+      "contentHash": "c5e058947a21685707dcf2b88277e900",
       "sourceName": "contracts/asset/AssetRegistry.sol",
       "solcConfig": {
         "version": "0.8.24",
@@ -3170,14 +3421,14 @@
         "@openzeppelin/contracts/access/AccessControl.sol",
         "./IAssetRegistry.sol",
         "./IAssetFactory.sol",
-        "./IAssetCondition.sol"
+        "./IAssetCondition.sol",
+        "./IBasicAsset.sol"
       ],
       "versionPragmas": [
         "^0.8.24"
       ],
       "artifacts": [
-        "AssetRegistry",
-        "IBasicAsset"
+        "AssetRegistry"
       ]
     },
     "/Users/mdcoon/git/xrdna-smartcontracts/contracts/asset/IAssetCondition.sol": {
@@ -3252,6 +3503,48 @@
       ],
       "artifacts": [
         "FilterByWorld"
+      ]
+    },
+    "/Users/mdcoon/git/xrdna-smartcontracts/contracts/company/CompanyFactory.sol": {
+      "lastModificationDate": 1718053913902,
+      "contentHash": "3fdfc5be87f2df83f68b33eafe9ff90c",
+      "sourceName": "contracts/company/CompanyFactory.sol",
+      "solcConfig": {
+        "version": "0.8.24",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "metadata",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "abi",
+                "evm.methodIdentifiers"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          },
+          "evmVersion": "paris"
+        }
+      },
+      "imports": [
+        "./ICompanyFactory.sol",
+        "./ICompany.sol",
+        "@openzeppelin/contracts/access/AccessControl.sol",
+        "../BaseFactory.sol",
+        "../IBaseProxy.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.24"
+      ],
+      "artifacts": [
+        "CompanyFactory"
       ]
     },
     "/Users/mdcoon/git/xrdna-smartcontracts/contracts/portal/IBasicAvatarRegistry.sol": {
@@ -3406,6 +3699,431 @@
       ],
       "artifacts": [
         "TestERC721"
+      ]
+    },
+    "/Users/mdcoon/git/xrdna-smartcontracts/contracts/company/CompanyProxy.sol": {
+      "lastModificationDate": 1718057271691,
+      "contentHash": "bd743aa3253a8202f819839bd075363a",
+      "sourceName": "contracts/company/CompanyProxy.sol",
+      "solcConfig": {
+        "version": "0.8.24",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "metadata",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "abi",
+                "evm.methodIdentifiers"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          },
+          "evmVersion": "paris"
+        }
+      },
+      "imports": [
+        "../BaseProxy.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.24"
+      ],
+      "artifacts": [
+        "CompanyProxy"
+      ]
+    },
+    "/Users/mdcoon/git/xrdna-smartcontracts/contracts/avatar/AvatarProxy.sol": {
+      "lastModificationDate": 1718057299384,
+      "contentHash": "488a70e8fec0583ac2b7c1dcd4a5b757",
+      "sourceName": "contracts/avatar/AvatarProxy.sol",
+      "solcConfig": {
+        "version": "0.8.24",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "metadata",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "abi",
+                "evm.methodIdentifiers"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          },
+          "evmVersion": "paris"
+        }
+      },
+      "imports": [
+        "../BaseProxy.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.24"
+      ],
+      "artifacts": [
+        "AvatarProxy"
+      ]
+    },
+    "/Users/mdcoon/git/xrdna-smartcontracts/contracts/experience/ExperienceProxy.sol": {
+      "lastModificationDate": 1718056830303,
+      "contentHash": "77e4c5a39374f5dfe0c3c4bc5d6a56e4",
+      "sourceName": "contracts/experience/ExperienceProxy.sol",
+      "solcConfig": {
+        "version": "0.8.24",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "metadata",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "abi",
+                "evm.methodIdentifiers"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          },
+          "evmVersion": "paris"
+        }
+      },
+      "imports": [
+        "../BaseProxy.sol",
+        "../libraries/LibExperienceV1Storage.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.24"
+      ],
+      "artifacts": [
+        "ExperienceProxy"
+      ]
+    },
+    "/Users/mdcoon/git/xrdna-smartcontracts/contracts/asset/NTERC721Proxy.sol": {
+      "lastModificationDate": 1718057328782,
+      "contentHash": "bc68f2b86aa5e05703dd3abe4f6083ac",
+      "sourceName": "contracts/asset/NTERC721Proxy.sol",
+      "solcConfig": {
+        "version": "0.8.24",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "metadata",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "abi",
+                "evm.methodIdentifiers"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          },
+          "evmVersion": "paris"
+        }
+      },
+      "imports": [
+        "../BaseProxy.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.24"
+      ],
+      "artifacts": [
+        "NTERC721Proxy"
+      ]
+    },
+    "/Users/mdcoon/git/xrdna-smartcontracts/contracts/asset/NTERC20Proxy.sol": {
+      "lastModificationDate": 1718057318850,
+      "contentHash": "2fbd6e510ed17537dd3e402159f905dc",
+      "sourceName": "contracts/asset/NTERC20Proxy.sol",
+      "solcConfig": {
+        "version": "0.8.24",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "metadata",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "abi",
+                "evm.methodIdentifiers"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          },
+          "evmVersion": "paris"
+        }
+      },
+      "imports": [
+        "../BaseProxy.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.24"
+      ],
+      "artifacts": [
+        "NTERC20Proxy"
+      ]
+    },
+    "/Users/mdcoon/git/xrdna-smartcontracts/contracts/libraries/LibWorldV2Storage.sol": {
+      "lastModificationDate": 1718055496992,
+      "contentHash": "31a1e1ffc814ca9146d091c5e063ca13",
+      "sourceName": "contracts/libraries/LibWorldV2Storage.sol",
+      "solcConfig": {
+        "version": "0.8.24",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "metadata",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "abi",
+                "evm.methodIdentifiers"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          },
+          "evmVersion": "paris"
+        }
+      },
+      "imports": [
+        "../world/v0.2/IWorldHook.sol",
+        "../VectorAddress.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.24"
+      ],
+      "artifacts": [
+        "LibWorldV2Storage"
+      ]
+    },
+    "/Users/mdcoon/git/xrdna-smartcontracts/contracts/libraries/LibCompanyV1Storage.sol": {
+      "lastModificationDate": 1718055478048,
+      "contentHash": "2caf728be4e9a1ec40cf1552c35f4e74",
+      "sourceName": "contracts/libraries/LibCompanyV1Storage.sol",
+      "solcConfig": {
+        "version": "0.8.24",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "metadata",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "abi",
+                "evm.methodIdentifiers"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          },
+          "evmVersion": "paris"
+        }
+      },
+      "imports": [
+        "../VectorAddress.sol",
+        "../company/ICompanyHook.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.24"
+      ],
+      "artifacts": [
+        "LibCompanyV1Storage"
+      ]
+    },
+    "/Users/mdcoon/git/xrdna-smartcontracts/contracts/libraries/LibExperienceV1Storage.sol": {
+      "lastModificationDate": 1718061271593,
+      "contentHash": "82d9b9c140330fb305c684eb97283a10",
+      "sourceName": "contracts/libraries/LibExperienceV1Storage.sol",
+      "solcConfig": {
+        "version": "0.8.24",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "metadata",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "abi",
+                "evm.methodIdentifiers"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          },
+          "evmVersion": "paris"
+        }
+      },
+      "imports": [
+        "../VectorAddress.sol",
+        "../experience/IExperienceHook.sol",
+        "../experience/IBasicCompany.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.24"
+      ],
+      "artifacts": [
+        "LibExperienceV1Storage"
+      ]
+    },
+    "/Users/mdcoon/git/xrdna-smartcontracts/contracts/libraries/LibAvatarV1Storage.sol": {
+      "lastModificationDate": 1718057909380,
+      "contentHash": "8212b90fc962a1b2090792cc3643d61c",
+      "sourceName": "contracts/libraries/LibAvatarV1Storage.sol",
+      "solcConfig": {
+        "version": "0.8.24",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "metadata",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "abi",
+                "evm.methodIdentifiers"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          },
+          "evmVersion": "paris"
+        }
+      },
+      "imports": [
+        "../experience/IExperience.sol",
+        "../avatar/IAvatarHook.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.24"
+      ],
+      "artifacts": [
+        "LibAvatarV1Storage"
+      ]
+    },
+    "/Users/mdcoon/git/xrdna-smartcontracts/contracts/libraries/LibAssetV1Storage.sol": {
+      "lastModificationDate": 1718060396775,
+      "contentHash": "3741fa3f16e541b6d1250dc62744a203",
+      "sourceName": "contracts/libraries/LibAssetV1Storage.sol",
+      "solcConfig": {
+        "version": "0.8.24",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "metadata",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "abi",
+                "evm.methodIdentifiers"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          },
+          "evmVersion": "paris"
+        }
+      },
+      "imports": [
+        "../asset/IAssetFactory.sol",
+        "../asset/IAssetHook.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.24"
+      ],
+      "artifacts": [
+        "LibAssetV1Storage"
+      ]
+    },
+    "/Users/mdcoon/git/xrdna-smartcontracts/contracts/asset/IBasicAsset.sol": {
+      "lastModificationDate": 1718061741850,
+      "contentHash": "d7a6ba4e5c53741636054969b5e7978e",
+      "sourceName": "contracts/asset/IBasicAsset.sol",
+      "solcConfig": {
+        "version": "0.8.24",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "metadata",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "abi",
+                "evm.methodIdentifiers"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          },
+          "evmVersion": "paris"
+        }
+      },
+      "imports": [
+        "./IAssetHook.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.24"
+      ],
+      "artifacts": [
+        "IBasicAsset"
       ]
     }
   }

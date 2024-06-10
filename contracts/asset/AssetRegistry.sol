@@ -4,16 +4,10 @@ pragma solidity ^0.8.24;
 
 
 import "@openzeppelin/contracts/access/AccessControl.sol";
-import "./IAssetRegistry.sol";
-import "./IAssetFactory.sol";
-import "./IAssetCondition.sol";
-
-interface IBasicAsset {
-    function issuer() external view returns (address);
-    function upgrade(address newAsset) external;
-    function originAddress() external view returns(address);
-    function originChainId() external view returns(uint256);
-}
+import {IAssetRegistry} from "./IAssetRegistry.sol";
+import {IAssetFactory} from "./IAssetFactory.sol";
+import {IAssetCondition} from "./IAssetCondition.sol";
+import {IBasicAsset} from './IBasicAsset.sol';
 
 contract AssetRegistry is IAssetRegistry, AccessControl {
     bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
@@ -26,6 +20,7 @@ contract AssetRegistry is IAssetRegistry, AccessControl {
     IAssetFactory public assetFactory;
     mapping(address => AssetInfo) public registeredAssets;
     mapping(bytes32 => address) public assetsByOriginalAddressAndChain;
+    mapping(uint256 => string) public assetVersions;
 
     event AssetCreated(address indexed asset, uint256 assetType);
     event AssetConditionAdded(address indexed asset, address indexed condition);
@@ -41,7 +36,17 @@ contract AssetRegistry is IAssetRegistry, AccessControl {
             require(admins[i] != address(0), "AssetRegistry: admin cannot be zero address");
             _grantRole(ADMIN_ROLE, admins[i]);
         }
+        assetVersions[1] = "0.1";
+        assetVersions[2] = "0.1";
     }
+
+    function currentAssetVersion(uint256 assetType) external view returns (string memory) {
+        return assetVersions[assetType];
+    }
+
+    function setCurrentAssetVersion(uint256 assetType, string memory version) external onlyRole(ADMIN_ROLE) {
+        assetVersions[assetType] = version;
+    } 
 
     function setAssetFactory(address _assetFactory) public onlyRole(ADMIN_ROLE) {
         require(_assetFactory != address(0), "AssetRegistry: asset factory cannot be zero address");

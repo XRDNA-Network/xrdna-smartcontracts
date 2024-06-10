@@ -3,18 +3,20 @@
 /* eslint-disable */
 import type * as assetFactorySol from "./AssetFactory.sol";
 export type { assetFactorySol };
-import type * as assetRegistrySol from "./AssetRegistry.sol";
-export type { assetRegistrySol };
 import type * as baseAssetSol from "./BaseAsset.sol";
 export type { baseAssetSol };
 import type * as nonTransferableErc721AssetSol from "./NonTransferableERC721Asset.sol";
 export type { nonTransferableErc721AssetSol };
 import type * as sampleConditions from "./sample_conditions";
 export type { sampleConditions };
+export type { AssetRegistry } from "./AssetRegistry";
 export type { IAssetCondition } from "./IAssetCondition";
 export type { IAssetFactory } from "./IAssetFactory";
 export type { IAssetHook } from "./IAssetHook";
 export type { IAssetRegistry } from "./IAssetRegistry";
+export type { IBasicAsset } from "./IBasicAsset";
 export type { IERC20Asset } from "./IERC20Asset";
 export type { IERC721Asset } from "./IERC721Asset";
+export type { NTERC20Proxy } from "./NTERC20Proxy";
+export type { NTERC721Proxy } from "./NTERC721Proxy";
 export type { NonTransferableERC20Asset } from "./NonTransferableERC20Asset";

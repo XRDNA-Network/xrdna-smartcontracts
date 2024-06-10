@@ -95,8 +95,6 @@ export type CompanyInitArgsStructOutput = [
 export interface CompanyInterface extends Interface {
   getFunction(
     nameOrSignature:
-      | "DEFAULT_ADMIN_ROLE"
-      | "SIGNER_ROLE"
       | "addAssetHook"
       | "addExperience"
       | "addExperienceCondition"
@@ -109,10 +107,6 @@ export interface CompanyInterface extends Interface {
       | "companyRegistry"
       | "encodeExperienceArgs"
       | "experienceRegistry"
-      | "getRoleAdmin"
-      | "grantRole"
-      | "hasRole"
-      | "hook"
       | "init"
       | "isSigner"
       | "mint"
@@ -122,15 +116,13 @@ export interface CompanyInterface extends Interface {
       | "removeExperienceCondition"
       | "removeHook"
       | "removeSigner"
-      | "renounceRole"
       | "revoke"
-      | "revokeRole"
       | "setHook"
-      | "supportsInterface"
       | "upgrade"
       | "upgradeComplete"
       | "upgraded"
       | "vectorAddress"
+      | "version"
       | "withdraw"
       | "world"
   ): FunctionFragment;
@@ -143,21 +135,10 @@ export interface CompanyInterface extends Interface {
       | "CompanyHookSet"
       | "CompanyUpgraded"
       | "ExperienceAdded"
-      | "RoleAdminChanged"
-      | "RoleGranted"
-      | "RoleRevoked"
       | "SignerAdded"
       | "SignerRemoved"
   ): EventFragment;
 
-  encodeFunctionData(
-    functionFragment: "DEFAULT_ADMIN_ROLE",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "SIGNER_ROLE",
-    values?: undefined
-  ): string;
   encodeFunctionData(
     functionFragment: "addAssetHook",
     values: [AddressLike, AddressLike]
@@ -207,19 +188,6 @@ export interface CompanyInterface extends Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "getRoleAdmin",
-    values: [BytesLike]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "grantRole",
-    values: [BytesLike, AddressLike]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "hasRole",
-    values: [BytesLike, AddressLike]
-  ): string;
-  encodeFunctionData(functionFragment: "hook", values?: undefined): string;
-  encodeFunctionData(
     functionFragment: "init",
     values: [CompanyInitArgsStruct]
   ): string;
@@ -250,24 +218,12 @@ export interface CompanyInterface extends Interface {
     values: [AddressLike]
   ): string;
   encodeFunctionData(
-    functionFragment: "renounceRole",
-    values: [BytesLike, AddressLike]
-  ): string;
-  encodeFunctionData(
     functionFragment: "revoke",
     values: [AddressLike, AddressLike, BigNumberish]
   ): string;
   encodeFunctionData(
-    functionFragment: "revokeRole",
-    values: [BytesLike, AddressLike]
-  ): string;
-  encodeFunctionData(
     functionFragment: "setHook",
     values: [AddressLike]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "supportsInterface",
-    values: [BytesLike]
   ): string;
   encodeFunctionData(functionFragment: "upgrade", values: [BytesLike]): string;
   encodeFunctionData(
@@ -279,20 +235,13 @@ export interface CompanyInterface extends Interface {
     functionFragment: "vectorAddress",
     values?: undefined
   ): string;
+  encodeFunctionData(functionFragment: "version", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "withdraw",
     values: [BigNumberish]
   ): string;
   encodeFunctionData(functionFragment: "world", values?: undefined): string;
 
-  decodeFunctionResult(
-    functionFragment: "DEFAULT_ADMIN_ROLE",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "SIGNER_ROLE",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(
     functionFragment: "addAssetHook",
     data: BytesLike
@@ -335,13 +284,6 @@ export interface CompanyInterface extends Interface {
     functionFragment: "experienceRegistry",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(
-    functionFragment: "getRoleAdmin",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(functionFragment: "grantRole", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "hasRole", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "hook", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "init", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "isSigner", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "mint", data: BytesLike): Result;
@@ -360,17 +302,8 @@ export interface CompanyInterface extends Interface {
     functionFragment: "removeSigner",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(
-    functionFragment: "renounceRole",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(functionFragment: "revoke", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "revokeRole", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "setHook", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "supportsInterface",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(functionFragment: "upgrade", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "upgradeComplete",
@@ -381,6 +314,7 @@ export interface CompanyInterface extends Interface {
     functionFragment: "vectorAddress",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "version", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "withdraw", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "world", data: BytesLike): Result;
 }
@@ -477,64 +411,6 @@ export namespace ExperienceAddedEvent {
   export type LogDescription = TypedLogDescription<Event>;
 }
 
-export namespace RoleAdminChangedEvent {
-  export type InputTuple = [
-    role: BytesLike,
-    previousAdminRole: BytesLike,
-    newAdminRole: BytesLike
-  ];
-  export type OutputTuple = [
-    role: string,
-    previousAdminRole: string,
-    newAdminRole: string
-  ];
-  export interface OutputObject {
-    role: string;
-    previousAdminRole: string;
-    newAdminRole: string;
-  }
-  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
-  export type Filter = TypedDeferredTopicFilter<Event>;
-  export type Log = TypedEventLog<Event>;
-  export type LogDescription = TypedLogDescription<Event>;
-}
-
-export namespace RoleGrantedEvent {
-  export type InputTuple = [
-    role: BytesLike,
-    account: AddressLike,
-    sender: AddressLike
-  ];
-  export type OutputTuple = [role: string, account: string, sender: string];
-  export interface OutputObject {
-    role: string;
-    account: string;
-    sender: string;
-  }
-  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
-  export type Filter = TypedDeferredTopicFilter<Event>;
-  export type Log = TypedEventLog<Event>;
-  export type LogDescription = TypedLogDescription<Event>;
-}
-
-export namespace RoleRevokedEvent {
-  export type InputTuple = [
-    role: BytesLike,
-    account: AddressLike,
-    sender: AddressLike
-  ];
-  export type OutputTuple = [role: string, account: string, sender: string];
-  export interface OutputObject {
-    role: string;
-    account: string;
-    sender: string;
-  }
-  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
-  export type Filter = TypedDeferredTopicFilter<Event>;
-  export type Log = TypedEventLog<Event>;
-  export type LogDescription = TypedLogDescription<Event>;
-}
-
 export namespace SignerAddedEvent {
   export type InputTuple = [signer: AddressLike];
   export type OutputTuple = [signer: string];
@@ -602,10 +478,6 @@ export interface Company extends BaseContract {
     event?: TCEvent
   ): Promise<this>;
 
-  DEFAULT_ADMIN_ROLE: TypedContractMethod<[], [string], "view">;
-
-  SIGNER_ROLE: TypedContractMethod<[], [string], "view">;
-
   addAssetHook: TypedContractMethod<
     [asset: AddressLike, aHook: AddressLike],
     [void],
@@ -654,22 +526,6 @@ export interface Company extends BaseContract {
 
   experienceRegistry: TypedContractMethod<[], [string], "view">;
 
-  getRoleAdmin: TypedContractMethod<[role: BytesLike], [string], "view">;
-
-  grantRole: TypedContractMethod<
-    [role: BytesLike, account: AddressLike],
-    [void],
-    "nonpayable"
-  >;
-
-  hasRole: TypedContractMethod<
-    [role: BytesLike, account: AddressLike],
-    [boolean],
-    "view"
-  >;
-
-  hook: TypedContractMethod<[], [string], "view">;
-
   init: TypedContractMethod<
     [request: CompanyInitArgsStruct],
     [void],
@@ -708,31 +564,13 @@ export interface Company extends BaseContract {
     "nonpayable"
   >;
 
-  renounceRole: TypedContractMethod<
-    [role: BytesLike, callerConfirmation: AddressLike],
-    [void],
-    "nonpayable"
-  >;
-
   revoke: TypedContractMethod<
     [asset: AddressLike, holder: AddressLike, amountOrTokenId: BigNumberish],
     [void],
     "nonpayable"
   >;
 
-  revokeRole: TypedContractMethod<
-    [role: BytesLike, account: AddressLike],
-    [void],
-    "nonpayable"
-  >;
-
   setHook: TypedContractMethod<[_hook: AddressLike], [void], "nonpayable">;
-
-  supportsInterface: TypedContractMethod<
-    [interfaceId: BytesLike],
-    [boolean],
-    "view"
-  >;
 
   upgrade: TypedContractMethod<[initData: BytesLike], [void], "nonpayable">;
 
@@ -746,6 +584,8 @@ export interface Company extends BaseContract {
 
   vectorAddress: TypedContractMethod<[], [VectorAddressStructOutput], "view">;
 
+  version: TypedContractMethod<[], [bigint], "view">;
+
   withdraw: TypedContractMethod<[amount: BigNumberish], [void], "nonpayable">;
 
   world: TypedContractMethod<[], [string], "view">;
@@ -754,12 +594,6 @@ export interface Company extends BaseContract {
     key: string | FunctionFragment
   ): T;
 
-  getFunction(
-    nameOrSignature: "DEFAULT_ADMIN_ROLE"
-  ): TypedContractMethod<[], [string], "view">;
-  getFunction(
-    nameOrSignature: "SIGNER_ROLE"
-  ): TypedContractMethod<[], [string], "view">;
   getFunction(
     nameOrSignature: "addAssetHook"
   ): TypedContractMethod<
@@ -813,26 +647,6 @@ export interface Company extends BaseContract {
     nameOrSignature: "experienceRegistry"
   ): TypedContractMethod<[], [string], "view">;
   getFunction(
-    nameOrSignature: "getRoleAdmin"
-  ): TypedContractMethod<[role: BytesLike], [string], "view">;
-  getFunction(
-    nameOrSignature: "grantRole"
-  ): TypedContractMethod<
-    [role: BytesLike, account: AddressLike],
-    [void],
-    "nonpayable"
-  >;
-  getFunction(
-    nameOrSignature: "hasRole"
-  ): TypedContractMethod<
-    [role: BytesLike, account: AddressLike],
-    [boolean],
-    "view"
-  >;
-  getFunction(
-    nameOrSignature: "hook"
-  ): TypedContractMethod<[], [string], "view">;
-  getFunction(
     nameOrSignature: "init"
   ): TypedContractMethod<
     [request: CompanyInitArgsStruct],
@@ -868,13 +682,6 @@ export interface Company extends BaseContract {
     nameOrSignature: "removeSigner"
   ): TypedContractMethod<[signer: AddressLike], [void], "nonpayable">;
   getFunction(
-    nameOrSignature: "renounceRole"
-  ): TypedContractMethod<
-    [role: BytesLike, callerConfirmation: AddressLike],
-    [void],
-    "nonpayable"
-  >;
-  getFunction(
     nameOrSignature: "revoke"
   ): TypedContractMethod<
     [asset: AddressLike, holder: AddressLike, amountOrTokenId: BigNumberish],
@@ -882,18 +689,8 @@ export interface Company extends BaseContract {
     "nonpayable"
   >;
   getFunction(
-    nameOrSignature: "revokeRole"
-  ): TypedContractMethod<
-    [role: BytesLike, account: AddressLike],
-    [void],
-    "nonpayable"
-  >;
-  getFunction(
     nameOrSignature: "setHook"
   ): TypedContractMethod<[_hook: AddressLike], [void], "nonpayable">;
-  getFunction(
-    nameOrSignature: "supportsInterface"
-  ): TypedContractMethod<[interfaceId: BytesLike], [boolean], "view">;
   getFunction(
     nameOrSignature: "upgrade"
   ): TypedContractMethod<[initData: BytesLike], [void], "nonpayable">;
@@ -906,6 +703,9 @@ export interface Company extends BaseContract {
   getFunction(
     nameOrSignature: "vectorAddress"
   ): TypedContractMethod<[], [VectorAddressStructOutput], "view">;
+  getFunction(
+    nameOrSignature: "version"
+  ): TypedContractMethod<[], [bigint], "view">;
   getFunction(
     nameOrSignature: "withdraw"
   ): TypedContractMethod<[amount: BigNumberish], [void], "nonpayable">;
@@ -954,27 +754,6 @@ export interface Company extends BaseContract {
     ExperienceAddedEvent.InputTuple,
     ExperienceAddedEvent.OutputTuple,
     ExperienceAddedEvent.OutputObject
-  >;
-  getEvent(
-    key: "RoleAdminChanged"
-  ): TypedContractEvent<
-    RoleAdminChangedEvent.InputTuple,
-    RoleAdminChangedEvent.OutputTuple,
-    RoleAdminChangedEvent.OutputObject
-  >;
-  getEvent(
-    key: "RoleGranted"
-  ): TypedContractEvent<
-    RoleGrantedEvent.InputTuple,
-    RoleGrantedEvent.OutputTuple,
-    RoleGrantedEvent.OutputObject
-  >;
-  getEvent(
-    key: "RoleRevoked"
-  ): TypedContractEvent<
-    RoleRevokedEvent.InputTuple,
-    RoleRevokedEvent.OutputTuple,
-    RoleRevokedEvent.OutputObject
   >;
   getEvent(
     key: "SignerAdded"
@@ -1056,39 +835,6 @@ export interface Company extends BaseContract {
       ExperienceAddedEvent.InputTuple,
       ExperienceAddedEvent.OutputTuple,
       ExperienceAddedEvent.OutputObject
-    >;
-
-    "RoleAdminChanged(bytes32,bytes32,bytes32)": TypedContractEvent<
-      RoleAdminChangedEvent.InputTuple,
-      RoleAdminChangedEvent.OutputTuple,
-      RoleAdminChangedEvent.OutputObject
-    >;
-    RoleAdminChanged: TypedContractEvent<
-      RoleAdminChangedEvent.InputTuple,
-      RoleAdminChangedEvent.OutputTuple,
-      RoleAdminChangedEvent.OutputObject
-    >;
-
-    "RoleGranted(bytes32,address,address)": TypedContractEvent<
-      RoleGrantedEvent.InputTuple,
-      RoleGrantedEvent.OutputTuple,
-      RoleGrantedEvent.OutputObject
-    >;
-    RoleGranted: TypedContractEvent<
-      RoleGrantedEvent.InputTuple,
-      RoleGrantedEvent.OutputTuple,
-      RoleGrantedEvent.OutputObject
-    >;
-
-    "RoleRevoked(bytes32,address,address)": TypedContractEvent<
-      RoleRevokedEvent.InputTuple,
-      RoleRevokedEvent.OutputTuple,
-      RoleRevokedEvent.OutputObject
-    >;
-    RoleRevoked: TypedContractEvent<
-      RoleRevokedEvent.InputTuple,
-      RoleRevokedEvent.OutputTuple,
-      RoleRevokedEvent.OutputObject
     >;
 
     "SignerAdded(address)": TypedContractEvent<

@@ -3,6 +3,7 @@
 /* eslint-disable */
 export * as companySol from "./Company.sol";
 export { CompanyFactory__factory } from "./CompanyFactory__factory";
+export { CompanyProxy__factory } from "./CompanyProxy__factory";
 export { CompanyRegistry__factory } from "./CompanyRegistry__factory";
 export { ICompany__factory } from "./ICompany__factory";
 export { ICompanyFactory__factory } from "./ICompanyFactory__factory";

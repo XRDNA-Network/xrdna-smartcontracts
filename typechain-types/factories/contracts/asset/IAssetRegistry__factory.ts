@@ -36,6 +36,25 @@ const _abi = [
   {
     inputs: [
       {
+        internalType: "uint256",
+        name: "assetType",
+        type: "uint256",
+      },
+    ],
+    name: "currentAssetVersion",
+    outputs: [
+      {
+        internalType: "string",
+        name: "",
+        type: "string",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
         internalType: "address",
         name: "asset",
         type: "address",
@@ -73,6 +92,24 @@ const _abi = [
         type: "address",
       },
     ],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "assetType",
+        type: "uint256",
+      },
+      {
+        internalType: "string",
+        name: "version",
+        type: "string",
+      },
+    ],
+    name: "setCurrentAssetVersion",
+    outputs: [],
     stateMutability: "nonpayable",
     type: "function",
   },

@@ -6,6 +6,7 @@ export type { avatarSol };
 import type * as avatarRegistrySol from "./AvatarRegistry.sol";
 export type { avatarRegistrySol };
 export type { AvatarFactory } from "./AvatarFactory";
+export type { AvatarProxy } from "./AvatarProxy";
 export type { IAvatar } from "./IAvatar";
 export type { IAvatarFactory } from "./IAvatarFactory";
 export type { IAvatarHook } from "./IAvatarHook";

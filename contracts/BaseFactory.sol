@@ -7,6 +7,7 @@ import {AccessControl} from '@openzeppelin/contracts/access/AccessControl.sol';
 abstract contract BaseFactory is AccessControl {
     bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
     address implementation;
+    address proxyImplementation;
     address authorizedRegistry;
 
     event AuthorizedRegistryChanged(address indexed oldRegistry, address indexed newRegistry);
@@ -27,6 +28,11 @@ abstract contract BaseFactory is AccessControl {
         }
     }
 
+    function setProxyImplementation(address _proxyImplementation) public onlyRole(ADMIN_ROLE) {
+        require(_proxyImplementation != address(0), "BaseFactory: proxy implementation cannot be zero address");
+        proxyImplementation = _proxyImplementation;
+    }
+
     function setImplementation(address _implementation) public onlyRole(ADMIN_ROLE) {
         require(_implementation != address(0), "BaseFactory: implementation cannot be zero address");
         implementation = _implementation;
@@ -37,6 +43,11 @@ abstract contract BaseFactory is AccessControl {
         require(_registry != address(0), "WorldFactory: registry cannot be zero address");
         authorizedRegistry = _registry;
         emit AuthorizedRegistryChanged(authorizedRegistry, _registry);
+    }
+
+    function createProxy() internal returns (address) {
+        require(proxyImplementation != address(0), "BaseFactory: proxy implementation not set");
+        return create(proxyImplementation);
     }
 
     function create() internal returns (address) {

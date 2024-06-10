@@ -123,6 +123,7 @@ export interface AvatarInterface extends Interface {
       | "upgradeComplete"
       | "upgraded"
       | "username"
+      | "version"
       | "withdraw"
   ): FunctionFragment;
 
@@ -130,6 +131,8 @@ export interface AvatarInterface extends Interface {
     nameOrSignatureOrTopic:
       | "AppearanceChanged"
       | "AvatarUpgraded"
+      | "HookRemoved"
+      | "HookSet"
       | "JumpSuccess"
       | "LocationChanged"
       | "SignerAdded"
@@ -237,6 +240,7 @@ export interface AvatarInterface extends Interface {
   ): string;
   encodeFunctionData(functionFragment: "upgraded", values?: undefined): string;
   encodeFunctionData(functionFragment: "username", values?: undefined): string;
+  encodeFunctionData(functionFragment: "version", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "withdraw",
     values: [BigNumberish]
@@ -326,6 +330,7 @@ export interface AvatarInterface extends Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "upgraded", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "username", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "version", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "withdraw", data: BytesLike): Result;
 }
 
@@ -347,6 +352,28 @@ export namespace AvatarUpgradedEvent {
   export interface OutputObject {
     oldVersion: string;
     nextVersion: string;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
+}
+
+export namespace HookRemovedEvent {
+  export type InputTuple = [];
+  export type OutputTuple = [];
+  export interface OutputObject {}
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
+}
+
+export namespace HookSetEvent {
+  export type InputTuple = [hook: AddressLike];
+  export type OutputTuple = [hook: string];
+  export interface OutputObject {
+    hook: string;
   }
   export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
   export type Filter = TypedDeferredTopicFilter<Event>;
@@ -500,7 +527,7 @@ export interface Avatar extends BaseContract {
   companyRegistry: TypedContractMethod<[], [string], "view">;
 
   companySigningNonce: TypedContractMethod<
-    [arg0: AddressLike],
+    [company: AddressLike],
     [bigint],
     "view"
   >;
@@ -568,7 +595,7 @@ export interface Avatar extends BaseContract {
   >;
 
   setAppearanceDetails: TypedContractMethod<
-    [arg0: BytesLike],
+    [details: BytesLike],
     [void],
     "nonpayable"
   >;
@@ -592,6 +619,8 @@ export interface Avatar extends BaseContract {
   upgraded: TypedContractMethod<[], [boolean], "view">;
 
   username: TypedContractMethod<[], [string], "view">;
+
+  version: TypedContractMethod<[], [string], "view">;
 
   withdraw: TypedContractMethod<[amount: BigNumberish], [void], "nonpayable">;
 
@@ -625,7 +654,7 @@ export interface Avatar extends BaseContract {
   ): TypedContractMethod<[], [string], "view">;
   getFunction(
     nameOrSignature: "companySigningNonce"
-  ): TypedContractMethod<[arg0: AddressLike], [bigint], "view">;
+  ): TypedContractMethod<[company: AddressLike], [bigint], "view">;
   getFunction(
     nameOrSignature: "delegateJump"
   ): TypedContractMethod<
@@ -692,7 +721,7 @@ export interface Avatar extends BaseContract {
   ): TypedContractMethod<[wearable: WearableStruct], [void], "nonpayable">;
   getFunction(
     nameOrSignature: "setAppearanceDetails"
-  ): TypedContractMethod<[arg0: BytesLike], [void], "nonpayable">;
+  ): TypedContractMethod<[details: BytesLike], [void], "nonpayable">;
   getFunction(
     nameOrSignature: "setCanReceiveTokensOutsideOfExperience"
   ): TypedContractMethod<[canReceive: boolean], [void], "nonpayable">;
@@ -712,6 +741,9 @@ export interface Avatar extends BaseContract {
     nameOrSignature: "username"
   ): TypedContractMethod<[], [string], "view">;
   getFunction(
+    nameOrSignature: "version"
+  ): TypedContractMethod<[], [string], "view">;
+  getFunction(
     nameOrSignature: "withdraw"
   ): TypedContractMethod<[amount: BigNumberish], [void], "nonpayable">;
 
@@ -728,6 +760,20 @@ export interface Avatar extends BaseContract {
     AvatarUpgradedEvent.InputTuple,
     AvatarUpgradedEvent.OutputTuple,
     AvatarUpgradedEvent.OutputObject
+  >;
+  getEvent(
+    key: "HookRemoved"
+  ): TypedContractEvent<
+    HookRemovedEvent.InputTuple,
+    HookRemovedEvent.OutputTuple,
+    HookRemovedEvent.OutputObject
+  >;
+  getEvent(
+    key: "HookSet"
+  ): TypedContractEvent<
+    HookSetEvent.InputTuple,
+    HookSetEvent.OutputTuple,
+    HookSetEvent.OutputObject
   >;
   getEvent(
     key: "JumpSuccess"
@@ -793,6 +839,28 @@ export interface Avatar extends BaseContract {
       AvatarUpgradedEvent.InputTuple,
       AvatarUpgradedEvent.OutputTuple,
       AvatarUpgradedEvent.OutputObject
+    >;
+
+    "HookRemoved()": TypedContractEvent<
+      HookRemovedEvent.InputTuple,
+      HookRemovedEvent.OutputTuple,
+      HookRemovedEvent.OutputObject
+    >;
+    HookRemoved: TypedContractEvent<
+      HookRemovedEvent.InputTuple,
+      HookRemovedEvent.OutputTuple,
+      HookRemovedEvent.OutputObject
+    >;
+
+    "HookSet(address)": TypedContractEvent<
+      HookSetEvent.InputTuple,
+      HookSetEvent.OutputTuple,
+      HookSetEvent.OutputObject
+    >;
+    HookSet: TypedContractEvent<
+      HookSetEvent.InputTuple,
+      HookSetEvent.OutputTuple,
+      HookSetEvent.OutputObject
     >;
 
     "JumpSuccess(address,bytes)": TypedContractEvent<

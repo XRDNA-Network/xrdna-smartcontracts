@@ -8,6 +8,7 @@ import {IExperience} from './IExperience.sol';
 import {VectorAddress} from '../VectorAddress.sol';
 import {IExperienceFactory} from './IExperienceFactory.sol';
 import {BaseFactory} from '../BaseFactory.sol';
+import {IBaseProxy} from '../IBaseProxy.sol';
 
 contract ExperienceFactory is BaseFactory, IExperienceFactory {
 
@@ -17,7 +18,9 @@ contract ExperienceFactory is BaseFactory, IExperienceFactory {
     constructor(address mainAdmin, address[] memory admins) BaseFactory(mainAdmin, admins) {}
 
     function createExperience(address owner, string memory _name, VectorAddress memory va, bytes calldata initData) external onlyAuthorizedRegistry returns (address proxy) {
-        proxy = create();
+        address exp = create();
+        proxy = createProxy();
+        IBaseProxy(proxy).initProxy(exp);
         IExperience(proxy).init(owner, _name, va, initData);
         //console.log("Calling proxy.init", address(this));
     }

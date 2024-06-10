@@ -70,6 +70,7 @@ export interface IExperienceInterface extends Interface {
       | "removePortalCondition"
       | "upgrade"
       | "vectorAddress"
+      | "version"
       | "world"
   ): FunctionFragment;
 
@@ -126,6 +127,7 @@ export interface IExperienceInterface extends Interface {
     functionFragment: "vectorAddress",
     values?: undefined
   ): string;
+  encodeFunctionData(functionFragment: "version", values?: undefined): string;
   encodeFunctionData(functionFragment: "world", values?: undefined): string;
 
   decodeFunctionResult(functionFragment: "addHook", data: BytesLike): Result;
@@ -160,6 +162,7 @@ export interface IExperienceInterface extends Interface {
     functionFragment: "vectorAddress",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "version", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "world", data: BytesLike): Result;
 }
 
@@ -333,6 +336,8 @@ export interface IExperience extends BaseContract {
 
   vectorAddress: TypedContractMethod<[], [VectorAddressStructOutput], "view">;
 
+  version: TypedContractMethod<[], [bigint], "view">;
+
   world: TypedContractMethod<[], [string], "view">;
 
   getFunction<T extends ContractMethod = ContractMethod>(
@@ -394,6 +399,9 @@ export interface IExperience extends BaseContract {
   getFunction(
     nameOrSignature: "vectorAddress"
   ): TypedContractMethod<[], [VectorAddressStructOutput], "view">;
+  getFunction(
+    nameOrSignature: "version"
+  ): TypedContractMethod<[], [bigint], "view">;
   getFunction(
     nameOrSignature: "world"
   ): TypedContractMethod<[], [string], "view">;

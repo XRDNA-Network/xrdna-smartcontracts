@@ -43,6 +43,25 @@ const _abi = [
   },
   {
     anonymous: false,
+    inputs: [],
+    name: "HookRemoved",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "address",
+        name: "hook",
+        type: "address",
+      },
+    ],
+    name: "HookSet",
+    type: "event",
+  },
+  {
+    anonymous: false,
     inputs: [
       {
         indexed: true,

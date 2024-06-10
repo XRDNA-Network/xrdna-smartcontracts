@@ -41,6 +41,19 @@ const _abi = [
     type: "event",
   },
   {
+    inputs: [],
+    name: "currentExperienceVersion",
+    outputs: [
+      {
+        internalType: "string",
+        name: "",
+        type: "string",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
     inputs: [
       {
         components: [
@@ -214,6 +227,19 @@ const _abi = [
       },
     ],
     name: "setCompanyRegistry",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "string",
+        name: "version",
+        type: "string",
+      },
+    ],
+    name: "setCurrentExperienceVersion",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",

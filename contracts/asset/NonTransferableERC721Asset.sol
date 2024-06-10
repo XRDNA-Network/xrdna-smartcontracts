@@ -16,6 +16,9 @@ import {VectorAddress} from '../VectorAddress.sol';
 import {IExperience} from '../experience/IExperience.sol';
 import {BaseAsset, BaseAssetArgs} from './BaseAsset.sol';
 import {AssetType} from './IAssetFactory.sol';
+import {IERC721Asset} from './IERC721Asset.sol';
+import {CommonAssetV1Storage, ERC721V1Storage, LibAssetV1Storage} from '../libraries/LibAssetV1Storage.sol';
+import {BaseProxyStorage, LibBaseProxy} from '../libraries/LibBaseProxy.sol';
 
 struct ERC721InitData {
     address issuer;
@@ -31,29 +34,11 @@ interface IUpgradedERC721 {
     function setStartingTokenId(uint256 tokenId) external;
 }
 
-contract NonTransferableERC721Asset is BaseAsset, IERC721, IERC721Metadata, IERC721Errors {
+contract NonTransferableERC721Asset is BaseAsset, IERC721Asset, IERC721Metadata, IERC721Errors {
     using Strings for uint256;
 
-    // Token ID counter
-    uint256 _tokenIdCounter;
-
-    // Token name
-    string private _name;
-
-    // Token symbol
-    string private _symbol;
-
-    //assigned base URI for asset media. Should be different from original NFT media url to 
-    //mitigate mapping back to original owner address
-    string private __baseURI;
-
-    mapping(uint256 tokenId => address) private _owners;
-
-    mapping(address owner => uint256) private _balances;
-
-    mapping(uint256 tokenId => address) private _tokenApprovals;
-
-    mapping(address owner => mapping(address operator => bool)) private _operatorApprovals;
+    
+    uint256 public constant override version = 1;
 
     event ERC721Minted(address indexed to, uint256 tokenId);
     event ERC721Upgraded(address indexed oldAsset, address indexed newAsset);
@@ -73,21 +58,22 @@ contract NonTransferableERC721Asset is BaseAsset, IERC721, IERC721Metadata, IERC
         require(bytes(data.baseURI).length > 0, "NonTransferableERC721: baseURI is empty");
         require(data.originChainAddress != address(0), "NonTransferableERC721: originChainAddress is the zero address");
         require(data.originChainId > 0, "NonTransferableERC721: originChainId is zero");
-        assetType = AssetType.ERC721;
-        issuer = data.issuer;
-        originAddress = data.originChainAddress;
-        originChainId = data.originChainId;
-        _name = data.name;
-        _symbol = data.symbol;
-        __baseURI = data.baseURI;
+        ERC721V1Storage storage s = LibAssetV1Storage.loadERC721Storage();
+        s.attributes.assetType = AssetType.ERC721;
+        s.attributes.issuer = data.issuer;
+        s.attributes.originAddress = data.originChainAddress;
+        s.attributes.originChainId = data.originChainId;
+        s.attributes.name = data.name;
+        s.attributes.symbol = data.symbol;
+        s.baseURI = data.baseURI;
     }
 
     function upgrade(address newAsset) public onlyRegistry() {
         require(newAsset != address(this), "NonTransferableERC721Asset: new upgrade contract address cannot match original");
-        
-        //NOTE: be sure new contract implements this interface!
-        IUpgradedERC721(newAsset).setStartingTokenId(_tokenIdCounter);
-        upgraded = true;
+        ERC721V1Storage storage s = LibAssetV1Storage.loadERC721Storage();
+        s.attributes.upgraded = true;
+        BaseProxyStorage storage ps = LibBaseProxy.load();
+        ps.implementation = newAsset;
         emit ERC721Upgraded(address(this), newAsset);
     }
 
@@ -108,7 +94,8 @@ contract NonTransferableERC721Asset is BaseAsset, IERC721, IERC721Metadata, IERC
         if (owner == address(0)) {
             revert ERC721InvalidOwner(address(0));
         }
-        return _balances[owner];
+        ERC721V1Storage storage s = LibAssetV1Storage.loadERC721Storage();
+        return s.balances[owner];
     }
 
     /**
@@ -122,14 +109,14 @@ contract NonTransferableERC721Asset is BaseAsset, IERC721, IERC721Metadata, IERC
      * @dev See {IERC721Metadata-name}.
      */
     function name() public view virtual returns (string memory) {
-        return _name;
+        return _loadCommonAttributes().name;
     }
 
     /**
      * @dev See {IERC721Metadata-symbol}.
      */
     function symbol() public view virtual returns (string memory) {
-        return _symbol;
+        return _loadCommonAttributes().symbol;
     }
 
     /**
@@ -148,7 +135,7 @@ contract NonTransferableERC721Asset is BaseAsset, IERC721, IERC721Metadata, IERC
      * by default, can be overridden in child contracts.
      */
     function _baseURI() internal view virtual returns (string memory) {
-        return __baseURI;
+        return LibAssetV1Storage.loadERC721Storage().baseURI;
     }
 
     /**
@@ -178,7 +165,7 @@ contract NonTransferableERC721Asset is BaseAsset, IERC721, IERC721Metadata, IERC
      * @dev See {IERC721-isApprovedForAll}.
      */
     function isApprovedForAll(address owner, address operator) public view virtual returns (bool) {
-        return _operatorApprovals[owner][operator];
+        return LibAssetV1Storage.loadERC721Storage().operatorApprovals[owner][operator];
     }
 
     /**
@@ -203,9 +190,10 @@ contract NonTransferableERC721Asset is BaseAsset, IERC721, IERC721Metadata, IERC
     }
 
     function mint(address to) public nonReentrant onlyIssuer returns (uint256 id)  {
-        if(address(hook) != address(0)) {
-            bool s = hook.beforeMint(address(this), to, _tokenIdCounter+1);
-            if(!s) {
+        ERC721V1Storage storage s = LibAssetV1Storage.loadERC721Storage();
+        if(address(s.attributes.hook) != address(0)) {
+            bool ok = s.attributes.hook.beforeMint(address(this), to, s.tokenIdCounter+1);
+            if(!ok) {
                 revert("NonTransferableERC721Asset: beforeMint hook rejected request");
             }
         }
@@ -216,17 +204,18 @@ contract NonTransferableERC721Asset is BaseAsset, IERC721, IERC721Metadata, IERC
             }
         }
 
-        ++_tokenIdCounter;
-        id = _tokenIdCounter;
+        ++s.tokenIdCounter;
+        id = s.tokenIdCounter;
         _safeMint(to, id);
     }
 
     function revoke(uint256 tokenId) public nonReentrant onlyIssuer {
         address tgt = _ownerOf(tokenId);
         require(tgt != address(0), "NonTransferableERC721Asset: token does not exist");
-        if(address(hook) != address(0)) {
-            bool s = hook.beforeRevoke(address(this), tgt, tokenId);
-            if(!s) {
+        ERC721V1Storage storage s = LibAssetV1Storage.loadERC721Storage();
+        if(address(s.attributes.hook) != address(0)) {
+            bool ok = s.attributes.hook.beforeRevoke(address(this), tgt, tokenId);
+            if(!ok) {
                 revert("NonTransferableERC721Asset: beforeMint hook rejected request");
             }
         }
@@ -243,14 +232,14 @@ contract NonTransferableERC721Asset is BaseAsset, IERC721, IERC721Metadata, IERC
      * `balanceOf(a)` must be equal to the number of tokens such that `_ownerOf(tokenId)` is `a`.
      */
     function _ownerOf(uint256 tokenId) internal view virtual returns (address) {
-        return _owners[tokenId];
+        return LibAssetV1Storage.loadERC721Storage().owners[tokenId];
     }
-
+    
     /**
      * @dev Returns the approved address for `tokenId`. Returns 0 if `tokenId` is not minted.
      */
     function _getApproved(uint256 tokenId) internal view virtual returns (address) {
-        return _tokenApprovals[tokenId];
+        return LibAssetV1Storage.loadERC721Storage().tokenApprovals[tokenId];
     }
 
     /**
@@ -296,7 +285,7 @@ contract NonTransferableERC721Asset is BaseAsset, IERC721, IERC721Metadata, IERC
      */
     function _increaseBalance(address account, uint128 value) internal virtual {
         unchecked {
-            _balances[account] += value;
+            LibAssetV1Storage.loadERC721Storage().balances[account] += value;
         }
     }
 
@@ -313,7 +302,7 @@ contract NonTransferableERC721Asset is BaseAsset, IERC721, IERC721Metadata, IERC
      */
     function _update(address to, uint256 tokenId, address auth) internal virtual returns (address) {
         address from = _ownerOf(tokenId);
-
+        ERC721V1Storage storage s = LibAssetV1Storage.loadERC721Storage();
         // Perform (optional) operator check
         if (auth != address(0)) {
             _checkAuthorized(from, auth, tokenId);
@@ -325,17 +314,17 @@ contract NonTransferableERC721Asset is BaseAsset, IERC721, IERC721Metadata, IERC
             _approve(address(0), tokenId, address(0), false);
 
             unchecked {
-                _balances[from] -= 1;
+                s.balances[from] -= 1;
             }
         }
 
         if (to != address(0)) {
             unchecked {
-                _balances[to] += 1;
+                s.balances[to] += 1;
             }
         }
 
-        _owners[tokenId] = to;
+        s.owners[tokenId] = to;
 
         emit Transfer(from, to, tokenId);
 
@@ -485,8 +474,12 @@ contract NonTransferableERC721Asset is BaseAsset, IERC721, IERC721Metadata, IERC
                 emit Approval(owner, to, tokenId);
             }
         }
+        ERC721V1Storage storage s = LibAssetV1Storage.loadERC721Storage();
+        s.tokenApprovals[tokenId] = to;
+    }
 
-        _tokenApprovals[tokenId] = to;
+    function _loadCommonAttributes() internal view override returns (CommonAssetV1Storage storage) {
+        return LibAssetV1Storage.loadERC721Storage().attributes;
     }
 
 

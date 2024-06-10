@@ -5,6 +5,8 @@ export * as worldRegistry02Sol from "./WorldRegistry0_2.sol";
 export { IWorld0_2__factory } from "./IWorld0_2__factory";
 export { IWorldFactory0_2__factory } from "./IWorldFactory0_2__factory";
 export { IWorldHook__factory } from "./IWorldHook__factory";
+export { IWorldProxy__factory } from "./IWorldProxy__factory";
 export { IWorldRegistry0_2__factory } from "./IWorldRegistry0_2__factory";
 export { World0_2__factory } from "./World0_2__factory";
 export { WorldFactory0_2__factory } from "./WorldFactory0_2__factory";
+export { WorldProxy__factory } from "./WorldProxy__factory";

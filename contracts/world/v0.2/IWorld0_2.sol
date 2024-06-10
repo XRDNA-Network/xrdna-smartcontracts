@@ -6,6 +6,7 @@ import {AvatarRegistrationRequest} from '../../avatar/IAvatarRegistry.sol';
 import {WorldCreateRequest} from './IWorldFactory0_2.sol';
 import {VectorAddress} from '../../VectorAddress.sol';
 import {IWorldHook} from './IWorldHook.sol';
+import {IBaseAccess} from '../../IBaseAccess.sol';
 
 struct CompanyRegistrationArgs {
     bool sendTokensToCompanyOwner;
@@ -14,11 +15,8 @@ struct CompanyRegistrationArgs {
     bytes initData;
 }
 
-interface IWorld0_2 {
+interface IWorld0_2 is IBaseAccess {
 
-    event ReceivedFunds(address indexed sender, uint256 value);
-    event SignerAdded(address indexed signer);
-    event SignerRemoved(address indexed signer);
     event CompanyRegistered(address indexed company, VectorAddress vector, string name);
     event AvatarRegistered(address indexed avatar, address indexed experience);
     event WorldUpgraded(address indexed oldWorld, address indexed newWorld);
@@ -28,10 +26,7 @@ interface IWorld0_2 {
     function getOwner() external view returns (address);
     function getBaseVector() external view returns (VectorAddress memory);
     function getName() external view returns (string memory);
-    function addSigners(address[] memory sigs) external;
-    function removeSigners(address[] memory sigs) external;
-    function isSigner(address signer) external view returns (bool);
-    function version() external view returns (string memory);
+    function version() external view returns (uint256);
     
     function registerCompany(CompanyRegistrationArgs memory args) external payable returns (address company);
     function registerAvatar(AvatarRegistrationRequest memory args) external payable returns (address avatar);

@@ -35,6 +35,38 @@ const _abi = [
     type: "event",
   },
   {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "address",
+        name: "oldFactory",
+        type: "address",
+      },
+      {
+        indexed: true,
+        internalType: "address",
+        name: "newFactory",
+        type: "address",
+      },
+    ],
+    name: "AvatarFactoryChanged",
+    type: "event",
+  },
+  {
+    inputs: [],
+    name: "currentAvatarVersion",
+    outputs: [
+      {
+        internalType: "string",
+        name: "",
+        type: "string",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
     inputs: [
       {
         internalType: "string",
@@ -146,6 +178,19 @@ const _abi = [
       },
     ],
     name: "setAvatarFactory",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "string",
+        name: "version",
+        type: "string",
+      },
+    ],
+    name: "setCurrentAvatarVersion",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",

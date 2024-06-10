@@ -80,7 +80,6 @@ export interface NonTransferableERC721AssetInterface extends Interface {
       | "encodeInitData"
       | "experienceRegistry"
       | "getApproved"
-      | "hook"
       | "init"
       | "isApprovedForAll"
       | "issuer"
@@ -99,7 +98,7 @@ export interface NonTransferableERC721AssetInterface extends Interface {
       | "tokenURI"
       | "transferFrom"
       | "upgrade"
-      | "upgraded"
+      | "version"
   ): FunctionFragment;
 
   getEvent(
@@ -150,7 +149,6 @@ export interface NonTransferableERC721AssetInterface extends Interface {
     functionFragment: "getApproved",
     values: [BigNumberish]
   ): string;
-  encodeFunctionData(functionFragment: "hook", values?: undefined): string;
   encodeFunctionData(functionFragment: "init", values: [BytesLike]): string;
   encodeFunctionData(
     functionFragment: "isApprovedForAll",
@@ -208,7 +206,7 @@ export interface NonTransferableERC721AssetInterface extends Interface {
     functionFragment: "upgrade",
     values: [AddressLike]
   ): string;
-  encodeFunctionData(functionFragment: "upgraded", values?: undefined): string;
+  encodeFunctionData(functionFragment: "version", values?: undefined): string;
 
   decodeFunctionResult(functionFragment: "addHook", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "approve", data: BytesLike): Result;
@@ -238,7 +236,6 @@ export interface NonTransferableERC721AssetInterface extends Interface {
     functionFragment: "getApproved",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "hook", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "init", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "isApprovedForAll",
@@ -281,7 +278,7 @@ export interface NonTransferableERC721AssetInterface extends Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "upgrade", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "upgraded", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "version", data: BytesLike): Result;
 }
 
 export namespace ApprovalEvent {
@@ -463,8 +460,6 @@ export interface NonTransferableERC721Asset extends BaseContract {
 
   getApproved: TypedContractMethod<[tokenId: BigNumberish], [string], "view">;
 
-  hook: TypedContractMethod<[], [string], "view">;
-
   init: TypedContractMethod<[initData: BytesLike], [void], "nonpayable">;
 
   isApprovedForAll: TypedContractMethod<
@@ -525,7 +520,7 @@ export interface NonTransferableERC721Asset extends BaseContract {
 
   upgrade: TypedContractMethod<[newAsset: AddressLike], [void], "nonpayable">;
 
-  upgraded: TypedContractMethod<[], [boolean], "view">;
+  version: TypedContractMethod<[], [bigint], "view">;
 
   getFunction<T extends ContractMethod = ContractMethod>(
     key: string | FunctionFragment
@@ -565,9 +560,6 @@ export interface NonTransferableERC721Asset extends BaseContract {
   getFunction(
     nameOrSignature: "getApproved"
   ): TypedContractMethod<[tokenId: BigNumberish], [string], "view">;
-  getFunction(
-    nameOrSignature: "hook"
-  ): TypedContractMethod<[], [string], "view">;
   getFunction(
     nameOrSignature: "init"
   ): TypedContractMethod<[initData: BytesLike], [void], "nonpayable">;
@@ -643,8 +635,8 @@ export interface NonTransferableERC721Asset extends BaseContract {
     nameOrSignature: "upgrade"
   ): TypedContractMethod<[newAsset: AddressLike], [void], "nonpayable">;
   getFunction(
-    nameOrSignature: "upgraded"
-  ): TypedContractMethod<[], [boolean], "view">;
+    nameOrSignature: "version"
+  ): TypedContractMethod<[], [bigint], "view">;
 
   getEvent(
     key: "Approval"

@@ -2,14 +2,17 @@
 /* tslint:disable */
 /* eslint-disable */
 export * as assetFactorySol from "./AssetFactory.sol";
-export * as assetRegistrySol from "./AssetRegistry.sol";
 export * as baseAssetSol from "./BaseAsset.sol";
 export * as nonTransferableErc721AssetSol from "./NonTransferableERC721Asset.sol";
 export * as sampleConditions from "./sample_conditions";
+export { AssetRegistry__factory } from "./AssetRegistry__factory";
 export { IAssetCondition__factory } from "./IAssetCondition__factory";
 export { IAssetFactory__factory } from "./IAssetFactory__factory";
 export { IAssetHook__factory } from "./IAssetHook__factory";
 export { IAssetRegistry__factory } from "./IAssetRegistry__factory";
+export { IBasicAsset__factory } from "./IBasicAsset__factory";
 export { IERC20Asset__factory } from "./IERC20Asset__factory";
 export { IERC721Asset__factory } from "./IERC721Asset__factory";
+export { NTERC20Proxy__factory } from "./NTERC20Proxy__factory";
+export { NTERC721Proxy__factory } from "./NTERC721Proxy__factory";
 export { NonTransferableERC20Asset__factory } from "./NonTransferableERC20Asset__factory";

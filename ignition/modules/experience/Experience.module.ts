@@ -1,31 +1,26 @@
 import { buildModule } from "@nomicfoundation/ignition-core";
-import ExperienceFactoryModule from "./ExperienceFactory.module";
-import ExperienceRegistryModule from "./ExperienceRegistry.module";
 import PortalRegistryModule from "../portal/PortalRegistry.module";
-
-
-
+import ExperienceProxyModule from './ExperienceProxy.module';
 
 export default buildModule("Experience", (m) => {
     
-    const reg = m.useModule(ExperienceRegistryModule);
-    const fac = m.useModule(ExperienceFactoryModule);
+    const proxy = m.useModule(ExperienceProxyModule);
     const portalReg = m.useModule(PortalRegistryModule);
 
     const args = {
-        experienceFactory: fac.experienceFactory,
+        experienceFactory: proxy.experienceFactory,
         portalRegistry: portalReg.portalRegistry,
-        experienceRegistry: reg.experienceRegistry,
+        experienceRegistry: proxy.experienceRegistry,
     }
     const master = m.contract("Experience", [args], {
-        after: [fac.experienceFactory, 
-                reg.experienceRegistry, 
+        after: [proxy.experienceFactory, 
+                proxy.experienceRegistry, 
                 portalReg.portalRegistry]
     });
-    m.call(fac.experienceFactory, "setImplementation", [master]);
+    m.call(proxy.experienceFactory, "setImplementation", [master]);
     return {
-        experienceRegistry: reg.experienceRegistry,
-        experienceFactory: fac.experienceFactory,
+        experienceRegistry: proxy.experienceRegistry,
+        experienceFactory: proxy.experienceFactory,
         experienceMasterCopy: master
     }
 });

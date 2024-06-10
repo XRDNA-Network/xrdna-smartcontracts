@@ -88,6 +88,7 @@ export interface CompanyRegistryInterface extends Interface {
       | "ADMIN_ROLE"
       | "DEFAULT_ADMIN_ROLE"
       | "companyFactory"
+      | "currentCompanyVersion"
       | "getRoleAdmin"
       | "grantRole"
       | "hasRole"
@@ -96,6 +97,7 @@ export interface CompanyRegistryInterface extends Interface {
       | "renounceRole"
       | "revokeRole"
       | "setCompanyFactory"
+      | "setCurrentCompanyVersion"
       | "setWorldRegistry"
       | "supportsInterface"
       | "upgradeCompany"
@@ -120,6 +122,10 @@ export interface CompanyRegistryInterface extends Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "companyFactory",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "currentCompanyVersion",
     values?: undefined
   ): string;
   encodeFunctionData(
@@ -155,6 +161,10 @@ export interface CompanyRegistryInterface extends Interface {
     values: [AddressLike]
   ): string;
   encodeFunctionData(
+    functionFragment: "setCurrentCompanyVersion",
+    values: [string]
+  ): string;
+  encodeFunctionData(
     functionFragment: "setWorldRegistry",
     values: [AddressLike]
   ): string;
@@ -181,6 +191,10 @@ export interface CompanyRegistryInterface extends Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "currentCompanyVersion",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "getRoleAdmin",
     data: BytesLike
   ): Result;
@@ -201,6 +215,10 @@ export interface CompanyRegistryInterface extends Interface {
   decodeFunctionResult(functionFragment: "revokeRole", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "setCompanyFactory",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "setCurrentCompanyVersion",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -341,6 +359,8 @@ export interface CompanyRegistry extends BaseContract {
 
   companyFactory: TypedContractMethod<[], [string], "view">;
 
+  currentCompanyVersion: TypedContractMethod<[], [string], "view">;
+
   getRoleAdmin: TypedContractMethod<[role: BytesLike], [string], "view">;
 
   grantRole: TypedContractMethod<
@@ -385,6 +405,12 @@ export interface CompanyRegistry extends BaseContract {
     "nonpayable"
   >;
 
+  setCurrentCompanyVersion: TypedContractMethod<
+    [version: string],
+    [void],
+    "nonpayable"
+  >;
+
   setWorldRegistry: TypedContractMethod<
     [registry: AddressLike],
     [void],
@@ -417,6 +443,9 @@ export interface CompanyRegistry extends BaseContract {
   ): TypedContractMethod<[], [string], "view">;
   getFunction(
     nameOrSignature: "companyFactory"
+  ): TypedContractMethod<[], [string], "view">;
+  getFunction(
+    nameOrSignature: "currentCompanyVersion"
   ): TypedContractMethod<[], [string], "view">;
   getFunction(
     nameOrSignature: "getRoleAdmin"
@@ -462,6 +491,9 @@ export interface CompanyRegistry extends BaseContract {
   getFunction(
     nameOrSignature: "setCompanyFactory"
   ): TypedContractMethod<[factory: AddressLike], [void], "nonpayable">;
+  getFunction(
+    nameOrSignature: "setCurrentCompanyVersion"
+  ): TypedContractMethod<[version: string], [void], "nonpayable">;
   getFunction(
     nameOrSignature: "setWorldRegistry"
   ): TypedContractMethod<[registry: AddressLike], [void], "nonpayable">;

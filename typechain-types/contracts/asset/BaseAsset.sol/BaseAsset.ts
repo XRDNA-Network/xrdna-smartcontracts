@@ -31,12 +31,12 @@ export interface BaseAssetInterface extends Interface {
       | "assetType"
       | "avatarRegistry"
       | "experienceRegistry"
-      | "hook"
       | "issuer"
       | "originAddress"
       | "originChainId"
       | "removeHook"
-      | "upgraded"
+      | "upgrade"
+      | "version"
   ): FunctionFragment;
 
   getEvent(
@@ -64,7 +64,6 @@ export interface BaseAssetInterface extends Interface {
     functionFragment: "experienceRegistry",
     values?: undefined
   ): string;
-  encodeFunctionData(functionFragment: "hook", values?: undefined): string;
   encodeFunctionData(functionFragment: "issuer", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "originAddress",
@@ -78,7 +77,11 @@ export interface BaseAssetInterface extends Interface {
     functionFragment: "removeHook",
     values?: undefined
   ): string;
-  encodeFunctionData(functionFragment: "upgraded", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: "upgrade",
+    values: [AddressLike]
+  ): string;
+  encodeFunctionData(functionFragment: "version", values?: undefined): string;
 
   decodeFunctionResult(functionFragment: "addHook", data: BytesLike): Result;
   decodeFunctionResult(
@@ -98,7 +101,6 @@ export interface BaseAssetInterface extends Interface {
     functionFragment: "experienceRegistry",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "hook", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "issuer", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "originAddress",
@@ -109,7 +111,8 @@ export interface BaseAssetInterface extends Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "removeHook", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "upgraded", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "upgrade", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "version", data: BytesLike): Result;
 }
 
 export namespace AssetHookAddedEvent {
@@ -191,8 +194,6 @@ export interface BaseAsset extends BaseContract {
 
   experienceRegistry: TypedContractMethod<[], [string], "view">;
 
-  hook: TypedContractMethod<[], [string], "view">;
-
   issuer: TypedContractMethod<[], [string], "view">;
 
   originAddress: TypedContractMethod<[], [string], "view">;
@@ -201,7 +202,9 @@ export interface BaseAsset extends BaseContract {
 
   removeHook: TypedContractMethod<[], [void], "nonpayable">;
 
-  upgraded: TypedContractMethod<[], [boolean], "view">;
+  upgrade: TypedContractMethod<[newAsset: AddressLike], [void], "nonpayable">;
+
+  version: TypedContractMethod<[], [bigint], "view">;
 
   getFunction<T extends ContractMethod = ContractMethod>(
     key: string | FunctionFragment
@@ -226,9 +229,6 @@ export interface BaseAsset extends BaseContract {
     nameOrSignature: "experienceRegistry"
   ): TypedContractMethod<[], [string], "view">;
   getFunction(
-    nameOrSignature: "hook"
-  ): TypedContractMethod<[], [string], "view">;
-  getFunction(
     nameOrSignature: "issuer"
   ): TypedContractMethod<[], [string], "view">;
   getFunction(
@@ -241,8 +241,11 @@ export interface BaseAsset extends BaseContract {
     nameOrSignature: "removeHook"
   ): TypedContractMethod<[], [void], "nonpayable">;
   getFunction(
-    nameOrSignature: "upgraded"
-  ): TypedContractMethod<[], [boolean], "view">;
+    nameOrSignature: "upgrade"
+  ): TypedContractMethod<[newAsset: AddressLike], [void], "nonpayable">;
+  getFunction(
+    nameOrSignature: "version"
+  ): TypedContractMethod<[], [bigint], "view">;
 
   getEvent(
     key: "AssetHookAdded"

@@ -88,7 +88,6 @@ export class CompanyStackImpl implements ICompanyStack, IDeployable {
         
         const companyRegResult = await world.registerCompany({
             owner: req.owner,
-            initData: req.initData,
             name: req.name,
             sendTokensToCompanyOwner: req.sendTokensToCompanyOwner
         });

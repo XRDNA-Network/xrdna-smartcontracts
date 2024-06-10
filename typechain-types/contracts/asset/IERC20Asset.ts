@@ -26,18 +26,30 @@ import type {
 export interface IERC20AssetInterface extends Interface {
   getFunction(
     nameOrSignature:
+      | "addHook"
       | "allowance"
       | "approve"
+      | "assetType"
       | "balanceOf"
+      | "issuer"
       | "mint"
+      | "originAddress"
+      | "originChainId"
+      | "removeHook"
       | "revoke"
       | "totalSupply"
       | "transfer"
       | "transferFrom"
+      | "upgrade"
+      | "version"
   ): FunctionFragment;
 
   getEvent(nameOrSignatureOrTopic: "Approval" | "Transfer"): EventFragment;
 
+  encodeFunctionData(
+    functionFragment: "addHook",
+    values: [AddressLike]
+  ): string;
   encodeFunctionData(
     functionFragment: "allowance",
     values: [AddressLike, AddressLike]
@@ -46,13 +58,27 @@ export interface IERC20AssetInterface extends Interface {
     functionFragment: "approve",
     values: [AddressLike, BigNumberish]
   ): string;
+  encodeFunctionData(functionFragment: "assetType", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "balanceOf",
     values: [AddressLike]
   ): string;
+  encodeFunctionData(functionFragment: "issuer", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "mint",
     values: [AddressLike, BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "originAddress",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "originChainId",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "removeHook",
+    values?: undefined
   ): string;
   encodeFunctionData(
     functionFragment: "revoke",
@@ -70,11 +96,28 @@ export interface IERC20AssetInterface extends Interface {
     functionFragment: "transferFrom",
     values: [AddressLike, AddressLike, BigNumberish]
   ): string;
+  encodeFunctionData(
+    functionFragment: "upgrade",
+    values: [AddressLike]
+  ): string;
+  encodeFunctionData(functionFragment: "version", values?: undefined): string;
 
+  decodeFunctionResult(functionFragment: "addHook", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "allowance", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "approve", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "assetType", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "balanceOf", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "issuer", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "mint", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "originAddress",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "originChainId",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(functionFragment: "removeHook", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "revoke", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "totalSupply",
@@ -85,6 +128,8 @@ export interface IERC20AssetInterface extends Interface {
     functionFragment: "transferFrom",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "upgrade", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "version", data: BytesLike): Result;
 }
 
 export namespace ApprovalEvent {
@@ -166,6 +211,8 @@ export interface IERC20Asset extends BaseContract {
     event?: TCEvent
   ): Promise<this>;
 
+  addHook: TypedContractMethod<[hook: AddressLike], [void], "nonpayable">;
+
   allowance: TypedContractMethod<
     [owner: AddressLike, spender: AddressLike],
     [bigint],
@@ -178,13 +225,23 @@ export interface IERC20Asset extends BaseContract {
     "nonpayable"
   >;
 
+  assetType: TypedContractMethod<[], [bigint], "view">;
+
   balanceOf: TypedContractMethod<[account: AddressLike], [bigint], "view">;
+
+  issuer: TypedContractMethod<[], [string], "view">;
 
   mint: TypedContractMethod<
     [to: AddressLike, amt: BigNumberish],
     [void],
     "nonpayable"
   >;
+
+  originAddress: TypedContractMethod<[], [string], "view">;
+
+  originChainId: TypedContractMethod<[], [bigint], "view">;
+
+  removeHook: TypedContractMethod<[], [void], "nonpayable">;
 
   revoke: TypedContractMethod<
     [tgt: AddressLike, amt: BigNumberish],
@@ -206,10 +263,17 @@ export interface IERC20Asset extends BaseContract {
     "nonpayable"
   >;
 
+  upgrade: TypedContractMethod<[newAsset: AddressLike], [void], "nonpayable">;
+
+  version: TypedContractMethod<[], [bigint], "view">;
+
   getFunction<T extends ContractMethod = ContractMethod>(
     key: string | FunctionFragment
   ): T;
 
+  getFunction(
+    nameOrSignature: "addHook"
+  ): TypedContractMethod<[hook: AddressLike], [void], "nonpayable">;
   getFunction(
     nameOrSignature: "allowance"
   ): TypedContractMethod<
@@ -225,8 +289,14 @@ export interface IERC20Asset extends BaseContract {
     "nonpayable"
   >;
   getFunction(
+    nameOrSignature: "assetType"
+  ): TypedContractMethod<[], [bigint], "view">;
+  getFunction(
     nameOrSignature: "balanceOf"
   ): TypedContractMethod<[account: AddressLike], [bigint], "view">;
+  getFunction(
+    nameOrSignature: "issuer"
+  ): TypedContractMethod<[], [string], "view">;
   getFunction(
     nameOrSignature: "mint"
   ): TypedContractMethod<
@@ -234,6 +304,15 @@ export interface IERC20Asset extends BaseContract {
     [void],
     "nonpayable"
   >;
+  getFunction(
+    nameOrSignature: "originAddress"
+  ): TypedContractMethod<[], [string], "view">;
+  getFunction(
+    nameOrSignature: "originChainId"
+  ): TypedContractMethod<[], [bigint], "view">;
+  getFunction(
+    nameOrSignature: "removeHook"
+  ): TypedContractMethod<[], [void], "nonpayable">;
   getFunction(
     nameOrSignature: "revoke"
   ): TypedContractMethod<
@@ -258,6 +337,12 @@ export interface IERC20Asset extends BaseContract {
     [boolean],
     "nonpayable"
   >;
+  getFunction(
+    nameOrSignature: "upgrade"
+  ): TypedContractMethod<[newAsset: AddressLike], [void], "nonpayable">;
+  getFunction(
+    nameOrSignature: "version"
+  ): TypedContractMethod<[], [bigint], "view">;
 
   getEvent(
     key: "Approval"

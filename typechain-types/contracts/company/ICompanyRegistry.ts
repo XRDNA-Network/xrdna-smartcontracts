@@ -66,15 +66,21 @@ export type CompanyRegistrationRequestStructOutput = [
 export interface ICompanyRegistryInterface extends Interface {
   getFunction(
     nameOrSignature:
+      | "currentCompanyVersion"
       | "isRegisteredCompany"
       | "registerCompany"
       | "setCompanyFactory"
+      | "setCurrentCompanyVersion"
       | "setWorldRegistry"
       | "upgradeCompany"
   ): FunctionFragment;
 
   getEvent(nameOrSignatureOrTopic: "CompanyRegistered"): EventFragment;
 
+  encodeFunctionData(
+    functionFragment: "currentCompanyVersion",
+    values?: undefined
+  ): string;
   encodeFunctionData(
     functionFragment: "isRegisteredCompany",
     values: [AddressLike]
@@ -88,6 +94,10 @@ export interface ICompanyRegistryInterface extends Interface {
     values: [AddressLike]
   ): string;
   encodeFunctionData(
+    functionFragment: "setCurrentCompanyVersion",
+    values: [string]
+  ): string;
+  encodeFunctionData(
     functionFragment: "setWorldRegistry",
     values: [AddressLike]
   ): string;
@@ -96,6 +106,10 @@ export interface ICompanyRegistryInterface extends Interface {
     values: [BytesLike]
   ): string;
 
+  decodeFunctionResult(
+    functionFragment: "currentCompanyVersion",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "isRegisteredCompany",
     data: BytesLike
@@ -106,6 +120,10 @@ export interface ICompanyRegistryInterface extends Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "setCompanyFactory",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "setCurrentCompanyVersion",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -174,6 +192,8 @@ export interface ICompanyRegistry extends BaseContract {
     event?: TCEvent
   ): Promise<this>;
 
+  currentCompanyVersion: TypedContractMethod<[], [string], "view">;
+
   isRegisteredCompany: TypedContractMethod<
     [company: AddressLike],
     [boolean],
@@ -188,6 +208,12 @@ export interface ICompanyRegistry extends BaseContract {
 
   setCompanyFactory: TypedContractMethod<
     [factory: AddressLike],
+    [void],
+    "nonpayable"
+  >;
+
+  setCurrentCompanyVersion: TypedContractMethod<
+    [version: string],
     [void],
     "nonpayable"
   >;
@@ -209,6 +235,9 @@ export interface ICompanyRegistry extends BaseContract {
   ): T;
 
   getFunction(
+    nameOrSignature: "currentCompanyVersion"
+  ): TypedContractMethod<[], [string], "view">;
+  getFunction(
     nameOrSignature: "isRegisteredCompany"
   ): TypedContractMethod<[company: AddressLike], [boolean], "view">;
   getFunction(
@@ -221,6 +250,9 @@ export interface ICompanyRegistry extends BaseContract {
   getFunction(
     nameOrSignature: "setCompanyFactory"
   ): TypedContractMethod<[factory: AddressLike], [void], "nonpayable">;
+  getFunction(
+    nameOrSignature: "setCurrentCompanyVersion"
+  ): TypedContractMethod<[version: string], [void], "nonpayable">;
   getFunction(
     nameOrSignature: "setWorldRegistry"
   ): TypedContractMethod<[registry: AddressLike], [void], "nonpayable">;

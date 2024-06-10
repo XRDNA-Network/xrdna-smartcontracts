@@ -61,6 +61,19 @@ const _abi = [
     type: "event",
   },
   {
+    inputs: [],
+    name: "currentCompanyVersion",
+    outputs: [
+      {
+        internalType: "string",
+        name: "",
+        type: "string",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
     inputs: [
       {
         internalType: "address",
@@ -166,6 +179,19 @@ const _abi = [
       },
     ],
     name: "setCompanyFactory",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "string",
+        name: "version",
+        type: "string",
+      },
+    ],
+    name: "setCurrentCompanyVersion",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",

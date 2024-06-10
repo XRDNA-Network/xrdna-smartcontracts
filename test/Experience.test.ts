@@ -79,8 +79,7 @@ describe('Experience', () => {
         companyInfo = await world.registerCompany({
             sendTokensToCompanyOwner: false,
             owner: companyOwner.address,
-            name: "Test Company",
-            initData: "0x"
+            name: "Test Company"
         })
         
         company = new Company({

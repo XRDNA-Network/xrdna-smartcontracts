@@ -89,6 +89,8 @@ export interface IAvatarInterface extends Interface {
     nameOrSignatureOrTopic:
       | "AppearanceChanged"
       | "AvatarUpgraded"
+      | "HookRemoved"
+      | "HookSet"
       | "JumpSuccess"
       | "LocationChanged"
       | "SignerAdded"
@@ -252,6 +254,28 @@ export namespace AvatarUpgradedEvent {
   export interface OutputObject {
     oldVersion: string;
     nextVersion: string;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
+}
+
+export namespace HookRemovedEvent {
+  export type InputTuple = [];
+  export type OutputTuple = [];
+  export interface OutputObject {}
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
+}
+
+export namespace HookSetEvent {
+  export type InputTuple = [hook: AddressLike];
+  export type OutputTuple = [hook: string];
+  export interface OutputObject {
+    hook: string;
   }
   export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
   export type Filter = TypedDeferredTopicFilter<Event>;
@@ -586,6 +610,20 @@ export interface IAvatar extends BaseContract {
     AvatarUpgradedEvent.OutputObject
   >;
   getEvent(
+    key: "HookRemoved"
+  ): TypedContractEvent<
+    HookRemovedEvent.InputTuple,
+    HookRemovedEvent.OutputTuple,
+    HookRemovedEvent.OutputObject
+  >;
+  getEvent(
+    key: "HookSet"
+  ): TypedContractEvent<
+    HookSetEvent.InputTuple,
+    HookSetEvent.OutputTuple,
+    HookSetEvent.OutputObject
+  >;
+  getEvent(
     key: "JumpSuccess"
   ): TypedContractEvent<
     JumpSuccessEvent.InputTuple,
@@ -649,6 +687,28 @@ export interface IAvatar extends BaseContract {
       AvatarUpgradedEvent.InputTuple,
       AvatarUpgradedEvent.OutputTuple,
       AvatarUpgradedEvent.OutputObject
+    >;
+
+    "HookRemoved()": TypedContractEvent<
+      HookRemovedEvent.InputTuple,
+      HookRemovedEvent.OutputTuple,
+      HookRemovedEvent.OutputObject
+    >;
+    HookRemoved: TypedContractEvent<
+      HookRemovedEvent.InputTuple,
+      HookRemovedEvent.OutputTuple,
+      HookRemovedEvent.OutputObject
+    >;
+
+    "HookSet(address)": TypedContractEvent<
+      HookSetEvent.InputTuple,
+      HookSetEvent.OutputTuple,
+      HookSetEvent.OutputObject
+    >;
+    HookSet: TypedContractEvent<
+      HookSetEvent.InputTuple,
+      HookSetEvent.OutputTuple,
+      HookSetEvent.OutputObject
     >;
 
     "JumpSuccess(address,bytes)": TypedContractEvent<

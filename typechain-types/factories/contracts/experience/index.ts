@@ -3,6 +3,7 @@
 /* eslint-disable */
 export { Experience__factory } from "./Experience__factory";
 export { ExperienceFactory__factory } from "./ExperienceFactory__factory";
+export { ExperienceProxy__factory } from "./ExperienceProxy__factory";
 export { ExperienceRegistry__factory } from "./ExperienceRegistry__factory";
 export { IBasicCompany__factory } from "./IBasicCompany__factory";
 export { IExperience__factory } from "./IExperience__factory";

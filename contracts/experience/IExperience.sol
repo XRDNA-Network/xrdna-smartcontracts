@@ -19,6 +19,7 @@ interface IExperience {
     event ExperienceUpgraded(address indexed oldVersion, address indexed newVersion);
     event PortalFeeChanged(uint256 newFee);
     
+    function version() external view returns (uint256);
     function company() external view returns (address);
     function world() external view returns (address);
     function vectorAddress() external view returns (VectorAddress memory);

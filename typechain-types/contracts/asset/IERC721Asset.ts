@@ -26,18 +26,26 @@ import type {
 export interface IERC721AssetInterface extends Interface {
   getFunction(
     nameOrSignature:
+      | "addHook"
       | "approve"
+      | "assetType"
       | "balanceOf"
       | "getApproved"
       | "isApprovedForAll"
+      | "issuer"
       | "mint"
+      | "originAddress"
+      | "originChainId"
       | "ownerOf"
+      | "removeHook"
       | "revoke"
       | "safeTransferFrom(address,address,uint256)"
       | "safeTransferFrom(address,address,uint256,bytes)"
       | "setApprovalForAll"
       | "supportsInterface"
       | "transferFrom"
+      | "upgrade"
+      | "version"
   ): FunctionFragment;
 
   getEvent(
@@ -45,9 +53,14 @@ export interface IERC721AssetInterface extends Interface {
   ): EventFragment;
 
   encodeFunctionData(
+    functionFragment: "addHook",
+    values: [AddressLike]
+  ): string;
+  encodeFunctionData(
     functionFragment: "approve",
     values: [AddressLike, BigNumberish]
   ): string;
+  encodeFunctionData(functionFragment: "assetType", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "balanceOf",
     values: [AddressLike]
@@ -60,10 +73,23 @@ export interface IERC721AssetInterface extends Interface {
     functionFragment: "isApprovedForAll",
     values: [AddressLike, AddressLike]
   ): string;
+  encodeFunctionData(functionFragment: "issuer", values?: undefined): string;
   encodeFunctionData(functionFragment: "mint", values: [AddressLike]): string;
+  encodeFunctionData(
+    functionFragment: "originAddress",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "originChainId",
+    values?: undefined
+  ): string;
   encodeFunctionData(
     functionFragment: "ownerOf",
     values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "removeHook",
+    values?: undefined
   ): string;
   encodeFunctionData(
     functionFragment: "revoke",
@@ -89,8 +115,15 @@ export interface IERC721AssetInterface extends Interface {
     functionFragment: "transferFrom",
     values: [AddressLike, AddressLike, BigNumberish]
   ): string;
+  encodeFunctionData(
+    functionFragment: "upgrade",
+    values: [AddressLike]
+  ): string;
+  encodeFunctionData(functionFragment: "version", values?: undefined): string;
 
+  decodeFunctionResult(functionFragment: "addHook", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "approve", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "assetType", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "balanceOf", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "getApproved",
@@ -100,8 +133,18 @@ export interface IERC721AssetInterface extends Interface {
     functionFragment: "isApprovedForAll",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "issuer", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "mint", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "originAddress",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "originChainId",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "ownerOf", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "removeHook", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "revoke", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "safeTransferFrom(address,address,uint256)",
@@ -123,6 +166,8 @@ export interface IERC721AssetInterface extends Interface {
     functionFragment: "transferFrom",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "upgrade", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "version", data: BytesLike): Result;
 }
 
 export namespace ApprovalEvent {
@@ -226,11 +271,15 @@ export interface IERC721Asset extends BaseContract {
     event?: TCEvent
   ): Promise<this>;
 
+  addHook: TypedContractMethod<[hook: AddressLike], [void], "nonpayable">;
+
   approve: TypedContractMethod<
     [to: AddressLike, tokenId: BigNumberish],
     [void],
     "nonpayable"
   >;
+
+  assetType: TypedContractMethod<[], [bigint], "view">;
 
   balanceOf: TypedContractMethod<[owner: AddressLike], [bigint], "view">;
 
@@ -242,9 +291,17 @@ export interface IERC721Asset extends BaseContract {
     "view"
   >;
 
+  issuer: TypedContractMethod<[], [string], "view">;
+
   mint: TypedContractMethod<[to: AddressLike], [bigint], "nonpayable">;
 
+  originAddress: TypedContractMethod<[], [string], "view">;
+
+  originChainId: TypedContractMethod<[], [bigint], "view">;
+
   ownerOf: TypedContractMethod<[tokenId: BigNumberish], [string], "view">;
+
+  removeHook: TypedContractMethod<[], [void], "nonpayable">;
 
   revoke: TypedContractMethod<[tokenId: BigNumberish], [void], "nonpayable">;
 
@@ -283,10 +340,17 @@ export interface IERC721Asset extends BaseContract {
     "nonpayable"
   >;
 
+  upgrade: TypedContractMethod<[newAsset: AddressLike], [void], "nonpayable">;
+
+  version: TypedContractMethod<[], [bigint], "view">;
+
   getFunction<T extends ContractMethod = ContractMethod>(
     key: string | FunctionFragment
   ): T;
 
+  getFunction(
+    nameOrSignature: "addHook"
+  ): TypedContractMethod<[hook: AddressLike], [void], "nonpayable">;
   getFunction(
     nameOrSignature: "approve"
   ): TypedContractMethod<
@@ -294,6 +358,9 @@ export interface IERC721Asset extends BaseContract {
     [void],
     "nonpayable"
   >;
+  getFunction(
+    nameOrSignature: "assetType"
+  ): TypedContractMethod<[], [bigint], "view">;
   getFunction(
     nameOrSignature: "balanceOf"
   ): TypedContractMethod<[owner: AddressLike], [bigint], "view">;
@@ -308,11 +375,23 @@ export interface IERC721Asset extends BaseContract {
     "view"
   >;
   getFunction(
+    nameOrSignature: "issuer"
+  ): TypedContractMethod<[], [string], "view">;
+  getFunction(
     nameOrSignature: "mint"
   ): TypedContractMethod<[to: AddressLike], [bigint], "nonpayable">;
   getFunction(
+    nameOrSignature: "originAddress"
+  ): TypedContractMethod<[], [string], "view">;
+  getFunction(
+    nameOrSignature: "originChainId"
+  ): TypedContractMethod<[], [bigint], "view">;
+  getFunction(
     nameOrSignature: "ownerOf"
   ): TypedContractMethod<[tokenId: BigNumberish], [string], "view">;
+  getFunction(
+    nameOrSignature: "removeHook"
+  ): TypedContractMethod<[], [void], "nonpayable">;
   getFunction(
     nameOrSignature: "revoke"
   ): TypedContractMethod<[tokenId: BigNumberish], [void], "nonpayable">;
@@ -352,6 +431,12 @@ export interface IERC721Asset extends BaseContract {
     [void],
     "nonpayable"
   >;
+  getFunction(
+    nameOrSignature: "upgrade"
+  ): TypedContractMethod<[newAsset: AddressLike], [void], "nonpayable">;
+  getFunction(
+    nameOrSignature: "version"
+  ): TypedContractMethod<[], [bigint], "view">;
 
   getEvent(
     key: "Approval"

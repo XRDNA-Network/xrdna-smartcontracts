@@ -69,6 +69,7 @@ export interface AvatarRegistryInterface extends Interface {
       | "ADMIN_ROLE"
       | "DEFAULT_ADMIN_ROLE"
       | "avatarFactory"
+      | "currentAvatarVersion"
       | "findByUsername"
       | "getRoleAdmin"
       | "grantRole"
@@ -79,6 +80,7 @@ export interface AvatarRegistryInterface extends Interface {
       | "renounceRole"
       | "revokeRole"
       | "setAvatarFactory"
+      | "setCurrentAvatarVersion"
       | "supportsInterface"
       | "upgradeAvatar"
       | "worldRegistry"
@@ -87,6 +89,7 @@ export interface AvatarRegistryInterface extends Interface {
   getEvent(
     nameOrSignatureOrTopic:
       | "AvatarCreated"
+      | "AvatarFactoryChanged"
       | "RoleAdminChanged"
       | "RoleGranted"
       | "RoleRevoked"
@@ -102,6 +105,10 @@ export interface AvatarRegistryInterface extends Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "avatarFactory",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "currentAvatarVersion",
     values?: undefined
   ): string;
   encodeFunctionData(
@@ -145,6 +152,10 @@ export interface AvatarRegistryInterface extends Interface {
     values: [AddressLike]
   ): string;
   encodeFunctionData(
+    functionFragment: "setCurrentAvatarVersion",
+    values: [string]
+  ): string;
+  encodeFunctionData(
     functionFragment: "supportsInterface",
     values: [BytesLike]
   ): string;
@@ -164,6 +175,10 @@ export interface AvatarRegistryInterface extends Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "avatarFactory",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "currentAvatarVersion",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -195,6 +210,10 @@ export interface AvatarRegistryInterface extends Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "setCurrentAvatarVersion",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "supportsInterface",
     data: BytesLike
   ): Result;
@@ -223,6 +242,19 @@ export namespace AvatarCreatedEvent {
     avatar: string;
     owner: string;
     defaultExperience: string;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
+}
+
+export namespace AvatarFactoryChangedEvent {
+  export type InputTuple = [oldFactory: AddressLike, newFactory: AddressLike];
+  export type OutputTuple = [oldFactory: string, newFactory: string];
+  export interface OutputObject {
+    oldFactory: string;
+    newFactory: string;
   }
   export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
   export type Filter = TypedDeferredTopicFilter<Event>;
@@ -337,6 +369,8 @@ export interface AvatarRegistry extends BaseContract {
 
   avatarFactory: TypedContractMethod<[], [string], "view">;
 
+  currentAvatarVersion: TypedContractMethod<[], [string], "view">;
+
   findByUsername: TypedContractMethod<[username: string], [string], "view">;
 
   getRoleAdmin: TypedContractMethod<[role: BytesLike], [string], "view">;
@@ -381,6 +415,12 @@ export interface AvatarRegistry extends BaseContract {
     "nonpayable"
   >;
 
+  setCurrentAvatarVersion: TypedContractMethod<
+    [v: string],
+    [void],
+    "nonpayable"
+  >;
+
   supportsInterface: TypedContractMethod<
     [interfaceId: BytesLike],
     [boolean],
@@ -407,6 +447,9 @@ export interface AvatarRegistry extends BaseContract {
   ): TypedContractMethod<[], [string], "view">;
   getFunction(
     nameOrSignature: "avatarFactory"
+  ): TypedContractMethod<[], [string], "view">;
+  getFunction(
+    nameOrSignature: "currentAvatarVersion"
   ): TypedContractMethod<[], [string], "view">;
   getFunction(
     nameOrSignature: "findByUsername"
@@ -459,6 +502,9 @@ export interface AvatarRegistry extends BaseContract {
     nameOrSignature: "setAvatarFactory"
   ): TypedContractMethod<[factory: AddressLike], [void], "nonpayable">;
   getFunction(
+    nameOrSignature: "setCurrentAvatarVersion"
+  ): TypedContractMethod<[v: string], [void], "nonpayable">;
+  getFunction(
     nameOrSignature: "supportsInterface"
   ): TypedContractMethod<[interfaceId: BytesLike], [boolean], "view">;
   getFunction(
@@ -474,6 +520,13 @@ export interface AvatarRegistry extends BaseContract {
     AvatarCreatedEvent.InputTuple,
     AvatarCreatedEvent.OutputTuple,
     AvatarCreatedEvent.OutputObject
+  >;
+  getEvent(
+    key: "AvatarFactoryChanged"
+  ): TypedContractEvent<
+    AvatarFactoryChangedEvent.InputTuple,
+    AvatarFactoryChangedEvent.OutputTuple,
+    AvatarFactoryChangedEvent.OutputObject
   >;
   getEvent(
     key: "RoleAdminChanged"
@@ -507,6 +560,17 @@ export interface AvatarRegistry extends BaseContract {
       AvatarCreatedEvent.InputTuple,
       AvatarCreatedEvent.OutputTuple,
       AvatarCreatedEvent.OutputObject
+    >;
+
+    "AvatarFactoryChanged(address,address)": TypedContractEvent<
+      AvatarFactoryChangedEvent.InputTuple,
+      AvatarFactoryChangedEvent.OutputTuple,
+      AvatarFactoryChangedEvent.OutputObject
+    >;
+    AvatarFactoryChanged: TypedContractEvent<
+      AvatarFactoryChangedEvent.InputTuple,
+      AvatarFactoryChangedEvent.OutputTuple,
+      AvatarFactoryChangedEvent.OutputObject
     >;
 
     "RoleAdminChanged(bytes32,bytes32,bytes32)": TypedContractEvent<

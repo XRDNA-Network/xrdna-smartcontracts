@@ -40,6 +40,7 @@ interface ICompany {
     event AssetMinted(address indexed asset, address indexed to, uint256 amountOrTokenId);
     event AssetRevoked(address indexed asset, address indexed holder, uint256 amountOrTokenId);
 
+    function version() external view returns (uint256);
     function owner() external view returns (address);
     function name() external view returns (string memory);
     function world() external view returns (address);

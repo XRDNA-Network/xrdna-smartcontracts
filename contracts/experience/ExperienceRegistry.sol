@@ -40,6 +40,8 @@ contract ExperienceRegistry is IExperienceRegistry, ReentrancyGuard, AccessContr
     //enforce globally unique names
     mapping(string => ExperienceInfo) public experiencesByName;
 
+    string public override currentExperienceVersion = "0.1";
+
     modifier onlyCompany() {
         require(companyRegistry.isRegisteredCompany(msg.sender), "ExperienceRegistry: caller is not a company");
         _;
@@ -65,6 +67,10 @@ contract ExperienceRegistry is IExperienceRegistry, ReentrancyGuard, AccessContr
             require(args.admins[i] != address(0), "ExperienceRegistry: admin address cannot be 0");
             _grantRole(ADMIN_ROLE, args.admins[i]);
         }
+    }
+
+    function setCurrentExperienceVersion(string memory v) public onlyRole(ADMIN_ROLE) {
+        currentExperienceVersion = v;
     }
 
     function setCompanyRegistry(ICompanyRegistry reg) public onlyRole(ADMIN_ROLE) {

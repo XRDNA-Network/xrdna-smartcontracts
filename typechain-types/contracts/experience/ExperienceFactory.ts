@@ -55,6 +55,7 @@ export interface ExperienceFactoryInterface extends Interface {
       | "revokeRole"
       | "setAuthorizedRegistry"
       | "setImplementation"
+      | "setProxyImplementation"
       | "supportsInterface"
   ): FunctionFragment;
 
@@ -111,6 +112,10 @@ export interface ExperienceFactoryInterface extends Interface {
     values: [AddressLike]
   ): string;
   encodeFunctionData(
+    functionFragment: "setProxyImplementation",
+    values: [AddressLike]
+  ): string;
+  encodeFunctionData(
     functionFragment: "supportsInterface",
     values: [BytesLike]
   ): string;
@@ -142,6 +147,10 @@ export interface ExperienceFactoryInterface extends Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "setImplementation",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "setProxyImplementation",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -319,6 +328,12 @@ export interface ExperienceFactory extends BaseContract {
     "nonpayable"
   >;
 
+  setProxyImplementation: TypedContractMethod<
+    [_proxyImplementation: AddressLike],
+    [void],
+    "nonpayable"
+  >;
+
   supportsInterface: TypedContractMethod<
     [interfaceId: BytesLike],
     [boolean],
@@ -387,6 +402,13 @@ export interface ExperienceFactory extends BaseContract {
   getFunction(
     nameOrSignature: "setImplementation"
   ): TypedContractMethod<[_implementation: AddressLike], [void], "nonpayable">;
+  getFunction(
+    nameOrSignature: "setProxyImplementation"
+  ): TypedContractMethod<
+    [_proxyImplementation: AddressLike],
+    [void],
+    "nonpayable"
+  >;
   getFunction(
     nameOrSignature: "supportsInterface"
   ): TypedContractMethod<[interfaceId: BytesLike], [boolean], "view">;

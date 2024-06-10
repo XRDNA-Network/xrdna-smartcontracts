@@ -6,6 +6,8 @@ export type { worldRegistry02Sol };
 export type { IWorld0_2 } from "./IWorld0_2";
 export type { IWorldFactory0_2 } from "./IWorldFactory0_2";
 export type { IWorldHook } from "./IWorldHook";
+export type { IWorldProxy } from "./IWorldProxy";
 export type { IWorldRegistry0_2 } from "./IWorldRegistry0_2";
 export type { World0_2 } from "./World0_2";
 export type { WorldFactory0_2 } from "./WorldFactory0_2";
+export type { WorldProxy } from "./WorldProxy";

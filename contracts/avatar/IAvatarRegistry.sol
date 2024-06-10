@@ -23,6 +23,7 @@ struct AvatarRegistrationRequest {
 interface IAvatarRegistry {
 
     event AvatarCreated(address indexed avatar, address indexed owner, address indexed defaultExperience);
+    event AvatarFactoryChanged(address indexed oldFactory, address indexed newFactory);
     
     /**
      * @dev Check if an address is an avatar
@@ -62,4 +63,7 @@ interface IAvatarRegistry {
      * @param initData The initialization data to pass to the new avatar contract
      */
     function upgradeAvatar(bytes calldata initData) external;
+
+    function currentAvatarVersion() external view returns (string memory);
+    function setCurrentAvatarVersion(string memory version) external;
 }

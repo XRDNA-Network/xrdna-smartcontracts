@@ -47,16 +47,24 @@ export type AvatarRegistrationRequestStructOutput = [
 export interface IAvatarRegistryInterface extends Interface {
   getFunction(
     nameOrSignature:
+      | "currentAvatarVersion"
       | "findByUsername"
       | "isAvatar"
       | "nameAvailable"
       | "registerAvatar"
       | "setAvatarFactory"
+      | "setCurrentAvatarVersion"
       | "upgradeAvatar"
   ): FunctionFragment;
 
-  getEvent(nameOrSignatureOrTopic: "AvatarCreated"): EventFragment;
+  getEvent(
+    nameOrSignatureOrTopic: "AvatarCreated" | "AvatarFactoryChanged"
+  ): EventFragment;
 
+  encodeFunctionData(
+    functionFragment: "currentAvatarVersion",
+    values?: undefined
+  ): string;
   encodeFunctionData(
     functionFragment: "findByUsername",
     values: [string]
@@ -78,10 +86,18 @@ export interface IAvatarRegistryInterface extends Interface {
     values: [AddressLike]
   ): string;
   encodeFunctionData(
+    functionFragment: "setCurrentAvatarVersion",
+    values: [string]
+  ): string;
+  encodeFunctionData(
     functionFragment: "upgradeAvatar",
     values: [BytesLike]
   ): string;
 
+  decodeFunctionResult(
+    functionFragment: "currentAvatarVersion",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "findByUsername",
     data: BytesLike
@@ -97,6 +113,10 @@ export interface IAvatarRegistryInterface extends Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "setAvatarFactory",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "setCurrentAvatarVersion",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -120,6 +140,19 @@ export namespace AvatarCreatedEvent {
     avatar: string;
     owner: string;
     defaultExperience: string;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
+}
+
+export namespace AvatarFactoryChangedEvent {
+  export type InputTuple = [oldFactory: AddressLike, newFactory: AddressLike];
+  export type OutputTuple = [oldFactory: string, newFactory: string];
+  export interface OutputObject {
+    oldFactory: string;
+    newFactory: string;
   }
   export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
   export type Filter = TypedDeferredTopicFilter<Event>;
@@ -170,6 +203,8 @@ export interface IAvatarRegistry extends BaseContract {
     event?: TCEvent
   ): Promise<this>;
 
+  currentAvatarVersion: TypedContractMethod<[], [string], "view">;
+
   findByUsername: TypedContractMethod<[username: string], [string], "view">;
 
   isAvatar: TypedContractMethod<[a: AddressLike], [boolean], "view">;
@@ -188,6 +223,12 @@ export interface IAvatarRegistry extends BaseContract {
     "nonpayable"
   >;
 
+  setCurrentAvatarVersion: TypedContractMethod<
+    [version: string],
+    [void],
+    "nonpayable"
+  >;
+
   upgradeAvatar: TypedContractMethod<
     [initData: BytesLike],
     [void],
@@ -198,6 +239,9 @@ export interface IAvatarRegistry extends BaseContract {
     key: string | FunctionFragment
   ): T;
 
+  getFunction(
+    nameOrSignature: "currentAvatarVersion"
+  ): TypedContractMethod<[], [string], "view">;
   getFunction(
     nameOrSignature: "findByUsername"
   ): TypedContractMethod<[username: string], [string], "view">;
@@ -218,6 +262,9 @@ export interface IAvatarRegistry extends BaseContract {
     nameOrSignature: "setAvatarFactory"
   ): TypedContractMethod<[factory: AddressLike], [void], "nonpayable">;
   getFunction(
+    nameOrSignature: "setCurrentAvatarVersion"
+  ): TypedContractMethod<[version: string], [void], "nonpayable">;
+  getFunction(
     nameOrSignature: "upgradeAvatar"
   ): TypedContractMethod<[initData: BytesLike], [void], "nonpayable">;
 
@@ -227,6 +274,13 @@ export interface IAvatarRegistry extends BaseContract {
     AvatarCreatedEvent.InputTuple,
     AvatarCreatedEvent.OutputTuple,
     AvatarCreatedEvent.OutputObject
+  >;
+  getEvent(
+    key: "AvatarFactoryChanged"
+  ): TypedContractEvent<
+    AvatarFactoryChangedEvent.InputTuple,
+    AvatarFactoryChangedEvent.OutputTuple,
+    AvatarFactoryChangedEvent.OutputObject
   >;
 
   filters: {
@@ -239,6 +293,17 @@ export interface IAvatarRegistry extends BaseContract {
       AvatarCreatedEvent.InputTuple,
       AvatarCreatedEvent.OutputTuple,
       AvatarCreatedEvent.OutputObject
+    >;
+
+    "AvatarFactoryChanged(address,address)": TypedContractEvent<
+      AvatarFactoryChangedEvent.InputTuple,
+      AvatarFactoryChangedEvent.OutputTuple,
+      AvatarFactoryChangedEvent.OutputObject
+    >;
+    AvatarFactoryChanged: TypedContractEvent<
+      AvatarFactoryChangedEvent.InputTuple,
+      AvatarFactoryChangedEvent.OutputTuple,
+      AvatarFactoryChangedEvent.OutputObject
     >;
   };
 }

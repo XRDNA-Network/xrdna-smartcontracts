@@ -111,7 +111,7 @@ describe("World Registration", () => {
             }
         } catch(e:any) {
             expect(e.message).to.not.be.undefined;
-            if(e.message.indexOf("AccessControlUnauthorizedAccount") < 0) {
+            if(e.message.indexOf("caller does not have admin role") < 0) {
                 throw e;
             }
         }
@@ -142,7 +142,7 @@ describe("World Registration", () => {
             }
         } catch(e:any) {
             expect(e.message).to.not.be.undefined;
-            if(e.message.indexOf("AccessControlUnauthorizedAccount") < 0) {
+            if(e.message.indexOf("caller does not have admin role") < 0) {
                 throw e;
             }
         }
@@ -163,7 +163,6 @@ describe("World Registration", () => {
     ///////////////////////////////////////////////////////////////////////
     it("Should register a company", async () => {
         const res = await world.registerCompany({
-            initData: "0x",
             name: "My Company",
             owner: companyOwner.address,
             sendTokensToCompanyOwner: false
@@ -196,7 +195,6 @@ describe("World Registration", () => {
     it("Should not allow  a duplicate company", async () => {
         try {
            await world.registerCompany({
-                initData: "0x",
                 name: "My Company",
                 owner: companyOwner.address,
                 sendTokensToCompanyOwner: false
