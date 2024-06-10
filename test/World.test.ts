@@ -1,11 +1,10 @@
 import { ethers } from "hardhat";
 import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
-import { IWorldInfo, IWorldRegistration, VectorAddress, World, signVectorAddress } from "../src";
+import { IWorldRegistration, World } from "../src";
 import { expect } from "chai";
 import { IWorldStack } from "./test_stack/world/IWorldStack";
 import { StackFactory, StackType } from "./test_stack/StackFactory";
-import { Signer, ZeroAddress } from "ethers";
-import { IRegistrarStack } from "./test_stack/registrar/IRegistrarStack";
+import { Signer } from "ethers";
 import { Company } from "../src/company/Company";
 import { Experience } from "../src/experience";
 

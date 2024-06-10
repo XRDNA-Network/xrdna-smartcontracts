@@ -217,6 +217,7 @@ describe('Company', () => {
         const result = await company.canMint(asset, to, tokenId);
         expect(result).to.be.true;
     })
+    
     it('should mint an erc20 asset', async () => {
         const asset = testERC20.assetAddress.toString();
         const to = avatar.avatarAddress.toString();
@@ -225,6 +226,7 @@ describe('Company', () => {
         const r = await result.wait();
         expect(r?.status).to.equal(1);
     })
+    
     it('should mint an erc721 asset', async () => {
         const asset = testERC721.assetAddress.toString();
         const to = avatar.avatarAddress.toString();

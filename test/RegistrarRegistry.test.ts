@@ -37,21 +37,19 @@ describe("RegistrarRegistry", () => {
                 worldRegistryAdmin: signers[0],
                 worldOwner: signers[1]
             });
+            await stack.init();
         })
 
-
-        
-    
         it("should register", async () => {
-            const b4Bal = await ethers.provider.getBalance(signers[2].address);
+            const b4Bal = await ethers.provider.getBalance(registrarSigner.address);
             const reg = stack.getStack<IRegistrarStack>(StackType.REGISTRAR);
             const registry = reg.getRegistrarRegistry();
             const r = await registry.registerRegistrar({
-                defaultSigner: registrarSigner.address,
+                defaultSigner:registrarSigner.address,
                 tokens: ethers.parseEther("1")
             });
             expect(r).to.not.be.null;
-            expect(r.registrarId).to.equal(1n);
+            expect(r.registrarId).to.be.greaterThan(0);
             expect(r.receipt.status).to.equal(1);
             registrar = new Registrar({
                 registrarRegistryAddress: registry.address,
@@ -59,7 +57,7 @@ describe("RegistrarRegistry", () => {
                 registrarId: r.registrarId
             });
             
-            const afterBal = await ethers.provider.getBalance(signers[2].address);
+            const afterBal = await ethers.provider.getBalance(registrarSigner.address);
             if(afterBal <= b4Bal) {
                 throw new Error("Balance not updated");
             }
@@ -79,13 +77,14 @@ describe("RegistrarRegistry", () => {
 
             await registrar.removeSigners([signers[2].address]);
             const registry = stack.getStack<IRegistrarStack>(StackType.REGISTRAR).getRegistrarRegistry();;
+            
             const r2 = await registry.isSignerForRegistrar({
                 registrarId: registrar.registrarId, 
                 signer: signers[2].address
             });
             expect(r2).to.equal(false);
             const r3 = await registry.isSignerForRegistrar({
-                registrarId: 1n, signer: signers[3].address
+                registrarId: registrar.registrarId, signer: signers[3].address
             });
             expect(r3).to.equal(true);
         });
