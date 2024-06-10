@@ -31,6 +31,11 @@ export class PortalRegistry {
         this.con = new Contract(this.address, abi, this.admin);
     }
 
+
+    async setExperienceRegistry(reg: AddressLike): Promise<TransactionResponse> {
+        return await RPCRetryHandler.withRetry(() => this.con.setExperienceRegistry(reg));
+    }
+
    async getPortalInfoById(id: bigint): Promise<IPortalInfo> {
         return await RPCRetryHandler.withRetry(() => this.con.getPortalInfoById(id));
     }

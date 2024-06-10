@@ -84,7 +84,7 @@ contract Experience is ReentrancyGuard, IExperience {
     }
 
     function init(address __company,VectorAddress memory vector, bytes memory initData) external onlyFactory override {
-        require(address(__company) == address(0), "Experience: already initialized");
+        require(address(_company) == address(0), "Experience: already initialized");
         _company = IBasicCompany(__company);
         ExperienceInitData memory data = abi.decode(initData, (ExperienceInitData));
         _vectorAddress = vector;

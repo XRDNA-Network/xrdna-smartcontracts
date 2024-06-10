@@ -87,7 +87,9 @@ export class StackFactory {
         const portalStack = new PortalStackImpl(this, worldDeployment);
         await portalStack.deploy();
         this.stacksByType.set(StackType.PORTAL, portalStack);
-
+        const portalRegistry = portalStack.getPortalRegistry();
+        await portalRegistry.setExperienceRegistry(experienceStack.getExperienceRegistry().address);
+    
         const registrarStack = new RegistrarStackImpl(this, worldDeployment);
         await registrarStack.deploy();
         this.stacksByType.set(StackType.REGISTRAR, registrarStack);

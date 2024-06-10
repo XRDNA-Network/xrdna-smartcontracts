@@ -136,7 +136,7 @@ export class World {
             throw new Error(`Transaction failed: ${receipt.transactionHash}`);
         }
         const logs = this.parser.parseLogs(receipt);
-        const args = logs[LogNames.AvatarRegistered];
+        const args = logs.get(LogNames.AvatarRegistered);
         if (!args) {
             throw new Error("AvatarRegistered event not found in logs");
         }

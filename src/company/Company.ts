@@ -96,8 +96,8 @@ export class Company {
         return await RPCRetryHandler.withRetry(() => this.con.addExperienceCondition(exp, condition));
     }
 
-    async removeExperienceCondition(exp: string, condition: string): Promise<TransactionResponse> {
-        return await RPCRetryHandler.withRetry(() => this.con.removeExperienceCondition(exp, condition));
+    async removeExperienceCondition(exp: string): Promise<TransactionResponse> {
+        return await RPCRetryHandler.withRetry(() => this.con.removeExperienceCondition(exp));
     }
 
     async addAssetHook(asset: AddressLike, hook: AddressLike): Promise<TransactionResponse> {
