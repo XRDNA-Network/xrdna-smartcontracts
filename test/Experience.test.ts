@@ -143,38 +143,29 @@ describe('Experience', () => {
          )
 
         
-        const experienceTxn = await company.addExperience({
+        const expRes = await company.addExperience({
             name: "Test Experience",
-            initData: expInitDataBytes
-        })
-        const expR = await experienceTxn.wait();
-        const logs = expR?.logs!;
-        const expAdded = logs[2]
-        const experienceAddress = '0x' + expAdded.topics[1].slice(26)
-        console.log('experience address', experienceAddress)
+            connectionDetails: "0x",
+            entryFee: 0n,
+        });
+        expect(expRes).to.not.be.undefined;
+        expect(expRes.experienceAddress).to.not.be.undefined;
+        expect(expRes.portalId).to.not.be.undefined;
+
         experience = new Experience({
-            address: experienceAddress,
+            address: expRes.experienceAddress.toString(),
+            portalId: expRes.portalId,
             admin: companyOwner
-        })    
+        });
 
-        const avatarInitDataStruct = {
-            username: "Test Avatar",
-            canReceiveTokensOutsideOfExperience: false,
-            appearanceDetails: "0x",
-        }
-
-        const avatarInitDataBytes = ethers.AbiCoder.defaultAbiCoder().encode(
-            ['tuple(string username, bool canReceiveTokensOutsideOfExperience, bytes appearanceDetails)'],
-            [avatarInitDataStruct]
-        )
-        
         avatar = await world.registerAvatar({
             sendTokensToAvatarOwner: false,
             avatarOwner: userSigner.address,
-            defaultExperience: experienceAddress,
+            defaultExperience: experience.address,
             username: "Test Avatar",
-            initData: avatarInitDataBytes
-        })
+            appearanceDetails: "0x",
+            canReceiveTokensOutsideOfExperience: false
+        });
         
     });
 

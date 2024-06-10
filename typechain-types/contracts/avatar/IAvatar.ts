@@ -127,7 +127,7 @@ export interface IAvatarInterface extends Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "init",
-    values: [AddressLike, AddressLike, BytesLike]
+    values: [AddressLike, AddressLike, string, BytesLike]
   ): string;
   encodeFunctionData(
     functionFragment: "isWearing",
@@ -411,7 +411,12 @@ export interface IAvatar extends BaseContract {
   getWearables: TypedContractMethod<[], [WearableStructOutput[]], "view">;
 
   init: TypedContractMethod<
-    [owner: AddressLike, defaultExperience: AddressLike, initData: BytesLike],
+    [
+      owner: AddressLike,
+      defaultExperience: AddressLike,
+      username: string,
+      initData: BytesLike
+    ],
     [void],
     "nonpayable"
   >;
@@ -505,7 +510,12 @@ export interface IAvatar extends BaseContract {
   getFunction(
     nameOrSignature: "init"
   ): TypedContractMethod<
-    [owner: AddressLike, defaultExperience: AddressLike, initData: BytesLike],
+    [
+      owner: AddressLike,
+      defaultExperience: AddressLike,
+      username: string,
+      initData: BytesLike
+    ],
     [void],
     "nonpayable"
   >;

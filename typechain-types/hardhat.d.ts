@@ -58,6 +58,10 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IERC20__factory>;
     getContractFactory(
+      name: "ERC721",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.ERC721__factory>;
+    getContractFactory(
       name: "IERC721Metadata",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IERC721Metadata__factory>;
@@ -310,6 +314,14 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.RegistrarRegistry__factory>;
     getContractFactory(
+      name: "TestERC20",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.TestERC20__factory>;
+    getContractFactory(
+      name: "TestERC721",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.TestERC721__factory>;
+    getContractFactory(
       name: "IBasicWorld",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IBasicWorld__factory>;
@@ -430,6 +442,11 @@ declare module "hardhat/types/runtime" {
       signer?: ethers.Signer
     ): Promise<Contracts.IERC20>;
     getContractAt(
+      name: "ERC721",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.ERC721>;
+    getContractAt(
       name: "IERC721Metadata",
       address: string | ethers.Addressable,
       signer?: ethers.Signer
@@ -744,6 +761,16 @@ declare module "hardhat/types/runtime" {
       address: string | ethers.Addressable,
       signer?: ethers.Signer
     ): Promise<Contracts.RegistrarRegistry>;
+    getContractAt(
+      name: "TestERC20",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.TestERC20>;
+    getContractAt(
+      name: "TestERC721",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.TestERC721>;
     getContractAt(
       name: "IBasicWorld",
       address: string | ethers.Addressable,
@@ -870,6 +897,10 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.IERC20>;
     deployContract(
+      name: "ERC721",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.ERC721>;
+    deployContract(
       name: "IERC721Metadata",
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.IERC721Metadata>;
@@ -1121,6 +1152,14 @@ declare module "hardhat/types/runtime" {
       name: "RegistrarRegistry",
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.RegistrarRegistry>;
+    deployContract(
+      name: "TestERC20",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.TestERC20>;
+    deployContract(
+      name: "TestERC721",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.TestERC721>;
     deployContract(
       name: "IBasicWorld",
       signerOrOptions?: ethers.Signer | DeployContractOptions
@@ -1242,6 +1281,11 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.IERC20>;
     deployContract(
+      name: "ERC721",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.ERC721>;
+    deployContract(
       name: "IERC721Metadata",
       args: any[],
       signerOrOptions?: ethers.Signer | DeployContractOptions
@@ -1556,6 +1600,16 @@ declare module "hardhat/types/runtime" {
       args: any[],
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.RegistrarRegistry>;
+    deployContract(
+      name: "TestERC20",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.TestERC20>;
+    deployContract(
+      name: "TestERC721",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.TestERC721>;
     deployContract(
       name: "IBasicWorld",
       args: any[],

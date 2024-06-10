@@ -76,7 +76,7 @@ export interface ExperienceFactoryInterface extends Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "createExperience",
-    values: [AddressLike, VectorAddressStruct, BytesLike]
+    values: [AddressLike, string, VectorAddressStruct, BytesLike]
   ): string;
   encodeFunctionData(
     functionFragment: "getRoleAdmin",
@@ -269,7 +269,12 @@ export interface ExperienceFactory extends BaseContract {
   DEFAULT_ADMIN_ROLE: TypedContractMethod<[], [string], "view">;
 
   createExperience: TypedContractMethod<
-    [owner: AddressLike, va: VectorAddressStruct, initData: BytesLike],
+    [
+      owner: AddressLike,
+      _name: string,
+      va: VectorAddressStruct,
+      initData: BytesLike
+    ],
     [string],
     "nonpayable"
   >;
@@ -333,7 +338,12 @@ export interface ExperienceFactory extends BaseContract {
   getFunction(
     nameOrSignature: "createExperience"
   ): TypedContractMethod<
-    [owner: AddressLike, va: VectorAddressStruct, initData: BytesLike],
+    [
+      owner: AddressLike,
+      _name: string,
+      va: VectorAddressStruct,
+      initData: BytesLike
+    ],
     [string],
     "nonpayable"
   >;

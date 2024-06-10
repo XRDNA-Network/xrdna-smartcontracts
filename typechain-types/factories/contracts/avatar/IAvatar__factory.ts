@@ -288,6 +288,11 @@ const _abi = [
         type: "address",
       },
       {
+        internalType: "string",
+        name: "username",
+        type: "string",
+      },
+      {
         internalType: "bytes",
         name: "initData",
         type: "bytes",

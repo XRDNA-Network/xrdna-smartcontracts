@@ -57,7 +57,7 @@ export interface AvatarFactoryInterface extends Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "createAvatar",
-    values: [AddressLike, AddressLike, BytesLike]
+    values: [AddressLike, AddressLike, string, BytesLike]
   ): string;
   encodeFunctionData(
     functionFragment: "getRoleAdmin",
@@ -250,7 +250,12 @@ export interface AvatarFactory extends BaseContract {
   DEFAULT_ADMIN_ROLE: TypedContractMethod<[], [string], "view">;
 
   createAvatar: TypedContractMethod<
-    [owner: AddressLike, defaultExperience: AddressLike, initData: BytesLike],
+    [
+      owner: AddressLike,
+      defaultExperience: AddressLike,
+      username: string,
+      initData: BytesLike
+    ],
     [string],
     "nonpayable"
   >;
@@ -314,7 +319,12 @@ export interface AvatarFactory extends BaseContract {
   getFunction(
     nameOrSignature: "createAvatar"
   ): TypedContractMethod<
-    [owner: AddressLike, defaultExperience: AddressLike, initData: BytesLike],
+    [
+      owner: AddressLike,
+      defaultExperience: AddressLike,
+      username: string,
+      initData: BytesLike
+    ],
     [string],
     "nonpayable"
   >;

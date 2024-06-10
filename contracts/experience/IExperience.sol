@@ -32,7 +32,7 @@ interface IExperience {
 
     function connectionDetails() external view returns (bytes memory);
     function entering(JumpEntryRequest memory request) external payable returns (bytes memory);
-    function init(address company, VectorAddress memory vector, bytes memory initData) external;
+    function init(address company, string memory _name, VectorAddress memory vector, bytes memory initData) external;
     function upgrade(bytes memory initData) external;
     function experienceUpgraded(address nextVersion) external;
 }

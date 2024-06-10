@@ -3,5 +3,5 @@
 pragma solidity ^0.8.24;
 
 interface IAvatarFactory {
-    function createAvatar(address company, address defaultExperience, bytes memory initData) external returns (address);
+    function createAvatar(address company, address defaultExperience, string memory username, bytes memory initData) external returns (address);
 }

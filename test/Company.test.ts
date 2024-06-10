@@ -136,52 +136,29 @@ describe('Company', () => {
             throw new Error("ERC721 issuer not correct")
         }
         
-        // encode the experience init data struct as bytes
-       const expInitDataStruct = {
-            name: "TestExperience",
-            fee: 0n,
-            // 32 0 bytes 
-            connectionDetails: "0x",
-       }
-
-       const expInitDataBytes = ethers.AbiCoder.defaultAbiCoder().encode(
-              ['tuple(string name, uint256 fee, bytes connectionDetails)'],
-              [expInitDataStruct]
-         )
-
-        
-        const experienceTxn = await company.addExperience({
+        const expRes = await company.addExperience({
             name: "Test Experience",
-            initData: expInitDataBytes
-        })
-        const expR = await experienceTxn.wait();
-        const logs = expR?.logs!;
-        const expAdded = logs[2]
-        const experienceAddress = '0x' + expAdded.topics[1].slice(26)
-        console.log('experience address', experienceAddress)
+            connectionDetails: "0x",
+            entryFee: 0n,
+        });
+        expect(expRes).to.not.be.undefined;
+        expect(expRes.experienceAddress).to.not.be.undefined;
+        expect(expRes.portalId).to.not.be.undefined;
+
         experience = new Experience({
-            address: experienceAddress,
+            address: expRes.experienceAddress.toString(),
+            portalId: expRes.portalId,
             admin: companyOwner
-        })    
-
-        const avatarInitDataStruct = {
-            username: "Test Avatar",
-            canReceiveTokensOutsideOfExperience: false,
-            appearanceDetails: "0x",
-        }
-
-        const avatarInitDataBytes = ethers.AbiCoder.defaultAbiCoder().encode(
-            ['tuple(string username, bool canReceiveTokensOutsideOfExperience, bytes appearanceDetails)'],
-            [avatarInitDataStruct]
-        )
+        });
         
         avatar = await world.registerAvatar({
             sendTokensToAvatarOwner: false,
             avatarOwner: userSigner.address,
-            defaultExperience: experienceAddress,
+            defaultExperience: experience.address,
             username: "Test Avatar",
-            initData: avatarInitDataBytes
-        })
+            appearanceDetails: "0x",
+            canReceiveTokensOutsideOfExperience: false,
+        });
         
     });
 
@@ -228,21 +205,21 @@ describe('Company', () => {
     // ------------------- Asset tests -------------------
     it('should be able to mint an ERC20 asset', async () => {
         const asset = testERC20.assetAddress.toString();
-        const to = avatar.avatar.toString();
+        const to = avatar.avatarAddress.toString();
         const amount = ethers.parseEther("10.0").toString();
         const result = await company.canMint(asset, to, amount);
         expect(result).to.be.true;
     })
     it('should be able to mint an ERC721 asset', async () => {
         const asset = testERC721.assetAddress.toString();
-        const to = avatar.avatar.toString();
+        const to = avatar.avatarAddress.toString();
         const tokenId = "1";
         const result = await company.canMint(asset, to, tokenId);
         expect(result).to.be.true;
     })
     it('should mint an erc20 asset', async () => {
         const asset = testERC20.assetAddress.toString();
-        const to = avatar.avatar.toString();
+        const to = avatar.avatarAddress.toString();
         const amount = ethers.parseEther("10.0").toString();
         const result = await company.mint(asset, to, amount);
         const r = await result.wait();
@@ -250,7 +227,7 @@ describe('Company', () => {
     })
     it('should mint an erc721 asset', async () => {
         const asset = testERC721.assetAddress.toString();
-        const to = avatar.avatar.toString();
+        const to = avatar.avatarAddress.toString();
         const tokenId = "1";
         const result = await company.mint(asset, to, tokenId);
         const r = await result.wait();

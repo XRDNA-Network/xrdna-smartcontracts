@@ -39,6 +39,16 @@ export type ExperienceConstructorArgsStructOutput = [
   experienceRegistry: string;
 };
 
+export type ExperienceInitDataStruct = {
+  entryFee: BigNumberish;
+  connectionDetails: BytesLike;
+};
+
+export type ExperienceInitDataStructOutput = [
+  entryFee: bigint,
+  connectionDetails: string
+] & { entryFee: bigint; connectionDetails: string };
+
 export type JumpEntryRequestStruct = {
   sourceWorld: AddressLike;
   sourceCompany: AddressLike;
@@ -78,6 +88,7 @@ export interface ExperienceInterface extends Interface {
       | "changePortalFee"
       | "company"
       | "connectionDetails"
+      | "encodeInitData"
       | "entering"
       | "entryFee"
       | "experienceFactory"
@@ -123,6 +134,10 @@ export interface ExperienceInterface extends Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
+    functionFragment: "encodeInitData",
+    values: [ExperienceInitDataStruct]
+  ): string;
+  encodeFunctionData(
     functionFragment: "entering",
     values: [JumpEntryRequestStruct]
   ): string;
@@ -142,7 +157,7 @@ export interface ExperienceInterface extends Interface {
   encodeFunctionData(functionFragment: "hook", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "init",
-    values: [AddressLike, VectorAddressStruct, BytesLike]
+    values: [AddressLike, string, VectorAddressStruct, BytesLike]
   ): string;
   encodeFunctionData(functionFragment: "name", values?: undefined): string;
   encodeFunctionData(
@@ -178,6 +193,10 @@ export interface ExperienceInterface extends Interface {
   decodeFunctionResult(functionFragment: "company", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "connectionDetails",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "encodeInitData",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "entering", data: BytesLike): Result;
@@ -352,6 +371,12 @@ export interface Experience extends BaseContract {
 
   connectionDetails: TypedContractMethod<[], [string], "view">;
 
+  encodeInitData: TypedContractMethod<
+    [data: ExperienceInitDataStruct],
+    [string],
+    "view"
+  >;
+
   entering: TypedContractMethod<
     [request: JumpEntryRequestStruct],
     [string],
@@ -373,7 +398,12 @@ export interface Experience extends BaseContract {
   hook: TypedContractMethod<[], [string], "view">;
 
   init: TypedContractMethod<
-    [__company: AddressLike, vector: VectorAddressStruct, initData: BytesLike],
+    [
+      __company: AddressLike,
+      _name: string,
+      vector: VectorAddressStruct,
+      initData: BytesLike
+    ],
     [void],
     "nonpayable"
   >;
@@ -417,6 +447,9 @@ export interface Experience extends BaseContract {
     nameOrSignature: "connectionDetails"
   ): TypedContractMethod<[], [string], "view">;
   getFunction(
+    nameOrSignature: "encodeInitData"
+  ): TypedContractMethod<[data: ExperienceInitDataStruct], [string], "view">;
+  getFunction(
     nameOrSignature: "entering"
   ): TypedContractMethod<
     [request: JumpEntryRequestStruct],
@@ -441,7 +474,12 @@ export interface Experience extends BaseContract {
   getFunction(
     nameOrSignature: "init"
   ): TypedContractMethod<
-    [__company: AddressLike, vector: VectorAddressStruct, initData: BytesLike],
+    [
+      __company: AddressLike,
+      _name: string,
+      vector: VectorAddressStruct,
+      initData: BytesLike
+    ],
     [void],
     "nonpayable"
   >;

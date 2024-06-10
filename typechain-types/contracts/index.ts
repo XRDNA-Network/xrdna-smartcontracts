@@ -11,6 +11,8 @@ import type * as experience from "./experience";
 export type { experience };
 import type * as portal from "./portal";
 export type { portal };
+import type * as test from "./test";
+export type { test };
 import type * as world from "./world";
 export type { world };
 export type { BaseFactory } from "./BaseFactory";

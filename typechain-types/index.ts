@@ -28,6 +28,8 @@ export type { IERC20Permit } from "./@openzeppelin/contracts/token/ERC20/extensi
 export { IERC20Permit__factory } from "./factories/@openzeppelin/contracts/token/ERC20/extensions/IERC20Permit__factory";
 export type { IERC20 } from "./@openzeppelin/contracts/token/ERC20/IERC20";
 export { IERC20__factory } from "./factories/@openzeppelin/contracts/token/ERC20/IERC20__factory";
+export type { ERC721 } from "./@openzeppelin/contracts/token/ERC721/ERC721";
+export { ERC721__factory } from "./factories/@openzeppelin/contracts/token/ERC721/ERC721__factory";
 export type { IERC721Metadata } from "./@openzeppelin/contracts/token/ERC721/extensions/IERC721Metadata";
 export { IERC721Metadata__factory } from "./factories/@openzeppelin/contracts/token/ERC721/extensions/IERC721Metadata__factory";
 export type { IERC721 } from "./@openzeppelin/contracts/token/ERC721/IERC721";
@@ -148,6 +150,10 @@ export type { PortalRegistry } from "./contracts/portal/PortalRegistry.sol/Porta
 export { PortalRegistry__factory } from "./factories/contracts/portal/PortalRegistry.sol/PortalRegistry__factory";
 export type { RegistrarRegistry } from "./contracts/RegistrarRegistry";
 export { RegistrarRegistry__factory } from "./factories/contracts/RegistrarRegistry__factory";
+export type { TestERC20 } from "./contracts/test/TestERC20";
+export { TestERC20__factory } from "./factories/contracts/test/TestERC20__factory";
+export type { TestERC721 } from "./contracts/test/TestERC721";
+export { TestERC721__factory } from "./factories/contracts/test/TestERC721__factory";
 export type { IBasicWorld } from "./contracts/world/v0.1/IWorld.sol/IBasicWorld";
 export { IBasicWorld__factory } from "./factories/contracts/world/v0.1/IWorld.sol/IBasicWorld__factory";
 export type { IWorld } from "./contracts/world/v0.1/IWorld.sol/IWorld";

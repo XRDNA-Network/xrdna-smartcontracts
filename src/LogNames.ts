@@ -19,5 +19,8 @@ export const LogNames = {
     ERC721Upgraded: "ERC721Upgraded",
     AssetCreated: "AssetCreated",
 
+    //company 
+    ExperienceAdded: "ExperienceAdded",
+
 
 }

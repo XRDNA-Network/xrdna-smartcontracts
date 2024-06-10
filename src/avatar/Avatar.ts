@@ -2,6 +2,7 @@ import { Contract, Provider, Signer, TransactionResponse } from "ethers";
 import {abi} from "../../artifacts/contracts/avatar/Avatar.sol/Avatar.json";
 import { RPCRetryHandler } from "../RPCRetryHandler";
 import { VectorAddress } from "../VectorAddress";
+import { ethers } from "hardhat";
 
 
 export interface IAvatarOpts {
@@ -26,6 +27,11 @@ export interface IWearable  {
     tokenId: bigint;
 }
 
+export interface IAvatarInitData {
+    canReceiveTokensOutsideOfExperience: boolean;
+    appearanceDetails: string;
+}
+
 export class Avatar {
     private con: Contract;
     readonly address: string;
@@ -35,6 +41,11 @@ export class Avatar {
         this.address = opts.address;
         this.admin = opts.admin;
         this.con = new Contract(this.address, abi, this.admin);
+    }
+
+    static encodeInitData(data: IAvatarInitData): string {
+        const ifc = new ethers.Interface(abi);
+        return `0x${ifc.encodeFunctionData("encodeInitData", [data]).substring(10)}`;
     }
 
     async location(): Promise<VectorAddress> {

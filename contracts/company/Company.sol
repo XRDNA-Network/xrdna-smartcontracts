@@ -142,6 +142,10 @@ contract Company is ICompany, ReentrancyGuard, AccessControl {
         emit SignerRemoved(signer);
     }
 
+    function encodeExperienceArgs(AddExperienceArgs memory args) public pure returns (bytes memory) {
+        return abi.encode(args);
+    }
+
     function addExperience(AddExperienceArgs memory args) external onlyRole(SIGNER_ROLE) notUpgraded nonReentrant {
         ++nextPsub;
         VectorAddress memory expVector = VectorAddress({

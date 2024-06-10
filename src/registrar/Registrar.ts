@@ -14,7 +14,7 @@ export interface IRegistrarOpts {
 export class Registrar {
     private address: string;
     private admin: Provider | Signer;
-    private registrarId: bigint;
+    readonly registrarId: bigint;
     private registry: ethers.Contract;
 
     constructor(opts: IRegistrarOpts) {

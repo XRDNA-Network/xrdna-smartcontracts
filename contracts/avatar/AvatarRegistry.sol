@@ -93,7 +93,7 @@ contract AvatarRegistry is IAvatarRegistry, AccessControl {
         require(worldRegistry.isWorld(msg.sender), 'AvatarRegistry: caller is not a world');
         string memory lowerName = registration.username.lower();
         require(_avatarsByName[lowerName] == address(0), 'AvatarRegistry: username already exists');
-        proxy = avatarFactory.createAvatar(registration.avatarOwner, registration.defaultExperience, registration.initData);
+        proxy = avatarFactory.createAvatar(registration.avatarOwner, registration.defaultExperience, registration.username, registration.initData);
         if(msg.value > 0) {
             if (registration.sendTokensToAvatarOwner) {
                 payable(registration.avatarOwner).transfer(msg.value);
@@ -111,7 +111,7 @@ contract AvatarRegistry is IAvatarRegistry, AccessControl {
         IExperience loc = avatar.location();
         address owner = avatar.owner();
         string memory name = avatar.username().lower();
-        address proxy = avatarFactory.createAvatar(owner, address(loc), initData);
+        address proxy = avatarFactory.createAvatar(owner, address(loc), name, initData);
         avatar.upgradeComplete(proxy);
         delete _avatarsByAddress[msg.sender];
         _avatarsByName[name] = proxy;

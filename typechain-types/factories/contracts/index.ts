@@ -6,6 +6,7 @@ export * as avatar from "./avatar";
 export * as company from "./company";
 export * as experience from "./experience";
 export * as portal from "./portal";
+export * as test from "./test";
 export * as world from "./world";
 export { BaseFactory__factory } from "./BaseFactory__factory";
 export { IRegistrarRegistry__factory } from "./IRegistrarRegistry__factory";

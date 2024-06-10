@@ -107,6 +107,7 @@ export interface CompanyInterface extends Interface {
       | "changeExperiencePortalFee"
       | "companyFactory"
       | "companyRegistry"
+      | "encodeExperienceArgs"
       | "experienceRegistry"
       | "getRoleAdmin"
       | "grantRole"
@@ -196,6 +197,10 @@ export interface CompanyInterface extends Interface {
   encodeFunctionData(
     functionFragment: "companyRegistry",
     values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "encodeExperienceArgs",
+    values: [AddExperienceArgsStruct]
   ): string;
   encodeFunctionData(
     functionFragment: "experienceRegistry",
@@ -320,6 +325,10 @@ export interface CompanyInterface extends Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "companyRegistry",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "encodeExperienceArgs",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -637,6 +646,12 @@ export interface Company extends BaseContract {
 
   companyRegistry: TypedContractMethod<[], [string], "view">;
 
+  encodeExperienceArgs: TypedContractMethod<
+    [args: AddExperienceArgsStruct],
+    [string],
+    "view"
+  >;
+
   experienceRegistry: TypedContractMethod<[], [string], "view">;
 
   getRoleAdmin: TypedContractMethod<[role: BytesLike], [string], "view">;
@@ -791,6 +806,9 @@ export interface Company extends BaseContract {
   getFunction(
     nameOrSignature: "companyRegistry"
   ): TypedContractMethod<[], [string], "view">;
+  getFunction(
+    nameOrSignature: "encodeExperienceArgs"
+  ): TypedContractMethod<[args: AddExperienceArgsStruct], [string], "view">;
   getFunction(
     nameOrSignature: "experienceRegistry"
   ): TypedContractMethod<[], [string], "view">;

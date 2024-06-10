@@ -24,7 +24,6 @@ interface IExperienceRegistry {
 }
 
 struct AvatarInitData {
-    string username;
     bool canReceiveTokensOutsideOfExperience;
     bytes appearanceDetails;
 }
@@ -106,14 +105,14 @@ contract Avatar is IAvatar, ReentrancyGuard, WearableLinkedList {
      * @param defaultExperience The address of the default experience contract where the avatar starts
      * @param initData Initialization data to pass to the avatar contract
      */
-    function init(address _owner, address defaultExperience, bytes memory initData) public override onlyFactory {
+    function init(address _owner, address defaultExperience, string memory _name, bytes memory initData) public override onlyFactory {
         require(owner == address(0), "Avatar: contract already initialized");
 
         AvatarInitData memory data = abi.decode(initData, (AvatarInitData));
-        require(bytes(data.username).length > 0, "Avatar: username cannot be empty");
+        require(bytes(_name).length > 0, "Avatar: username cannot be empty");
         require(_owner != address(0), "Avatar: owner cannot be zero address");
         require(experienceRegistry.isExperience(defaultExperience), "Avatar: default experience is not a registered experience");
-        username = data.username.lower();
+        username = _name.lower();
         _location = IExperience(defaultExperience);
         canReceiveTokensOutsideOfExperience = data.canReceiveTokensOutsideOfExperience;
         appearanceDetails = data.appearanceDetails;

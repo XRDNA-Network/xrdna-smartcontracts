@@ -65,20 +65,14 @@ export type DelegatedJumpRequestStructOutput = [
 ] & { portalId: bigint; agreedFee: bigint; avatarOwnerSignature: string };
 
 export type AvatarInitDataStruct = {
-  username: string;
   canReceiveTokensOutsideOfExperience: boolean;
   appearanceDetails: BytesLike;
 };
 
 export type AvatarInitDataStructOutput = [
-  username: string,
   canReceiveTokensOutsideOfExperience: boolean,
   appearanceDetails: string
-] & {
-  username: string;
-  canReceiveTokensOutsideOfExperience: boolean;
-  appearanceDetails: string;
-};
+] & { canReceiveTokensOutsideOfExperience: boolean; appearanceDetails: string };
 
 export type AvatarJumpRequestStruct = {
   portalId: BigNumberish;
@@ -196,7 +190,7 @@ export interface AvatarInterface extends Interface {
   encodeFunctionData(functionFragment: "hook", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "init",
-    values: [AddressLike, AddressLike, BytesLike]
+    values: [AddressLike, AddressLike, string, BytesLike]
   ): string;
   encodeFunctionData(
     functionFragment: "isWearing",
@@ -530,7 +524,12 @@ export interface Avatar extends BaseContract {
   hook: TypedContractMethod<[], [string], "view">;
 
   init: TypedContractMethod<
-    [_owner: AddressLike, defaultExperience: AddressLike, initData: BytesLike],
+    [
+      _owner: AddressLike,
+      defaultExperience: AddressLike,
+      _name: string,
+      initData: BytesLike
+    ],
     [void],
     "nonpayable"
   >;
@@ -649,7 +648,12 @@ export interface Avatar extends BaseContract {
   getFunction(
     nameOrSignature: "init"
   ): TypedContractMethod<
-    [_owner: AddressLike, defaultExperience: AddressLike, initData: BytesLike],
+    [
+      _owner: AddressLike,
+      defaultExperience: AddressLike,
+      _name: string,
+      initData: BytesLike
+    ],
     [void],
     "nonpayable"
   >;

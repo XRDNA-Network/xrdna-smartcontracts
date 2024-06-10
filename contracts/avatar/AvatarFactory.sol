@@ -12,9 +12,9 @@ contract AvatarFactory is BaseFactory, IAvatarFactory {
    
     constructor(address mainAdmin, address[] memory admins) BaseFactory(mainAdmin, admins) {}
 
-    function createAvatar(address owner, address defaultExperience, bytes memory initData) external onlyAuthorizedRegistry returns (address proxy) {
+    function createAvatar(address owner, address defaultExperience, string memory username, bytes memory initData) external onlyAuthorizedRegistry returns (address proxy) {
         proxy = create();
-        IAvatar(proxy).init(owner, defaultExperience, initData);
+        IAvatar(proxy).init(owner, defaultExperience, username, initData);
     }
 
     

@@ -6,6 +6,8 @@ import { IWorldStack } from "./test_stack/world/IWorldStack";
 import { StackFactory, StackType } from "./test_stack/StackFactory";
 import { Signer, ZeroAddress } from "ethers";
 import { IRegistrarStack } from "./test_stack/registrar/IRegistrarStack";
+import { Company } from "../src/company/Company";
+import { Experience } from "../src/experience";
 
 describe("World Registration", () => {
 
@@ -17,8 +19,11 @@ describe("World Registration", () => {
     let worldOwner: HardhatEthersSigner;
     let worldRegistration: IWorldRegistration;
     let companyOwner: HardhatEthersSigner;
+    let avatarOwner: HardhatEthersSigner;
     let stack: StackFactory;
     let world: World;
+    let company: Company;
+    let experience: Experience;
     
     before(async () => {
         
@@ -29,6 +34,7 @@ describe("World Registration", () => {
         worldRegistryAdmin = signers[0];
         worldOwner = signers[1];
         companyOwner = signers[2];
+        avatarOwner = signers[3];
         stack = new StackFactory({
             assetRegistryAdmin: signers[0],
             avatarRegistryAdmin: signers[0],
@@ -167,6 +173,25 @@ describe("World Registration", () => {
         expect(res.receipt.status).to.equal(1);
         expect(res.companyAddress).to.not.be.undefined;
         expect(res.vectorAddress).to.not.be.undefined;
+        company = new Company({
+            address: res.companyAddress.toString(),
+            admin: companyOwner
+        });
+        const r = await company.addExperience({
+            name: "My Experience",
+            entryFee: ethers.parseEther("0.1"),
+            connectionDetails: "0x"
+        });
+            
+        expect(r).to.not.be.undefined;
+        expect(r.receipt.status).to.equal(1);
+        expect(r.experienceAddress).to.not.be.undefined;
+        experience = new Experience({
+            address: r.experienceAddress.toString(),
+            portalId: r.portalId,
+            admin: companyOwner
+        });
+
     });
 
     it("Should not allow  a duplicate company", async () => {
@@ -181,6 +206,42 @@ describe("World Registration", () => {
         } catch(e:any) {
             expect(e.message).to.not.be.undefined;
             if(e.message.indexOf("company name already taken") < 0) {
+                throw e;
+            }
+        }
+    });
+
+    ///////////////////////////////////////////////////////////////////////
+    // Avatar registration through world
+    ///////////////////////////////////////////////////////////////////////
+    it("Should register an avatar", async () => {
+        const res = await world.registerAvatar({
+            avatarOwner,
+            defaultExperience: experience.address,
+            appearanceDetails: "0x",
+            canReceiveTokensOutsideOfExperience: false,
+            sendTokensToAvatarOwner: false,
+            username: "myavatar"
+        });
+        expect(res).to.not.be.undefined;
+        expect(res.receipt.status).to.equal(1);
+        expect(res.avatarAddress).to.not.be.undefined;
+    });
+
+    it("Should not allow duplicate avatar", async () => {
+        try {
+            await world.registerAvatar({
+                avatarOwner,
+                defaultExperience: experience.address,
+                appearanceDetails: "0x",
+                canReceiveTokensOutsideOfExperience: false,
+                sendTokensToAvatarOwner: false,
+                username: "myavatar"
+            });
+            throw new Error("Should not have allowed creation");
+        } catch(e:any) {
+            expect(e.message).to.not.be.undefined;
+            if(e.message.indexOf("username already exists") < 0) {
                 throw e;
             }
         }

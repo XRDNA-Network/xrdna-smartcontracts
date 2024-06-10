@@ -4,6 +4,7 @@ import { RPCRetryHandler } from "../RPCRetryHandler";
 import { VectorAddress } from "../VectorAddress";
 import { LogParser } from "../LogParser";
 import { LogNames } from "../LogNames";
+import { Avatar } from "../avatar/Avatar";
 
 /**
  * Typescript proxy for World instance
@@ -40,11 +41,12 @@ export interface IAvatarRegistrationRequest {
     username: string;
 
     //initialization data to pass to the avatar contract
-    initData: string;
+    canReceiveTokensOutsideOfExperience: boolean;
+    appearanceDetails: string;
 }
 
 export interface IAvatarRegistrationResult {
-    avatar: AddressLike;
+    avatarAddress: AddressLike;
     receipt: TransactionReceipt;
 }
 
@@ -107,7 +109,7 @@ export class World {
 
     async registerCompany(request: ICompanyRegistrationRequest, tokens?: bigint): Promise<ICompanyRegistrationResult> {
         await this._onlyV2();
-
+        
         const t = await RPCRetryHandler.withRetry(() => this.world.registerCompany(request, {
             value: tokens
         }));
@@ -129,8 +131,17 @@ export class World {
 
     async registerAvatar(request: IAvatarRegistrationRequest): Promise<IAvatarRegistrationResult> {
         await this._onlyV2();
-
-        const t = await RPCRetryHandler.withRetry(() => this.world.registerAvatar(request));
+        const enc = Avatar.encodeInitData({
+            appearanceDetails: request.appearanceDetails,
+            canReceiveTokensOutsideOfExperience: request.canReceiveTokensOutsideOfExperience
+        });
+        const t = await RPCRetryHandler.withRetry(() => this.world.registerAvatar({
+            avatarOwner: request.avatarOwner,
+            defaultExperience: request.defaultExperience,
+            initData: enc,
+            sendTokensToAvatarOwner: request.sendTokensToAvatarOwner,
+            username: request.username
+        }));
         const receipt = await t.wait();
         if(!receipt.status) {
             throw new Error(`Transaction failed: ${receipt.transactionHash}`);
@@ -141,7 +152,7 @@ export class World {
             throw new Error("AvatarRegistered event not found in logs");
         }
         return {
-            avatar: args[0],
+            avatarAddress: args[0],
             receipt
         };
     }

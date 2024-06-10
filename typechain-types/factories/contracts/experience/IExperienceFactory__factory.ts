@@ -17,6 +17,11 @@ const _abi = [
         type: "address",
       },
       {
+        internalType: "string",
+        name: "_name",
+        type: "string",
+      },
+      {
         components: [
           {
             internalType: "string",

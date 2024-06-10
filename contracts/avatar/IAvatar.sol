@@ -95,9 +95,10 @@ interface IAvatar is IERC721Receiver {
      * @dev Initialize the avatar contract. This is called by the AvatarFactory when the avatar is created.
      * @param owner The address of the avatar owner
      * @param defaultExperience The address of the default experience contract where the avatar starts
+     * @param username The unique username of the avatar
      * @param initData Initialization data to pass to the avatar contract
      */
-    function init(address owner, address defaultExperience, bytes memory initData) external;
+    function init(address owner, address defaultExperience, string memory username, bytes memory initData) external;
 
 
     /**

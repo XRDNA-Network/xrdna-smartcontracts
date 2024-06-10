@@ -110,7 +110,7 @@ export interface IExperienceInterface extends Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "init",
-    values: [AddressLike, VectorAddressStruct, BytesLike]
+    values: [AddressLike, string, VectorAddressStruct, BytesLike]
   ): string;
   encodeFunctionData(functionFragment: "name", values?: undefined): string;
   encodeFunctionData(
@@ -313,7 +313,12 @@ export interface IExperience extends BaseContract {
   >;
 
   init: TypedContractMethod<
-    [company: AddressLike, vector: VectorAddressStruct, initData: BytesLike],
+    [
+      company: AddressLike,
+      _name: string,
+      vector: VectorAddressStruct,
+      initData: BytesLike
+    ],
     [void],
     "nonpayable"
   >;
@@ -365,7 +370,12 @@ export interface IExperience extends BaseContract {
   getFunction(
     nameOrSignature: "init"
   ): TypedContractMethod<
-    [company: AddressLike, vector: VectorAddressStruct, initData: BytesLike],
+    [
+      company: AddressLike,
+      _name: string,
+      vector: VectorAddressStruct,
+      initData: BytesLike
+    ],
     [void],
     "nonpayable"
   >;

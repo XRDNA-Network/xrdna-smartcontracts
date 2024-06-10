@@ -94,7 +94,7 @@ contract ExperienceRegistry is IExperienceRegistry, ReentrancyGuard, AccessContr
         IBasicCompany company = IBasicCompany(msg.sender);
         string memory lowerName = request.name.lower();
         require(experiencesByName[lowerName].company == address(0), "ExperienceRegistry: experience name already exists");
-        IExperience exp = IExperience(experienceFactory.createExperience(msg.sender, request.vector, request.initData));
+        IExperience exp = IExperience(experienceFactory.createExperience(msg.sender, request.name, request.vector, request.initData));
         bytes32 hash = keccak256(abi.encode(request.vector.asLookupKey()));
         uint256 portalId = portalRegistry.addPortal(AddPortalRequest({
             destination: exp,
@@ -118,7 +118,7 @@ contract ExperienceRegistry is IExperienceRegistry, ReentrancyGuard, AccessContr
         string memory oldName = old.name();
         VectorAddress memory oldVa = old.vectorAddress();
         bytes32 oldHash = keccak256(abi.encode(oldVa.asLookupKey()));
-        address proxy = experienceFactory.createExperience(old.company(), oldVa, initData);
+        address proxy = experienceFactory.createExperience(old.company(), oldName, oldVa, initData);
         portalRegistry.upgradeExperiencePortal(msg.sender, proxy);
         IExperience newExp = IExperience(proxy);
         ExperienceInfo memory info = ExperienceInfo({

@@ -1,12 +1,11 @@
-import {
-    time,
-    loadFixture,
-  } from "@nomicfoundation/hardhat-toolbox/network-helpers";
+
 import { ethers } from "hardhat";
 import { HardhatTestKeys } from "./HardhatTestKeys";
 import { expect } from "chai";
+import { IRegistrarStack } from "./test_stack/registrar/IRegistrarStack";
 import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
-import { RegistrarUtils } from "./RegistrarUtils";
+import { StackFactory, StackType } from "./test_stack/StackFactory";
+import { Registrar } from "../src";
 
 describe("RegistrarRegistry", () => {
     
@@ -17,11 +16,26 @@ describe("RegistrarRegistry", () => {
             return registry;
         }
 
-        let regUtils: RegistrarUtils;
+        let signers: HardhatEthersSigner[];
+        let registrarAdmin: HardhatEthersSigner;
+        let registrarSigner: HardhatEthersSigner;
+        let registrar: Registrar;
+        let stack: StackFactory;
         before(async () => {
-            regUtils = new RegistrarUtils();
-            await regUtils.deployRegistry({
-                registrarAdmin: (await ethers.getSigners())[0]
+            signers = await ethers.getSigners();
+        
+            registrarAdmin = signers[0];
+            registrarSigner = signers[0];
+            stack = new StackFactory({
+                assetRegistryAdmin: signers[0],
+                avatarRegistryAdmin: signers[0],
+                companyRegistryAdmin: signers[0],
+                experienceRegistryAdmin: signers[0],
+                portalRegistryAdmin: signers[0],
+                registrarAdmin,
+                registrarSigner,
+                worldRegistryAdmin: signers[0],
+                worldOwner: signers[1]
             });
         })
 
@@ -29,16 +43,22 @@ describe("RegistrarRegistry", () => {
         
     
         it("should register", async () => {
-            const signers = await ethers.getSigners();
             const b4Bal = await ethers.provider.getBalance(signers[2].address);
-            const {receipt: r} = await regUtils.registerRegistrar({
-                admin: signers[0], 
-                signer: signers[2].address, 
+            const reg = stack.getStack<IRegistrarStack>(StackType.REGISTRAR);
+            const registry = reg.getRegistrarRegistry();
+            const r = await registry.registerRegistrar({
+                defaultSigner: registrarSigner.address,
                 tokens: ethers.parseEther("1")
             });
-            expect(r.logs.length).to.equal(1);
-            expect(r.logs[0].args[0]).to.equal(1n);
-            expect(r.logs[0].args[2]).to.be.greaterThan(0n);
+            expect(r).to.not.be.null;
+            expect(r.registrarId).to.equal(1n);
+            expect(r.receipt.status).to.equal(1);
+            registrar = new Registrar({
+                registrarRegistryAddress: registry.address,
+                admin: registrarSigner,
+                registrarId: r.registrarId
+            });
+            
             const afterBal = await ethers.provider.getBalance(signers[2].address);
             if(afterBal <= b4Bal) {
                 throw new Error("Balance not updated");
@@ -46,31 +66,25 @@ describe("RegistrarRegistry", () => {
         });
 
         it("should add signers", async () => {
-            const signers = await ethers.getSigners();
-            const id = 1n;
-            const r2 = await regUtils.addSigners({
-                signer: signers[2], 
-                registrarId: id, 
-                addies: [signers[3].address]
+            await registrar.addSigners([signers[3].address]);
+            const registry = stack.getStack<IRegistrarStack>(StackType.REGISTRAR).getRegistrarRegistry();
+            const t = await registry.isSignerForRegistrar({
+                registrarId: registrar.registrarId, 
+                signer: signers[3].address
             });
-            expect(r2.logs.length).to.equal(1);
-            expect(r2.logs[0].args[0]).to.equal(1n);
-            expect(r2.logs[0].args[1].length).to.equal(1);
-            expect(r2.logs[0].args[1][0]).to.equal(signers[3].address);
+            expect(t).to.equal(true);
         });
 
         it("Should remove signers", async () => {
-            const signers = await ethers.getSigners();
-            await regUtils.removeSigners({
-                signer: signers[2], 
-                registrarId: 1n, 
-                addies: [signers[2].address]
-            });
-            const r2 = await regUtils.isRegistrar({
-                registrarId: 1n, signer: signers[2].address
+
+            await registrar.removeSigners([signers[2].address]);
+            const registry = stack.getStack<IRegistrarStack>(StackType.REGISTRAR).getRegistrarRegistry();;
+            const r2 = await registry.isSignerForRegistrar({
+                registrarId: registrar.registrarId, 
+                signer: signers[2].address
             });
             expect(r2).to.equal(false);
-            const r3 = await regUtils.isRegistrar({
+            const r3 = await registry.isSignerForRegistrar({
                 registrarId: 1n, signer: signers[3].address
             });
             expect(r3).to.equal(true);

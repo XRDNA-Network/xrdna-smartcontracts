@@ -6,5 +6,5 @@ import {VectorAddress} from '../VectorAddress.sol';
 
 interface IExperienceFactory {
 
-    function createExperience(address company, VectorAddress memory vector, bytes memory data) external returns (address);
+    function createExperience(address company, string memory _name, VectorAddress memory vector, bytes memory data) external returns (address);
 }

@@ -16,9 +16,9 @@ contract ExperienceFactory is BaseFactory, IExperienceFactory {
 
     constructor(address mainAdmin, address[] memory admins) BaseFactory(mainAdmin, admins) {}
 
-    function createExperience(address owner, VectorAddress memory va, bytes calldata initData) external onlyAuthorizedRegistry returns (address proxy) {
+    function createExperience(address owner, string memory _name, VectorAddress memory va, bytes calldata initData) external onlyAuthorizedRegistry returns (address proxy) {
         proxy = create();
-        IExperience(proxy).init(owner, va, initData);
+        IExperience(proxy).init(owner, _name, va, initData);
         //console.log("Calling proxy.init", address(this));
     }
 }

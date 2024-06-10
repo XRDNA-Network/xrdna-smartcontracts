@@ -12,7 +12,6 @@ import {IPortalRegistry} from '../portal/IPortalRegistry.sol';
 import {IPortalCondition} from '../portal/IPortalCondition.sol';
 
 struct ExperienceInitData {
-    string name;
     uint256 entryFee;
     bytes connectionDetails;
 }
@@ -83,13 +82,17 @@ contract Experience is ReentrancyGuard, IExperience {
         payable(address(_company)).transfer(msg.value);
     }
 
-    function init(address __company,VectorAddress memory vector, bytes memory initData) external onlyFactory override {
+    function encodeInitData(ExperienceInitData memory data) external pure returns (bytes memory) {
+        return abi.encode(data);
+    }
+
+    function init(address __company, string memory _name, VectorAddress memory vector, bytes memory initData) external onlyFactory override {
         require(address(_company) == address(0), "Experience: already initialized");
         _company = IBasicCompany(__company);
         ExperienceInitData memory data = abi.decode(initData, (ExperienceInitData));
         _vectorAddress = vector;
         world = _company.world();
-        name = data.name;
+        name = _name;
         entryFee = data.entryFee;
         connectionDetails = data.connectionDetails;
     }

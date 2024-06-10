@@ -2,14 +2,11 @@ import { ethers, ignition } from "hardhat";
 import { IBasicDeployArgs, IDeployable } from "../IDeployable";
 import { CompanyFactory } from "../../../src/company/CompanyFactory";
 import { CompanyRegistry } from "../../../src/company/CompanyRegistry";
-import { ICompanyStack, ICreateCompanyRequest } from "./ICompanyStack";
+import { ICompanyStack, ICreateCompanyRequest, IERC20CreationRequest, IERC721CreationRequest } from "./ICompanyStack";
 import { StackFactory, StackType } from "../StackFactory";
 import { AssetType, ERC20Asset, ERC20InitData, ERC721Asset } from "../../../src";
 import { Company } from "../../../src/company/Company";
-import CompanyFactoryModule from "../../../ignition/modules/company/CompanyFactory.module";
-import CompanyRegistryModule from "../../../ignition/modules/company/CompanyRegistry.module";
-import CompanyModule from "../../../ignition/modules/company/Company.module";
-import { IAssetStack, IERC20CreationRequest, IERC721CreationRequest } from "../asset/IAssetStack";
+import { IAssetStack } from "../asset/IAssetStack";
 import { throwError } from "../../utils";
 import { IWorldStackDeployment } from "../world/WorldStackImpl";
 
@@ -39,12 +36,12 @@ export class CompanyStackImpl implements ICompanyStack, IDeployable {
         }
 
         const initData: ERC20InitData = {
-            issuer: request.issuer.address,
+            issuer: request.issuer,
             name: request.name,
             symbol: request.symbol,
             decimals: request.decimals,
-            originChainAddress: request.originalChainAddress,
-            originChainId: request.originalChainId,
+            originChainAddress: request.originChainAddress,
+            originChainId: request.originChainId,
             totalSupply: request.totalSupply
         }
         const ar = await this.factory.getStack<IAssetStack>(StackType.ASSET);
@@ -65,7 +62,7 @@ export class CompanyStackImpl implements ICompanyStack, IDeployable {
         }
         
         const initData = {
-            issuer: request.issuer.address,
+            issuer: request.issuer,
             originChainAddress: request.originChainAddress,
             originChainId: request.originChainId,
             name: request.name,
@@ -92,11 +89,12 @@ export class CompanyStackImpl implements ICompanyStack, IDeployable {
         const companyRegResult = await world.registerCompany({
             owner: req.owner,
             initData: req.initData,
-            name: req.name
+            name: req.name,
+            sendTokensToCompanyOwner: req.sendTokensToCompanyOwner
         });
 
         const company = new Company({
-            address: companyRegResult.company.toString(),
+            address: companyRegResult.companyAddress.toString(),
             admin: await ethers.getImpersonatedSigner(req.owner)
         });
         

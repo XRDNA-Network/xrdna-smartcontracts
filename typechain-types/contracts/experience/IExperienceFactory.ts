@@ -44,7 +44,7 @@ export interface IExperienceFactoryInterface extends Interface {
 
   encodeFunctionData(
     functionFragment: "createExperience",
-    values: [AddressLike, VectorAddressStruct, BytesLike]
+    values: [AddressLike, string, VectorAddressStruct, BytesLike]
   ): string;
 
   decodeFunctionResult(
@@ -97,7 +97,12 @@ export interface IExperienceFactory extends BaseContract {
   ): Promise<this>;
 
   createExperience: TypedContractMethod<
-    [company: AddressLike, vector: VectorAddressStruct, data: BytesLike],
+    [
+      company: AddressLike,
+      _name: string,
+      vector: VectorAddressStruct,
+      data: BytesLike
+    ],
     [string],
     "nonpayable"
   >;
@@ -109,7 +114,12 @@ export interface IExperienceFactory extends BaseContract {
   getFunction(
     nameOrSignature: "createExperience"
   ): TypedContractMethod<
-    [company: AddressLike, vector: VectorAddressStruct, data: BytesLike],
+    [
+      company: AddressLike,
+      _name: string,
+      vector: VectorAddressStruct,
+      data: BytesLike
+    ],
     [string],
     "nonpayable"
   >;

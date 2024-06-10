@@ -25,7 +25,7 @@ export interface IAvatarFactoryInterface extends Interface {
 
   encodeFunctionData(
     functionFragment: "createAvatar",
-    values: [AddressLike, AddressLike, BytesLike]
+    values: [AddressLike, AddressLike, string, BytesLike]
   ): string;
 
   decodeFunctionResult(
@@ -78,7 +78,12 @@ export interface IAvatarFactory extends BaseContract {
   ): Promise<this>;
 
   createAvatar: TypedContractMethod<
-    [company: AddressLike, defaultExperience: AddressLike, initData: BytesLike],
+    [
+      company: AddressLike,
+      defaultExperience: AddressLike,
+      username: string,
+      initData: BytesLike
+    ],
     [string],
     "nonpayable"
   >;
@@ -90,7 +95,12 @@ export interface IAvatarFactory extends BaseContract {
   getFunction(
     nameOrSignature: "createAvatar"
   ): TypedContractMethod<
-    [company: AddressLike, defaultExperience: AddressLike, initData: BytesLike],
+    [
+      company: AddressLike,
+      defaultExperience: AddressLike,
+      username: string,
+      initData: BytesLike
+    ],
     [string],
     "nonpayable"
   >;

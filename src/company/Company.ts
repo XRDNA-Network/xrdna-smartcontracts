@@ -1,7 +1,11 @@
-import { AddressLike, Contract, Provider, Signer, TransactionResponse } from "ethers";
+import { AddressLike, Contract, Provider, Signer, TransactionReceipt, TransactionResponse } from "ethers";
 import {abi} from "../../artifacts/contracts/company/Company.sol/Company.json";
 import { RPCRetryHandler } from "../RPCRetryHandler";
 import { VectorAddress } from "../VectorAddress";
+import { LogParser } from "../LogParser";
+import { LogNames } from "../LogNames";
+import { Experience, IExperienceInitData } from "../experience";
+import { ethers } from "hardhat";
 
 export interface ICompanyOpts {
     address: string;
@@ -10,18 +14,27 @@ export interface ICompanyOpts {
 
 export interface IAddExperienceArgs {
     name: string,
-    initData: string,
+    entryFee: bigint;
+    connectionDetails: string;
+}
+
+export interface IAddExperienceResult {
+    receipt: TransactionReceipt;
+    experienceAddress: AddressLike;
+    portalId: bigint;
 }
 
 export class Company {
     private con: Contract;
     readonly address: string;
     private admin: Provider | Signer;
+    private parser: LogParser;
 
     constructor(opts: ICompanyOpts) {
         this.address = opts.address;
         this.admin = opts.admin;
         this.con = new Contract(this.address, abi, this.admin);
+        this.parser = new LogParser(abi, this.address);
     }
     
     async owner(): Promise<string> {
@@ -60,8 +73,29 @@ export class Company {
         return await RPCRetryHandler.withRetry(() => this.con.removeSigner(signer));
     }
 
-    async addExperience(exp: IAddExperienceArgs): Promise<TransactionResponse> {
-        return await RPCRetryHandler.withRetry(() => this.con.addExperience(exp));
+    async addExperience(exp: IAddExperienceArgs): Promise<IAddExperienceResult> {
+        const init = Experience.encodeInitData({
+            entryFee: exp.entryFee,
+            connectionDetails: exp.connectionDetails
+        });
+        const t = await RPCRetryHandler.withRetry(() => this.con.addExperience({
+            name: exp.name,
+            initData: init
+        }));
+        const r = await t.wait();
+        if(!r.status) {
+            throw new Error("Transaction failed with status 0");
+        }
+        const logs = this.parser.parseLogs(r);
+        const args = logs.get(LogNames.ExperienceAdded);
+        if(!args) {
+            throw new Error("ExperienceAdded log not found");
+        }
+        return {
+            receipt: r,
+            experienceAddress: args[0],
+            portalId: args[1]
+        };
     }
 
     async mint(asset: string, to: string, amount: string): Promise<TransactionResponse> {
