@@ -225,6 +225,7 @@ describe('Company', () => {
         expect(result).to.not.be.undefined;
         expect(r?.status).to.equal(1);
     })
+    // ------------------- Asset tests -------------------
     it('should be able to mint an ERC20 asset', async () => {
         const asset = testERC20.assetAddress.toString();
         const to = avatar.avatar.toString();
@@ -271,6 +272,7 @@ describe('Company', () => {
         const r = await result.wait();
         expect(r?.status).to.equal(1);
     })
+    // ------------------- Hook tests -------------------
     it('should add a hook tocompany', async () => {
         //declare hook as a variable that equals a random 20 byte evm address
         const hook = ethers.hexlify(ethers.randomBytes(20));
@@ -286,7 +288,7 @@ describe('Company', () => {
         expect(result).to.not.be.undefined;
         expect(r?.status).to.equal(1);
     })
-
+    // ------------------- Experience tests -------------------
     it('should add experience to a company', async () => {
         expect(experience).to.not.be.undefined;
         expect(experience.address).to.not.be.undefined;
@@ -306,7 +308,7 @@ describe('Company', () => {
         expect(result).to.not.be.undefined;
         expect(r?.status).to.equal(1);
     })
-
+    // --------------------Asset Hook tests --------------------
     it('should add an asset hook to a company', async () => {
         const hook = ethers.hexlify(ethers.randomBytes(20));
         const result = await company.setHook(hook);
@@ -320,7 +322,7 @@ describe('Company', () => {
         expect(result).to.not.be.undefined;
         expect(r?.status).to.equal(1);
     })
-
+    // -------------------- withdraw tests --------------------
     it('should withdraw tokens from a company', async () => {
         registrarSigner.sendTransaction({
             to: company.address,
