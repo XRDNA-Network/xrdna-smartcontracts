@@ -40,7 +40,7 @@ export interface IStackAdmins {
 export class StackFactory {
     stacksByType: Map<string, any> = new Map();
     registrarId?: bigint;
-    world: World;
+    world?: World;
     constructor(readonly admins: IStackAdmins, readonly userSigner: HardhatEthersSigner) {}
 
 
@@ -167,7 +167,9 @@ export class StackFactory {
         avatar: Avatar,
         testERC20: CreateAssetResult,
         testERC721: CreateAssetResult}> {
-        
+        if (!this.world) {
+            throw new Error("World not initialized");
+        }
         const companyRegistration = await this.world.registerCompany({
             sendTokensToCompanyOwner: false,
             owner: await this.admins.companyRegistryAdmin.getAddress(),
