@@ -308,6 +308,13 @@ describe('Company', () => {
         expect(result).to.not.be.undefined;
         expect(r?.status).to.equal(1);
     })
+    it('should change portal fee for a company', async () => {
+        const fee = ethers.parseEther("0.1").toString();
+        const result = await company.changeExperiencePortalFee(experience.address, fee);
+        const r = await result.wait();
+        expect(result).to.not.be.undefined;
+        expect(r?.status).to.equal(1);
+    })
     // --------------------Asset Hook tests --------------------
     it('should add an asset hook to a company', async () => {
         const hook = ethers.hexlify(ethers.randomBytes(20));
@@ -329,6 +336,15 @@ describe('Company', () => {
             value: ethers.parseEther("1.0")
         });
         const result = await company.withdraw(ethers.parseEther("1.0").toString());
+        const r = await result.wait();
+        expect(result).to.not.be.undefined;
+        expect(r?.status).to.equal(1);
+    })
+
+    // -------------------- upgrade tests --------------------
+    it('should upgrade a company', async () => {
+        const initData = "0x";
+        const result = await company.upgrade(initData);
         const r = await result.wait();
         expect(result).to.not.be.undefined;
         expect(r?.status).to.equal(1);

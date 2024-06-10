@@ -100,10 +100,16 @@ export class Company {
         return await RPCRetryHandler.withRetry(() => this.con.removeExperienceCondition(exp));
     }
 
+    async changeExperiencePortalFee(exp: string, fee: string): Promise<TransactionResponse> {
+        return await RPCRetryHandler.withRetry(() => this.con.changeExperiencePortalFee(exp, fee));
+    }
+
     async addAssetHook(asset: AddressLike, hook: AddressLike): Promise<TransactionResponse> {
         return await RPCRetryHandler.withRetry(() => this.con.addAssetHook(asset, hook));
     }
     async removeAssetHook(asset: AddressLike ): Promise<TransactionResponse> {
         return await RPCRetryHandler.withRetry(() => this.con.removeAssetHook(asset));
     }
+
+
 }
