@@ -69,6 +69,7 @@ export interface CompanyFactoryInterface extends Interface {
       | "ADMIN_ROLE"
       | "DEFAULT_ADMIN_ROLE"
       | "createCompany"
+      | "getImplementation"
       | "getRoleAdmin"
       | "grantRole"
       | "hasRole"
@@ -100,6 +101,10 @@ export interface CompanyFactoryInterface extends Interface {
   encodeFunctionData(
     functionFragment: "createCompany",
     values: [CompanyInitArgsStruct]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getImplementation",
+    values?: undefined
   ): string;
   encodeFunctionData(
     functionFragment: "getRoleAdmin",
@@ -149,6 +154,10 @@ export interface CompanyFactoryInterface extends Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "createCompany",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getImplementation",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -305,6 +314,8 @@ export interface CompanyFactory extends BaseContract {
     "nonpayable"
   >;
 
+  getImplementation: TypedContractMethod<[], [string], "view">;
+
   getRoleAdmin: TypedContractMethod<[role: BytesLike], [string], "view">;
 
   grantRole: TypedContractMethod<
@@ -370,6 +381,9 @@ export interface CompanyFactory extends BaseContract {
   getFunction(
     nameOrSignature: "createCompany"
   ): TypedContractMethod<[args: CompanyInitArgsStruct], [string], "nonpayable">;
+  getFunction(
+    nameOrSignature: "getImplementation"
+  ): TypedContractMethod<[], [string], "view">;
   getFunction(
     nameOrSignature: "getRoleAdmin"
   ): TypedContractMethod<[role: BytesLike], [string], "view">;

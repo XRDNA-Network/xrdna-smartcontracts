@@ -2,8 +2,8 @@
 /* tslint:disable */
 /* eslint-disable */
 export * as avatarSol from "./Avatar.sol";
+export * as avatarFactorySol from "./AvatarFactory.sol";
 export * as avatarRegistrySol from "./AvatarRegistry.sol";
-export { AvatarFactory__factory } from "./AvatarFactory__factory";
 export { AvatarProxy__factory } from "./AvatarProxy__factory";
 export { IAvatar__factory } from "./IAvatar__factory";
 export { IAvatarFactory__factory } from "./IAvatarFactory__factory";

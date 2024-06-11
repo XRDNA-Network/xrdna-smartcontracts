@@ -40,15 +40,36 @@ export type VectorAddressStructOutput = [
 ] & { x: string; y: string; z: string; t: bigint; p: bigint; p_sub: bigint };
 
 export interface IExperienceFactoryInterface extends Interface {
-  getFunction(nameOrSignature: "createExperience"): FunctionFragment;
+  getFunction(
+    nameOrSignature:
+      | "createExperience"
+      | "supportsVersion"
+      | "upgradeExperience"
+  ): FunctionFragment;
 
   encodeFunctionData(
     functionFragment: "createExperience",
     values: [AddressLike, string, VectorAddressStruct, BytesLike]
   ): string;
+  encodeFunctionData(
+    functionFragment: "supportsVersion",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "upgradeExperience",
+    values: [AddressLike, BytesLike]
+  ): string;
 
   decodeFunctionResult(
     functionFragment: "createExperience",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "supportsVersion",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "upgradeExperience",
     data: BytesLike
   ): Result;
 }
@@ -107,6 +128,14 @@ export interface IExperienceFactory extends BaseContract {
     "nonpayable"
   >;
 
+  supportsVersion: TypedContractMethod<[], [bigint], "view">;
+
+  upgradeExperience: TypedContractMethod<
+    [experience: AddressLike, data: BytesLike],
+    [void],
+    "nonpayable"
+  >;
+
   getFunction<T extends ContractMethod = ContractMethod>(
     key: string | FunctionFragment
   ): T;
@@ -121,6 +150,16 @@ export interface IExperienceFactory extends BaseContract {
       data: BytesLike
     ],
     [string],
+    "nonpayable"
+  >;
+  getFunction(
+    nameOrSignature: "supportsVersion"
+  ): TypedContractMethod<[], [bigint], "view">;
+  getFunction(
+    nameOrSignature: "upgradeExperience"
+  ): TypedContractMethod<
+    [experience: AddressLike, data: BytesLike],
+    [void],
     "nonpayable"
   >;
 

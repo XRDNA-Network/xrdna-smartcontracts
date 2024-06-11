@@ -7,7 +7,6 @@ import {VectorAddress} from '../VectorAddress.sol';
 
 struct WorldV2Storage {
     //fields populated by init function
-    bool upgraded;
     address owner;
     address oldVersion;
     IWorldHook hook;

@@ -2,20 +2,11 @@
 // Compatible with OpenZeppelin Contracts ^5.0.0
 pragma solidity ^0.8.24;
 
-import {AssetType} from '../asset/IAssetFactory.sol';
 import {IAssetHook} from '../asset/IAssetHook.sol';
+import {IAssetCondition} from '../asset/IAssetCondition.sol';
 
 struct CommonAssetV1Storage {
-    /**
-     * Fields for each specific asset instance
-     */
-     //whether the asset has been upgraded to another asset contract version
-    bool upgraded;
-
     uint8 decimals;
-
-    //the type of this asset
-    AssetType assetType;
 
     //the contract address on the origin chain
     address originAddress;
@@ -25,6 +16,9 @@ struct CommonAssetV1Storage {
 
     //custom mint/transfer behavior
     IAssetHook hook;
+
+    //custom view/use conditions
+    IAssetCondition condition;
 
     //original chain id
     uint256 originChainId;

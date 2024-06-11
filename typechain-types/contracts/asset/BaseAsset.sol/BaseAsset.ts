@@ -22,27 +22,62 @@ import type {
   TypedContractMethod,
 } from "../../../common";
 
+export type AssetCheckArgsStruct = {
+  asset: AddressLike;
+  world: AddressLike;
+  company: AddressLike;
+  experience: AddressLike;
+  avatar: AddressLike;
+};
+
+export type AssetCheckArgsStructOutput = [
+  asset: string,
+  world: string,
+  company: string,
+  experience: string,
+  avatar: string
+] & {
+  asset: string;
+  world: string;
+  company: string;
+  experience: string;
+  avatar: string;
+};
+
 export interface BaseAssetInterface extends Interface {
   getFunction(
     nameOrSignature:
+      | "addCondition"
       | "addHook"
       | "assetFactory"
       | "assetRegistry"
-      | "assetType"
       | "avatarRegistry"
+      | "canUseAsset"
+      | "canViewAsset"
       | "experienceRegistry"
+      | "init"
       | "issuer"
       | "originAddress"
       | "originChainId"
+      | "removeCondition"
       | "removeHook"
       | "upgrade"
+      | "upgradeComplete"
       | "version"
   ): FunctionFragment;
 
   getEvent(
-    nameOrSignatureOrTopic: "AssetHookAdded" | "AssetHookRemoved"
+    nameOrSignatureOrTopic:
+      | "AssetConditionAdded"
+      | "AssetConditionRemoved"
+      | "AssetHookAdded"
+      | "AssetHookRemoved"
   ): EventFragment;
 
+  encodeFunctionData(
+    functionFragment: "addCondition",
+    values: [AddressLike]
+  ): string;
   encodeFunctionData(
     functionFragment: "addHook",
     values: [AddressLike]
@@ -55,15 +90,23 @@ export interface BaseAssetInterface extends Interface {
     functionFragment: "assetRegistry",
     values?: undefined
   ): string;
-  encodeFunctionData(functionFragment: "assetType", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "avatarRegistry",
     values?: undefined
   ): string;
   encodeFunctionData(
+    functionFragment: "canUseAsset",
+    values: [AssetCheckArgsStruct]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "canViewAsset",
+    values: [AssetCheckArgsStruct]
+  ): string;
+  encodeFunctionData(
     functionFragment: "experienceRegistry",
     values?: undefined
   ): string;
+  encodeFunctionData(functionFragment: "init", values: [BytesLike]): string;
   encodeFunctionData(functionFragment: "issuer", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "originAddress",
@@ -74,15 +117,24 @@ export interface BaseAssetInterface extends Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "removeHook",
+    functionFragment: "removeCondition",
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "upgrade",
+    functionFragment: "removeHook",
+    values?: undefined
+  ): string;
+  encodeFunctionData(functionFragment: "upgrade", values: [BytesLike]): string;
+  encodeFunctionData(
+    functionFragment: "upgradeComplete",
     values: [AddressLike]
   ): string;
   encodeFunctionData(functionFragment: "version", values?: undefined): string;
 
+  decodeFunctionResult(
+    functionFragment: "addCondition",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "addHook", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "assetFactory",
@@ -92,15 +144,23 @@ export interface BaseAssetInterface extends Interface {
     functionFragment: "assetRegistry",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "assetType", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "avatarRegistry",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "canUseAsset",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "canViewAsset",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
     functionFragment: "experienceRegistry",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "init", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "issuer", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "originAddress",
@@ -110,9 +170,41 @@ export interface BaseAssetInterface extends Interface {
     functionFragment: "originChainId",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(
+    functionFragment: "removeCondition",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "removeHook", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "upgrade", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "upgradeComplete",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "version", data: BytesLike): Result;
+}
+
+export namespace AssetConditionAddedEvent {
+  export type InputTuple = [condition: AddressLike];
+  export type OutputTuple = [condition: string];
+  export interface OutputObject {
+    condition: string;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
+}
+
+export namespace AssetConditionRemovedEvent {
+  export type InputTuple = [condition: AddressLike];
+  export type OutputTuple = [condition: string];
+  export interface OutputObject {
+    condition: string;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
 }
 
 export namespace AssetHookAddedEvent {
@@ -182,17 +274,35 @@ export interface BaseAsset extends BaseContract {
     event?: TCEvent
   ): Promise<this>;
 
+  addCondition: TypedContractMethod<
+    [condition: AddressLike],
+    [void],
+    "nonpayable"
+  >;
+
   addHook: TypedContractMethod<[_hook: AddressLike], [void], "nonpayable">;
 
   assetFactory: TypedContractMethod<[], [string], "view">;
 
   assetRegistry: TypedContractMethod<[], [string], "view">;
 
-  assetType: TypedContractMethod<[], [bigint], "view">;
-
   avatarRegistry: TypedContractMethod<[], [string], "view">;
 
+  canUseAsset: TypedContractMethod<
+    [args: AssetCheckArgsStruct],
+    [boolean],
+    "view"
+  >;
+
+  canViewAsset: TypedContractMethod<
+    [args: AssetCheckArgsStruct],
+    [boolean],
+    "view"
+  >;
+
   experienceRegistry: TypedContractMethod<[], [string], "view">;
+
+  init: TypedContractMethod<[data: BytesLike], [void], "nonpayable">;
 
   issuer: TypedContractMethod<[], [string], "view">;
 
@@ -200,9 +310,17 @@ export interface BaseAsset extends BaseContract {
 
   originChainId: TypedContractMethod<[], [bigint], "view">;
 
+  removeCondition: TypedContractMethod<[], [void], "nonpayable">;
+
   removeHook: TypedContractMethod<[], [void], "nonpayable">;
 
-  upgrade: TypedContractMethod<[newAsset: AddressLike], [void], "nonpayable">;
+  upgrade: TypedContractMethod<[data: BytesLike], [void], "nonpayable">;
+
+  upgradeComplete: TypedContractMethod<
+    [nextVersion: AddressLike],
+    [void],
+    "nonpayable"
+  >;
 
   version: TypedContractMethod<[], [bigint], "view">;
 
@@ -210,6 +328,9 @@ export interface BaseAsset extends BaseContract {
     key: string | FunctionFragment
   ): T;
 
+  getFunction(
+    nameOrSignature: "addCondition"
+  ): TypedContractMethod<[condition: AddressLike], [void], "nonpayable">;
   getFunction(
     nameOrSignature: "addHook"
   ): TypedContractMethod<[_hook: AddressLike], [void], "nonpayable">;
@@ -220,14 +341,20 @@ export interface BaseAsset extends BaseContract {
     nameOrSignature: "assetRegistry"
   ): TypedContractMethod<[], [string], "view">;
   getFunction(
-    nameOrSignature: "assetType"
-  ): TypedContractMethod<[], [bigint], "view">;
-  getFunction(
     nameOrSignature: "avatarRegistry"
   ): TypedContractMethod<[], [string], "view">;
   getFunction(
+    nameOrSignature: "canUseAsset"
+  ): TypedContractMethod<[args: AssetCheckArgsStruct], [boolean], "view">;
+  getFunction(
+    nameOrSignature: "canViewAsset"
+  ): TypedContractMethod<[args: AssetCheckArgsStruct], [boolean], "view">;
+  getFunction(
     nameOrSignature: "experienceRegistry"
   ): TypedContractMethod<[], [string], "view">;
+  getFunction(
+    nameOrSignature: "init"
+  ): TypedContractMethod<[data: BytesLike], [void], "nonpayable">;
   getFunction(
     nameOrSignature: "issuer"
   ): TypedContractMethod<[], [string], "view">;
@@ -238,15 +365,35 @@ export interface BaseAsset extends BaseContract {
     nameOrSignature: "originChainId"
   ): TypedContractMethod<[], [bigint], "view">;
   getFunction(
+    nameOrSignature: "removeCondition"
+  ): TypedContractMethod<[], [void], "nonpayable">;
+  getFunction(
     nameOrSignature: "removeHook"
   ): TypedContractMethod<[], [void], "nonpayable">;
   getFunction(
     nameOrSignature: "upgrade"
-  ): TypedContractMethod<[newAsset: AddressLike], [void], "nonpayable">;
+  ): TypedContractMethod<[data: BytesLike], [void], "nonpayable">;
+  getFunction(
+    nameOrSignature: "upgradeComplete"
+  ): TypedContractMethod<[nextVersion: AddressLike], [void], "nonpayable">;
   getFunction(
     nameOrSignature: "version"
   ): TypedContractMethod<[], [bigint], "view">;
 
+  getEvent(
+    key: "AssetConditionAdded"
+  ): TypedContractEvent<
+    AssetConditionAddedEvent.InputTuple,
+    AssetConditionAddedEvent.OutputTuple,
+    AssetConditionAddedEvent.OutputObject
+  >;
+  getEvent(
+    key: "AssetConditionRemoved"
+  ): TypedContractEvent<
+    AssetConditionRemovedEvent.InputTuple,
+    AssetConditionRemovedEvent.OutputTuple,
+    AssetConditionRemovedEvent.OutputObject
+  >;
   getEvent(
     key: "AssetHookAdded"
   ): TypedContractEvent<
@@ -263,6 +410,28 @@ export interface BaseAsset extends BaseContract {
   >;
 
   filters: {
+    "AssetConditionAdded(address)": TypedContractEvent<
+      AssetConditionAddedEvent.InputTuple,
+      AssetConditionAddedEvent.OutputTuple,
+      AssetConditionAddedEvent.OutputObject
+    >;
+    AssetConditionAdded: TypedContractEvent<
+      AssetConditionAddedEvent.InputTuple,
+      AssetConditionAddedEvent.OutputTuple,
+      AssetConditionAddedEvent.OutputObject
+    >;
+
+    "AssetConditionRemoved(address)": TypedContractEvent<
+      AssetConditionRemovedEvent.InputTuple,
+      AssetConditionRemovedEvent.OutputTuple,
+      AssetConditionRemovedEvent.OutputObject
+    >;
+    AssetConditionRemoved: TypedContractEvent<
+      AssetConditionRemovedEvent.InputTuple,
+      AssetConditionRemovedEvent.OutputTuple,
+      AssetConditionRemovedEvent.OutputObject
+    >;
+
     "AssetHookAdded(address)": TypedContractEvent<
       AssetHookAddedEvent.InputTuple,
       AssetHookAddedEvent.OutputTuple,

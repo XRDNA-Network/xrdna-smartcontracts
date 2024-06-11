@@ -3,9 +3,9 @@
 pragma solidity ^0.8.24;
 
 import {VectorAddress} from '../VectorAddress.sol';
-import {AssetType} from '../asset/AssetFactory.sol';
 import {ICompanyHook} from './ICompanyHook.sol';
 import {IAssetHook} from '../asset/IAssetHook.sol';
+import {IBaseAccess} from '../IBaseAccess.sol';
 
 struct AddExperienceArgs {
     string name;
@@ -36,14 +36,12 @@ struct CompanyInitArgs {
     string name;
 }
 
-interface ICompany {
+interface ICompany is IBaseAccess {
 
     event ExperienceAdded(address indexed experience, uint256 portalId);
     event CompanyUpgraded(address indexed oldVersion, address indexed nextVersion);
     event CompanyHookSet(address indexed hook);
     event CompanyHookRemoved();
-    event SignerAdded(address indexed signer);
-    event SignerRemoved(address indexed signer);
     event AssetMinted(address indexed asset, address indexed to, uint256 amountOrTokenId);
     event AssetRevoked(address indexed asset, address indexed holder, uint256 amountOrTokenId);
 
@@ -52,16 +50,12 @@ interface ICompany {
     function name() external view returns (string memory);
     function world() external view returns (address);
     function vectorAddress() external view returns (VectorAddress memory);
-    function isSigner(address signer) external view returns (bool);
-    function canMint(address asset, address to, uint256 amount) external view returns (bool);
-    function upgraded() external view returns (bool);
+    function canMint(address asset, address to, bytes calldata data) external view returns (bool);
     
     function init(CompanyInitArgs memory args) external;
-    function addSigner(address signer) external;
-    function removeSigner(address signer) external;
     function addExperience(AddExperienceArgs memory args) external;
-    function mint(address asset, address to, uint256 amount) external;
-    function revoke(address asset, address holder, uint256 amountOrTokenId) external;
+    function mint(address asset, address to, bytes calldata data) external;
+    function revoke(address asset, address holder, bytes calldata data) external;
     function upgrade(bytes memory initData) external;
     function upgradeComplete(address nextVersion) external;
     function withdraw(uint256 amount) external;
@@ -71,9 +65,12 @@ interface ICompany {
     function addExperienceCondition(address experience, address condition) external;
     function removeExperienceCondition(address experience) external;
 
+    function addAssetCondition(address asset, address condition) external;
+    function removeAssetCondition(address asset) external;
+
     function addAssetHook(address asset, IAssetHook hook) external;
     function removeAssetHook(address asset) external;
 
-    function delegateJumpForAvatar(DelegatedAvatarJumpRequest calldata request) external payable;
+    function delegateJumpForAvatar(DelegatedAvatarJumpRequest calldata request) external;
     
 }

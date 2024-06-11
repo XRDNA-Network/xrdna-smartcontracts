@@ -5,7 +5,7 @@ import CompanyRegistryModule from "../company/CompanyRegistry.module";
 import ExperienceRegistryModule from "../experience/ExperienceRegistry.module";
 import PortalRegistryModule from "../portal/PortalRegistry.module";
 import AvatarProxyModule from './AvatarProxy.module';
-import NTAssetMasterModule from "../asset/NTAssetMaster.module";
+import NTAssetMasterModule from "../asset/MultiAssetRegistry.module";
 
 
 
@@ -22,7 +22,8 @@ export default buildModule("Avatar", (m) => {
         avatarRegistry: proxy.avatarRegistry,
         experienceRegistry: expReg.experienceRegistry,
         portalRegistry: portalReg.portalRegistry,
-        companyRegistry: companyReg.companyRegistry
+        companyRegistry: companyReg.companyRegistry,
+        multiAssetRegistry: assets.multiAssetRegistry
     }
     const master = m.contract("Avatar", [args], {
         after: [proxy.avatarFactory, 

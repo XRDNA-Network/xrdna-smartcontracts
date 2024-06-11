@@ -3,11 +3,11 @@
 /* eslint-disable */
 import type {
   BaseContract,
-  BigNumberish,
   BytesLike,
   FunctionFragment,
   Result,
   Interface,
+  AddressLike,
   ContractRunner,
   ContractMethod,
   Listener,
@@ -21,15 +21,33 @@ import type {
 } from "../../common";
 
 export interface IAssetFactoryInterface extends Interface {
-  getFunction(nameOrSignature: "createAsset"): FunctionFragment;
+  getFunction(
+    nameOrSignature: "createAsset" | "supportsVersion" | "upgradeAsset"
+  ): FunctionFragment;
 
   encodeFunctionData(
     functionFragment: "createAsset",
-    values: [BigNumberish, BytesLike]
+    values: [BytesLike]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "supportsVersion",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "upgradeAsset",
+    values: [AddressLike, BytesLike]
   ): string;
 
   decodeFunctionResult(
     functionFragment: "createAsset",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "supportsVersion",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "upgradeAsset",
     data: BytesLike
   ): Result;
 }
@@ -78,8 +96,16 @@ export interface IAssetFactory extends BaseContract {
   ): Promise<this>;
 
   createAsset: TypedContractMethod<
-    [assetType: BigNumberish, initData: BytesLike],
+    [initData: BytesLike],
     [string],
+    "nonpayable"
+  >;
+
+  supportsVersion: TypedContractMethod<[], [bigint], "view">;
+
+  upgradeAsset: TypedContractMethod<
+    [asset: AddressLike, initData: BytesLike],
+    [void],
     "nonpayable"
   >;
 
@@ -89,9 +115,15 @@ export interface IAssetFactory extends BaseContract {
 
   getFunction(
     nameOrSignature: "createAsset"
+  ): TypedContractMethod<[initData: BytesLike], [string], "nonpayable">;
+  getFunction(
+    nameOrSignature: "supportsVersion"
+  ): TypedContractMethod<[], [bigint], "view">;
+  getFunction(
+    nameOrSignature: "upgradeAsset"
   ): TypedContractMethod<
-    [assetType: BigNumberish, initData: BytesLike],
-    [string],
+    [asset: AddressLike, initData: BytesLike],
+    [void],
     "nonpayable"
   >;
 

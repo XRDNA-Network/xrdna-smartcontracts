@@ -62,15 +62,25 @@ export type WorldCreateRequestStructOutput = [
 };
 
 export interface IWorldFactory0_2Interface extends Interface {
-  getFunction(nameOrSignature: "createWorld"): FunctionFragment;
+  getFunction(
+    nameOrSignature: "createWorld" | "upgradeWorld"
+  ): FunctionFragment;
 
   encodeFunctionData(
     functionFragment: "createWorld",
     values: [WorldCreateRequestStruct]
   ): string;
+  encodeFunctionData(
+    functionFragment: "upgradeWorld",
+    values: [AddressLike, BytesLike]
+  ): string;
 
   decodeFunctionResult(
     functionFragment: "createWorld",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "upgradeWorld",
     data: BytesLike
   ): Result;
 }
@@ -124,6 +134,12 @@ export interface IWorldFactory0_2 extends BaseContract {
     "nonpayable"
   >;
 
+  upgradeWorld: TypedContractMethod<
+    [world: AddressLike, initData: BytesLike],
+    [void],
+    "nonpayable"
+  >;
+
   getFunction<T extends ContractMethod = ContractMethod>(
     key: string | FunctionFragment
   ): T;
@@ -133,6 +149,13 @@ export interface IWorldFactory0_2 extends BaseContract {
   ): TypedContractMethod<
     [request: WorldCreateRequestStruct],
     [string],
+    "nonpayable"
+  >;
+  getFunction(
+    nameOrSignature: "upgradeWorld"
+  ): TypedContractMethod<
+    [world: AddressLike, initData: BytesLike],
+    [void],
     "nonpayable"
   >;
 

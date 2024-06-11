@@ -1,9 +1,7 @@
 import { buildModule } from "@nomicfoundation/hardhat-ignition/modules";
-import WorldRegistryModule0_2 from "./WorldRegistry.module";
-import WorldFactoryModule0_2 from "./WorldFactory.module";
 import CompanyModule from "../company/Company.module";
 import AvatarModule from "../avatar/Avatar.module";
-import NTAssetMasterModule from "../asset/NTAssetMaster.module";
+import MultiAssetModule from "../asset/MultiAssetRegistry.module";
 import PortalRegistryModule from "../portal/PortalRegistry.module";
 import { NamedArtifactContractDeploymentFuture } from "@nomicfoundation/ignition-core";
 import { RegistrarRegistry } from "../../../src";
@@ -11,10 +9,13 @@ import RegistrarRegistryModule from "../RegistrarRegistry.module";
 import WorldProxyModule from './WorldProxy.module';
 
 export interface IWorldDeploymentResult {
-    assetRegistry: NamedArtifactContractDeploymentFuture<"AssetRegistry">;
-    assetFactory: NamedArtifactContractDeploymentFuture<"AssetFactory">;
-    erc20Master: NamedArtifactContractDeploymentFuture<"NonTransferableERC20Asset">;
-    erc721Master: NamedArtifactContractDeploymentFuture<"NonTransferableERC721Asset">;
+    erc20AssetRegistry: NamedArtifactContractDeploymentFuture<"ERC20AssetRegistry">;
+    erc20AssetFactory: NamedArtifactContractDeploymentFuture<"ERC20AssetFactory">;
+    erc721AssetRegistry: NamedArtifactContractDeploymentFuture<"ERC721AssetRegistry">;
+    erc721AssetFactory: NamedArtifactContractDeploymentFuture<"ERC721AssetFactory">;
+    erc20Master: NamedArtifactContractDeploymentFuture<"NTERC20Asset">;
+    erc721Master: NamedArtifactContractDeploymentFuture<"NTERC721Asset">;
+    multiAssetRegistry: NamedArtifactContractDeploymentFuture<"MultiAssetRegistry">;
     avatarRegistry: NamedArtifactContractDeploymentFuture<"AvatarRegistry">;
     avatarFactory: NamedArtifactContractDeploymentFuture<"AvatarFactory">;
     avatarMasterCopy: NamedArtifactContractDeploymentFuture<"Avatar">;
@@ -36,7 +37,7 @@ export default buildModule("World0_2", (m) => {
     
     const comp = m.useModule(CompanyModule);
     const avatar = m.useModule(AvatarModule);
-    const assets = m.useModule(NTAssetMasterModule);
+    const assets = m.useModule(MultiAssetModule);
     const portal = m.useModule(PortalRegistryModule);
     const registrar = m.useModule(RegistrarRegistryModule);
     
@@ -51,10 +52,13 @@ export default buildModule("World0_2", (m) => {
     });
     m.call(proxy.worldFactory, "setImplementation", [master]);
     return {
-        assetRegistry: assets.assetRegistry,
-        assetFactory: assets.assetFactory,
+        erc20Registry: assets.erc20Registry,
+        erc20Factory: assets.erc20Factory,
+        erc721Registry: assets.erc721Registry,
+        erc721Factory: assets.erc721Factory,
         erc20Master: assets.erc20Master,
         erc721Master: assets.erc721Master,
+        multiAssetRegistry: assets.multiAssetRegistry,
         avatarRegistry: avatar.avatarRegistry,
         avatarFactory: avatar.avatarFactory,
         avatarMasterCopy: avatar.avatarMasterCopy,

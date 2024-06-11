@@ -28,7 +28,7 @@ export interface IAssetRegistryInterface extends Interface {
       | "currentAssetVersion"
       | "isRegisteredAsset"
       | "registerAsset"
-      | "setCurrentAssetVersion"
+      | "setAssetFactory"
       | "upgradeAsset"
   ): FunctionFragment;
 
@@ -38,7 +38,7 @@ export interface IAssetRegistryInterface extends Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "currentAssetVersion",
-    values: [BigNumberish]
+    values?: undefined
   ): string;
   encodeFunctionData(
     functionFragment: "isRegisteredAsset",
@@ -46,15 +46,15 @@ export interface IAssetRegistryInterface extends Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "registerAsset",
-    values: [BigNumberish, BytesLike]
+    values: [BytesLike]
   ): string;
   encodeFunctionData(
-    functionFragment: "setCurrentAssetVersion",
-    values: [BigNumberish, string]
+    functionFragment: "setAssetFactory",
+    values: [AddressLike]
   ): string;
   encodeFunctionData(
     functionFragment: "upgradeAsset",
-    values: [AddressLike, BigNumberish, BytesLike]
+    values: [BytesLike]
   ): string;
 
   decodeFunctionResult(
@@ -74,7 +74,7 @@ export interface IAssetRegistryInterface extends Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "setCurrentAssetVersion",
+    functionFragment: "setAssetFactory",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -132,11 +132,7 @@ export interface IAssetRegistry extends BaseContract {
     "view"
   >;
 
-  currentAssetVersion: TypedContractMethod<
-    [assetType: BigNumberish],
-    [string],
-    "view"
-  >;
+  currentAssetVersion: TypedContractMethod<[], [bigint], "view">;
 
   isRegisteredAsset: TypedContractMethod<
     [asset: AddressLike],
@@ -145,20 +141,20 @@ export interface IAssetRegistry extends BaseContract {
   >;
 
   registerAsset: TypedContractMethod<
-    [assetType: BigNumberish, initData: BytesLike],
+    [initData: BytesLike],
     [string],
     "nonpayable"
   >;
 
-  setCurrentAssetVersion: TypedContractMethod<
-    [assetType: BigNumberish, version: string],
+  setAssetFactory: TypedContractMethod<
+    [factory: AddressLike],
     [void],
     "nonpayable"
   >;
 
   upgradeAsset: TypedContractMethod<
-    [asset: AddressLike, assetType: BigNumberish, initData: BytesLike],
-    [string],
+    [initData: BytesLike],
+    [void],
     "nonpayable"
   >;
 
@@ -175,31 +171,19 @@ export interface IAssetRegistry extends BaseContract {
   >;
   getFunction(
     nameOrSignature: "currentAssetVersion"
-  ): TypedContractMethod<[assetType: BigNumberish], [string], "view">;
+  ): TypedContractMethod<[], [bigint], "view">;
   getFunction(
     nameOrSignature: "isRegisteredAsset"
   ): TypedContractMethod<[asset: AddressLike], [boolean], "view">;
   getFunction(
     nameOrSignature: "registerAsset"
-  ): TypedContractMethod<
-    [assetType: BigNumberish, initData: BytesLike],
-    [string],
-    "nonpayable"
-  >;
+  ): TypedContractMethod<[initData: BytesLike], [string], "nonpayable">;
   getFunction(
-    nameOrSignature: "setCurrentAssetVersion"
-  ): TypedContractMethod<
-    [assetType: BigNumberish, version: string],
-    [void],
-    "nonpayable"
-  >;
+    nameOrSignature: "setAssetFactory"
+  ): TypedContractMethod<[factory: AddressLike], [void], "nonpayable">;
   getFunction(
     nameOrSignature: "upgradeAsset"
-  ): TypedContractMethod<
-    [asset: AddressLike, assetType: BigNumberish, initData: BytesLike],
-    [string],
-    "nonpayable"
-  >;
+  ): TypedContractMethod<[initData: BytesLike], [void], "nonpayable">;
 
   filters: {};
 }

@@ -43,7 +43,6 @@ export interface WorldProxyInterface extends Interface {
       | "isSigner"
       | "registry"
       | "removeSigners"
-      | "setImplementation"
   ): FunctionFragment;
 
   getEvent(
@@ -76,10 +75,6 @@ export interface WorldProxyInterface extends Interface {
     functionFragment: "removeSigners",
     values: [AddressLike[]]
   ): string;
-  encodeFunctionData(
-    functionFragment: "setImplementation",
-    values: [AddressLike]
-  ): string;
 
   decodeFunctionResult(functionFragment: "addSigners", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "factory", data: BytesLike): Result;
@@ -92,10 +87,6 @@ export interface WorldProxyInterface extends Interface {
   decodeFunctionResult(functionFragment: "registry", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "removeSigners",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "setImplementation",
     data: BytesLike
   ): Result;
 }
@@ -218,12 +209,6 @@ export interface WorldProxy extends BaseContract {
     "nonpayable"
   >;
 
-  setImplementation: TypedContractMethod<
-    [impl: AddressLike],
-    [void],
-    "nonpayable"
-  >;
-
   getFunction<T extends ContractMethod = ContractMethod>(
     key: string | FunctionFragment
   ): T;
@@ -249,9 +234,6 @@ export interface WorldProxy extends BaseContract {
   getFunction(
     nameOrSignature: "removeSigners"
   ): TypedContractMethod<[signers: AddressLike[]], [void], "nonpayable">;
-  getFunction(
-    nameOrSignature: "setImplementation"
-  ): TypedContractMethod<[impl: AddressLike], [void], "nonpayable">;
 
   getEvent(
     key: "ImplementationChanged"

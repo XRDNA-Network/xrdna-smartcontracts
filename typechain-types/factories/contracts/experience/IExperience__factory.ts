@@ -216,19 +216,6 @@ const _abi = [
     inputs: [
       {
         internalType: "address",
-        name: "nextVersion",
-        type: "address",
-      },
-    ],
-    name: "experienceUpgraded",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "address",
         name: "company",
         type: "address",
       },
@@ -321,6 +308,19 @@ const _abi = [
       },
     ],
     name: "upgrade",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "nextVersion",
+        type: "address",
+      },
+    ],
+    name: "upgradeComplete",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",

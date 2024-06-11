@@ -122,6 +122,25 @@ const _abi = [
       {
         indexed: true,
         internalType: "address",
+        name: "sender",
+        type: "address",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "value",
+        type: "uint256",
+      },
+    ],
+    name: "ReceivedFunds",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "address",
         name: "signer",
         type: "address",
       },
@@ -141,6 +160,24 @@ const _abi = [
     ],
     name: "SignerRemoved",
     type: "event",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "asset",
+        type: "address",
+      },
+      {
+        internalType: "address",
+        name: "condition",
+        type: "address",
+      },
+    ],
+    name: "addAssetCondition",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
   },
   {
     inputs: [
@@ -206,12 +243,12 @@ const _abi = [
   {
     inputs: [
       {
-        internalType: "address",
-        name: "signer",
-        type: "address",
+        internalType: "address[]",
+        name: "signers",
+        type: "address[]",
       },
     ],
-    name: "addSigner",
+    name: "addSigners",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
@@ -229,9 +266,9 @@ const _abi = [
         type: "address",
       },
       {
-        internalType: "uint256",
-        name: "amount",
-        type: "uint256",
+        internalType: "bytes",
+        name: "data",
+        type: "bytes",
       },
     ],
     name: "canMint",
@@ -277,7 +314,7 @@ const _abi = [
     ],
     name: "delegateJumpForAvatar",
     outputs: [],
-    stateMutability: "payable",
+    stateMutability: "nonpayable",
     type: "function",
   },
   {
@@ -384,9 +421,9 @@ const _abi = [
         type: "address",
       },
       {
-        internalType: "uint256",
-        name: "amount",
-        type: "uint256",
+        internalType: "bytes",
+        name: "data",
+        type: "bytes",
       },
     ],
     name: "mint",
@@ -428,6 +465,19 @@ const _abi = [
         type: "address",
       },
     ],
+    name: "removeAssetCondition",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "asset",
+        type: "address",
+      },
+    ],
     name: "removeAssetHook",
     outputs: [],
     stateMutability: "nonpayable",
@@ -456,12 +506,12 @@ const _abi = [
   {
     inputs: [
       {
-        internalType: "address",
-        name: "signer",
-        type: "address",
+        internalType: "address[]",
+        name: "signers",
+        type: "address[]",
       },
     ],
-    name: "removeSigner",
+    name: "removeSigners",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
@@ -479,9 +529,9 @@ const _abi = [
         type: "address",
       },
       {
-        internalType: "uint256",
-        name: "amountOrTokenId",
-        type: "uint256",
+        internalType: "bytes",
+        name: "data",
+        type: "bytes",
       },
     ],
     name: "revoke",
@@ -526,19 +576,6 @@ const _abi = [
     name: "upgradeComplete",
     outputs: [],
     stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "upgraded",
-    outputs: [
-      {
-        internalType: "bool",
-        name: "",
-        type: "bool",
-      },
-    ],
-    stateMutability: "view",
     type: "function",
   },
   {

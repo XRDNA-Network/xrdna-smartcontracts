@@ -33,7 +33,7 @@ abstract contract BaseAccess is IBaseAccess {
         BaseProxyStorage storage bs = LibBaseProxy.load();
         for (uint256 i = 0; i < signers.length; i++) {
             require(signers[i] != address(0), "BaseProxy: signer is zero address");
-            bs.setRole(LibProxyAccess.SIGNER_ROLE, signers[i], true);
+            bs.grantRole(LibProxyAccess.SIGNER_ROLE, signers[i]);
             emit SignerAdded(signers[i]);
         }
     }
@@ -45,7 +45,7 @@ abstract contract BaseAccess is IBaseAccess {
     function _removeSigners(address[] calldata signers) internal {
         BaseProxyStorage storage bs = LibBaseProxy.load();
         for (uint256 i = 0; i < signers.length; i++) {
-            bs.setRole(LibProxyAccess.SIGNER_ROLE, signers[i], false);
+            bs.revokeRole(LibProxyAccess.SIGNER_ROLE, signers[i]);
             emit SignerRemoved(signers[i]);
         }
     }

@@ -43,6 +43,24 @@ const _abi = [
     stateMutability: "nonpayable",
     type: "function",
   },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "avatar",
+        type: "address",
+      },
+      {
+        internalType: "bytes",
+        name: "initData",
+        type: "bytes",
+      },
+    ],
+    name: "upgradeAvatar",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
 ] as const;
 
 export class IAvatarFactory__factory {

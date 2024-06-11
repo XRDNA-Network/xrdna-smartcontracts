@@ -155,26 +155,20 @@ contract PortalRegistry is IPortalRegistry, AccessControl {
          * Payment for a jump must be attached to the txn. Whether it's paid by 3rd party of
          * avatar owner doesn't matter in this context.
          */
-         if(meta.destPortal.fee > 0) {
-            //see if the caller has paid the fee
-            return meta.destinationExperience.entering{value: meta.destPortal.fee}(JumpEntryRequest({
-                sourceWorld: meta.sourceWorld,
-                sourceCompany: meta.sourceCompany,
-                avatar: msg.sender
-            }));
-         } else {
-            return meta.destinationExperience.entering(JumpEntryRequest({
-                sourceWorld: meta.sourceWorld,
-                sourceCompany: meta.sourceCompany,
-                avatar: msg.sender
-            }));
-         }
+        //see if the caller has paid the fee
+        return meta.destinationExperience.entering{value: meta.destPortal.fee}(JumpEntryRequest({
+            sourceWorld: meta.sourceWorld,
+            sourceCompany: meta.sourceCompany,
+            avatar: msg.sender
+        }));
+         
     }
 
     //NOTE: must be called by a registered destination experience contract
     function addCondition(IPortalCondition condition) external onlyExperience notUpgraded {
         require(address(condition) != address(0), "PortalRegistry: condition address cannot be 0");
         uint256 id = portalIdsByExperience[msg.sender];
+        require(id != 0, "PortalRegistry: experience not found");
         portals[id].condition = condition;
         emit PortalConditionAdded(id, address(condition));
     }

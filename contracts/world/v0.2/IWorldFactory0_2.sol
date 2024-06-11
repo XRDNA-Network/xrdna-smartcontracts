@@ -14,5 +14,6 @@ struct WorldCreateRequest {
 
 interface IWorldFactory0_2 {
 
+    function upgradeWorld(address world, bytes memory initData) external;
     function createWorld(WorldCreateRequest memory request) external returns (address world);
 }

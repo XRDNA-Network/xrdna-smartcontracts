@@ -7,6 +7,7 @@ import { LogNames } from "../LogNames";
 import { Experience, IExperienceInitData } from "../experience";
 import { ethers } from "hardhat";
 import { Avatar } from "../avatar/Avatar";
+import { ERC20Asset, ERC721Asset } from "../asset";
 
 export interface ICompanyOpts {
     address: string;
@@ -37,6 +38,16 @@ export interface IDelegatedAvatarJumpResult {
     destination: AddressLike;
     connectionDetails: string;
     fee: bigint;
+}
+
+export interface IMintERC20Result {
+    receipt: TransactionReceipt;
+    amount: bigint;
+}
+
+export interface IMintERC721Result {
+    receipt: TransactionReceipt;
+    tokenId: bigint;
 }
 
 export class Company {
@@ -73,7 +84,8 @@ export class Company {
     }
 
     async canMint(asset: string, to: string, amount: string): Promise<boolean> {
-        return await RPCRetryHandler.withRetry(() => this.con.canMint(asset, to, amount));
+        const data = ethers.AbiCoder.defaultAbiCoder().encode(["uint256"], [amount]);
+        return await RPCRetryHandler.withRetry(() => this.con.canMint(asset, to, data));
     }
 
     async upgraded(): Promise<boolean> {
@@ -81,11 +93,11 @@ export class Company {
     }
 
     async addSigner(signer: string): Promise<TransactionResponse> {
-        return await RPCRetryHandler.withRetry(() => this.con.addSigner(signer));
+        return await RPCRetryHandler.withRetry(() => this.con.addSigners([signer]));
     }
 
     async removeSigner(signer: string): Promise<TransactionResponse> {
-        return await RPCRetryHandler.withRetry(() => this.con.removeSigner(signer));
+        return await RPCRetryHandler.withRetry(() => this.con.removeSigners([signer]));
     }
 
     async addExperience(exp: IAddExperienceArgs): Promise<IAddExperienceResult> {
@@ -113,12 +125,51 @@ export class Company {
         };
     }
 
-    async mint(asset: string, to: string, amount: string): Promise<TransactionResponse> {
-        return await RPCRetryHandler.withRetry(() => this.con.mint(asset, to, amount));
+    async mintERC20(asset: string, to: string, amount: bigint): Promise<IMintERC20Result> {
+        const data = ethers.AbiCoder.defaultAbiCoder().encode(["uint256"], [amount]);
+        const t = await RPCRetryHandler.withRetry(() => this.con.mint(asset, to, data));
+        const r = await t.wait();
+        if(!r.status) {
+            throw new Error("Transaction failed with status 0");
+        }
+
+        const erc20 = new ERC20Asset({address: asset, provider: this.admin as Provider});
+        const logs = erc20.logParser.parseLogs(r);
+        const args = logs.get(LogNames.Transfer);
+        if(!args) {
+            throw new Error("Transfer log not found");
+        }
+        return {
+            receipt: r,
+            amount: args[2]
+        };
     }
 
-    async revoke(asset: string, holder: string, amountOrTokenId: string): Promise<TransactionResponse> {
-        return await RPCRetryHandler.withRetry(() => this.con.revoke(asset, holder, amountOrTokenId));
+    async mintERC721(asset: AddressLike, to: AddressLike): Promise<IMintERC721Result> {
+        const data = ethers.AbiCoder.defaultAbiCoder().encode(["uint256"], [0]);
+        const t = await RPCRetryHandler.withRetry(() => this.con.mint(asset, to, data));
+        const r = await t.wait();
+        if(!r.status) {
+            throw new Error("Transaction failed with status 0");
+        }
+
+        const erc721 = new ERC721Asset({address: await asset.valueOf().toString(), provider: this.admin as Provider});
+
+        const logs = erc721.logParser.parseLogs(r);
+        const args = logs.get(LogNames.Transfer);
+        if(!args) {
+            throw new Error("Transfer log not found");
+        }
+        return {
+            receipt: r,
+            tokenId: args[2]
+        };
+    }
+
+    async revoke(asset: string, holder: string, amountOrTokenId: bigint): Promise<TransactionResponse> {
+        console.log("revoke", asset, holder, amountOrTokenId);
+        const data = ethers.AbiCoder.defaultAbiCoder().encode(["uint256"], [amountOrTokenId]);
+        return await RPCRetryHandler.withRetry(() => this.con.revoke(asset, holder, data));
     }
 
     async upgrade(initData: string): Promise<TransactionResponse> {

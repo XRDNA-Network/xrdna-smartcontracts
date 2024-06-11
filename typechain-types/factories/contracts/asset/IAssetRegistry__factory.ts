@@ -34,19 +34,13 @@ const _abi = [
     type: "function",
   },
   {
-    inputs: [
-      {
-        internalType: "uint256",
-        name: "assetType",
-        type: "uint256",
-      },
-    ],
+    inputs: [],
     name: "currentAssetVersion",
     outputs: [
       {
-        internalType: "string",
+        internalType: "uint256",
         name: "",
-        type: "string",
+        type: "uint256",
       },
     ],
     stateMutability: "view",
@@ -74,11 +68,6 @@ const _abi = [
   {
     inputs: [
       {
-        internalType: "uint256",
-        name: "assetType",
-        type: "uint256",
-      },
-      {
         internalType: "bytes",
         name: "initData",
         type: "bytes",
@@ -98,17 +87,12 @@ const _abi = [
   {
     inputs: [
       {
-        internalType: "uint256",
-        name: "assetType",
-        type: "uint256",
-      },
-      {
-        internalType: "string",
-        name: "version",
-        type: "string",
+        internalType: "address",
+        name: "factory",
+        type: "address",
       },
     ],
-    name: "setCurrentAssetVersion",
+    name: "setAssetFactory",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
@@ -116,29 +100,13 @@ const _abi = [
   {
     inputs: [
       {
-        internalType: "address",
-        name: "asset",
-        type: "address",
-      },
-      {
-        internalType: "uint256",
-        name: "assetType",
-        type: "uint256",
-      },
-      {
         internalType: "bytes",
         name: "initData",
         type: "bytes",
       },
     ],
     name: "upgradeAsset",
-    outputs: [
-      {
-        internalType: "address",
-        name: "",
-        type: "address",
-      },
-    ],
+    outputs: [],
     stateMutability: "nonpayable",
     type: "function",
   },

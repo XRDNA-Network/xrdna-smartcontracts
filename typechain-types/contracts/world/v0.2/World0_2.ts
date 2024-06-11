@@ -126,7 +126,6 @@ export type CompanyRegistrationArgsStructOutput = [
 export interface World0_2Interface extends Interface {
   getFunction(
     nameOrSignature:
-      | "SIGNER_ROLE"
       | "addSigners"
       | "avatarRegistry"
       | "companyRegistry"
@@ -142,7 +141,6 @@ export interface World0_2Interface extends Interface {
       | "setHook"
       | "upgrade"
       | "upgradeComplete"
-      | "upgraded"
       | "version"
       | "withdraw"
       | "worldFactory"
@@ -161,10 +159,6 @@ export interface World0_2Interface extends Interface {
       | "WorldUpgraded"
   ): EventFragment;
 
-  encodeFunctionData(
-    functionFragment: "SIGNER_ROLE",
-    values?: undefined
-  ): string;
   encodeFunctionData(
     functionFragment: "addSigners",
     values: [AddressLike[]]
@@ -216,7 +210,6 @@ export interface World0_2Interface extends Interface {
     functionFragment: "upgradeComplete",
     values: [AddressLike]
   ): string;
-  encodeFunctionData(functionFragment: "upgraded", values?: undefined): string;
   encodeFunctionData(functionFragment: "version", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "withdraw",
@@ -231,10 +224,6 @@ export interface World0_2Interface extends Interface {
     values?: undefined
   ): string;
 
-  decodeFunctionResult(
-    functionFragment: "SIGNER_ROLE",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(functionFragment: "addSigners", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "avatarRegistry",
@@ -271,7 +260,6 @@ export interface World0_2Interface extends Interface {
     functionFragment: "upgradeComplete",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "upgraded", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "version", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "withdraw", data: BytesLike): Result;
   decodeFunctionResult(
@@ -434,8 +422,6 @@ export interface World0_2 extends BaseContract {
     event?: TCEvent
   ): Promise<this>;
 
-  SIGNER_ROLE: TypedContractMethod<[], [string], "view">;
-
   addSigners: TypedContractMethod<
     [signers: AddressLike[]],
     [void],
@@ -490,8 +476,6 @@ export interface World0_2 extends BaseContract {
     "nonpayable"
   >;
 
-  upgraded: TypedContractMethod<[], [boolean], "view">;
-
   version: TypedContractMethod<[], [bigint], "view">;
 
   withdraw: TypedContractMethod<[amount: BigNumberish], [void], "nonpayable">;
@@ -504,9 +488,6 @@ export interface World0_2 extends BaseContract {
     key: string | FunctionFragment
   ): T;
 
-  getFunction(
-    nameOrSignature: "SIGNER_ROLE"
-  ): TypedContractMethod<[], [string], "view">;
   getFunction(
     nameOrSignature: "addSigners"
   ): TypedContractMethod<[signers: AddressLike[]], [void], "nonpayable">;
@@ -564,9 +545,6 @@ export interface World0_2 extends BaseContract {
   getFunction(
     nameOrSignature: "upgradeComplete"
   ): TypedContractMethod<[nextVersion: AddressLike], [void], "nonpayable">;
-  getFunction(
-    nameOrSignature: "upgraded"
-  ): TypedContractMethod<[], [boolean], "view">;
   getFunction(
     nameOrSignature: "version"
   ): TypedContractMethod<[], [bigint], "view">;

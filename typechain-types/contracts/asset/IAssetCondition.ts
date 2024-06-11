@@ -20,16 +20,38 @@ import type {
   TypedContractMethod,
 } from "../../common";
 
+export type AssetCheckArgsStruct = {
+  asset: AddressLike;
+  world: AddressLike;
+  company: AddressLike;
+  experience: AddressLike;
+  avatar: AddressLike;
+};
+
+export type AssetCheckArgsStructOutput = [
+  asset: string,
+  world: string,
+  company: string,
+  experience: string,
+  avatar: string
+] & {
+  asset: string;
+  world: string;
+  company: string;
+  experience: string;
+  avatar: string;
+};
+
 export interface IAssetConditionInterface extends Interface {
   getFunction(nameOrSignature: "canUse" | "canView"): FunctionFragment;
 
   encodeFunctionData(
     functionFragment: "canUse",
-    values: [AddressLike, AddressLike, AddressLike, AddressLike]
+    values: [AssetCheckArgsStruct]
   ): string;
   encodeFunctionData(
     functionFragment: "canView",
-    values: [AddressLike, AddressLike, AddressLike, AddressLike]
+    values: [AssetCheckArgsStruct]
   ): string;
 
   decodeFunctionResult(functionFragment: "canUse", data: BytesLike): Result;
@@ -79,27 +101,9 @@ export interface IAssetCondition extends BaseContract {
     event?: TCEvent
   ): Promise<this>;
 
-  canUse: TypedContractMethod<
-    [
-      asset: AddressLike,
-      world: AddressLike,
-      company: AddressLike,
-      experience: AddressLike
-    ],
-    [boolean],
-    "view"
-  >;
+  canUse: TypedContractMethod<[args: AssetCheckArgsStruct], [boolean], "view">;
 
-  canView: TypedContractMethod<
-    [
-      asset: AddressLike,
-      world: AddressLike,
-      company: AddressLike,
-      experience: AddressLike
-    ],
-    [boolean],
-    "view"
-  >;
+  canView: TypedContractMethod<[args: AssetCheckArgsStruct], [boolean], "view">;
 
   getFunction<T extends ContractMethod = ContractMethod>(
     key: string | FunctionFragment
@@ -107,28 +111,10 @@ export interface IAssetCondition extends BaseContract {
 
   getFunction(
     nameOrSignature: "canUse"
-  ): TypedContractMethod<
-    [
-      asset: AddressLike,
-      world: AddressLike,
-      company: AddressLike,
-      experience: AddressLike
-    ],
-    [boolean],
-    "view"
-  >;
+  ): TypedContractMethod<[args: AssetCheckArgsStruct], [boolean], "view">;
   getFunction(
     nameOrSignature: "canView"
-  ): TypedContractMethod<
-    [
-      asset: AddressLike,
-      world: AddressLike,
-      company: AddressLike,
-      experience: AddressLike
-    ],
-    [boolean],
-    "view"
-  >;
+  ): TypedContractMethod<[args: AssetCheckArgsStruct], [boolean], "view">;
 
   filters: {};
 }

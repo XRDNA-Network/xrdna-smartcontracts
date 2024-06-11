@@ -34,15 +34,6 @@ contract Experience is ReentrancyGuard, IExperience {
     IExperienceRegistry public immutable experienceRegistry;
     uint256 public constant override version = 1;
 
-    constructor(ExperienceConstructorArgs memory args) {
-        require(args.experienceFactory != address(0), "Experience: zero address factory");
-        require(args.portalRegistry != address(0), "Experience: zero address portalRegistry");
-        require(args.experienceRegistry != address(0), "Experience: zero address experienceRegistry");
-        experienceFactory = args.experienceFactory;
-        portalRegistry = IPortalRegistry(args.portalRegistry);
-        experienceRegistry = IExperienceRegistry(args.experienceRegistry);
-    }
-
     modifier onlyFactory() {
         require(msg.sender == experienceFactory, "Experience: caller is not the factory");
         _;
@@ -66,19 +57,18 @@ contract Experience is ReentrancyGuard, IExperience {
         _;
     }
 
-    modifier notUpgraded {
-        ExperienceV1Storage storage s = LibExperienceV1Storage.load();
-        require(!s.upgraded, "Experience: cannot use upgraded contract");
-        _;
+    constructor(ExperienceConstructorArgs memory args) {
+        require(args.experienceFactory != address(0), "Experience: zero address factory");
+        require(args.portalRegistry != address(0), "Experience: zero address portalRegistry");
+        require(args.experienceRegistry != address(0), "Experience: zero address experienceRegistry");
+        experienceFactory = args.experienceFactory;
+        portalRegistry = IPortalRegistry(args.portalRegistry);
+        experienceRegistry = IExperienceRegistry(args.experienceRegistry);
     }
 
     //all fees go to the company
     receive() external payable {
         
-    }
-
-    function encodeInitData(ExperienceInitData memory data) external pure returns (bytes memory) {
-        return abi.encode(data);
     }
 
     function init(address _company, string memory _name, VectorAddress memory vector, bytes memory initData) external onlyFactory override {
@@ -92,6 +82,11 @@ contract Experience is ReentrancyGuard, IExperience {
         s.name = _name;
         s.entryFee = data.entryFee;
         s.connectionDetails = data.connectionDetails;
+    }
+
+
+    function encodeInitData(ExperienceInitData memory data) external pure returns (bytes memory) {
+        return abi.encode(data);
     }
 
     function world() external view returns (address) {
@@ -109,19 +104,29 @@ contract Experience is ReentrancyGuard, IExperience {
         return s.entryFee;
     }
 
+    function company() external view override returns (address) {
+        ExperienceV1Storage storage s = LibExperienceV1Storage.load();
+        return address(s.company);
+    }
+
+    function vectorAddress() external view override returns (VectorAddress memory) {
+        ExperienceV1Storage storage s = LibExperienceV1Storage.load();
+        return s.vectorAddress;
+    }
+
     function connectionDetails() external view returns (bytes memory) {
         ExperienceV1Storage storage s = LibExperienceV1Storage.load();
         return s.connectionDetails;
     }
 
-    function addHook(IExperienceHook _hook) external override onlyCompany notUpgraded {
+    function addHook(IExperienceHook _hook) external override onlyCompany {
         require(address(_hook) != address(0), "Experience: hook zero address");
         ExperienceV1Storage storage s = LibExperienceV1Storage.load();
         s.hook = _hook;
         emit HookAdded(address(_hook));
     }
 
-    function removeHook() external override onlyCompany notUpgraded {
+    function removeHook() external override onlyCompany {
         ExperienceV1Storage storage s = LibExperienceV1Storage.load();
         require(address(s.hook) != address(0), "Experience: hook not set");
         address a = address(s.hook);
@@ -129,7 +134,7 @@ contract Experience is ReentrancyGuard, IExperience {
         delete s.hook;
     }
 
-    function addPortalCondition(IPortalCondition condition) public onlyCompany notUpgraded {
+    function addPortalCondition(IPortalCondition condition) public onlyCompany {
         portalRegistry.addCondition(condition);
     }
 
@@ -144,17 +149,7 @@ contract Experience is ReentrancyGuard, IExperience {
         emit PortalFeeChanged(fee);
     }
 
-    function company() external view override returns (address) {
-        ExperienceV1Storage storage s = LibExperienceV1Storage.load();
-        return address(s.company);
-    }
-
-    function vectorAddress() external view override returns (VectorAddress memory) {
-        ExperienceV1Storage storage s = LibExperienceV1Storage.load();
-        return s.vectorAddress;
-    }
-
-    function entering(JumpEntryRequest memory request) external payable override nonReentrant onlyPortalRegistry notUpgraded returns (bytes memory)  {
+    function entering(JumpEntryRequest memory request) external payable override nonReentrant onlyPortalRegistry returns (bytes memory)  {
         ExperienceV1Storage storage s = LibExperienceV1Storage.load();
         if(address(s.hook) != address(0)) {
             bool ok = s.hook.beforeJumpEntry(address(this), request.sourceWorld, request.sourceCompany, request.avatar);
@@ -163,15 +158,14 @@ contract Experience is ReentrancyGuard, IExperience {
         return s.connectionDetails;
     }
 
-    function upgrade(bytes memory initData) external override onlyCompany notUpgraded {
-        ExperienceV1Storage storage s = LibExperienceV1Storage.load();
-        s.upgraded = true;
+    function upgrade(bytes memory initData) external override onlyCompany {
         experienceRegistry.upgradeExperience(initData);
     }
 
-    function experienceUpgraded(address nextVersion) external override onlyRegistry {
+    function upgradeComplete(address nextVersion) public override onlyFactory {
         BaseProxyStorage storage ps = LibBaseProxy.load();
+        address old = ps.implementation;
         ps.implementation = nextVersion;
-        emit ExperienceUpgraded(address(this), nextVersion);
+        emit ExperienceUpgraded(old, nextVersion);
     }
 }

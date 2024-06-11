@@ -82,6 +82,7 @@ export interface IAvatarInterface extends Interface {
       | "upgrade"
       | "upgradeComplete"
       | "username"
+      | "version"
       | "withdraw"
   ): FunctionFragment;
 
@@ -171,6 +172,7 @@ export interface IAvatarInterface extends Interface {
     values: [AddressLike]
   ): string;
   encodeFunctionData(functionFragment: "username", values?: undefined): string;
+  encodeFunctionData(functionFragment: "version", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "withdraw",
     values: [BigNumberish]
@@ -233,6 +235,7 @@ export interface IAvatarInterface extends Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "username", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "version", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "withdraw", data: BytesLike): Result;
 }
 
@@ -506,6 +509,8 @@ export interface IAvatar extends BaseContract {
 
   username: TypedContractMethod<[], [string], "view">;
 
+  version: TypedContractMethod<[], [bigint], "view">;
+
   withdraw: TypedContractMethod<[amount: BigNumberish], [void], "nonpayable">;
 
   getFunction<T extends ContractMethod = ContractMethod>(
@@ -597,6 +602,9 @@ export interface IAvatar extends BaseContract {
   getFunction(
     nameOrSignature: "username"
   ): TypedContractMethod<[], [string], "view">;
+  getFunction(
+    nameOrSignature: "version"
+  ): TypedContractMethod<[], [bigint], "view">;
   getFunction(
     nameOrSignature: "withdraw"
   ): TypedContractMethod<[amount: BigNumberish], [void], "nonpayable">;

@@ -20,6 +20,28 @@ import type {
   TypedContractMethod,
 } from "../../../common";
 
+export type AssetCheckArgsStruct = {
+  asset: AddressLike;
+  world: AddressLike;
+  company: AddressLike;
+  experience: AddressLike;
+  avatar: AddressLike;
+};
+
+export type AssetCheckArgsStructOutput = [
+  asset: string,
+  world: string,
+  company: string,
+  experience: string,
+  avatar: string
+] & {
+  asset: string;
+  world: string;
+  company: string;
+  experience: string;
+  avatar: string;
+};
+
 export interface FilterByWorldInterface extends Interface {
   getFunction(
     nameOrSignature:
@@ -40,11 +62,11 @@ export interface FilterByWorldInterface extends Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "canUse",
-    values: [AddressLike, AddressLike, AddressLike, AddressLike]
+    values: [AssetCheckArgsStruct]
   ): string;
   encodeFunctionData(
     functionFragment: "canView",
-    values: [AddressLike, AddressLike, AddressLike, AddressLike]
+    values: [AssetCheckArgsStruct]
   ): string;
   encodeFunctionData(
     functionFragment: "removeWorld",
@@ -111,27 +133,9 @@ export interface FilterByWorld extends BaseContract {
 
   allowedWorlds: TypedContractMethod<[arg0: AddressLike], [boolean], "view">;
 
-  canUse: TypedContractMethod<
-    [
-      arg0: AddressLike,
-      world: AddressLike,
-      arg2: AddressLike,
-      arg3: AddressLike
-    ],
-    [boolean],
-    "view"
-  >;
+  canUse: TypedContractMethod<[args: AssetCheckArgsStruct], [boolean], "view">;
 
-  canView: TypedContractMethod<
-    [
-      arg0: AddressLike,
-      world: AddressLike,
-      arg2: AddressLike,
-      arg3: AddressLike
-    ],
-    [boolean],
-    "view"
-  >;
+  canView: TypedContractMethod<[args: AssetCheckArgsStruct], [boolean], "view">;
 
   removeWorld: TypedContractMethod<[world: AddressLike], [void], "nonpayable">;
 
@@ -147,28 +151,10 @@ export interface FilterByWorld extends BaseContract {
   ): TypedContractMethod<[arg0: AddressLike], [boolean], "view">;
   getFunction(
     nameOrSignature: "canUse"
-  ): TypedContractMethod<
-    [
-      arg0: AddressLike,
-      world: AddressLike,
-      arg2: AddressLike,
-      arg3: AddressLike
-    ],
-    [boolean],
-    "view"
-  >;
+  ): TypedContractMethod<[args: AssetCheckArgsStruct], [boolean], "view">;
   getFunction(
     nameOrSignature: "canView"
-  ): TypedContractMethod<
-    [
-      arg0: AddressLike,
-      world: AddressLike,
-      arg2: AddressLike,
-      arg3: AddressLike
-    ],
-    [boolean],
-    "view"
-  >;
+  ): TypedContractMethod<[args: AssetCheckArgsStruct], [boolean], "view">;
   getFunction(
     nameOrSignature: "removeWorld"
   ): TypedContractMethod<[world: AddressLike], [void], "nonpayable">;

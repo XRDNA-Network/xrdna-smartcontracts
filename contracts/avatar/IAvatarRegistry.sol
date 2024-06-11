@@ -64,6 +64,6 @@ interface IAvatarRegistry {
      */
     function upgradeAvatar(bytes calldata initData) external;
 
-    function currentAvatarVersion() external view returns (string memory);
-    function setCurrentAvatarVersion(string memory version) external;
+    function currentAvatarVersion() external view returns (uint256);
+    function setCurrentAvatarVersion(uint256 version) external;
 }

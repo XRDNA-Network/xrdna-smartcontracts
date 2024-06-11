@@ -62,15 +62,33 @@ export type CompanyInitArgsStructOutput = [
 };
 
 export interface ICompanyFactoryInterface extends Interface {
-  getFunction(nameOrSignature: "createCompany"): FunctionFragment;
+  getFunction(
+    nameOrSignature: "createCompany" | "supportsVersion" | "upgradeCompany"
+  ): FunctionFragment;
 
   encodeFunctionData(
     functionFragment: "createCompany",
     values: [CompanyInitArgsStruct]
   ): string;
+  encodeFunctionData(
+    functionFragment: "supportsVersion",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "upgradeCompany",
+    values: [AddressLike, BytesLike]
+  ): string;
 
   decodeFunctionResult(
     functionFragment: "createCompany",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "supportsVersion",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "upgradeCompany",
     data: BytesLike
   ): Result;
 }
@@ -124,6 +142,14 @@ export interface ICompanyFactory extends BaseContract {
     "nonpayable"
   >;
 
+  supportsVersion: TypedContractMethod<[], [bigint], "view">;
+
+  upgradeCompany: TypedContractMethod<
+    [company: AddressLike, initData: BytesLike],
+    [void],
+    "nonpayable"
+  >;
+
   getFunction<T extends ContractMethod = ContractMethod>(
     key: string | FunctionFragment
   ): T;
@@ -133,6 +159,16 @@ export interface ICompanyFactory extends BaseContract {
   ): TypedContractMethod<
     [request: CompanyInitArgsStruct],
     [string],
+    "nonpayable"
+  >;
+  getFunction(
+    nameOrSignature: "supportsVersion"
+  ): TypedContractMethod<[], [bigint], "view">;
+  getFunction(
+    nameOrSignature: "upgradeCompany"
+  ): TypedContractMethod<
+    [company: AddressLike, initData: BytesLike],
+    [void],
     "nonpayable"
   >;
 

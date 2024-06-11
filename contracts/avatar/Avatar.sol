@@ -16,9 +16,12 @@ import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
 import {ReentrancyGuard} from '@openzeppelin/contracts/utils/ReentrancyGuard.sol';
 import {IAvatarRegistry} from './IAvatarRegistry.sol';
-import {IERC721Asset} from '../asset/IERC721Asset.sol';
 import {AvatarV1Storage, LibAvatarV1Storage} from '../libraries/LibAvatarV1Storage.sol';
 import {BaseProxyStorage, LibBaseProxy, LibProxyAccess} from '../libraries/LibBaseProxy.sol';
+import {IMultiAssetRegistry} from '../asset/IMultiAssetRegistry.sol';
+import {AssetCheckArgs} from '../asset/IAssetCondition.sol';
+import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
+import {IBasicAsset} from '../asset/IBasicAsset.sol';
 
 interface IExperienceRegistry {
     function isExperience(address e) external view returns (bool);
@@ -36,6 +39,7 @@ struct BaseContructorArgs {
     address experienceRegistry;
     address portalRegistry;
     address companyRegistry;
+    address multiAssetRegistry;
 }
 
 contract Avatar is IAvatar, ReentrancyGuard, WearableLinkedList {
@@ -49,17 +53,12 @@ contract Avatar is IAvatar, ReentrancyGuard, WearableLinkedList {
     IExperienceRegistry public immutable experienceRegistry;
     IPortalRegistry public immutable portalRegistry;
     ICompanyRegistry public immutable companyRegistry;
-    string public constant version = "0.1";
+    IMultiAssetRegistry public immutable assetRegistry;
+    uint256 public constant version = 1;
 
 
     modifier onlyFactory {
         require(msg.sender == avatarFactory, "Avatar: only factory can call this function");
-        _;
-    }
-
-    modifier notUpgraded {
-        AvatarV1Storage storage s = LibAvatarV1Storage.load();
-        require(!s.upgraded, "Avatar: contract has been upgraded");
         _;
     }
 
@@ -74,29 +73,52 @@ contract Avatar is IAvatar, ReentrancyGuard, WearableLinkedList {
         _;
     }
 
+    modifier onlyCompany {
+        require(companyRegistry.isRegisteredCompany(msg.sender), "Avatar: caller is not a registered company");
+        _;
+    }
+
     constructor(BaseContructorArgs memory args) {
         require(args.avatarFactory != address(0), "Avatar: avatar factory cannot be zero address");
         require(args.experienceRegistry != address(0), "Avatar: experience registry cannot be zero address");
         require(args.portalRegistry != address(0), "Avatar: portal registry cannot be zero address");
         require(args.companyRegistry != address(0), "Avatar: company registry cannot be zero address");
         require(args.avatarRegistry != address(0), "Avatar: avatar registry cannot be zero address");
+        require(args.multiAssetRegistry != address(0), "Avatar: multi-asset registry cannot be zero address");
         avatarFactory = args.avatarFactory;
         experienceRegistry = IExperienceRegistry(args.experienceRegistry);
         portalRegistry = IPortalRegistry(args.portalRegistry);
         companyRegistry = ICompanyRegistry(args.companyRegistry);
         avatarRegistry = IAvatarRegistry(args.avatarRegistry);
+        assetRegistry = IMultiAssetRegistry(args.multiAssetRegistry);
     }
 
     receive() external payable {  }
 
+    /**
+     * @dev Initialize the avatar contract. This is called by the AvatarFactory when the avatar is created.
+     * @param _owner The address of the avatar owner
+     * @param defaultExperience The address of the default experience contract where the avatar starts
+     * @param initData Initialization data to pass to the avatar contract
+     */
+    function init(address _owner, address defaultExperience, string memory _name, bytes memory initData) public override onlyFactory {
+        AvatarV1Storage storage s = LibAvatarV1Storage.load();
+        require(s.owner == address(0), "Avatar: contract already initialized");
+
+        AvatarInitData memory data = abi.decode(initData, (AvatarInitData));
+        require(bytes(_name).length > 0, "Avatar: username cannot be empty");
+        require(_owner != address(0), "Avatar: owner cannot be zero address");
+        require(experienceRegistry.isExperience(defaultExperience), "Avatar: default experience is not a registered experience");
+        s.username = _name;
+        s.location = IExperience(defaultExperience);
+        s.canReceiveTokensOutsideOfExperience = data.canReceiveTokensOutsideOfExperience;
+        s.appearanceDetails = data.appearanceDetails;
+        s.owner = _owner;
+    }
+
     function canReceiveTokensOutsideOfExperience() public view override returns (bool) {
         AvatarV1Storage storage s = LibAvatarV1Storage.load();
         return s.canReceiveTokensOutsideOfExperience;
-    }
-
-    function upgraded() public view returns (bool) {
-        AvatarV1Storage storage s = LibAvatarV1Storage.load();
-        return s.upgraded;
     }
 
     function owner() public view override returns (address) {
@@ -133,26 +155,7 @@ contract Avatar is IAvatar, ReentrancyGuard, WearableLinkedList {
         return abi.encode(data);
     }
 
-    /**
-     * @dev Initialize the avatar contract. This is called by the AvatarFactory when the avatar is created.
-     * @param _owner The address of the avatar owner
-     * @param defaultExperience The address of the default experience contract where the avatar starts
-     * @param initData Initialization data to pass to the avatar contract
-     */
-    function init(address _owner, address defaultExperience, string memory _name, bytes memory initData) public override onlyFactory {
-        AvatarV1Storage storage s = LibAvatarV1Storage.load();
-        require(s.owner == address(0), "Avatar: contract already initialized");
-
-        AvatarInitData memory data = abi.decode(initData, (AvatarInitData));
-        require(bytes(_name).length > 0, "Avatar: username cannot be empty");
-        require(_owner != address(0), "Avatar: owner cannot be zero address");
-        require(experienceRegistry.isExperience(defaultExperience), "Avatar: default experience is not a registered experience");
-        s.username = _name.lower();
-        s.location = IExperience(defaultExperience);
-        s.canReceiveTokensOutsideOfExperience = data.canReceiveTokensOutsideOfExperience;
-        s.appearanceDetails = data.appearanceDetails;
-        s.owner = _owner;
-    }
+    
 
     /**
      * @dev get the Avatar's current vector address location (i.e. the experience they are in)
@@ -186,7 +189,7 @@ contract Avatar is IAvatar, ReentrancyGuard, WearableLinkedList {
     /**
      * @dev Set the appearance details of the avatar. This must be called by the avatar owner.
      */
-    function setAppearanceDetails(bytes memory details) public override onlyOwner notUpgraded {
+    function setAppearanceDetails(bytes memory details) public override onlyOwner {
         AvatarV1Storage storage s = LibAvatarV1Storage.load();
         s.appearanceDetails = details;
         emit AppearanceChanged(details);
@@ -198,7 +201,7 @@ contract Avatar is IAvatar, ReentrancyGuard, WearableLinkedList {
      * from the avatar contract balance. Only signer of avatar can call this function to 
      * authorize fees and jump.
      */
-    function jump(AvatarJumpRequest memory request) public override payable onlyOwner notUpgraded {
+    function jump(AvatarJumpRequest memory request) public override payable onlyOwner {
         
         PortalInfo memory portal = _verifyCompanySignature(request);
         if(portal.fee > 0) {
@@ -221,11 +224,10 @@ contract Avatar is IAvatar, ReentrancyGuard, WearableLinkedList {
      * contract balance. The avatar owner signature approves the transfer of funds if 
      * coming from avatar contract.
      */
-    function delegateJump(DelegatedJumpRequest memory request) public override payable notUpgraded {
+    function delegateJump(DelegatedJumpRequest memory request) public override payable onlyCompany {
         _verifyAvatarSignature(request);
 
         //must be called from a valid company contract so company signer is authorized
-        require(companyRegistry.isRegisteredCompany(msg.sender), "Avatar: caller is not a registered company");
         PortalInfo memory portal = portalRegistry.getPortalInfoById(request.portalId);
         
         if(portal.fee > 0) {
@@ -247,9 +249,19 @@ contract Avatar is IAvatar, ReentrancyGuard, WearableLinkedList {
     function addWearable(Wearable calldata wearable) public onlyOwner override  {
         require(wearable.asset != address(0), "Avatar: wearable asset cannot be zero address");
         require(wearable.tokenId > 0, "Avatar: wearable tokenId cannot be zero");
-        IERC721Asset wAsset = IERC721Asset(wearable.asset);
+        IERC721 wAsset = IERC721(wearable.asset);
+        IExperience loc = location();
+        require(IBasicAsset(wearable.asset).canUseAsset(AssetCheckArgs({
+            asset: wearable.asset, 
+            world: loc.world(), 
+            company: loc.company(), 
+            experience: address(loc),
+            avatar: address(this)
+        })), "Avatar: wearable asset cannot be used by avatar");
+
         require(wAsset.ownerOf(wearable.tokenId) == address(this), "Avatar: wearable token not owned by avatar");
         insert(wearable);
+        emit WearableAdded(wearable.asset, wearable.tokenId);
     }
 
     /**
@@ -257,6 +269,7 @@ contract Avatar is IAvatar, ReentrancyGuard, WearableLinkedList {
      */
     function removeWearable(Wearable calldata wearable) public onlyOwner override {
         remove(wearable);
+        emit WearableRemoved(wearable.asset, wearable.tokenId);
     }
 
     function setHook(IAvatarHook _hook) public override onlyOwner {
@@ -289,6 +302,14 @@ contract Avatar is IAvatar, ReentrancyGuard, WearableLinkedList {
         bytes calldata 
     ) public override nonReentrant returns (bytes4) {
         AvatarV1Storage storage s = LibAvatarV1Storage.load();
+        require(assetRegistry.isRegisteredAsset(msg.sender), "Avatar: ERC721 token not from registered asset");
+        IERC721 asset = IERC721(msg.sender);
+        if(!s.canReceiveTokensOutsideOfExperience) {
+            address company = IBasicAsset(msg.sender).issuer();
+            IExperience loc = s.location;
+            require(company == loc.company(), "Avatar: cannot receive tokens outside of experience");
+        }
+        require(asset.ownerOf(tokenId) == address(this), "Avatar: ERC721 token not owned by avatar");
         if(address(s.hook) != address(0)) {
             require(s.hook.onReceiveERC721(address(this), msg.sender, tokenId), "Avatar: hook rejected ERC721 token");
         }
@@ -333,15 +354,14 @@ contract Avatar is IAvatar, ReentrancyGuard, WearableLinkedList {
         payable(s.owner).transfer(address(this).balance);
     }
 
-    function upgrade(bytes calldata initData) public override onlyOwner notUpgraded() {
-        AvatarV1Storage storage s = LibAvatarV1Storage.load();
-        s.upgraded = true;
+    function upgrade(bytes calldata initData) public override onlyOwner {
         avatarRegistry.upgradeAvatar(initData);
     }
 
-    function upgradeComplete(address nextVersion) public override onlyRegistry {
+    function upgradeComplete(address nextVersion) public override onlyFactory {
        BaseProxyStorage storage ps = LibBaseProxy.load();
+        address old = ps.implementation;   
        ps.implementation = nextVersion;
-       emit AvatarUpgraded(address(this), nextVersion);
+       emit AvatarUpgraded(old, nextVersion);
     }
 }

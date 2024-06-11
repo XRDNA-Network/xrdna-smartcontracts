@@ -29,8 +29,12 @@ library LibProxyAccess {
         return bs.roles[role][signer];
     }
 
-    function setRole(BaseProxyStorage storage bs, bytes32 role, address signer, bool value) internal {
-        bs.roles[role][signer] = value;
+    function grantRole(BaseProxyStorage storage bs, bytes32 role, address signer) internal {
+        bs.roles[role][signer] = true;
+    }
+
+    function revokeRole(BaseProxyStorage storage bs, bytes32 role, address signer) internal {
+       delete bs.roles[role][signer];
     }
 
 }

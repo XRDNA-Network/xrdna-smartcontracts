@@ -31,7 +31,6 @@ interface IWorld0_2 is IBaseAccess {
     function registerCompany(CompanyRegistrationArgs memory args) external payable returns (address company);
     function registerAvatar(AvatarRegistrationRequest memory args) external payable returns (address avatar);
     function upgrade(bytes calldata initData) external;
-    function upgraded() external view returns (bool);
     function init(WorldCreateRequest memory request) external;
     function upgradeComplete(address nextVersion) external;
     function setHook(IWorldHook hook) external;

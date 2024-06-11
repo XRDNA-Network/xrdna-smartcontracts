@@ -31,7 +31,6 @@ contract CompanyRegistry is ICompanyRegistry, ReentrancyGuard, AccessControl {
     mapping(string => address) _companiesByName;
     mapping(address => bool) _companies;
     mapping(bytes32 => address) _companiesByVector;
-    string public override currentCompanyVersion = "0.1";
 
     modifier onlyFactory {
         require(msg.sender == address(companyFactory), "CompanyRegistry: caller is not factory");
@@ -45,6 +44,11 @@ contract CompanyRegistry is ICompanyRegistry, ReentrancyGuard, AccessControl {
 
     modifier onlyCompany {
         require(_companies[msg.sender], "CompanyRegistry: caller is not a company");
+        _;
+    }
+
+    modifier onlyAdmin {
+        require(hasRole(ADMIN_ROLE, msg.sender), "CompanyRegistry: caller is not an admin");
         _;
     }
 
@@ -64,19 +68,26 @@ contract CompanyRegistry is ICompanyRegistry, ReentrancyGuard, AccessControl {
 
     receive() external payable {}
 
-    function setCompanyFactory(address factory) public onlyRole(ADMIN_ROLE) {
-        require(factory != address(0), "CompanyRegistry: factory address cannot be 0");
-        companyFactory = ICompanyFactory(factory);
-    }
-
-    function setWorldRegistry(address registry) public onlyRole(ADMIN_ROLE) {
-        require(registry != address(0), "CompanyRegistry: world registry address cannot be 0");
-        worldRegistry = IWorldRegistry0_2(registry);
-    }
 
     function isRegisteredCompany(address company) external view returns (bool) {
         return _companies[company];
     }
+
+    function currentCompanyVersion() external view override returns (uint256) {
+        return companyFactory.supportsVersion();
+    }
+
+    function setCompanyFactory(address factory) public onlyAdmin {
+        require(factory != address(0), "CompanyRegistry: factory address cannot be 0");
+        companyFactory = ICompanyFactory(factory);
+    }
+
+    function setWorldRegistry(address registry) public onlyAdmin {
+        require(registry != address(0), "CompanyRegistry: world registry address cannot be 0");
+        worldRegistry = IWorldRegistry0_2(registry);
+    }
+
+    
 
     function registerCompany(CompanyRegistrationRequest memory request) external payable onlyWorld nonReentrant returns (address) {
         string memory nm = request.name.lower();
@@ -104,25 +115,6 @@ contract CompanyRegistry is ICompanyRegistry, ReentrancyGuard, AccessControl {
     }
 
     function upgradeCompany(bytes calldata initData) external onlyCompany nonReentrant {
-        ICompany old = ICompany(msg.sender);
-        string memory name = old.name().lower();
-        CompanyInitArgs memory args = CompanyInitArgs({
-            owner: old.owner(),
-            world: old.world(),
-            vector: old.vectorAddress(),
-            name: old.name(),
-            initData: initData
-        });
-        address company = companyFactory.createCompany(args);
-        require(company != address(0), "CompanyRegistry: company upgrade failed");
-        _companiesByName[name] = company;
-        _companies[company] = true;
-        _companiesByVector[keccak256(bytes(args.vector.asLookupKey()))] = company;
-        old.upgradeComplete(company);
-        delete _companies[msg.sender];
-    }
-
-    function setCurrentCompanyVersion(string memory version) public onlyRole(ADMIN_ROLE) {
-        currentCompanyVersion = version;
+        companyFactory.upgradeCompany(msg.sender, initData);
     }
 }

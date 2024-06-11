@@ -24,7 +24,9 @@ export class LogParser {
                     parsedLogs.set(parsed.name, parsed.args);
                 }
             } catch (e) {
+                
                 console.error("Error parsing log", e);
+                console.log(l);
             }
         });
         return parsedLogs;

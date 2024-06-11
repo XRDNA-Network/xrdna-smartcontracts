@@ -58,9 +58,9 @@ const _abi = [
     name: "currentAvatarVersion",
     outputs: [
       {
-        internalType: "string",
+        internalType: "uint256",
         name: "",
-        type: "string",
+        type: "uint256",
       },
     ],
     stateMutability: "view",
@@ -185,9 +185,9 @@ const _abi = [
   {
     inputs: [
       {
-        internalType: "string",
+        internalType: "uint256",
         name: "version",
-        type: "string",
+        type: "uint256",
       },
     ],
     name: "setCurrentAvatarVersion",

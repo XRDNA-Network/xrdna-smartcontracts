@@ -8,15 +8,23 @@ import {AccessControl} from '@openzeppelin/contracts/access/AccessControl.sol';
 import {BaseFactory} from '../BaseFactory.sol';
 import {IBaseProxy} from '../IBaseProxy.sol';
 
+interface INextAvatarVersion {
+    function init(bytes calldata initData) external;
+}
+
 contract AvatarFactory is BaseFactory, IAvatarFactory {
 
    
     constructor(address mainAdmin, address[] memory admins) BaseFactory(mainAdmin, admins) {}
 
+    function upgradeAvatar(address avatar, bytes calldata initData) public override onlyAuthorizedRegistry {
+        IAvatar(avatar).upgradeComplete(implementation);
+        INextAvatarVersion(avatar).init(initData);
+    }
+
     function createAvatar(address owner, address defaultExperience, string memory username, bytes memory initData) external onlyAuthorizedRegistry returns (address proxy) {
-        address avatar = create();
         proxy = createProxy();
-        IBaseProxy(proxy).initProxy(avatar);
+        IBaseProxy(proxy).initProxy(implementation);
         IAvatar(proxy).init(owner, defaultExperience, username, initData);
     }
 

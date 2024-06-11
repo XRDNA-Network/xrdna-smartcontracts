@@ -8,9 +8,9 @@ import {IAssetHook} from './IAssetHook.sol';
 import {IAvatar} from '../avatar/IAvatar.sol';
 import {VectorAddress} from '../VectorAddress.sol';
 import {IExperience} from '../experience/IExperience.sol';
-import {AssetType} from './IAssetFactory.sol';
 import {CommonAssetV1Storage} from '../libraries/LibAssetV1Storage.sol';
 import {IBasicAsset} from './IBasicAsset.sol';
+import {IAssetCondition, AssetCheckArgs} from './IAssetCondition.sol';
 
 interface IExperienceRegistry {
     function getExperienceByVector(VectorAddress memory va) external view returns (IExperience);
@@ -26,8 +26,10 @@ struct BaseAssetArgs {
 abstract contract BaseAsset is IBasicAsset, ReentrancyGuard {
 
 
-    event AssetHookAdded(address hook);
-    event AssetHookRemoved(address hook);
+    event AssetHookAdded(address indexed hook);
+    event AssetHookRemoved(address indexed hook);
+    event AssetConditionAdded(address indexed condition);
+    event AssetConditionRemoved(address indexed condition);
 
     /**
      * Fields initialized by asset constructor
@@ -52,7 +54,7 @@ abstract contract BaseAsset is IBasicAsset, ReentrancyGuard {
         require(args.assetFactory != address(0), "BaseAsset: assetFactory is the zero address");
         require(args.assetRegistry != address(0), "BaseAsset: assetRegistry is the zero address");
         require(args.avatarRegistry != address(0), "BaseAsset: avatarRegistry is the zero address");
-        require(args.experienceRegistry != address(0), "NonTransferableERC721: experienceRegistry is the zero address");
+        require(args.experienceRegistry != address(0), "BaseAsset: experienceRegistry is the zero address");
         assetFactory = args.assetFactory;
         assetRegistry = args.assetRegistry;
         avatarRegistry = IAvatarRegistry(args.avatarRegistry);
@@ -60,22 +62,11 @@ abstract contract BaseAsset is IBasicAsset, ReentrancyGuard {
     }
 
 
-    
-
     modifier onlyIssuer() {
         require(msg.sender == _loadCommonAttributes().issuer, "BaseAsset: only issuer allowed");
        _;
     }
-
-    modifier notUpgraded() {
-        bool upgraded = _loadCommonAttributes().upgraded;
-        require(!upgraded, "NonTransferableERC20: asset has been upgraded");
-        _;
-    }
     
-    function assetType() external view override returns (uint256) {
-        return uint256(_loadCommonAttributes().assetType);
-    }
 
     function issuer() external view override returns (address) {
         return _loadCommonAttributes().issuer;
@@ -89,7 +80,7 @@ abstract contract BaseAsset is IBasicAsset, ReentrancyGuard {
 
     function addHook(IAssetHook _hook) public override onlyIssuer {
         CommonAssetV1Storage storage s = _loadCommonAttributes();
-        require(address(s.hook) != address(0), "NonTransferableERC721Asset: hook cannot be zero address");
+        require(address(s.hook) != address(0), "BaseAsset: hook cannot be zero address");
         s.hook = _hook;
         emit AssetHookAdded(address(_hook));
     }
@@ -99,6 +90,36 @@ abstract contract BaseAsset is IBasicAsset, ReentrancyGuard {
         address h = address(s.hook);
         emit AssetHookRemoved(h);
         delete s.hook;
+    }
+
+    function addCondition(IAssetCondition condition) public override onlyIssuer {
+        CommonAssetV1Storage storage s = _loadCommonAttributes();
+        require(address(condition) != address(0), "BaseAsset: condition cannot be zero address");
+        s.condition = condition;
+        emit AssetConditionAdded(address(condition));
+    }
+
+    function removeCondition() public override onlyIssuer {
+        CommonAssetV1Storage storage s = _loadCommonAttributes();
+        address c = address(s.condition);
+        emit AssetConditionRemoved(c);
+        delete s.condition;
+    }
+
+    function canViewAsset(AssetCheckArgs memory args) public view override returns (bool) {
+        CommonAssetV1Storage storage s = _loadCommonAttributes();
+        if (address(s.condition) == address(0)) {
+            return true;
+        }
+        return s.condition.canView(args);
+    }
+
+    function canUseAsset(AssetCheckArgs memory args) public view override returns (bool) {
+        CommonAssetV1Storage storage s = _loadCommonAttributes();
+        if (address(s.condition) == address(0)) {
+            return true;
+        }
+        return s.condition.canUse(args);
     }
 
     function _verifyAvatarLocationMatchesIssuer(IAvatar avatar) internal view {

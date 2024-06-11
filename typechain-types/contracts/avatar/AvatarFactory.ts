@@ -28,6 +28,7 @@ export interface AvatarFactoryInterface extends Interface {
       | "ADMIN_ROLE"
       | "DEFAULT_ADMIN_ROLE"
       | "createAvatar"
+      | "getImplementation"
       | "getRoleAdmin"
       | "grantRole"
       | "hasRole"
@@ -59,6 +60,10 @@ export interface AvatarFactoryInterface extends Interface {
   encodeFunctionData(
     functionFragment: "createAvatar",
     values: [AddressLike, AddressLike, string, BytesLike]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getImplementation",
+    values?: undefined
   ): string;
   encodeFunctionData(
     functionFragment: "getRoleAdmin",
@@ -108,6 +113,10 @@ export interface AvatarFactoryInterface extends Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "createAvatar",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getImplementation",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -269,6 +278,8 @@ export interface AvatarFactory extends BaseContract {
     "nonpayable"
   >;
 
+  getImplementation: TypedContractMethod<[], [string], "view">;
+
   getRoleAdmin: TypedContractMethod<[role: BytesLike], [string], "view">;
 
   grantRole: TypedContractMethod<
@@ -343,6 +354,9 @@ export interface AvatarFactory extends BaseContract {
     [string],
     "nonpayable"
   >;
+  getFunction(
+    nameOrSignature: "getImplementation"
+  ): TypedContractMethod<[], [string], "view">;
   getFunction(
     nameOrSignature: "getRoleAdmin"
   ): TypedContractMethod<[role: BytesLike], [string], "view">;

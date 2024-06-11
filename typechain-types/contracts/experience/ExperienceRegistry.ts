@@ -107,7 +107,6 @@ export interface ExperienceRegistryInterface extends Interface {
       | "renounceRole"
       | "revokeRole"
       | "setCompanyRegistry"
-      | "setCurrentExperienceVersion"
       | "setExperienceFactory"
       | "setPortalRegistry"
       | "supportsInterface"
@@ -183,10 +182,6 @@ export interface ExperienceRegistryInterface extends Interface {
     values: [AddressLike]
   ): string;
   encodeFunctionData(
-    functionFragment: "setCurrentExperienceVersion",
-    values: [string]
-  ): string;
-  encodeFunctionData(
     functionFragment: "setExperienceFactory",
     values: [AddressLike]
   ): string;
@@ -249,10 +244,6 @@ export interface ExperienceRegistryInterface extends Interface {
   decodeFunctionResult(functionFragment: "revokeRole", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "setCompanyRegistry",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "setCurrentExperienceVersion",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -416,7 +407,7 @@ export interface ExperienceRegistry extends BaseContract {
     "view"
   >;
 
-  currentExperienceVersion: TypedContractMethod<[], [string], "view">;
+  currentExperienceVersion: TypedContractMethod<[], [bigint], "view">;
 
   experiencesByAddress: TypedContractMethod<
     [arg0: AddressLike],
@@ -490,12 +481,6 @@ export interface ExperienceRegistry extends BaseContract {
     "nonpayable"
   >;
 
-  setCurrentExperienceVersion: TypedContractMethod<
-    [v: string],
-    [void],
-    "nonpayable"
-  >;
-
   setExperienceFactory: TypedContractMethod<
     [factory: AddressLike],
     [void],
@@ -546,7 +531,7 @@ export interface ExperienceRegistry extends BaseContract {
   >;
   getFunction(
     nameOrSignature: "currentExperienceVersion"
-  ): TypedContractMethod<[], [string], "view">;
+  ): TypedContractMethod<[], [bigint], "view">;
   getFunction(
     nameOrSignature: "experiencesByAddress"
   ): TypedContractMethod<
@@ -626,9 +611,6 @@ export interface ExperienceRegistry extends BaseContract {
   getFunction(
     nameOrSignature: "setCompanyRegistry"
   ): TypedContractMethod<[reg: AddressLike], [void], "nonpayable">;
-  getFunction(
-    nameOrSignature: "setCurrentExperienceVersion"
-  ): TypedContractMethod<[v: string], [void], "nonpayable">;
   getFunction(
     nameOrSignature: "setExperienceFactory"
   ): TypedContractMethod<[factory: AddressLike], [void], "nonpayable">;

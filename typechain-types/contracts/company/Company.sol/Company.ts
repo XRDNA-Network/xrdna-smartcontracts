@@ -27,7 +27,7 @@ export type CompanyConstructorArgsStruct = {
   companyFactory: AddressLike;
   companyRegistry: AddressLike;
   experienceRegistry: AddressLike;
-  assetRegistry: AddressLike;
+  multiAssetRegistry: AddressLike;
   avatarRegistry: AddressLike;
 };
 
@@ -35,13 +35,13 @@ export type CompanyConstructorArgsStructOutput = [
   companyFactory: string,
   companyRegistry: string,
   experienceRegistry: string,
-  assetRegistry: string,
+  multiAssetRegistry: string,
   avatarRegistry: string
 ] & {
   companyFactory: string;
   companyRegistry: string;
   experienceRegistry: string;
-  assetRegistry: string;
+  multiAssetRegistry: string;
   avatarRegistry: string;
 };
 
@@ -114,10 +114,11 @@ export type CompanyInitArgsStructOutput = [
 export interface CompanyInterface extends Interface {
   getFunction(
     nameOrSignature:
+      | "addAssetCondition"
       | "addAssetHook"
       | "addExperience"
       | "addExperienceCondition"
-      | "addSigner"
+      | "addSigners"
       | "assetRegistry"
       | "avatarRegistry"
       | "canMint"
@@ -132,15 +133,15 @@ export interface CompanyInterface extends Interface {
       | "mint"
       | "name"
       | "owner"
+      | "removeAssetCondition"
       | "removeAssetHook"
       | "removeExperienceCondition"
       | "removeHook"
-      | "removeSigner"
+      | "removeSigners"
       | "revoke"
       | "setHook"
       | "upgrade"
       | "upgradeComplete"
-      | "upgraded"
       | "vectorAddress"
       | "version"
       | "withdraw"
@@ -155,10 +156,15 @@ export interface CompanyInterface extends Interface {
       | "CompanyHookSet"
       | "CompanyUpgraded"
       | "ExperienceAdded"
+      | "ReceivedFunds"
       | "SignerAdded"
       | "SignerRemoved"
   ): EventFragment;
 
+  encodeFunctionData(
+    functionFragment: "addAssetCondition",
+    values: [AddressLike, AddressLike]
+  ): string;
   encodeFunctionData(
     functionFragment: "addAssetHook",
     values: [AddressLike, AddressLike]
@@ -172,8 +178,8 @@ export interface CompanyInterface extends Interface {
     values: [AddressLike, AddressLike]
   ): string;
   encodeFunctionData(
-    functionFragment: "addSigner",
-    values: [AddressLike]
+    functionFragment: "addSigners",
+    values: [AddressLike[]]
   ): string;
   encodeFunctionData(
     functionFragment: "assetRegistry",
@@ -185,7 +191,7 @@ export interface CompanyInterface extends Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "canMint",
-    values: [AddressLike, AddressLike, BigNumberish]
+    values: [AddressLike, AddressLike, BytesLike]
   ): string;
   encodeFunctionData(
     functionFragment: "changeExperiencePortalFee",
@@ -221,10 +227,14 @@ export interface CompanyInterface extends Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "mint",
-    values: [AddressLike, AddressLike, BigNumberish]
+    values: [AddressLike, AddressLike, BytesLike]
   ): string;
   encodeFunctionData(functionFragment: "name", values?: undefined): string;
   encodeFunctionData(functionFragment: "owner", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: "removeAssetCondition",
+    values: [AddressLike]
+  ): string;
   encodeFunctionData(
     functionFragment: "removeAssetHook",
     values: [AddressLike]
@@ -238,12 +248,12 @@ export interface CompanyInterface extends Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "removeSigner",
-    values: [AddressLike]
+    functionFragment: "removeSigners",
+    values: [AddressLike[]]
   ): string;
   encodeFunctionData(
     functionFragment: "revoke",
-    values: [AddressLike, AddressLike, BigNumberish]
+    values: [AddressLike, AddressLike, BytesLike]
   ): string;
   encodeFunctionData(
     functionFragment: "setHook",
@@ -254,7 +264,6 @@ export interface CompanyInterface extends Interface {
     functionFragment: "upgradeComplete",
     values: [AddressLike]
   ): string;
-  encodeFunctionData(functionFragment: "upgraded", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "vectorAddress",
     values?: undefined
@@ -267,6 +276,10 @@ export interface CompanyInterface extends Interface {
   encodeFunctionData(functionFragment: "world", values?: undefined): string;
 
   decodeFunctionResult(
+    functionFragment: "addAssetCondition",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "addAssetHook",
     data: BytesLike
   ): Result;
@@ -278,7 +291,7 @@ export interface CompanyInterface extends Interface {
     functionFragment: "addExperienceCondition",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "addSigner", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "addSigners", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "assetRegistry",
     data: BytesLike
@@ -318,6 +331,10 @@ export interface CompanyInterface extends Interface {
   decodeFunctionResult(functionFragment: "name", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
   decodeFunctionResult(
+    functionFragment: "removeAssetCondition",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "removeAssetHook",
     data: BytesLike
   ): Result;
@@ -327,7 +344,7 @@ export interface CompanyInterface extends Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "removeHook", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "removeSigner",
+    functionFragment: "removeSigners",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "revoke", data: BytesLike): Result;
@@ -337,7 +354,6 @@ export interface CompanyInterface extends Interface {
     functionFragment: "upgradeComplete",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "upgraded", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "vectorAddress",
     data: BytesLike
@@ -439,6 +455,19 @@ export namespace ExperienceAddedEvent {
   export type LogDescription = TypedLogDescription<Event>;
 }
 
+export namespace ReceivedFundsEvent {
+  export type InputTuple = [sender: AddressLike, value: BigNumberish];
+  export type OutputTuple = [sender: string, value: bigint];
+  export interface OutputObject {
+    sender: string;
+    value: bigint;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
+}
+
 export namespace SignerAddedEvent {
   export type InputTuple = [signer: AddressLike];
   export type OutputTuple = [signer: string];
@@ -506,6 +535,12 @@ export interface Company extends BaseContract {
     event?: TCEvent
   ): Promise<this>;
 
+  addAssetCondition: TypedContractMethod<
+    [asset: AddressLike, condition: AddressLike],
+    [void],
+    "nonpayable"
+  >;
+
   addAssetHook: TypedContractMethod<
     [asset: AddressLike, aHook: AddressLike],
     [void],
@@ -524,14 +559,18 @@ export interface Company extends BaseContract {
     "nonpayable"
   >;
 
-  addSigner: TypedContractMethod<[signer: AddressLike], [void], "nonpayable">;
+  addSigners: TypedContractMethod<
+    [signers: AddressLike[]],
+    [void],
+    "nonpayable"
+  >;
 
   assetRegistry: TypedContractMethod<[], [string], "view">;
 
   avatarRegistry: TypedContractMethod<[], [string], "view">;
 
   canMint: TypedContractMethod<
-    [asset: AddressLike, to: AddressLike, arg2: BigNumberish],
+    [asset: AddressLike, to: AddressLike, extra: BytesLike],
     [boolean],
     "view"
   >;
@@ -549,7 +588,7 @@ export interface Company extends BaseContract {
   delegateJumpForAvatar: TypedContractMethod<
     [request: DelegatedAvatarJumpRequestStruct],
     [void],
-    "payable"
+    "nonpayable"
   >;
 
   encodeExperienceArgs: TypedContractMethod<
@@ -569,7 +608,7 @@ export interface Company extends BaseContract {
   isSigner: TypedContractMethod<[signer: AddressLike], [boolean], "view">;
 
   mint: TypedContractMethod<
-    [asset: AddressLike, to: AddressLike, amount: BigNumberish],
+    [asset: AddressLike, to: AddressLike, data: BytesLike],
     [void],
     "nonpayable"
   >;
@@ -577,6 +616,12 @@ export interface Company extends BaseContract {
   name: TypedContractMethod<[], [string], "view">;
 
   owner: TypedContractMethod<[], [string], "view">;
+
+  removeAssetCondition: TypedContractMethod<
+    [asset: AddressLike],
+    [void],
+    "nonpayable"
+  >;
 
   removeAssetHook: TypedContractMethod<
     [asset: AddressLike],
@@ -592,14 +637,14 @@ export interface Company extends BaseContract {
 
   removeHook: TypedContractMethod<[], [void], "nonpayable">;
 
-  removeSigner: TypedContractMethod<
-    [signer: AddressLike],
+  removeSigners: TypedContractMethod<
+    [signers: AddressLike[]],
     [void],
     "nonpayable"
   >;
 
   revoke: TypedContractMethod<
-    [asset: AddressLike, holder: AddressLike, amountOrTokenId: BigNumberish],
+    [asset: AddressLike, holder: AddressLike, data: BytesLike],
     [void],
     "nonpayable"
   >;
@@ -614,8 +659,6 @@ export interface Company extends BaseContract {
     "nonpayable"
   >;
 
-  upgraded: TypedContractMethod<[], [boolean], "view">;
-
   vectorAddress: TypedContractMethod<[], [VectorAddressStructOutput], "view">;
 
   version: TypedContractMethod<[], [bigint], "view">;
@@ -628,6 +671,13 @@ export interface Company extends BaseContract {
     key: string | FunctionFragment
   ): T;
 
+  getFunction(
+    nameOrSignature: "addAssetCondition"
+  ): TypedContractMethod<
+    [asset: AddressLike, condition: AddressLike],
+    [void],
+    "nonpayable"
+  >;
   getFunction(
     nameOrSignature: "addAssetHook"
   ): TypedContractMethod<
@@ -646,8 +696,8 @@ export interface Company extends BaseContract {
     "nonpayable"
   >;
   getFunction(
-    nameOrSignature: "addSigner"
-  ): TypedContractMethod<[signer: AddressLike], [void], "nonpayable">;
+    nameOrSignature: "addSigners"
+  ): TypedContractMethod<[signers: AddressLike[]], [void], "nonpayable">;
   getFunction(
     nameOrSignature: "assetRegistry"
   ): TypedContractMethod<[], [string], "view">;
@@ -657,7 +707,7 @@ export interface Company extends BaseContract {
   getFunction(
     nameOrSignature: "canMint"
   ): TypedContractMethod<
-    [asset: AddressLike, to: AddressLike, arg2: BigNumberish],
+    [asset: AddressLike, to: AddressLike, extra: BytesLike],
     [boolean],
     "view"
   >;
@@ -679,7 +729,7 @@ export interface Company extends BaseContract {
   ): TypedContractMethod<
     [request: DelegatedAvatarJumpRequestStruct],
     [void],
-    "payable"
+    "nonpayable"
   >;
   getFunction(
     nameOrSignature: "encodeExperienceArgs"
@@ -700,7 +750,7 @@ export interface Company extends BaseContract {
   getFunction(
     nameOrSignature: "mint"
   ): TypedContractMethod<
-    [asset: AddressLike, to: AddressLike, amount: BigNumberish],
+    [asset: AddressLike, to: AddressLike, data: BytesLike],
     [void],
     "nonpayable"
   >;
@@ -711,6 +761,9 @@ export interface Company extends BaseContract {
     nameOrSignature: "owner"
   ): TypedContractMethod<[], [string], "view">;
   getFunction(
+    nameOrSignature: "removeAssetCondition"
+  ): TypedContractMethod<[asset: AddressLike], [void], "nonpayable">;
+  getFunction(
     nameOrSignature: "removeAssetHook"
   ): TypedContractMethod<[asset: AddressLike], [void], "nonpayable">;
   getFunction(
@@ -720,12 +773,12 @@ export interface Company extends BaseContract {
     nameOrSignature: "removeHook"
   ): TypedContractMethod<[], [void], "nonpayable">;
   getFunction(
-    nameOrSignature: "removeSigner"
-  ): TypedContractMethod<[signer: AddressLike], [void], "nonpayable">;
+    nameOrSignature: "removeSigners"
+  ): TypedContractMethod<[signers: AddressLike[]], [void], "nonpayable">;
   getFunction(
     nameOrSignature: "revoke"
   ): TypedContractMethod<
-    [asset: AddressLike, holder: AddressLike, amountOrTokenId: BigNumberish],
+    [asset: AddressLike, holder: AddressLike, data: BytesLike],
     [void],
     "nonpayable"
   >;
@@ -738,9 +791,6 @@ export interface Company extends BaseContract {
   getFunction(
     nameOrSignature: "upgradeComplete"
   ): TypedContractMethod<[nextVersion: AddressLike], [void], "nonpayable">;
-  getFunction(
-    nameOrSignature: "upgraded"
-  ): TypedContractMethod<[], [boolean], "view">;
   getFunction(
     nameOrSignature: "vectorAddress"
   ): TypedContractMethod<[], [VectorAddressStructOutput], "view">;
@@ -795,6 +845,13 @@ export interface Company extends BaseContract {
     ExperienceAddedEvent.InputTuple,
     ExperienceAddedEvent.OutputTuple,
     ExperienceAddedEvent.OutputObject
+  >;
+  getEvent(
+    key: "ReceivedFunds"
+  ): TypedContractEvent<
+    ReceivedFundsEvent.InputTuple,
+    ReceivedFundsEvent.OutputTuple,
+    ReceivedFundsEvent.OutputObject
   >;
   getEvent(
     key: "SignerAdded"
@@ -876,6 +933,17 @@ export interface Company extends BaseContract {
       ExperienceAddedEvent.InputTuple,
       ExperienceAddedEvent.OutputTuple,
       ExperienceAddedEvent.OutputObject
+    >;
+
+    "ReceivedFunds(address,uint256)": TypedContractEvent<
+      ReceivedFundsEvent.InputTuple,
+      ReceivedFundsEvent.OutputTuple,
+      ReceivedFundsEvent.OutputObject
+    >;
+    ReceivedFunds: TypedContractEvent<
+      ReceivedFundsEvent.InputTuple,
+      ReceivedFundsEvent.OutputTuple,
+      ReceivedFundsEvent.OutputObject
     >;
 
     "SignerAdded(address)": TypedContractEvent<

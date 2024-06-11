@@ -491,19 +491,6 @@ const _abi = [
   },
   {
     inputs: [],
-    name: "upgraded",
-    outputs: [
-      {
-        internalType: "bool",
-        name: "",
-        type: "bool",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
     name: "version",
     outputs: [
       {

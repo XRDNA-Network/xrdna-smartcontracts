@@ -5,7 +5,6 @@ pragma solidity ^0.8.24;
 import {IAvatarHook} from './IAvatarHook.sol';
 import {IERC721Receiver} from "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
 import {IExperience} from '../experience/IExperience.sol';
-import {IERC721Asset} from '../asset/IERC721Asset.sol';
 import {Wearable} from './WearableLinkedList.sol';
 
 struct AvatarJumpRequest {
@@ -34,6 +33,8 @@ interface IAvatar is IERC721Receiver {
     event HookSet(address indexed hook);
     event HookRemoved();
 
+    function version() external pure returns (uint256);
+    
     /**
      * @dev get the address of the avatar owner
      */
@@ -142,8 +143,6 @@ interface IAvatar is IERC721Receiver {
      */
     function delegateJump(DelegatedJumpRequest memory request) external payable;
 
-
-  
 
     /**
      * @dev Withdraw funds from the avatar contract. This must be called by the avatar owner.

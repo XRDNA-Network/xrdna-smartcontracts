@@ -24,12 +24,12 @@ contract FilterByWorld is IAssetCondition  {
         }
     }
 
-    function canUse(address, address world, address, address) external view override returns (bool) {
-        return allowedWorlds[world];
+    function canUse(AssetCheckArgs memory args) external view override returns (bool) {
+        return allowedWorlds[args.world];
     }
  
-    function canView(address, address world, address, address) external view override returns (bool) {
-        return allowedWorlds[world];
+    function canView(AssetCheckArgs memory args) external view override returns (bool) {
+        return allowedWorlds[args.world];
     }
 
     function addWorld(address world) external onlyOwner {

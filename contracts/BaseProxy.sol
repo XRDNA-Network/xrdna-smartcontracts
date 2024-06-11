@@ -57,13 +57,6 @@ abstract contract BaseProxy is IBaseProxy, BaseAccess {
         bs.implementation = _implementation;
     }
 
-    //used to upgrade the underlying implementation
-    function setImplementation(address impl) public onlyRegistry {
-        BaseProxyStorage storage bs = _getStorage();
-        bs.implementation = impl;
-        emit ImplementationChanged(impl);
-    }
-
     receive() external payable {
         emit ReceivedFunds(msg.sender, msg.value);
         fundsReceived(msg.value);

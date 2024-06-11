@@ -3,9 +3,10 @@
 /* eslint-disable */
 import type * as avatarSol from "./Avatar.sol";
 export type { avatarSol };
+import type * as avatarFactorySol from "./AvatarFactory.sol";
+export type { avatarFactorySol };
 import type * as avatarRegistrySol from "./AvatarRegistry.sol";
 export type { avatarRegistrySol };
-export type { AvatarFactory } from "./AvatarFactory";
 export type { AvatarProxy } from "./AvatarProxy";
 export type { IAvatar } from "./IAvatar";
 export type { IAvatarFactory } from "./IAvatarFactory";

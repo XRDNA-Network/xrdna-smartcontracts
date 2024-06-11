@@ -21,15 +21,25 @@ import type {
 } from "../../common";
 
 export interface IAvatarFactoryInterface extends Interface {
-  getFunction(nameOrSignature: "createAvatar"): FunctionFragment;
+  getFunction(
+    nameOrSignature: "createAvatar" | "upgradeAvatar"
+  ): FunctionFragment;
 
   encodeFunctionData(
     functionFragment: "createAvatar",
     values: [AddressLike, AddressLike, string, BytesLike]
   ): string;
+  encodeFunctionData(
+    functionFragment: "upgradeAvatar",
+    values: [AddressLike, BytesLike]
+  ): string;
 
   decodeFunctionResult(
     functionFragment: "createAvatar",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "upgradeAvatar",
     data: BytesLike
   ): Result;
 }
@@ -88,6 +98,12 @@ export interface IAvatarFactory extends BaseContract {
     "nonpayable"
   >;
 
+  upgradeAvatar: TypedContractMethod<
+    [avatar: AddressLike, initData: BytesLike],
+    [void],
+    "nonpayable"
+  >;
+
   getFunction<T extends ContractMethod = ContractMethod>(
     key: string | FunctionFragment
   ): T;
@@ -102,6 +118,13 @@ export interface IAvatarFactory extends BaseContract {
       initData: BytesLike
     ],
     [string],
+    "nonpayable"
+  >;
+  getFunction(
+    nameOrSignature: "upgradeAvatar"
+  ): TypedContractMethod<
+    [avatar: AddressLike, initData: BytesLike],
+    [void],
     "nonpayable"
   >;
 

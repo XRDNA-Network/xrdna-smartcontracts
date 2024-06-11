@@ -12,24 +12,36 @@ const _abi = [
   {
     inputs: [
       {
-        internalType: "address",
-        name: "asset",
-        type: "address",
-      },
-      {
-        internalType: "address",
-        name: "world",
-        type: "address",
-      },
-      {
-        internalType: "address",
-        name: "company",
-        type: "address",
-      },
-      {
-        internalType: "address",
-        name: "experience",
-        type: "address",
+        components: [
+          {
+            internalType: "address",
+            name: "asset",
+            type: "address",
+          },
+          {
+            internalType: "address",
+            name: "world",
+            type: "address",
+          },
+          {
+            internalType: "address",
+            name: "company",
+            type: "address",
+          },
+          {
+            internalType: "address",
+            name: "experience",
+            type: "address",
+          },
+          {
+            internalType: "address",
+            name: "avatar",
+            type: "address",
+          },
+        ],
+        internalType: "struct AssetCheckArgs",
+        name: "args",
+        type: "tuple",
       },
     ],
     name: "canUse",
@@ -46,24 +58,36 @@ const _abi = [
   {
     inputs: [
       {
-        internalType: "address",
-        name: "asset",
-        type: "address",
-      },
-      {
-        internalType: "address",
-        name: "world",
-        type: "address",
-      },
-      {
-        internalType: "address",
-        name: "company",
-        type: "address",
-      },
-      {
-        internalType: "address",
-        name: "experience",
-        type: "address",
+        components: [
+          {
+            internalType: "address",
+            name: "asset",
+            type: "address",
+          },
+          {
+            internalType: "address",
+            name: "world",
+            type: "address",
+          },
+          {
+            internalType: "address",
+            name: "company",
+            type: "address",
+          },
+          {
+            internalType: "address",
+            name: "experience",
+            type: "address",
+          },
+          {
+            internalType: "address",
+            name: "avatar",
+            type: "address",
+          },
+        ],
+        internalType: "struct AssetCheckArgs",
+        name: "args",
+        type: "tuple",
       },
     ],
     name: "canView",

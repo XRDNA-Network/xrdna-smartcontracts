@@ -43,7 +43,8 @@ describe("World Registration", () => {
             registrarAdmin,
             registrarSigner,
             worldRegistryAdmin,
-            worldOwner
+            worldOwner,
+            avatarOwner
         });
         const {world: w, worldRegistration: wr} = await stack.init();
         world = w;
@@ -187,7 +188,7 @@ describe("World Registration", () => {
         experience = new Experience({
             address: r.experienceAddress.toString(),
             portalId: r.portalId,
-            admin: companyOwner
+            provider: ethers.provider
         });
 
     });

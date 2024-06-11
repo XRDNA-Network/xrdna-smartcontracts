@@ -35,5 +35,5 @@ interface IExperience {
     function entering(JumpEntryRequest memory request) external payable returns (bytes memory);
     function init(address company, string memory _name, VectorAddress memory vector, bytes memory initData) external;
     function upgrade(bytes memory initData) external;
-    function experienceUpgraded(address nextVersion) external;
+    function upgradeComplete(address nextVersion) external;
 }

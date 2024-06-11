@@ -87,6 +87,24 @@ const _abi = [
     stateMutability: "nonpayable",
     type: "function",
   },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "world",
+        type: "address",
+      },
+      {
+        internalType: "bytes",
+        name: "initData",
+        type: "bytes",
+      },
+    ],
+    name: "upgradeWorld",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
 ] as const;
 
 export class IWorldFactory0_2__factory {

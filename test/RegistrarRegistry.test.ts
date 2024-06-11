@@ -35,7 +35,8 @@ describe("RegistrarRegistry", () => {
                 registrarAdmin,
                 registrarSigner,
                 worldRegistryAdmin: signers[0],
-                worldOwner: signers[1]
+                worldOwner: signers[1],
+                avatarOwner: signers[1],
             });
             await stack.init();
         })

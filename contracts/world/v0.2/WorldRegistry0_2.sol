@@ -172,22 +172,7 @@ contract WorldRegistry0_2 is IWorldRegistry0_2, ReentrancyGuard, AccessControl {
     }
 
     function worldUpgradeSelf(bytes calldata initData) public onlyWorld nonReentrant {
-        IWorld0_2 old = IWorld0_2(msg.sender);
-        string memory name = old.getName().lower();
-        WorldCreateRequest memory req = WorldCreateRequest({
-            owner: old.getOwner(),
-            oldWorld: msg.sender,
-            baseVector: old.getBaseVector(),
-            name: name,
-            initData: initData
-        });
-        address world = worldFactory.createWorld(req);
-        require(world != address(0), "WorldRegistry0_2: world creation failed");
-        _worldsByName[name] = world;
-        _worlds[world] = true;
-        _worldsByVector[keccak256(bytes(old.getBaseVector().asLookupKey()))] = world;
-        old.upgradeComplete(world);
-        delete _worlds[msg.sender];
+        worldFactory.upgradeWorld(msg.sender, initData);
     }
 
 }

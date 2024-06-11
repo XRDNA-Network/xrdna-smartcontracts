@@ -65,9 +65,9 @@ const _abi = [
     name: "currentCompanyVersion",
     outputs: [
       {
-        internalType: "string",
+        internalType: "uint256",
         name: "",
-        type: "string",
+        type: "uint256",
       },
     ],
     stateMutability: "view",
@@ -179,19 +179,6 @@ const _abi = [
       },
     ],
     name: "setCompanyFactory",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "string",
-        name: "version",
-        type: "string",
-      },
-    ],
-    name: "setCurrentCompanyVersion",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",

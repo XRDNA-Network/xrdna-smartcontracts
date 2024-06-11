@@ -18,7 +18,33 @@ const _abi = [
     anonymous: false,
     inputs: [
       {
-        indexed: false,
+        indexed: true,
+        internalType: "address",
+        name: "condition",
+        type: "address",
+      },
+    ],
+    name: "AssetConditionAdded",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "address",
+        name: "condition",
+        type: "address",
+      },
+    ],
+    name: "AssetConditionRemoved",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
         internalType: "address",
         name: "hook",
         type: "address",
@@ -31,7 +57,7 @@ const _abi = [
     anonymous: false,
     inputs: [
       {
-        indexed: false,
+        indexed: true,
         internalType: "address",
         name: "hook",
         type: "address",
@@ -39,6 +65,19 @@ const _abi = [
     ],
     name: "AssetHookRemoved",
     type: "event",
+  },
+  {
+    inputs: [
+      {
+        internalType: "contract IAssetCondition",
+        name: "condition",
+        type: "address",
+      },
+    ],
+    name: "addCondition",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
   },
   {
     inputs: [
@@ -81,25 +120,104 @@ const _abi = [
   },
   {
     inputs: [],
-    name: "assetType",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
     name: "avatarRegistry",
     outputs: [
       {
         internalType: "contract IAvatarRegistry",
         name: "",
         type: "address",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        components: [
+          {
+            internalType: "address",
+            name: "asset",
+            type: "address",
+          },
+          {
+            internalType: "address",
+            name: "world",
+            type: "address",
+          },
+          {
+            internalType: "address",
+            name: "company",
+            type: "address",
+          },
+          {
+            internalType: "address",
+            name: "experience",
+            type: "address",
+          },
+          {
+            internalType: "address",
+            name: "avatar",
+            type: "address",
+          },
+        ],
+        internalType: "struct AssetCheckArgs",
+        name: "args",
+        type: "tuple",
+      },
+    ],
+    name: "canUseAsset",
+    outputs: [
+      {
+        internalType: "bool",
+        name: "",
+        type: "bool",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        components: [
+          {
+            internalType: "address",
+            name: "asset",
+            type: "address",
+          },
+          {
+            internalType: "address",
+            name: "world",
+            type: "address",
+          },
+          {
+            internalType: "address",
+            name: "company",
+            type: "address",
+          },
+          {
+            internalType: "address",
+            name: "experience",
+            type: "address",
+          },
+          {
+            internalType: "address",
+            name: "avatar",
+            type: "address",
+          },
+        ],
+        internalType: "struct AssetCheckArgs",
+        name: "args",
+        type: "tuple",
+      },
+    ],
+    name: "canViewAsset",
+    outputs: [
+      {
+        internalType: "bool",
+        name: "",
+        type: "bool",
       },
     ],
     stateMutability: "view",
@@ -116,6 +234,19 @@ const _abi = [
       },
     ],
     stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "bytes",
+        name: "data",
+        type: "bytes",
+      },
+    ],
+    name: "init",
+    outputs: [],
+    stateMutability: "nonpayable",
     type: "function",
   },
   {
@@ -159,6 +290,13 @@ const _abi = [
   },
   {
     inputs: [],
+    name: "removeCondition",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [],
     name: "removeHook",
     outputs: [],
     stateMutability: "nonpayable",
@@ -167,12 +305,25 @@ const _abi = [
   {
     inputs: [
       {
-        internalType: "address",
-        name: "newAsset",
-        type: "address",
+        internalType: "bytes",
+        name: "data",
+        type: "bytes",
       },
     ],
     name: "upgrade",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "nextVersion",
+        type: "address",
+      },
+    ],
+    name: "upgradeComplete",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",

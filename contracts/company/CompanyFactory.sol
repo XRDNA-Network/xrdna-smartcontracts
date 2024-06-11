@@ -8,13 +8,23 @@ import {AccessControl} from '@openzeppelin/contracts/access/AccessControl.sol';
 import {BaseFactory} from '../BaseFactory.sol';
 import {IBaseProxy} from '../IBaseProxy.sol';
 
+interface INextCompanyVersion {
+    function init(bytes calldata initData) external;
+}
+
 contract CompanyFactory is BaseFactory, ICompanyFactory {
-     constructor(address mainAdmin, address[] memory admins) BaseFactory(mainAdmin, admins) {}
+    uint256 public constant override supportsVersion = 1;
+
+    constructor(address mainAdmin, address[] memory admins) BaseFactory(mainAdmin, admins) {}
+
+    function upgradeCompany(address company, bytes calldata initData) public override onlyAuthorizedRegistry {
+        ICompany(company).upgradeComplete(implementation);
+        INextCompanyVersion(company).init(initData);
+    }
 
     function createCompany(CompanyInitArgs memory args) public onlyAuthorizedRegistry returns (address) {
-        address comp = create();
         address proxy = createProxy(); 
-        IBaseProxy(proxy).initProxy(comp);
+        IBaseProxy(proxy).initProxy(implementation);
         ICompany(proxy).init(args);
         return proxy;
     }

@@ -27,6 +27,7 @@ export interface BaseFactoryInterface extends Interface {
     nameOrSignature:
       | "ADMIN_ROLE"
       | "DEFAULT_ADMIN_ROLE"
+      | "getImplementation"
       | "getRoleAdmin"
       | "grantRole"
       | "hasRole"
@@ -53,6 +54,10 @@ export interface BaseFactoryInterface extends Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "DEFAULT_ADMIN_ROLE",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getImplementation",
     values?: undefined
   ): string;
   encodeFunctionData(
@@ -99,6 +104,10 @@ export interface BaseFactoryInterface extends Interface {
   decodeFunctionResult(functionFragment: "ADMIN_ROLE", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "DEFAULT_ADMIN_ROLE",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getImplementation",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -249,6 +258,8 @@ export interface BaseFactory extends BaseContract {
 
   DEFAULT_ADMIN_ROLE: TypedContractMethod<[], [string], "view">;
 
+  getImplementation: TypedContractMethod<[], [string], "view">;
+
   getRoleAdmin: TypedContractMethod<[role: BytesLike], [string], "view">;
 
   grantRole: TypedContractMethod<
@@ -310,6 +321,9 @@ export interface BaseFactory extends BaseContract {
   ): TypedContractMethod<[], [string], "view">;
   getFunction(
     nameOrSignature: "DEFAULT_ADMIN_ROLE"
+  ): TypedContractMethod<[], [string], "view">;
+  getFunction(
+    nameOrSignature: "getImplementation"
   ): TypedContractMethod<[], [string], "view">;
   getFunction(
     nameOrSignature: "getRoleAdmin"

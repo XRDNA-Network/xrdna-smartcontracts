@@ -3,7 +3,8 @@
 /* eslint-disable */
 import type * as companySol from "./Company.sol";
 export type { companySol };
-export type { CompanyFactory } from "./CompanyFactory";
+import type * as companyFactorySol from "./CompanyFactory.sol";
+export type { companyFactorySol };
 export type { CompanyProxy } from "./CompanyProxy";
 export type { CompanyRegistry } from "./CompanyRegistry";
 export type { ICompany } from "./ICompany";

@@ -1,25 +1,20 @@
 
 import { ethers } from "hardhat";
 import { Company } from "../src/company/Company";
-import { IAvatarRegistrationResult, ICompanyRegistrationResult, IWorldRegistrationResult, World, WorldRegistry } from "../src/world";
+import { IAvatarRegistrationResult, ICompanyRegistrationResult, World } from "../src/world";
 import { HardhatTestKeys } from "./HardhatTestKeys";
-import { IStackAdmins, StackFactory, StackType } from "./test_stack/StackFactory"
-import { CompanyStackImpl } from "./test_stack/company/CompanyStackImpl";
-import { WorldStackImpl } from "./test_stack/world/WorldStackImpl";
+import { StackFactory, StackType } from "./test_stack/StackFactory"
 import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
-import { AssetRegistry, AssetType, CreateAssetResult, ERC20Asset, ERC721Asset, VectorAddress, signVectorAddress } from "../src";
 import { expect } from "chai";
-import { CompanyFactory } from "../src/company/CompanyFactory";
-import { AssetStackImpl } from "./test_stack/asset/AssetStackImpl";
-import { ERC20, ERC20__factory, TestERC20, TestERC721 } from "../typechain-types";
-import { BaseContract } from "ethers";
-import { Avatar } from "../src/avatar/Avatar";
+import { ERC20, TestERC20, TestERC721 } from "../typechain-types";
 import { AvatarStackImpl } from "./test_stack/avatar/AvatarStackImpl";
 import { Experience } from "../src/experience";
 import { ExperienceStackImpl } from "./test_stack/experience/ExperienceStackImpl";
-import { ExperienceInfoStruct } from "../typechain-types/contracts/experience/ExperienceRegistry";
 import {abi as BaseAssetABI} from "../artifacts/contracts/asset/BaseAsset.sol/BaseAsset.json"
-import exp from "constants";
+import { IERC20AssetStack } from "./test_stack/asset/erc20/IERC20AssetStack";
+import { CreateERC20AssetResult, CreateERC721AssetResult, ERC20AssetRegistry, ERC721AssetRegistry, MultiAssetRegistry } from "../src";
+import { IERC721AssetStack } from "./test_stack/asset/erc721/IERC721AssetStack";
+import { IMultiAssetRegistryStack } from "./test_stack/asset/IMultiAssetRegistryStack";
 
 
 describe('Company', () => {
@@ -34,16 +29,20 @@ describe('Company', () => {
     let company: Company;
     let world: World;
     let companyInfo: ICompanyRegistrationResult
-    let assetStack: AssetStackImpl
-    let assetRegistry: AssetRegistry
+    let erc20Stack: IERC20AssetStack;
+    let erc20Registry: ERC20AssetRegistry;
+    let erc721Stack: IERC721AssetStack;
+    let erc721Registry: ERC721AssetRegistry;
+    let multiAssetRegistry: MultiAssetRegistry;
     let testERC20Asset: TestERC20;
-    let testERC721Asset: TestERC721
-    let testERC20: CreateAssetResult
-    let testERC721: CreateAssetResult
+    let testERC721Asset: TestERC721;
+    let testERC20: CreateERC20AssetResult;
+    let testERC721: CreateERC721AssetResult;
     let avatarStack: AvatarStackImpl
     let experience: Experience
     let experienceStack: ExperienceStackImpl
     let avatar: IAvatarRegistrationResult
+    let mintedERC721TokenId: bigint;
     before(async () => {
         signers = await ethers.getSigners();
         
@@ -67,7 +66,8 @@ describe('Company', () => {
         });
         const {world:w, worldRegistration: wr} = await stack.init();
         world = w;
-        assetStack = stack.getStack(StackType.ASSET);
+        erc20Stack = stack.getStack(StackType.ERC20);
+        erc721Stack = stack.getStack(StackType.ERC721);
         experienceStack = stack.getStack(StackType.EXPERIENCE);
         // register an avatar
         avatarStack = stack.getStack(StackType.AVATAR);
@@ -80,7 +80,9 @@ describe('Company', () => {
         testERC721Asset = await dep2.waitForDeployment() as TestERC721;
         
         
-        assetRegistry = await assetStack.getAssetRegistry()
+        erc20Registry = await erc20Stack.getERC20Registry();
+        erc721Registry = await erc721Stack.getERC721Registry();
+        multiAssetRegistry = await stack.getStack<IMultiAssetRegistryStack>(StackType.MULTI_ASSET).getMultiAssetRegistry();
         
         companyInfo = await world.registerCompany({
             sendTokensToCompanyOwner: false,
@@ -111,14 +113,14 @@ describe('Company', () => {
             originChainId: 1n
         }
 
-        testERC20 = await assetRegistry.registerAsset(AssetType.ERC20, erc20InitData)
-        const isERC20Registered = await assetRegistry.isRegisteredAsset(testERC20.assetAddress.toString())
+        testERC20 = await erc20Registry.registerAsset(erc20InitData)
+        const isERC20Registered = await multiAssetRegistry.isRegisteredAsset(testERC20.assetAddress.toString())
         if (!isERC20Registered) {
             throw new Error("ERC20 asset not registered")
         }
 
-        testERC721 = await assetRegistry.registerAsset(AssetType.ERC721, erc721InitData)
-        const isERC721Registered = await assetRegistry.isRegisteredAsset(testERC721.assetAddress.toString())
+        testERC721 = await erc721Registry.registerAsset(erc721InitData)
+        const isERC721Registered = await multiAssetRegistry.isRegisteredAsset(testERC721.assetAddress.toString())
         if (!isERC721Registered) {
             throw new Error("ERC721 asset not registered")
         }
@@ -219,32 +221,33 @@ describe('Company', () => {
     it('should mint an erc20 asset', async () => {
         const asset = testERC20.assetAddress.toString();
         const to = avatar.avatarAddress.toString();
-        const amount = ethers.parseEther("10.0").toString();
-        const result = await company.mint(asset, to, amount);
-        const r = await result.wait();
-        expect(r?.status).to.equal(1);
+        const amount = ethers.parseEther("10.0");
+        const r = await company.mintERC20(asset, to, amount);
+        expect(r.receipt.status).to.equal(1);
+        expect(r.amount).to.be.greaterThan(0);
     })
     
     it('should mint an erc721 asset', async () => {
         const asset = testERC721.assetAddress.toString();
         const to = avatar.avatarAddress.toString();
-        const tokenId = "1";
-        const result = await company.mint(asset, to, tokenId);
-        const r = await result.wait();
-        expect(r?.status).to.equal(1);
+        const r = await company.mintERC721(asset, to);
+        expect(r.receipt.status).to.equal(1);
+        expect(r.tokenId).to.be.greaterThan(0);
+        mintedERC721TokenId = r.tokenId;
+        
     })
     it('should revoke an erc20 asset', async () => {
         const asset = testERC20.assetAddress.toString();
-        const to = avatarOwner.address;
-        const amount = ethers.parseEther("10.0").toString();
+        const to = avatar.avatarAddress.toString();
+        const amount = ethers.parseEther("10.0");
         const result = await company.revoke(asset, to, amount);
         const r = await result.wait();
         expect(r?.status).to.equal(1);
     })
     it('should revoke an erc721 asset', async () => {
         const asset = testERC721.assetAddress.toString();
-        const to = avatarOwner.address;
-        const tokenId = "1";
+        const to = avatar.avatarAddress.toString();
+        const tokenId = mintedERC721TokenId;
         const result = await company.revoke(asset, to, tokenId);
         const r = await result.wait();
         expect(r?.status).to.equal(1);

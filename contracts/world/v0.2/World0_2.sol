@@ -3,7 +3,6 @@
 pragma solidity ^0.8.24;
 
 import {IWorld0_2, CompanyRegistrationArgs} from './IWorld0_2.sol';
-import {AccessControl} from '@openzeppelin/contracts/access/AccessControl.sol';
 import {VectorAddress} from '../../VectorAddress.sol';
 import {IAvatarRegistry, AvatarRegistrationRequest} from '../../avatar/IAvatarRegistry.sol';
 import {WorldCreateRequest} from './IWorldFactory0_2.sol';
@@ -28,8 +27,6 @@ contract World0_2 is IWorld0_2, BaseAccess, ReentrancyGuard {
     using LibStringCase for string;
     using LibProxyAccess for BaseProxyStorage;
 
-    bytes32 public constant SIGNER_ROLE = keccak256("SIGNER_ROLE");
-
     uint256 public constant override version = 2;
     
     //Fields populated at master copy deploy time
@@ -50,13 +47,6 @@ contract World0_2 is IWorld0_2, BaseAccess, ReentrancyGuard {
         _;
     }
 
-
-    modifier notUpgraded {
-        WorldV2Storage storage ws = LibWorldV2Storage.load();
-        require(!ws.upgraded, "World0_2: world already upgraded");
-        _;
-    }
-
     constructor(WorldConstructorArgs memory args) {
         require(args.worldFactory != address(0), "World0_2: worldFactory cannot be zero address");
         require(args.worldRegistry != address(0), "World0_2: worldRegistry cannot be zero address");
@@ -72,6 +62,26 @@ contract World0_2 is IWorld0_2, BaseAccess, ReentrancyGuard {
         emit ReceivedFunds(msg.sender, msg.value);
     }
 
+    function init(WorldCreateRequest memory request) external onlyFactory {
+        BaseProxyStorage storage bs = LibBaseProxy.load();
+
+        require(request.owner != address(0), "World0_2: owner cannot be zero address");
+        require(bytes(request.baseVector.x).length != 0, "World0_2: baseVector.x cannot be zero");
+        require(bytes(request.baseVector.y).length != 0, "World0_2: baseVector.y cannot be zero");
+        require(bytes(request.baseVector.z).length != 0, "World0_2: baseVector.z cannot be zero");
+        require(request.baseVector.p == 0, "World0_2: baseVector.p must be zero");
+        require(request.baseVector.p_sub == 0, "World0_2: baseVector.p_sub must be zero");
+        require(bytes(request.name).length > 0, "World0_2: name cannot be empty");
+        WorldV2Storage storage ws = LibWorldV2Storage.load();
+        ws.owner = request.owner;
+        ws.baseVector = request.baseVector;
+        ws.name = request.name;
+        ws.nextP = 0;
+        ws.oldVersion = request.oldWorld;
+        bs.grantRole(LibProxyAccess.ADMIN_ROLE, ws.owner);
+        bs.grantRole(LibProxyAccess.SIGNER_ROLE, ws.owner);
+    }
+
     function getOwner() external view returns (address) {
         WorldV2Storage storage ws = LibWorldV2Storage.load();
         return ws.owner;
@@ -85,11 +95,6 @@ contract World0_2 is IWorld0_2, BaseAccess, ReentrancyGuard {
     function getName() external view returns (string memory) {
         WorldV2Storage storage ws = LibWorldV2Storage.load();
         return ws.name;
-    }
-
-    function upgraded() external view override returns (bool) {
-        WorldV2Storage storage ws = LibWorldV2Storage.load();
-        return ws.upgraded;
     }
 
     function registerCompany(CompanyRegistrationArgs memory args) public payable onlySigner nonReentrant returns (address company) {
@@ -123,6 +128,7 @@ contract World0_2 is IWorld0_2, BaseAccess, ReentrancyGuard {
     function registerAvatar(AvatarRegistrationRequest memory args) external payable onlySigner nonReentrant returns (address avatar) {
         require(args.avatarOwner != address(0), "World0_2: avatar owner cannot be zero address");
         require(bytes(args.username).length > 0, "World0_2: avatar username cannot be empty");
+        
         WorldV2Storage storage ws = LibWorldV2Storage.load();
         if(address(ws.hook) != address(0)) {
             require(ws.hook.beforeRegisterAvatar(args), "World0_2: hook rejected avatar registration");
@@ -138,42 +144,16 @@ contract World0_2 is IWorld0_2, BaseAccess, ReentrancyGuard {
         emit AvatarRegistered(avatar, args.defaultExperience);
     }
 
-    function init(WorldCreateRequest memory request) external onlyFactory {
-        BaseProxyStorage storage bs = LibBaseProxy.load();
 
-        require(request.owner != address(0), "World0_2: owner cannot be zero address");
-        require(bytes(request.baseVector.x).length != 0, "World0_2: baseVector.x cannot be zero");
-        require(bytes(request.baseVector.y).length != 0, "World0_2: baseVector.y cannot be zero");
-        require(bytes(request.baseVector.z).length != 0, "World0_2: baseVector.z cannot be zero");
-        require(request.baseVector.p == 0, "World0_2: baseVector.p must be zero");
-        require(request.baseVector.p_sub == 0, "World0_2: baseVector.p_sub must be zero");
-        require(bytes(request.name).length > 0, "World0_2: name cannot be empty");
-        WorldV2Storage storage ws = LibWorldV2Storage.load();
-        ws.owner = request.owner;
-        ws.baseVector = request.baseVector;
-        ws.name = request.name;
-        ws.nextP = 0;
-        ws.oldVersion = request.oldWorld;
-        bs.setRole(LibProxyAccess.ADMIN_ROLE, ws.owner, true);
-        bs.setRole(LibProxyAccess.SIGNER_ROLE, ws.owner, true);
-        if(request.oldWorld != address(0)) {
-            address oldOwner = IWorld(request.oldWorld).getOwner();
-            if(oldOwner != ws.owner) {
-                //only grant old owner signer role to mitigate security implications. 
-                bs.setRole(LibProxyAccess.SIGNER_ROLE, oldOwner, true);
-            }
-        }
-    }
-
-    function upgrade(bytes calldata initData) public onlyAdmin notUpgraded {
-        WorldV2Storage storage ws = LibWorldV2Storage.load();
-        ws.upgraded = true;
+    function upgrade(bytes calldata initData) public onlyAdmin {
         worldRegistry.worldUpgradeSelf(initData);
     }
 
-    function upgradeComplete(address nextVersion) public onlyRegistry {
+    function upgradeComplete(address nextVersion) public onlyFactory {
         BaseProxyStorage storage bs = LibBaseProxy.load();
+        address old = bs.implementation;
         bs.implementation = nextVersion;
+        emit WorldUpgraded(old, nextVersion);
     }
 
     function setHook(IWorldHook _hook) external onlyAdmin {

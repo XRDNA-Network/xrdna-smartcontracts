@@ -30,6 +30,5 @@ interface IExperienceRegistry {
     function isExperience(address exp) external view returns (bool);
     function registerExperience(RegisterExperienceRequest memory request) external returns (address, uint256);
     function upgradeExperience(bytes calldata initData) external;
-    function currentExperienceVersion() external view returns (string memory);
-    function setCurrentExperienceVersion(string memory version) external;
+    function currentExperienceVersion() external view returns (uint256);
 }

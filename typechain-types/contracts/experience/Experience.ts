@@ -92,13 +92,13 @@ export interface ExperienceInterface extends Interface {
       | "entryFee"
       | "experienceFactory"
       | "experienceRegistry"
-      | "experienceUpgraded"
       | "init"
       | "name"
       | "portalRegistry"
       | "removeHook"
       | "removePortalCondition"
       | "upgrade"
+      | "upgradeComplete"
       | "vectorAddress"
       | "version"
       | "world"
@@ -148,10 +148,6 @@ export interface ExperienceInterface extends Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "experienceUpgraded",
-    values: [AddressLike]
-  ): string;
-  encodeFunctionData(
     functionFragment: "init",
     values: [AddressLike, string, VectorAddressStruct, BytesLike]
   ): string;
@@ -169,6 +165,10 @@ export interface ExperienceInterface extends Interface {
     values?: undefined
   ): string;
   encodeFunctionData(functionFragment: "upgrade", values: [BytesLike]): string;
+  encodeFunctionData(
+    functionFragment: "upgradeComplete",
+    values: [AddressLike]
+  ): string;
   encodeFunctionData(
     functionFragment: "vectorAddress",
     values?: undefined
@@ -204,10 +204,6 @@ export interface ExperienceInterface extends Interface {
     functionFragment: "experienceRegistry",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(
-    functionFragment: "experienceUpgraded",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(functionFragment: "init", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "name", data: BytesLike): Result;
   decodeFunctionResult(
@@ -220,6 +216,10 @@ export interface ExperienceInterface extends Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "upgrade", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "upgradeComplete",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "vectorAddress",
     data: BytesLike
@@ -381,12 +381,6 @@ export interface Experience extends BaseContract {
 
   experienceRegistry: TypedContractMethod<[], [string], "view">;
 
-  experienceUpgraded: TypedContractMethod<
-    [nextVersion: AddressLike],
-    [void],
-    "nonpayable"
-  >;
-
   init: TypedContractMethod<
     [
       _company: AddressLike,
@@ -407,6 +401,12 @@ export interface Experience extends BaseContract {
   removePortalCondition: TypedContractMethod<[], [void], "nonpayable">;
 
   upgrade: TypedContractMethod<[initData: BytesLike], [void], "nonpayable">;
+
+  upgradeComplete: TypedContractMethod<
+    [nextVersion: AddressLike],
+    [void],
+    "nonpayable"
+  >;
 
   vectorAddress: TypedContractMethod<[], [VectorAddressStructOutput], "view">;
 
@@ -453,9 +453,6 @@ export interface Experience extends BaseContract {
     nameOrSignature: "experienceRegistry"
   ): TypedContractMethod<[], [string], "view">;
   getFunction(
-    nameOrSignature: "experienceUpgraded"
-  ): TypedContractMethod<[nextVersion: AddressLike], [void], "nonpayable">;
-  getFunction(
     nameOrSignature: "init"
   ): TypedContractMethod<
     [
@@ -482,6 +479,9 @@ export interface Experience extends BaseContract {
   getFunction(
     nameOrSignature: "upgrade"
   ): TypedContractMethod<[initData: BytesLike], [void], "nonpayable">;
+  getFunction(
+    nameOrSignature: "upgradeComplete"
+  ): TypedContractMethod<[nextVersion: AddressLike], [void], "nonpayable">;
   getFunction(
     nameOrSignature: "vectorAddress"
   ): TypedContractMethod<[], [VectorAddressStructOutput], "view">;

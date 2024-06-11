@@ -20,24 +20,63 @@ import type {
   TypedContractMethod,
 } from "../../common";
 
+export type AssetCheckArgsStruct = {
+  asset: AddressLike;
+  world: AddressLike;
+  company: AddressLike;
+  experience: AddressLike;
+  avatar: AddressLike;
+};
+
+export type AssetCheckArgsStructOutput = [
+  asset: string,
+  world: string,
+  company: string,
+  experience: string,
+  avatar: string
+] & {
+  asset: string;
+  world: string;
+  company: string;
+  experience: string;
+  avatar: string;
+};
+
 export interface IBasicAssetInterface extends Interface {
   getFunction(
     nameOrSignature:
+      | "addCondition"
       | "addHook"
-      | "assetType"
+      | "canUseAsset"
+      | "canViewAsset"
+      | "init"
       | "issuer"
       | "originAddress"
       | "originChainId"
+      | "removeCondition"
       | "removeHook"
       | "upgrade"
+      | "upgradeComplete"
       | "version"
   ): FunctionFragment;
 
   encodeFunctionData(
+    functionFragment: "addCondition",
+    values: [AddressLike]
+  ): string;
+  encodeFunctionData(
     functionFragment: "addHook",
     values: [AddressLike]
   ): string;
-  encodeFunctionData(functionFragment: "assetType", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: "canUseAsset",
+    values: [AssetCheckArgsStruct]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "canViewAsset",
+    values: [AssetCheckArgsStruct]
+  ): string;
+  encodeFunctionData(functionFragment: "init", values: [BytesLike]): string;
   encodeFunctionData(functionFragment: "issuer", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "originAddress",
@@ -48,17 +87,34 @@ export interface IBasicAssetInterface extends Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "removeHook",
+    functionFragment: "removeCondition",
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "upgrade",
+    functionFragment: "removeHook",
+    values?: undefined
+  ): string;
+  encodeFunctionData(functionFragment: "upgrade", values: [BytesLike]): string;
+  encodeFunctionData(
+    functionFragment: "upgradeComplete",
     values: [AddressLike]
   ): string;
   encodeFunctionData(functionFragment: "version", values?: undefined): string;
 
+  decodeFunctionResult(
+    functionFragment: "addCondition",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "addHook", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "assetType", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "canUseAsset",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "canViewAsset",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(functionFragment: "init", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "issuer", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "originAddress",
@@ -68,8 +124,16 @@ export interface IBasicAssetInterface extends Interface {
     functionFragment: "originChainId",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(
+    functionFragment: "removeCondition",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "removeHook", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "upgrade", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "upgradeComplete",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "version", data: BytesLike): Result;
 }
 
@@ -116,9 +180,27 @@ export interface IBasicAsset extends BaseContract {
     event?: TCEvent
   ): Promise<this>;
 
+  addCondition: TypedContractMethod<
+    [condition: AddressLike],
+    [void],
+    "nonpayable"
+  >;
+
   addHook: TypedContractMethod<[hook: AddressLike], [void], "nonpayable">;
 
-  assetType: TypedContractMethod<[], [bigint], "view">;
+  canUseAsset: TypedContractMethod<
+    [args: AssetCheckArgsStruct],
+    [boolean],
+    "view"
+  >;
+
+  canViewAsset: TypedContractMethod<
+    [args: AssetCheckArgsStruct],
+    [boolean],
+    "view"
+  >;
+
+  init: TypedContractMethod<[data: BytesLike], [void], "nonpayable">;
 
   issuer: TypedContractMethod<[], [string], "view">;
 
@@ -126,9 +208,17 @@ export interface IBasicAsset extends BaseContract {
 
   originChainId: TypedContractMethod<[], [bigint], "view">;
 
+  removeCondition: TypedContractMethod<[], [void], "nonpayable">;
+
   removeHook: TypedContractMethod<[], [void], "nonpayable">;
 
-  upgrade: TypedContractMethod<[newAsset: AddressLike], [void], "nonpayable">;
+  upgrade: TypedContractMethod<[data: BytesLike], [void], "nonpayable">;
+
+  upgradeComplete: TypedContractMethod<
+    [nextVersion: AddressLike],
+    [void],
+    "nonpayable"
+  >;
 
   version: TypedContractMethod<[], [bigint], "view">;
 
@@ -137,11 +227,20 @@ export interface IBasicAsset extends BaseContract {
   ): T;
 
   getFunction(
+    nameOrSignature: "addCondition"
+  ): TypedContractMethod<[condition: AddressLike], [void], "nonpayable">;
+  getFunction(
     nameOrSignature: "addHook"
   ): TypedContractMethod<[hook: AddressLike], [void], "nonpayable">;
   getFunction(
-    nameOrSignature: "assetType"
-  ): TypedContractMethod<[], [bigint], "view">;
+    nameOrSignature: "canUseAsset"
+  ): TypedContractMethod<[args: AssetCheckArgsStruct], [boolean], "view">;
+  getFunction(
+    nameOrSignature: "canViewAsset"
+  ): TypedContractMethod<[args: AssetCheckArgsStruct], [boolean], "view">;
+  getFunction(
+    nameOrSignature: "init"
+  ): TypedContractMethod<[data: BytesLike], [void], "nonpayable">;
   getFunction(
     nameOrSignature: "issuer"
   ): TypedContractMethod<[], [string], "view">;
@@ -152,11 +251,17 @@ export interface IBasicAsset extends BaseContract {
     nameOrSignature: "originChainId"
   ): TypedContractMethod<[], [bigint], "view">;
   getFunction(
+    nameOrSignature: "removeCondition"
+  ): TypedContractMethod<[], [void], "nonpayable">;
+  getFunction(
     nameOrSignature: "removeHook"
   ): TypedContractMethod<[], [void], "nonpayable">;
   getFunction(
     nameOrSignature: "upgrade"
-  ): TypedContractMethod<[newAsset: AddressLike], [void], "nonpayable">;
+  ): TypedContractMethod<[data: BytesLike], [void], "nonpayable">;
+  getFunction(
+    nameOrSignature: "upgradeComplete"
+  ): TypedContractMethod<[nextVersion: AddressLike], [void], "nonpayable">;
   getFunction(
     nameOrSignature: "version"
   ): TypedContractMethod<[], [bigint], "view">;

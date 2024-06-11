@@ -29,6 +29,7 @@ export type BaseContructorArgsStruct = {
   experienceRegistry: AddressLike;
   portalRegistry: AddressLike;
   companyRegistry: AddressLike;
+  multiAssetRegistry: AddressLike;
 };
 
 export type BaseContructorArgsStructOutput = [
@@ -36,13 +37,15 @@ export type BaseContructorArgsStructOutput = [
   avatarRegistry: string,
   experienceRegistry: string,
   portalRegistry: string,
-  companyRegistry: string
+  companyRegistry: string,
+  multiAssetRegistry: string
 ] & {
   avatarFactory: string;
   avatarRegistry: string;
   experienceRegistry: string;
   portalRegistry: string;
   companyRegistry: string;
+  multiAssetRegistry: string;
 };
 
 export type WearableStruct = { asset: AddressLike; tokenId: BigNumberish };
@@ -96,6 +99,7 @@ export interface AvatarInterface extends Interface {
       | "MAX_SIZE"
       | "addWearable"
       | "appearanceDetails"
+      | "assetRegistry"
       | "avatarFactory"
       | "avatarOwnerSigningNonce"
       | "avatarRegistry"
@@ -121,7 +125,6 @@ export interface AvatarInterface extends Interface {
       | "setHook"
       | "upgrade"
       | "upgradeComplete"
-      | "upgraded"
       | "username"
       | "version"
       | "withdraw"
@@ -148,6 +151,10 @@ export interface AvatarInterface extends Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "appearanceDetails",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "assetRegistry",
     values?: undefined
   ): string;
   encodeFunctionData(
@@ -238,7 +245,6 @@ export interface AvatarInterface extends Interface {
     functionFragment: "upgradeComplete",
     values: [AddressLike]
   ): string;
-  encodeFunctionData(functionFragment: "upgraded", values?: undefined): string;
   encodeFunctionData(functionFragment: "username", values?: undefined): string;
   encodeFunctionData(functionFragment: "version", values?: undefined): string;
   encodeFunctionData(
@@ -253,6 +259,10 @@ export interface AvatarInterface extends Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "appearanceDetails",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "assetRegistry",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -328,7 +338,6 @@ export interface AvatarInterface extends Interface {
     functionFragment: "upgradeComplete",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "upgraded", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "username", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "version", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "withdraw", data: BytesLike): Result;
@@ -518,6 +527,8 @@ export interface Avatar extends BaseContract {
 
   appearanceDetails: TypedContractMethod<[], [string], "view">;
 
+  assetRegistry: TypedContractMethod<[], [string], "view">;
+
   avatarFactory: TypedContractMethod<[], [string], "view">;
 
   avatarOwnerSigningNonce: TypedContractMethod<[], [bigint], "view">;
@@ -622,11 +633,9 @@ export interface Avatar extends BaseContract {
     "nonpayable"
   >;
 
-  upgraded: TypedContractMethod<[], [boolean], "view">;
-
   username: TypedContractMethod<[], [string], "view">;
 
-  version: TypedContractMethod<[], [string], "view">;
+  version: TypedContractMethod<[], [bigint], "view">;
 
   withdraw: TypedContractMethod<[amount: BigNumberish], [void], "nonpayable">;
 
@@ -642,6 +651,9 @@ export interface Avatar extends BaseContract {
   ): TypedContractMethod<[wearable: WearableStruct], [void], "nonpayable">;
   getFunction(
     nameOrSignature: "appearanceDetails"
+  ): TypedContractMethod<[], [string], "view">;
+  getFunction(
+    nameOrSignature: "assetRegistry"
   ): TypedContractMethod<[], [string], "view">;
   getFunction(
     nameOrSignature: "avatarFactory"
@@ -741,14 +753,11 @@ export interface Avatar extends BaseContract {
     nameOrSignature: "upgradeComplete"
   ): TypedContractMethod<[nextVersion: AddressLike], [void], "nonpayable">;
   getFunction(
-    nameOrSignature: "upgraded"
-  ): TypedContractMethod<[], [boolean], "view">;
-  getFunction(
     nameOrSignature: "username"
   ): TypedContractMethod<[], [string], "view">;
   getFunction(
     nameOrSignature: "version"
-  ): TypedContractMethod<[], [string], "view">;
+  ): TypedContractMethod<[], [bigint], "view">;
   getFunction(
     nameOrSignature: "withdraw"
   ): TypedContractMethod<[amount: BigNumberish], [void], "nonpayable">;

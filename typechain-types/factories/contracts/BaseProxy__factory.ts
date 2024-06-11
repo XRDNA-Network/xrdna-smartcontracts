@@ -166,19 +166,6 @@ const _abi = [
     type: "function",
   },
   {
-    inputs: [
-      {
-        internalType: "address",
-        name: "impl",
-        type: "address",
-      },
-    ],
-    name: "setImplementation",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
     stateMutability: "payable",
     type: "receive",
   },

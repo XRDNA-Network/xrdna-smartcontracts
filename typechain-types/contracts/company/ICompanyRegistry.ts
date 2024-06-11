@@ -70,7 +70,6 @@ export interface ICompanyRegistryInterface extends Interface {
       | "isRegisteredCompany"
       | "registerCompany"
       | "setCompanyFactory"
-      | "setCurrentCompanyVersion"
       | "setWorldRegistry"
       | "upgradeCompany"
   ): FunctionFragment;
@@ -92,10 +91,6 @@ export interface ICompanyRegistryInterface extends Interface {
   encodeFunctionData(
     functionFragment: "setCompanyFactory",
     values: [AddressLike]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "setCurrentCompanyVersion",
-    values: [string]
   ): string;
   encodeFunctionData(
     functionFragment: "setWorldRegistry",
@@ -120,10 +115,6 @@ export interface ICompanyRegistryInterface extends Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "setCompanyFactory",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "setCurrentCompanyVersion",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -192,7 +183,7 @@ export interface ICompanyRegistry extends BaseContract {
     event?: TCEvent
   ): Promise<this>;
 
-  currentCompanyVersion: TypedContractMethod<[], [string], "view">;
+  currentCompanyVersion: TypedContractMethod<[], [bigint], "view">;
 
   isRegisteredCompany: TypedContractMethod<
     [company: AddressLike],
@@ -208,12 +199,6 @@ export interface ICompanyRegistry extends BaseContract {
 
   setCompanyFactory: TypedContractMethod<
     [factory: AddressLike],
-    [void],
-    "nonpayable"
-  >;
-
-  setCurrentCompanyVersion: TypedContractMethod<
-    [version: string],
     [void],
     "nonpayable"
   >;
@@ -236,7 +221,7 @@ export interface ICompanyRegistry extends BaseContract {
 
   getFunction(
     nameOrSignature: "currentCompanyVersion"
-  ): TypedContractMethod<[], [string], "view">;
+  ): TypedContractMethod<[], [bigint], "view">;
   getFunction(
     nameOrSignature: "isRegisteredCompany"
   ): TypedContractMethod<[company: AddressLike], [boolean], "view">;
@@ -250,9 +235,6 @@ export interface ICompanyRegistry extends BaseContract {
   getFunction(
     nameOrSignature: "setCompanyFactory"
   ): TypedContractMethod<[factory: AddressLike], [void], "nonpayable">;
-  getFunction(
-    nameOrSignature: "setCurrentCompanyVersion"
-  ): TypedContractMethod<[version: string], [void], "nonpayable">;
   getFunction(
     nameOrSignature: "setWorldRegistry"
   ): TypedContractMethod<[registry: AddressLike], [void], "nonpayable">;

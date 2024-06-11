@@ -210,19 +210,6 @@
       "inputs": [
         {
           "internalType": "address",
-          "name": "nextVersion",
-          "type": "address"
-        }
-      ],
-      "name": "experienceUpgraded",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
           "name": "company",
           "type": "address"
         },
@@ -315,6 +302,19 @@
         }
       ],
       "name": "upgrade",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "nextVersion",
+          "type": "address"
+        }
+      ],
+      "name": "upgradeComplete",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"

@@ -3,6 +3,7 @@
 /* eslint-disable */
 import type {
   BaseContract,
+  BigNumberish,
   BytesLike,
   FunctionFragment,
   Result,
@@ -153,7 +154,7 @@ export interface AvatarRegistryInterface extends Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "setCurrentAvatarVersion",
-    values: [string]
+    values: [BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "supportsInterface",
@@ -369,7 +370,7 @@ export interface AvatarRegistry extends BaseContract {
 
   avatarFactory: TypedContractMethod<[], [string], "view">;
 
-  currentAvatarVersion: TypedContractMethod<[], [string], "view">;
+  currentAvatarVersion: TypedContractMethod<[], [bigint], "view">;
 
   findByUsername: TypedContractMethod<[username: string], [string], "view">;
 
@@ -416,7 +417,7 @@ export interface AvatarRegistry extends BaseContract {
   >;
 
   setCurrentAvatarVersion: TypedContractMethod<
-    [v: string],
+    [v: BigNumberish],
     [void],
     "nonpayable"
   >;
@@ -450,7 +451,7 @@ export interface AvatarRegistry extends BaseContract {
   ): TypedContractMethod<[], [string], "view">;
   getFunction(
     nameOrSignature: "currentAvatarVersion"
-  ): TypedContractMethod<[], [string], "view">;
+  ): TypedContractMethod<[], [bigint], "view">;
   getFunction(
     nameOrSignature: "findByUsername"
   ): TypedContractMethod<[username: string], [string], "view">;
@@ -503,7 +504,7 @@ export interface AvatarRegistry extends BaseContract {
   ): TypedContractMethod<[factory: AddressLike], [void], "nonpayable">;
   getFunction(
     nameOrSignature: "setCurrentAvatarVersion"
-  ): TypedContractMethod<[v: string], [void], "nonpayable">;
+  ): TypedContractMethod<[v: BigNumberish], [void], "nonpayable">;
   getFunction(
     nameOrSignature: "supportsInterface"
   ): TypedContractMethod<[interfaceId: BytesLike], [boolean], "view">;

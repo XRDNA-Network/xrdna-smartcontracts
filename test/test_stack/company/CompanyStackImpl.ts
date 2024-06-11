@@ -1,16 +1,21 @@
-import { ethers, ignition } from "hardhat";
-import { IBasicDeployArgs, IDeployable } from "../IDeployable";
+import { ethers } from "hardhat";
+import { IDeployable } from "../IDeployable";
 import { CompanyFactory } from "../../../src/company/CompanyFactory";
 import { CompanyRegistry } from "../../../src/company/CompanyRegistry";
 import { ICompanyStack, ICreateCompanyRequest, IERC20CreationRequest, IERC721CreationRequest } from "./ICompanyStack";
 import { StackFactory, StackType } from "../StackFactory";
-import { AssetType, ERC20Asset, ERC20InitData, ERC721Asset } from "../../../src";
+import { ERC20Asset, ERC20InitData, ERC721Asset } from "../../../src";
 import { Company } from "../../../src/company/Company";
-import { IAssetStack } from "../asset/IAssetStack";
 import { throwError } from "../../utils";
 import { IWorldStackDeployment } from "../world/WorldStackImpl";
+import { IERC20AssetStack } from "../asset/erc20/IERC20AssetStack";
+import { IERC721AssetStack } from "../asset/erc721/IERC721AssetStack";
 
 
+const AssetType = {
+    ERC20: 1n,
+    ERC721: 2n
+}
 
 export class CompanyStackImpl implements ICompanyStack, IDeployable {
     
@@ -44,8 +49,8 @@ export class CompanyStackImpl implements ICompanyStack, IDeployable {
             originChainId: request.originChainId,
             totalSupply: request.totalSupply
         }
-        const ar = await this.factory.getStack<IAssetStack>(StackType.ASSET);
-        const t = await ar.getAssetRegistry().registerAsset(AssetType.ERC20, initData);
+        const ar = await this.factory.getStack<IERC20AssetStack>(StackType.ERC20);
+        const t = await ar.getERC20Registry().registerAsset(initData);
         const asset = new ERC20Asset({
             address: t.assetAddress.toString() || throwError("Asset contract address not found"),
             provider: ethers.provider
@@ -69,8 +74,8 @@ export class CompanyStackImpl implements ICompanyStack, IDeployable {
             symbol: request.symbol,
             baseURI: request.baseURI
         }
-        const ar = await this.factory.getStack<IAssetStack>(StackType.ASSET);
-        const t = await ar.getAssetRegistry().registerAsset(AssetType.ERC721, initData);
+        const ar = await this.factory.getStack<IERC721AssetStack>(StackType.ERC721);
+        const t = await ar.getERC721Registry().registerAsset(initData);
         const asset = new ERC721Asset({
             address: t.assetAddress.toString() || throwError("Contract address not found"),
             provider: ethers.provider

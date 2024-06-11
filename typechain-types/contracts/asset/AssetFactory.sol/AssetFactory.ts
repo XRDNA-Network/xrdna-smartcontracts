@@ -29,6 +29,7 @@ export interface AssetFactoryInterface extends Interface {
       | "ADMIN_ROLE"
       | "DEFAULT_ADMIN_ROLE"
       | "createAsset"
+      | "getImplementation"
       | "getRoleAdmin"
       | "grantRole"
       | "hasRole"
@@ -64,6 +65,10 @@ export interface AssetFactoryInterface extends Interface {
   encodeFunctionData(
     functionFragment: "createAsset",
     values: [BigNumberish, BytesLike]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getImplementation",
+    values?: undefined
   ): string;
   encodeFunctionData(
     functionFragment: "getRoleAdmin",
@@ -129,6 +134,10 @@ export interface AssetFactoryInterface extends Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "createAsset",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getImplementation",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -301,6 +310,8 @@ export interface AssetFactory extends BaseContract {
     "nonpayable"
   >;
 
+  getImplementation: TypedContractMethod<[], [string], "view">;
+
   getRoleAdmin: TypedContractMethod<[role: BytesLike], [string], "view">;
 
   grantRole: TypedContractMethod<
@@ -394,6 +405,9 @@ export interface AssetFactory extends BaseContract {
     [string],
     "nonpayable"
   >;
+  getFunction(
+    nameOrSignature: "getImplementation"
+  ): TypedContractMethod<[], [string], "view">;
   getFunction(
     nameOrSignature: "getRoleAdmin"
   ): TypedContractMethod<[role: BytesLike], [string], "view">;

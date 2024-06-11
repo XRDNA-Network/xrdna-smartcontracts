@@ -47,6 +47,7 @@ export interface ExperienceFactoryInterface extends Interface {
       | "ADMIN_ROLE"
       | "DEFAULT_ADMIN_ROLE"
       | "createExperience"
+      | "getImplementation"
       | "getRoleAdmin"
       | "grantRole"
       | "hasRole"
@@ -78,6 +79,10 @@ export interface ExperienceFactoryInterface extends Interface {
   encodeFunctionData(
     functionFragment: "createExperience",
     values: [AddressLike, string, VectorAddressStruct, BytesLike]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getImplementation",
+    values?: undefined
   ): string;
   encodeFunctionData(
     functionFragment: "getRoleAdmin",
@@ -127,6 +132,10 @@ export interface ExperienceFactoryInterface extends Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "createExperience",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getImplementation",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -288,6 +297,8 @@ export interface ExperienceFactory extends BaseContract {
     "nonpayable"
   >;
 
+  getImplementation: TypedContractMethod<[], [string], "view">;
+
   getRoleAdmin: TypedContractMethod<[role: BytesLike], [string], "view">;
 
   grantRole: TypedContractMethod<
@@ -362,6 +373,9 @@ export interface ExperienceFactory extends BaseContract {
     [string],
     "nonpayable"
   >;
+  getFunction(
+    nameOrSignature: "getImplementation"
+  ): TypedContractMethod<[], [string], "view">;
   getFunction(
     nameOrSignature: "getRoleAdmin"
   ): TypedContractMethod<[role: BytesLike], [string], "view">;

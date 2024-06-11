@@ -6,5 +6,7 @@ import {CompanyInitArgs} from './ICompany.sol';
 
 interface ICompanyFactory {
     
+    function supportsVersion() external view returns (uint256);
+    function upgradeCompany(address company, bytes calldata initData) external;
     function createCompany(CompanyInitArgs memory request) external returns (address);
 }

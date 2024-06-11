@@ -1,5 +1,5 @@
 import { ignition } from "hardhat";
-import {  AssetFactory, AssetRegistry, RegistrarRegistry, WorldFactory, WorldRegistry } from "../../../src";
+import {  ERC20AssetFactory, ERC20AssetRegistry, ERC721AssetFactory, ERC721AssetRegistry, MultiAssetRegistry, RegistrarRegistry, WorldFactory, WorldRegistry } from "../../../src";
 import {  IDeployable } from "../IDeployable";
 import {  StackFactory } from "../StackFactory";
 import { IWorldStack } from "./IWorldStack";
@@ -12,8 +12,11 @@ import { ExperienceFactory, ExperienceRegistry } from "../../../src/experience";
 import { PortalRegistry } from "../../../src/portal";
 
 export interface IWorldStackDeployment {
-    assetRegistry: AssetRegistry;
-    assetFactory: AssetFactory;
+    erc20AssetRegistry: ERC20AssetRegistry;
+    erc20AssetFactory: ERC20AssetFactory;
+    erc721AssetRegistry: ERC721AssetRegistry;
+    erc721AssetFactory: ERC721AssetFactory;
+    multiAssetRegistry: MultiAssetRegistry;
     avatarRegistry: AvatarRegistry;
     avatarFactory: AvatarFactory;
     companyRegistry: CompanyRegistry;
@@ -58,12 +61,24 @@ export class WorldStackImpl implements IWorldStack, IDeployable {
             
             const mod = await ignition.deploy(WorldModule);
             const r = {
-                assetFactory: new AssetFactory({
-                    address: await mod.assetFactory.getAddress(),
+                erc20AssetFactory: new ERC20AssetFactory({
+                    address: await mod.erc20Factory.getAddress(),
                     admin: this.factory.admins.assetRegistryAdmin
                 }),
-                assetRegistry: new AssetRegistry({
-                    address: await mod.assetRegistry.getAddress(),
+                erc20AssetRegistry: new ERC20AssetRegistry({
+                    address: await mod.erc20Registry.getAddress(),
+                    admin: this.factory.admins.assetRegistryAdmin
+                }),
+                erc721AssetFactory: new ERC721AssetFactory({
+                    address: await mod.erc721Factory.getAddress(),
+                    admin: this.factory.admins.assetRegistryAdmin
+                }),
+                erc721AssetRegistry: new ERC721AssetRegistry({
+                    address: await mod.erc721Registry.getAddress(),
+                    admin: this.factory.admins.assetRegistryAdmin
+                }),
+                multiAssetRegistry: new MultiAssetRegistry({
+                    address: await mod.multiAssetRegistry.getAddress(),
                     admin: this.factory.admins.assetRegistryAdmin
                 }),
                 avatarFactory: new AvatarFactory({

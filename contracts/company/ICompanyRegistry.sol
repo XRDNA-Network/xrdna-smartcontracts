@@ -27,8 +27,7 @@ interface ICompanyRegistry {
 
     event CompanyRegistered(address indexed company, VectorAddress indexed);
 
-    function currentCompanyVersion() external view returns (string memory);
-    function setCurrentCompanyVersion(string memory version) external;
+    function currentCompanyVersion() external view returns (uint256);
     function setCompanyFactory(address factory) external;
     function setWorldRegistry(address registry) external;
     function isRegisteredCompany(address company) external view returns (bool);

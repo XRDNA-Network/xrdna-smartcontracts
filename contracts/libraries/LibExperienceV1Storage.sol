@@ -7,7 +7,6 @@ import {IExperienceHook} from '../experience/IExperienceHook.sol';
 import {IBasicCompany} from '../experience/IBasicCompany.sol';
 
 struct ExperienceV1Storage {
-    bool upgraded;
     IBasicCompany company;
     address world;
     IExperienceHook hook;

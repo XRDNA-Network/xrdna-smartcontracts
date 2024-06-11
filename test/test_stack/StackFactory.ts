@@ -1,5 +1,6 @@
 import { Signer, ZeroAddress } from "ethers";
-import { AssetStackImpl } from "./asset/AssetStackImpl";
+import { ERC20AssetStackImpl } from "./asset/erc20/ERC20AssetStackImpl";
+import { ERC721AssetStackImpl } from "./asset/erc721/ERC721AssetStackImpl";
 import { AvatarStackImpl } from "./avatar/AvatarStackImpl";
 import { PortalStackImpl } from "./portal/PortalStackImpl";
 import { ExperienceStackImpl } from "./experience/ExperienceStackImpl";
@@ -7,16 +8,20 @@ import { WorldStackImpl } from "./world/WorldStackImpl";
 import { CompanyStackImpl } from "./company/CompanyStackImpl";
 import { RegistrarStackImpl} from "./registrar/RegistrarStackImpl";
 import { ethers, network } from "hardhat";
-import { AssetType, CreateAssetResult, IWorldRegistration, VectorAddress, World, signVectorAddress } from "../../src";
+import { CreateERC20AssetResult, CreateERC721AssetResult, IWorldRegistration, VectorAddress, World, signVectorAddress } from "../../src";
 import { Company } from "../../src/company/Company";
 import { Experience } from "../../src/experience";
 import { Avatar } from "../../src/avatar/Avatar";
-import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
 import { IPortalInfo } from "../../src/portal";
+import { IERC20AssetStack } from "./asset/erc20/IERC20AssetStack";
+import { IERC721AssetStack } from "./asset/erc721/IERC721AssetStack";
+import { MultiAssetRegistryStackImpl } from "./asset/MultiAssetRegistryStackImpl";
 
 export enum StackType {
     REGISTRAR = "REGISTRAR",
-    ASSET = "ASSET",
+    ERC20 = "ERC20",
+    ERC721 = "ERC721",
+    MULTI_ASSET = "MULT_ASSET",
     WORLD = "WORLD",
     AVATAR = "AVATAR",
     COMPANY = "COMPANY",
@@ -78,9 +83,17 @@ export class StackFactory {
             throw new Error("Failed to add vector address authority");
         }
 
-        const assetStack = new AssetStackImpl(this, worldDeployment);
-        await assetStack.deploy();
-        this.stacksByType.set(StackType.ASSET, assetStack);
+        const erc20Stack = new ERC20AssetStackImpl(this, worldDeployment);
+        await erc20Stack.deploy();
+        this.stacksByType.set(StackType.ERC20, erc20Stack);
+
+        const erc721Stack = new ERC721AssetStackImpl(this, worldDeployment);
+        await erc721Stack.deploy();
+        this.stacksByType.set(StackType.ERC721, erc721Stack);
+
+        const multiAssetStack = new MultiAssetRegistryStackImpl(this, worldDeployment);
+        //no deploy needed
+        this.stacksByType.set(StackType.MULTI_ASSET, multiAssetStack);
 
         const avatarStack = new AvatarStackImpl(this, worldDeployment);
         await avatarStack.deploy();
@@ -174,8 +187,8 @@ export class StackFactory {
         portalForExperience: IPortalInfo,
         portalForExperience2: IPortalInfo,
         avatar: Avatar,
-        testERC20: CreateAssetResult,
-        testERC721: CreateAssetResult}> {
+        testERC20: CreateERC20AssetResult,
+        testERC721: CreateERC721AssetResult}> {
         if (!this.world) {
             throw new Error("World not initialized");
         }
@@ -252,9 +265,11 @@ export class StackFactory {
             baseURI: "https://boredapeyachtclub.com",
             originChainId: 1n
         }
-        const assetRegistry = this.getStack<AssetStackImpl>(StackType.ASSET).getAssetRegistry();
-        const testERC20 = await assetRegistry.registerAsset(AssetType.ERC20, erc20InitData)
-        const testERC721 = await assetRegistry.registerAsset(AssetType.ERC721, erc721InitData)
+        const erc20Registry = this.getStack<IERC20AssetStack>(StackType.ERC20).getERC20Registry();
+        const testERC20 = await erc20Registry.registerAsset(erc20InitData)
+        
+        const erc721Registry = this.getStack<IERC721AssetStack>(StackType.ERC721).getERC721Registry();
+        const testERC721 = await erc721Registry.registerAsset(erc721InitData)
 
         const expRes = await company.addExperience({
             name: "Test Experience",

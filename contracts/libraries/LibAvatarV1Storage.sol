@@ -27,7 +27,6 @@ struct LinkedList {
 struct AvatarV1Storage {
     //fields set by init data
     bool canReceiveTokensOutsideOfExperience;
-    bool upgraded;
     address owner;
     IExperience location;
     IAvatarHook hook;

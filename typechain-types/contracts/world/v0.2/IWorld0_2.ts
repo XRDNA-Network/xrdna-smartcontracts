@@ -120,7 +120,6 @@ export interface IWorld0_2Interface extends Interface {
       | "setHook"
       | "upgrade"
       | "upgradeComplete"
-      | "upgraded"
       | "version"
       | "withdraw"
   ): FunctionFragment;
@@ -180,7 +179,6 @@ export interface IWorld0_2Interface extends Interface {
     functionFragment: "upgradeComplete",
     values: [AddressLike]
   ): string;
-  encodeFunctionData(functionFragment: "upgraded", values?: undefined): string;
   encodeFunctionData(functionFragment: "version", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "withdraw",
@@ -215,7 +213,6 @@ export interface IWorld0_2Interface extends Interface {
     functionFragment: "upgradeComplete",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "upgraded", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "version", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "withdraw", data: BytesLike): Result;
 }
@@ -420,8 +417,6 @@ export interface IWorld0_2 extends BaseContract {
     "nonpayable"
   >;
 
-  upgraded: TypedContractMethod<[], [boolean], "view">;
-
   version: TypedContractMethod<[], [bigint], "view">;
 
   withdraw: TypedContractMethod<[amount: BigNumberish], [void], "nonpayable">;
@@ -481,9 +476,6 @@ export interface IWorld0_2 extends BaseContract {
   getFunction(
     nameOrSignature: "upgradeComplete"
   ): TypedContractMethod<[nextVersion: AddressLike], [void], "nonpayable">;
-  getFunction(
-    nameOrSignature: "upgraded"
-  ): TypedContractMethod<[], [boolean], "view">;
   getFunction(
     nameOrSignature: "version"
   ): TypedContractMethod<[], [bigint], "view">;

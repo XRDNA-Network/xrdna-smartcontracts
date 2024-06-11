@@ -40,8 +40,6 @@ contract ExperienceRegistry is IExperienceRegistry, ReentrancyGuard, AccessContr
     //enforce globally unique names
     mapping(string => ExperienceInfo) public experiencesByName;
 
-    string public override currentExperienceVersion = "0.1";
-
     modifier onlyCompany() {
         require(companyRegistry.isRegisteredCompany(msg.sender), "ExperienceRegistry: caller is not a company");
         _;
@@ -69,8 +67,8 @@ contract ExperienceRegistry is IExperienceRegistry, ReentrancyGuard, AccessContr
         }
     }
 
-    function setCurrentExperienceVersion(string memory v) public onlyRole(ADMIN_ROLE) {
-        currentExperienceVersion = v;
+    function currentExperienceVersion() public view override returns (uint256) {
+        return experienceFactory.supportsVersion();
     }
 
     function setCompanyRegistry(ICompanyRegistry reg) public onlyRole(ADMIN_ROLE) {
@@ -120,24 +118,6 @@ contract ExperienceRegistry is IExperienceRegistry, ReentrancyGuard, AccessContr
     }
 
     function upgradeExperience(bytes calldata initData) public onlyExperience nonReentrant {
-        IExperience old = IExperience(msg.sender);
-        string memory oldName = old.name();
-        VectorAddress memory oldVa = old.vectorAddress();
-        bytes32 oldHash = keccak256(abi.encode(oldVa.asLookupKey()));
-        address proxy = experienceFactory.createExperience(old.company(), oldName, oldVa, initData);
-        portalRegistry.upgradeExperiencePortal(msg.sender, proxy);
-        IExperience newExp = IExperience(proxy);
-        ExperienceInfo memory info = ExperienceInfo({
-            company: old.company(),
-            world: old.world(),
-            experience: newExp,
-            portalId: _experiencesByVectorHash[oldHash].portalId
-        });
-        experiencesByAddress[proxy] = info;
-        _experiencesByVectorHash[keccak256(abi.encode(newExp.vectorAddress().asLookupKey()))] = info;
-        experiencesByName[oldName.lower()] = info;
-        delete experiencesByAddress[msg.sender];
-        delete _experiencesByVectorHash[oldHash];
-        old.experienceUpgraded(proxy);
+        experienceFactory.upgradeExperience(msg.sender, initData);
     }
 }

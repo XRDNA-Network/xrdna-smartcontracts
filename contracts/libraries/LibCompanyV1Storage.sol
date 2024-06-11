@@ -6,7 +6,6 @@ import {ICompanyHook} from '../company/ICompanyHook.sol';
 
 struct CompanyV1Storage {
     //Fields initialized by initialize function
-    bool upgraded;
     address owner;
     address world;
     ICompanyHook hook;

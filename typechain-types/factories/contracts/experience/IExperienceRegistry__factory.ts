@@ -45,9 +45,9 @@ const _abi = [
     name: "currentExperienceVersion",
     outputs: [
       {
-        internalType: "string",
+        internalType: "uint256",
         name: "",
-        type: "string",
+        type: "uint256",
       },
     ],
     stateMutability: "view",
@@ -227,19 +227,6 @@ const _abi = [
       },
     ],
     name: "setCompanyRegistry",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "string",
-        name: "version",
-        type: "string",
-      },
-    ],
-    name: "setCurrentExperienceVersion",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
