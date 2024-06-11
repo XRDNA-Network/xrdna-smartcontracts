@@ -12,6 +12,13 @@ struct AddExperienceArgs {
     bytes initData;
 }
 
+struct DelegatedAvatarJumpRequest {
+    address avatar;
+    uint256 portalId;
+    uint256 agreedFee;
+    bytes avatarOwnerSignature;
+}
+
 struct CompanyInitArgs {
      //the address of the company owner
     address owner;
@@ -66,5 +73,7 @@ interface ICompany {
 
     function addAssetHook(address asset, IAssetHook hook) external;
     function removeAssetHook(address asset) external;
+
+    function delegateJumpForAvatar(DelegatedAvatarJumpRequest calldata request) external payable;
     
 }

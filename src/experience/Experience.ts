@@ -8,7 +8,7 @@ import { ethers } from "hardhat";
 export interface IExperienceOpts {
     address: string;
     portalId: bigint;
-    admin: Provider | Signer;
+    provider: Provider;
 }
 
 export interface IExperienceInitData {
@@ -27,27 +27,19 @@ export class Experience {
     private con: Contract;
     readonly address: string;
     readonly portalId: bigint;
-    private admin: Provider | Signer;
+    private provider: Provider;
 
     constructor(opts: IExperienceOpts) {
         this.address = opts.address;
-        this.admin = opts.admin;
+        this.provider = opts.provider;
         this.portalId = opts.portalId;
-        this.con = new Contract(this.address, abi, this.admin);
+        this.con = new Contract(this.address, abi, this.provider);
 
     }
 
     static encodeInitData(data: IExperienceInitData): string {
         const ifc = new ethers.Interface(abi);
         return `0x${ifc.encodeFunctionData("encodeInitData", [data]).substring(10)}`;
-    }
-
-    async addHook(hook: AddressLike): Promise<TransactionResponse> {
-        return await RPCRetryHandler.withRetry(() => this.con.addHook(hook));
-    }
-
-    async removeHook(hook: AddressLike): Promise<TransactionResponse> {
-        return await RPCRetryHandler.withRetry(() => this.con.removeHook(hook));
     }
 
 

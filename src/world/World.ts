@@ -133,7 +133,7 @@ export class World {
         };
     }
 
-    async registerAvatar(request: IAvatarRegistrationRequest): Promise<IAvatarRegistrationResult> {
+    async registerAvatar(request: IAvatarRegistrationRequest, tokens?: bigint): Promise<IAvatarRegistrationResult> {
         await this._onlyV2();
         const enc = Avatar.encodeInitData({
             appearanceDetails: request.appearanceDetails,
@@ -145,7 +145,7 @@ export class World {
             initData: enc,
             sendTokensToAvatarOwner: request.sendTokensToAvatarOwner,
             username: request.username
-        }));
+        }, {value: tokens}));
         const receipt = await t.wait();
         if(!receipt.status) {
             throw new Error(`Transaction failed: ${receipt.transactionHash}`);

@@ -1,8 +1,10 @@
-import { Contract, Provider, Signer, TransactionResponse } from "ethers";
+import { AddressLike, Contract, Provider, Signer, TransactionResponse } from "ethers";
 import {abi} from "../../artifacts/contracts/avatar/Avatar.sol/Avatar.json";
 import { RPCRetryHandler } from "../RPCRetryHandler";
 import { VectorAddress } from "../VectorAddress";
 import { ethers } from "hardhat";
+import { LogParser } from "../LogParser";
+import { LogNames } from "../LogNames";
 
 
 export interface IAvatarOpts {
@@ -11,19 +13,20 @@ export interface IAvatarOpts {
 }
 
 export interface IAvatarJumpRequest {
-    portalId: string
-    agreedFee: string,
+    portalId: bigint
+    agreedFee: bigint,
     destinationCompanySignature: string,
 }
 
-export interface IDelegatedAvatarJumpRequest {
-    portalId: string,
-    agreedFee: string,
-    avatarOwnerSignature: string,
+export interface IAvatarJumpResult {
+    receipt: TransactionResponse;
+    destination: AddressLike;
+    connectionDetails: string;
+    fee: bigint;
 }
 
 export interface IWearable  {
-    asset: string;
+    asset: AddressLike;
     tokenId: bigint;
 }
 
@@ -36,11 +39,13 @@ export class Avatar {
     private con: Contract;
     readonly address: string;
     private admin: Provider | Signer;
+    readonly logParser: LogParser;
 
     constructor(opts: IAvatarOpts) {
         this.address = opts.address;
         this.admin = opts.admin;
         this.con = new Contract(this.address, abi, this.admin);
+        this.logParser = new LogParser(abi, this.address);
     }
 
     static encodeInitData(data: IAvatarInitData): string {
@@ -48,7 +53,7 @@ export class Avatar {
         return `0x${ifc.encodeFunctionData("encodeInitData", [data]).substring(10)}`;
     }
 
-    async location(): Promise<VectorAddress> {
+    async location(): Promise<AddressLike> {
         return await RPCRetryHandler.withRetry(() => this.con.location());
     }
 
@@ -68,12 +73,26 @@ export class Avatar {
         return await RPCRetryHandler.withRetry(() => this.con.setAppearanceDetails(bytes));
     }
 
-    async jump(req: IAvatarJumpRequest): Promise<TransactionResponse> {
-        return await RPCRetryHandler.withRetry(() => this.con.jump(req));
-    }
+    async jump(req: IAvatarJumpRequest, tokens?: bigint): Promise<IAvatarJumpResult> {
+        const t =  await RPCRetryHandler.withRetry(() => this.con.jump(req, {
+            value: tokens
+        }));
+        const r = await t.wait();
+        if(!r.status) {
+            throw new Error("Jump transaction failed with status 0");
+        }
+        const logs = this.logParser.parseLogs(r);
+        const jump = logs.get(LogNames.JumpSuccess);
+        if(!jump) {
+            throw new Error("Jump failed");
+        }
+        return {
+            connectionDetails: jump[2],
+            fee: jump[1],
+            destination: jump[0],
+            receipt: r
+        } as IAvatarJumpResult;
 
-    async delegateJump(req: IDelegatedAvatarJumpRequest): Promise<TransactionResponse> {
-        return await RPCRetryHandler.withRetry(() => this.con.delegateJump(req));
     }
 
     async addWearable(wearable: IWearable): Promise<TransactionResponse> {
@@ -110,5 +129,31 @@ export class Avatar {
 
     async upgrade(newVersion: string): Promise<TransactionResponse> {
         return await RPCRetryHandler.withRetry(() => this.con.upgrade(newVersion));
+    }
+
+    async getCompanySigningNonce(company: string): Promise<bigint> {
+        return await RPCRetryHandler.withRetry(() => this.con.companySigningNonce(company));
+    }
+
+    async getAvatarSigningNonce(): Promise<bigint> {
+        return await RPCRetryHandler.withRetry(() => this.con.avatarOwnerSigningNonce());
+    }
+
+    async tokenBalance(): Promise<bigint> {
+        return await RPCRetryHandler.withRetry(() => this.admin.provider!.getBalance(this.address));
+    }
+
+    async signJumpRequest(props: {
+        nonce: bigint;
+        portalId: bigint;
+        fee: bigint;
+    }): Promise<string> {
+        const enc = ethers.AbiCoder.defaultAbiCoder().encode(["uint256", "uint256", "uint256"], [props.portalId, props.fee, props.nonce]);
+        const hashed = ethers.keccak256(enc);
+        return await RPCRetryHandler.withRetry(() => (this.admin as Signer).signMessage(ethers.getBytes(hashed)));
+    }
+
+    getDelegateContract(props: {signer: Signer}): Contract {
+        return new Contract(this.address, abi, props.signer);
     }
 }

@@ -286,11 +286,17 @@ export namespace HookSetEvent {
 export namespace JumpSuccessEvent {
   export type InputTuple = [
     experience: AddressLike,
+    fee: BigNumberish,
     connectionDetails: BytesLike
   ];
-  export type OutputTuple = [experience: string, connectionDetails: string];
+  export type OutputTuple = [
+    experience: string,
+    fee: bigint,
+    connectionDetails: string
+  ];
   export interface OutputObject {
     experience: string;
+    fee: bigint;
     connectionDetails: string;
   }
   export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
@@ -711,7 +717,7 @@ export interface IAvatar extends BaseContract {
       HookSetEvent.OutputObject
     >;
 
-    "JumpSuccess(address,bytes)": TypedContractEvent<
+    "JumpSuccess(address,uint256,bytes)": TypedContractEvent<
       JumpSuccessEvent.InputTuple,
       JumpSuccessEvent.OutputTuple,
       JumpSuccessEvent.OutputObject

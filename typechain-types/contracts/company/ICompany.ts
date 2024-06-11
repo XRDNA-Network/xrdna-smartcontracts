@@ -30,6 +30,25 @@ export type AddExperienceArgsStructOutput = [name: string, initData: string] & {
   initData: string;
 };
 
+export type DelegatedAvatarJumpRequestStruct = {
+  avatar: AddressLike;
+  portalId: BigNumberish;
+  agreedFee: BigNumberish;
+  avatarOwnerSignature: BytesLike;
+};
+
+export type DelegatedAvatarJumpRequestStructOutput = [
+  avatar: string,
+  portalId: bigint,
+  agreedFee: bigint,
+  avatarOwnerSignature: string
+] & {
+  avatar: string;
+  portalId: bigint;
+  agreedFee: bigint;
+  avatarOwnerSignature: string;
+};
+
 export type VectorAddressStruct = {
   x: string;
   y: string;
@@ -78,6 +97,7 @@ export interface ICompanyInterface extends Interface {
       | "addExperienceCondition"
       | "addSigner"
       | "canMint"
+      | "delegateJumpForAvatar"
       | "init"
       | "isSigner"
       | "mint"
@@ -129,6 +149,10 @@ export interface ICompanyInterface extends Interface {
   encodeFunctionData(
     functionFragment: "canMint",
     values: [AddressLike, AddressLike, BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "delegateJumpForAvatar",
+    values: [DelegatedAvatarJumpRequestStruct]
   ): string;
   encodeFunctionData(
     functionFragment: "init",
@@ -199,6 +223,10 @@ export interface ICompanyInterface extends Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "addSigner", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "canMint", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "delegateJumpForAvatar",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "init", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "isSigner", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "mint", data: BytesLike): Result;
@@ -419,6 +447,12 @@ export interface ICompany extends BaseContract {
     "view"
   >;
 
+  delegateJumpForAvatar: TypedContractMethod<
+    [request: DelegatedAvatarJumpRequestStruct],
+    [void],
+    "payable"
+  >;
+
   init: TypedContractMethod<
     [args: CompanyInitArgsStruct],
     [void],
@@ -513,6 +547,13 @@ export interface ICompany extends BaseContract {
     [asset: AddressLike, to: AddressLike, amount: BigNumberish],
     [boolean],
     "view"
+  >;
+  getFunction(
+    nameOrSignature: "delegateJumpForAvatar"
+  ): TypedContractMethod<
+    [request: DelegatedAvatarJumpRequestStruct],
+    [void],
+    "payable"
   >;
   getFunction(
     nameOrSignature: "init"

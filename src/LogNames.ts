@@ -22,5 +22,8 @@ export const LogNames = {
     //company 
     ExperienceAdded: "ExperienceAdded",
 
+    //avatar
+    JumpSuccess: "JumpSuccess",
+
 
 }

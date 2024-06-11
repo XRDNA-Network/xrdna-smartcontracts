@@ -57,6 +57,7 @@ contract PortalRegistry is IPortalRegistry, AccessControl {
     }
 
     modifier onlyAvatar {
+        require(address(avatarRegistry) != address(0), "PortalRegistry: avatar registry not set");
         require(avatarRegistry.isAvatar(msg.sender), "PortalRegistry: caller must be an avatar");
         _;
     }
@@ -134,7 +135,6 @@ contract PortalRegistry is IPortalRegistry, AccessControl {
          * for the transaction and/or fees or the avatar owner is. But the avatar contract must 
          * work out the details of payment and authorization.
          */
-        
         PortalJumpMetadata memory meta = _getExperienceDetails(portalId);
         if(address(meta.destPortal.condition) != address(0)) {
             require(meta.destPortal.condition.canJump(address(meta.destinationExperience), meta.sourceWorld, meta.sourceCompany, address(meta.sourceExperience), msg.sender), "PortalRegistry: portal jump conditions not met");
@@ -217,7 +217,7 @@ contract PortalRegistry is IPortalRegistry, AccessControl {
         //the avatar has to be located somewhere. Even when registering through a world, the 
         //world must choose a default experience
         require(address(exp) != address(0), "PortalRegistry: avatar is not in a valid location");
-       uint256 portalId = portalIdsByExperience[address(exp)];
+        uint256 portalId = portalIdsByExperience[address(exp)];
         require(portalId != 0, "PortalRegistry: no portal found for the avatar's current location");
         
         require(portalId != destPortalId, "PortalRegistry: cannot jump to the same experience");

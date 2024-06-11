@@ -242,10 +242,6 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.Company__factory>;
     getContractFactory(
-      name: "IBaseAsset",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.IBaseAsset__factory>;
-    getContractFactory(
       name: "INextVersion",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.INextVersion__factory>;
@@ -740,11 +736,6 @@ declare module "hardhat/types/runtime" {
       signer?: ethers.Signer
     ): Promise<Contracts.Company>;
     getContractAt(
-      name: "IBaseAsset",
-      address: string | ethers.Addressable,
-      signer?: ethers.Signer
-    ): Promise<Contracts.IBaseAsset>;
-    getContractAt(
       name: "INextVersion",
       address: string | ethers.Addressable,
       signer?: ethers.Signer
@@ -1233,10 +1224,6 @@ declare module "hardhat/types/runtime" {
       name: "Company",
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.Company>;
-    deployContract(
-      name: "IBaseAsset",
-      signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.IBaseAsset>;
     deployContract(
       name: "INextVersion",
       signerOrOptions?: ethers.Signer | DeployContractOptions
@@ -1731,11 +1718,6 @@ declare module "hardhat/types/runtime" {
       args: any[],
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.Company>;
-    deployContract(
-      name: "IBaseAsset",
-      args: any[],
-      signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.IBaseAsset>;
     deployContract(
       name: "INextVersion",
       args: any[],

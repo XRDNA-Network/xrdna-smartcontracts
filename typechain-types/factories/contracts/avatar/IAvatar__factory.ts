@@ -71,6 +71,12 @@ const _abi = [
       },
       {
         indexed: true,
+        internalType: "uint256",
+        name: "fee",
+        type: "uint256",
+      },
+      {
+        indexed: true,
         internalType: "bytes",
         name: "connectionDetails",
         type: "bytes",

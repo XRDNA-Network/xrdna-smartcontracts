@@ -1130,8 +1130,8 @@
       ]
     },
     "/Users/mdcoon/git/xrdna-smartcontracts/contracts/world/v0.2/World0_2.sol": {
-      "lastModificationDate": 1718055515618,
-      "contentHash": "1b88a4466a7129b99090bccdf81f494f",
+      "lastModificationDate": 1718116381449,
+      "contentHash": "1eea7cbbd5ae6953504513986dcfd0a3",
       "sourceName": "contracts/world/v0.2/World0_2.sol",
       "solcConfig": {
         "version": "0.8.24",
@@ -1665,8 +1665,8 @@
       ]
     },
     "/Users/mdcoon/git/xrdna-smartcontracts/contracts/avatar/IAvatar.sol": {
-      "lastModificationDate": 1718058267932,
-      "contentHash": "c316c7111d7edcc789a365bec125f38e",
+      "lastModificationDate": 1718116500321,
+      "contentHash": "f7a57952b89c965e58fdfb1d16718360",
       "sourceName": "contracts/avatar/IAvatar.sol",
       "solcConfig": {
         "version": "0.8.24",
@@ -2051,8 +2051,8 @@
       ]
     },
     "/Users/mdcoon/git/xrdna-smartcontracts/contracts/company/Company.sol": {
-      "lastModificationDate": 1718061717212,
-      "contentHash": "bd56a1cbebe7eceaf46593911077d92d",
+      "lastModificationDate": 1718117509942,
+      "contentHash": "a6adf36252231d3fdcb7c998bf329b03",
       "sourceName": "contracts/company/Company.sol",
       "solcConfig": {
         "version": "0.8.24",
@@ -2108,8 +2108,8 @@
       ]
     },
     "/Users/mdcoon/git/xrdna-smartcontracts/contracts/company/ICompany.sol": {
-      "lastModificationDate": 1718055273371,
-      "contentHash": "83d4d1efed3b97975c6e2e83e4a4c6da",
+      "lastModificationDate": 1718117353363,
+      "contentHash": "fb214375daf426661694fc583258f60a",
       "sourceName": "contracts/company/ICompany.sol",
       "solcConfig": {
         "version": "0.8.24",
@@ -2507,8 +2507,8 @@
       ]
     },
     "/Users/mdcoon/git/xrdna-smartcontracts/contracts/portal/PortalRegistry.sol": {
-      "lastModificationDate": 1718034086334,
-      "contentHash": "fbad5daf4558bf4e46f934ef239c4640",
+      "lastModificationDate": 1718115510632,
+      "contentHash": "39a1e1e5e633514153f9543216bacfff",
       "sourceName": "contracts/portal/PortalRegistry.sol",
       "solcConfig": {
         "version": "0.8.24",
@@ -2754,8 +2754,8 @@
       ]
     },
     "/Users/mdcoon/git/xrdna-smartcontracts/contracts/BaseProxy.sol": {
-      "lastModificationDate": 1718056806872,
-      "contentHash": "d54470a5894b9146184f48880241adc0",
+      "lastModificationDate": 1718114688080,
+      "contentHash": "cc09bbf949836c41653a28a2bdfd7f73",
       "sourceName": "contracts/BaseProxy.sol",
       "solcConfig": {
         "version": "0.8.24",
@@ -3246,8 +3246,8 @@
       ]
     },
     "/Users/mdcoon/git/xrdna-smartcontracts/contracts/avatar/Avatar.sol": {
-      "lastModificationDate": 1718058362017,
-      "contentHash": "cdf12e88b933ec150cc6dc01ab5441aa",
+      "lastModificationDate": 1718116525836,
+      "contentHash": "f65c9ef37d270eb75fa20b2f4c8beb34",
       "sourceName": "contracts/avatar/Avatar.sol",
       "solcConfig": {
         "version": "0.8.24",

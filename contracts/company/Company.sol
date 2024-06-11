@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Compatible with OpenZeppelin Contracts ^5.0.0
 pragma solidity ^0.8.24;
-import {ICompany, AddExperienceArgs, CompanyInitArgs} from '../company/ICompany.sol';
+import {ICompany, AddExperienceArgs, CompanyInitArgs, DelegatedAvatarJumpRequest} from '../company/ICompany.sol';
 import {AccessControl} from '@openzeppelin/contracts/access/AccessControl.sol';
 import {VectorAddress} from '../VectorAddress.sol';
 import {AssetType} from '../asset/AssetFactory.sol';
@@ -9,7 +9,7 @@ import {IAvatarRegistry} from '../avatar/IAvatarRegistry.sol';
 import {IExperienceRegistry, RegisterExperienceRequest} from '../experience/IExperienceRegistry.sol';
 import {IAssetRegistry} from '../asset/IAssetRegistry.sol';
 import {IExperience} from '../experience/IExperience.sol';
-import {IAvatar} from '../avatar/IAvatar.sol';
+import {IAvatar, DelegatedJumpRequest} from '../avatar/IAvatar.sol';
 import {IERC20Asset} from '../asset/IERC20Asset.sol';
 import {IERC721Asset} from '../asset/IERC721Asset.sol';
 import {ICompanyRegistry} from './ICompanyRegistry.sol';
@@ -45,8 +45,6 @@ contract Company is ICompany, ReentrancyGuard {
     IAvatarRegistry public immutable avatarRegistry;
     uint256 public constant override version = 1;
 
-
-    
 
     modifier notUpgraded {
         CompanyV1Storage storage s = LibCompanyV1Storage.load();
@@ -276,5 +274,14 @@ contract Company is ICompany, ReentrancyGuard {
 
     function removeAssetHook(address asset) public onlyAdmin {
         IBasicAsset(asset).removeHook();
+    }
+
+    function delegateJumpForAvatar(DelegatedAvatarJumpRequest calldata request) public override payable onlySigner notUpgraded {
+        IAvatar avatar = IAvatar(request.avatar);
+        avatar.delegateJump{value: msg.value}(DelegatedJumpRequest({
+            portalId: request.portalId,
+            agreedFee: request.agreedFee,
+            avatarOwnerSignature: request.avatarOwnerSignature
+        }));
     }
 }

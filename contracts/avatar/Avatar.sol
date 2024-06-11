@@ -206,9 +206,11 @@ contract Avatar is IAvatar, ReentrancyGuard, WearableLinkedList {
             require(bal >= portal.fee, "Avatar: insufficient funds for jump fee");
         }
         AvatarV1Storage storage s = LibAvatarV1Storage.load();
-        s.location = portal.destination;
         bytes memory connectionDetails = portalRegistry.jumpRequest{value: portal.fee}(request.portalId);
-        emit JumpSuccess(address(portal.destination), connectionDetails);
+        //have to set location AFTER jump success
+        s.location = portal.destination;
+        
+        emit JumpSuccess(address(portal.destination), portal.fee, connectionDetails);
     }
 
     /**
@@ -231,9 +233,11 @@ contract Avatar is IAvatar, ReentrancyGuard, WearableLinkedList {
             require(bal >= portal.fee, "Avatar: insufficient funds for jump fee");
         }
         AvatarV1Storage storage s = LibAvatarV1Storage.load();
-        s.location = portal.destination;
+        
         bytes memory connectionDetails = portalRegistry.jumpRequest{value: portal.fee}(request.portalId);
-        emit JumpSuccess(address(portal.destination), connectionDetails);
+        //have to set location AFTER jump success
+        s.location = portal.destination;
+        emit JumpSuccess(address(portal.destination), portal.fee, connectionDetails);
     }
 
     /**

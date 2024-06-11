@@ -116,8 +116,6 @@ export type { BaseProxy } from "./contracts/BaseProxy";
 export { BaseProxy__factory } from "./factories/contracts/BaseProxy__factory";
 export type { Company } from "./contracts/company/Company.sol/Company";
 export { Company__factory } from "./factories/contracts/company/Company.sol/Company__factory";
-export type { IBaseAsset } from "./contracts/company/Company.sol/IBaseAsset";
-export { IBaseAsset__factory } from "./factories/contracts/company/Company.sol/IBaseAsset__factory";
 export type { INextVersion } from "./contracts/company/Company.sol/INextVersion";
 export { INextVersion__factory } from "./factories/contracts/company/Company.sol/INextVersion__factory";
 export type { CompanyFactory } from "./contracts/company/CompanyFactory";

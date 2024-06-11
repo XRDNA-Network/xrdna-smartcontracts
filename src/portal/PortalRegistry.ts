@@ -11,13 +11,13 @@ export interface IPortalRegistryOpts {
 
 export interface IAddPortalRequest {
     destination: AddressLike
-    fee: string
+    fee: bigint
 }
 
 export interface IPortalInfo {
     destination: AddressLike
     condition: AddressLike
-    fee: string
+    fee: bigint
 }
 
 export class PortalRegistry {
@@ -37,7 +37,12 @@ export class PortalRegistry {
     }
 
    async getPortalInfoById(id: bigint): Promise<IPortalInfo> {
-        return await RPCRetryHandler.withRetry(() => this.con.getPortalInfoById(id));
+        const r = await RPCRetryHandler.withRetry(() => this.con.getPortalInfoById(id));
+        return {
+            destination: r[0],
+            condition: r[1],
+            fee: r[2]
+        } as IPortalInfo;
     }
 
     async getPortalInfoByAddress(addr: AddressLike): Promise<IPortalInfo> {

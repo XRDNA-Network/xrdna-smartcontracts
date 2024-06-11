@@ -11,8 +11,8 @@ import { AssetType, CreateAssetResult, IWorldRegistration, VectorAddress, World,
 import { Company } from "../../src/company/Company";
 import { Experience } from "../../src/experience";
 import { Avatar } from "../../src/avatar/Avatar";
-import { TestERC20, TestERC721 } from "../../typechain-types";
 import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
+import { IPortalInfo } from "../../src/portal";
 
 export enum StackType {
     REGISTRAR = "REGISTRAR",
@@ -24,10 +24,13 @@ export enum StackType {
     PORTAL = "PORTAL"
 }
 
+const USDC = "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48";
+const BAYC = "0xBC4CA0EdA7647A8aB7C2061c2E118A18a936f13D";
 
 export interface IStackAdmins {
     assetRegistryAdmin: Signer;
     avatarRegistryAdmin: Signer;
+    avatarOwner: Signer;
     companyRegistryAdmin: Signer;
     experienceRegistryAdmin: Signer;
     portalRegistryAdmin: Signer;
@@ -35,13 +38,14 @@ export interface IStackAdmins {
     registrarSigner: Signer;
     worldRegistryAdmin: Signer;
     worldOwner: Signer;
+
 }
 
 export class StackFactory {
     stacksByType: Map<string, any> = new Map();
     registrarId?: bigint;
     world?: World;
-    constructor(readonly admins: IStackAdmins, readonly userSigner: HardhatEthersSigner) {}
+    constructor(readonly admins: IStackAdmins) {}
 
 
     async init(): Promise<{world: World, worldRegistration: IWorldRegistration}> {
@@ -162,45 +166,90 @@ export class StackFactory {
 
     async getEcosystem(): Promise<{
         world: World,
+        world2: World,
         company: Company,
+        company2: Company,
         experience: Experience,
+        experience2: Experience,
+        portalForExperience: IPortalInfo,
+        portalForExperience2: IPortalInfo,
         avatar: Avatar,
         testERC20: CreateAssetResult,
         testERC721: CreateAssetResult}> {
         if (!this.world) {
             throw new Error("World not initialized");
         }
+
+        const baseVector = {
+            x: "2",
+            y: "2",
+            z: "2",
+            t: 0n,
+            p: 0n,
+            p_sub: 0n
+        } as VectorAddress;
+
+        const sig = await signVectorAddress(baseVector, this.admins.worldRegistryAdmin);
+        const worldRegistration = {
+            baseVector,
+            name: "Test World 2",
+            initData: "0x",
+            vectorAuthoritySignature: sig,
+            oldWorld: ZeroAddress,
+            owner: await this.admins.worldOwner.getAddress(),
+            registrarId: this.registrarId!,
+            sendTokensToWorldOwner: false
+        };
+        const wr = this.getStack<WorldStackImpl>(StackType.WORLD).getWorldRegistry();
+        const wRes = await wr.createWorld({
+            registrarSigner: this.admins.registrarSigner,
+            details: worldRegistration,
+            tokens: ethers.parseEther("1.0")
+        });
+        if(!wRes.receipt.status) {
+            throw new Error("Create world txn failed status 0");
+        }
+        if(!wRes.worldAddress) {
+            throw new Error("Failed to create world");
+        }
+        const world2 = new World({
+            address: wRes.worldAddress,
+            admin: this.admins.worldOwner
+        });
+
         const companyRegistration = await this.world.registerCompany({
             sendTokensToCompanyOwner: false,
             owner: await this.admins.companyRegistryAdmin.getAddress(),
             name: "Test Company",
-            initData: "0x"
-        });
+        }, ethers.parseEther("1.0"));
+        const company2Registration = await this.world.registerCompany({
+            sendTokensToCompanyOwner: false,
+            owner: await this.admins.companyRegistryAdmin.getAddress(),
+            name: "Test Company 2",
+        }, ethers.parseEther("1.0"));
         const company = new Company({
             address: await companyRegistration.companyAddress.toString(),
             admin: this.admins.companyRegistryAdmin
         });
-        const TestERC20Asset = await ethers.getContractFactory("TestERC20", this.admins.companyRegistryAdmin)
-        const TestERC721Asset = await ethers.getContractFactory("TestERC721", this.admins.companyRegistryAdmin)
-        const dep2 = await TestERC721Asset.deploy("Test ERC721 Asset", "TEST721")
-        const dep = await TestERC20Asset.deploy("Test ERC20 Asset", "TEST20")
-        const testERC20Asset = await dep.waitForDeployment() as TestERC20;
-        const testERC721Asset = await dep2.waitForDeployment() as TestERC721;
+        const company2 = new Company({
+            address: await company2Registration.companyAddress.toString(),
+            admin: this.admins.companyRegistryAdmin
+        });
         const erc20InitData = {
-            originChainAddress: await testERC20Asset.getAddress(),
+            originChainAddress:  USDC,
             issuer: company.address,
             originChainId: 1n,
             totalSupply: ethers.parseEther('1000000'),
-            decimals: 18,
+            decimals: 6,
             name: "Test ERC20 Asset",
             symbol: "TEST20"
         }
         const erc721InitData = {
             issuer: company.address,
-            originChainAddress: await testERC721Asset.getAddress(),
-            name: "Test ERC721 Asset",
-            symbol: "TEST721",
-            baseURI: "https://test.com/",
+            originChainAddress: BAYC,
+            name: "Bored Ape Yacht Club",
+            symbol: "BAYC",
+            baseURI: "https://boredapeyachtclub.com",
             originChainId: 1n
         }
         const assetRegistry = this.getStack<AssetStackImpl>(StackType.ASSET).getAssetRegistry();
@@ -209,97 +258,55 @@ export class StackFactory {
 
         const expRes = await company.addExperience({
             name: "Test Experience",
-            connectionDetails: "0x",
+            connectionDetails: ethers.hexlify(Buffer.from("https://example.com")),
             entryFee: 0n,
+        });
+        const expRes2 = await company2.addExperience({
+            name: "Test Experience 2",
+            connectionDetails: ethers.hexlify(Buffer.from("https://example2.com")),
+            entryFee: ethers.parseEther("0.1"),
         });
         const experience = new Experience({
             address: expRes.experienceAddress.toString(),
             portalId: expRes.portalId,
-            admin: this.admins.experienceRegistryAdmin
+            provider: ethers.provider
+        });
+        const experience2 = new Experience({
+            address: expRes2.experienceAddress.toString(),
+            portalId: expRes2.portalId,
+            provider: ethers.provider
         });
         
         const avatarRegistration = await this.world.registerAvatar({
             sendTokensToAvatarOwner: false,
-            avatarOwner: this.userSigner.address,
+            avatarOwner: this.admins.avatarOwner.getAddress(),
             defaultExperience: experience.address,
             username: "Test Avatar",
             appearanceDetails: "0x",
             canReceiveTokensOutsideOfExperience: false,
-        });
+        }, ethers.parseEther("1.0"));
 
         const avatar = new Avatar({
             address: avatarRegistration.avatarAddress.toString(),
-            admin: this.userSigner
+            admin: this.admins.avatarOwner
         });
+
+        const pr = this.getStack<PortalStackImpl>(StackType.PORTAL).getPortalRegistry();
+        const portalForExperience = await pr.getPortalInfoById(expRes.portalId);
+        const portalForExperience2 = await pr.getPortalInfoById(expRes2.portalId);
 
         return {
             world: this.world,
+            world2,
             company,
+            company2,
             experience,
+            experience2,
+            portalForExperience,
+            portalForExperience2,
             avatar,
             testERC20,
             testERC721
         }
     }
-
-
-
-    
-    /*
-    static async getStack<T extends IBasicDeployArgs>(type: StackType, args: T): Promise<any> {
-        const stack = StackFactory.stacksByType.get(type);
-        if(stack) {
-            return stack;
-        }
-        switch (type) {
-            case StackType.REGISTRAR: {
-                
-                const r = new RegistrarStackImpl(StackFactory.getStack, args);
-                await r.deploy(args);
-                StackFactory.stacksByType.set(type, r);
-                return r;
-            }
-            case StackType.ASSET: {
-                const a = new AssetStackImpl(StackFactory.getStack);
-                await a.deploy(args);
-                StackFactory.stacksByType.set(type, a);
-                return a;
-            }
-            case StackType.WORLD: {
-                const w = new WorldStackImpl(StackFactory.getStack);
-                await w.deploy(args);
-                StackFactory.stacksByType.set(type, w);
-                return w;
-            }
-                
-            case StackType.AVATAR: {
-                const a = new AvatarStackImpl(StackFactory.getStack);
-                await a.deploy(args);
-                StackFactory.stacksByType.set(type, a);
-                return a;
-            }
-
-            case StackType.PORTAL: {
-                const p = new PortalStackImpl(StackFactory.getStack);
-                await p.deploy(args);
-                StackFactory.stacksByType.set(type, p);
-                return p;
-            
-            }
-            case StackType.EXPERIENCE: {
-                const e = new ExperienceStackImpl(StackFactory.getStack);
-                await e.deploy(args);
-                StackFactory.stacksByType.set(type, e);
-                return e;
-            }
-            case StackType.COMPANY:
-                const c = new CompanyStackImpl(StackFactory.getStack);
-                await c.deploy(args);
-                StackFactory.stacksByType.set(type, c);
-                return c
-            default:
-                throw new Error(`Unsupported stack type: ${type}`);
-        }
-    }
-    */
 }

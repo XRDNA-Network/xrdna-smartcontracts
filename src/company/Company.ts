@@ -6,6 +6,7 @@ import { LogParser } from "../LogParser";
 import { LogNames } from "../LogNames";
 import { Experience, IExperienceInitData } from "../experience";
 import { ethers } from "hardhat";
+import { Avatar } from "../avatar/Avatar";
 
 export interface ICompanyOpts {
     address: string;
@@ -22,6 +23,20 @@ export interface IAddExperienceResult {
     receipt: TransactionReceipt;
     experienceAddress: AddressLike;
     portalId: bigint;
+}
+
+export interface IDelegatedAvatarJumpRequest {
+    portalId: bigint,
+    agreedFee: bigint,
+    avatarOwnerSignature: string,
+    avatar: Avatar;
+}
+
+export interface IDelegatedAvatarJumpResult {
+    receipt: TransactionReceipt;
+    destination: AddressLike;
+    connectionDetails: string;
+    fee: bigint;
 }
 
 export class Company {
@@ -145,5 +160,46 @@ export class Company {
         return await RPCRetryHandler.withRetry(() => this.con.removeAssetHook(asset));
     }
 
+    async signJumpRequest(props: {
+        nonce: bigint;
+        portalId: bigint;
+        fee: bigint;
+    }): Promise<string> {
+        const enc = ethers.AbiCoder.defaultAbiCoder().encode(["uint256", "uint256", "uint256"], [props.portalId, props.fee, props.nonce]);
+        const hashed = ethers.keccak256(enc);
+        return await RPCRetryHandler.withRetry(() => (this.admin as Signer).signMessage(ethers.getBytes(hashed)));
+    }
+
+    async payForAvatarJump(req: IDelegatedAvatarJumpRequest, tokens?: bigint): Promise<IDelegatedAvatarJumpResult> {
+        const t = await RPCRetryHandler.withRetry(() => this.con.delegateJumpForAvatar({
+            avatar: req.avatar.address,
+            portalId: req.portalId,
+            agreedFee: req.agreedFee,
+            avatarOwnerSignature: req.avatarOwnerSignature
+        }, {
+            value: tokens
+        }));
+        const r = await t.wait();
+        if(!r.status) {
+            throw new Error("Transaction failed with status 0");
+        }
+        const parser = req.avatar.logParser;
+        const logs = parser.parseLogs(r);
+        const args = logs.get(LogNames.JumpSuccess);
+        if(!args) {
+            throw new Error("JumpSuccess log not found");
+        }
+        return {
+            receipt: r,
+            destination: args[0],
+            fee: args[1],
+            connectionDetails: args[2]
+        } as IDelegatedAvatarJumpResult;
+
+    }
+
+    async tokenBalance(): Promise<bigint> {
+        return await RPCRetryHandler.withRetry(() => this.admin.provider!.getBalance(this.address));
+    }
 
 }

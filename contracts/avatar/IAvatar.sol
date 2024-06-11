@@ -29,7 +29,7 @@ interface IAvatar is IERC721Receiver {
     event WearableRemoved(address indexed wearable, uint256 tokenId);
     event LocationChanged(address indexed location);
     event AppearanceChanged(bytes indexed appearanceDetails);
-    event JumpSuccess(address indexed experience, bytes indexed connectionDetails);
+    event JumpSuccess(address indexed experience, uint256 indexed fee, bytes indexed connectionDetails);
     event AvatarUpgraded(address indexed oldVersion, address indexed nextVersion);
     event HookSet(address indexed hook);
     event HookRemoved();

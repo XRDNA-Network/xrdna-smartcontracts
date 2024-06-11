@@ -52,6 +52,25 @@ export type AddExperienceArgsStructOutput = [name: string, initData: string] & {
   initData: string;
 };
 
+export type DelegatedAvatarJumpRequestStruct = {
+  avatar: AddressLike;
+  portalId: BigNumberish;
+  agreedFee: BigNumberish;
+  avatarOwnerSignature: BytesLike;
+};
+
+export type DelegatedAvatarJumpRequestStructOutput = [
+  avatar: string,
+  portalId: bigint,
+  agreedFee: bigint,
+  avatarOwnerSignature: string
+] & {
+  avatar: string;
+  portalId: bigint;
+  agreedFee: bigint;
+  avatarOwnerSignature: string;
+};
+
 export type VectorAddressStruct = {
   x: string;
   y: string;
@@ -105,6 +124,7 @@ export interface CompanyInterface extends Interface {
       | "changeExperiencePortalFee"
       | "companyFactory"
       | "companyRegistry"
+      | "delegateJumpForAvatar"
       | "encodeExperienceArgs"
       | "experienceRegistry"
       | "init"
@@ -178,6 +198,10 @@ export interface CompanyInterface extends Interface {
   encodeFunctionData(
     functionFragment: "companyRegistry",
     values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "delegateJumpForAvatar",
+    values: [DelegatedAvatarJumpRequestStruct]
   ): string;
   encodeFunctionData(
     functionFragment: "encodeExperienceArgs",
@@ -274,6 +298,10 @@ export interface CompanyInterface extends Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "companyRegistry",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "delegateJumpForAvatar",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -518,6 +546,12 @@ export interface Company extends BaseContract {
 
   companyRegistry: TypedContractMethod<[], [string], "view">;
 
+  delegateJumpForAvatar: TypedContractMethod<
+    [request: DelegatedAvatarJumpRequestStruct],
+    [void],
+    "payable"
+  >;
+
   encodeExperienceArgs: TypedContractMethod<
     [args: AddExperienceArgsStruct],
     [string],
@@ -640,6 +674,13 @@ export interface Company extends BaseContract {
   getFunction(
     nameOrSignature: "companyRegistry"
   ): TypedContractMethod<[], [string], "view">;
+  getFunction(
+    nameOrSignature: "delegateJumpForAvatar"
+  ): TypedContractMethod<
+    [request: DelegatedAvatarJumpRequestStruct],
+    [void],
+    "payable"
+  >;
   getFunction(
     nameOrSignature: "encodeExperienceArgs"
   ): TypedContractMethod<[args: AddExperienceArgsStruct], [string], "view">;

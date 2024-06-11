@@ -116,6 +116,7 @@ contract World0_2 is IWorld0_2, BaseAccess, ReentrancyGuard {
             initData: args.initData,
             sendTokensToCompanyOwner: args.sendTokensToCompanyOwner
         }));
+        
         emit CompanyRegistered(company, vector, args.name);
     }
 
@@ -127,7 +128,7 @@ contract World0_2 is IWorld0_2, BaseAccess, ReentrancyGuard {
             require(ws.hook.beforeRegisterAvatar(args), "World0_2: hook rejected avatar registration");
         }
 
-        avatar = avatarRegistry.registerAvatar(AvatarRegistrationRequest({
+        avatar = avatarRegistry.registerAvatar{value: msg.value}(AvatarRegistrationRequest({
             avatarOwner: args.avatarOwner,
             username: args.username,
             defaultExperience: args.defaultExperience,

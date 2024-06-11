@@ -2,5 +2,4 @@
 /* tslint:disable */
 /* eslint-disable */
 export { Company__factory } from "./Company__factory";
-export { IBaseAsset__factory } from "./IBaseAsset__factory";
 export { INextVersion__factory } from "./INextVersion__factory";

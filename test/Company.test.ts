@@ -29,13 +29,11 @@ describe('Company', () => {
     let worldRegistryAdmin:HardhatEthersSigner
     let worldOwner:HardhatEthersSigner
     let companyOwner:HardhatEthersSigner
+    let avatarOwner:HardhatEthersSigner
     let stack: StackFactory;
     let company: Company;
-    let companyFactory: CompanyFactory
-    let worldStack: IWorldRegistrationResult;
     let world: World;
     let companyInfo: ICompanyRegistrationResult
-    let userSigner: HardhatEthersSigner;
     let assetStack: AssetStackImpl
     let assetRegistry: AssetRegistry
     let testERC20Asset: TestERC20;
@@ -54,10 +52,11 @@ describe('Company', () => {
         worldRegistryAdmin = signers[0];
         worldOwner = signers[1];
         companyOwner = signers[2];
-        userSigner = signers[3];
+        avatarOwner = signers[3];
         stack = new StackFactory({
             assetRegistryAdmin: signers[0],
             avatarRegistryAdmin: signers[0],
+            avatarOwner,
             companyRegistryAdmin: signers[0],
             experienceRegistryAdmin: signers[0],
             portalRegistryAdmin: signers[0],
@@ -147,12 +146,12 @@ describe('Company', () => {
         experience = new Experience({
             address: expRes.experienceAddress.toString(),
             portalId: expRes.portalId,
-            admin: companyOwner
+            provider: ethers.provider
         });
         
         avatar = await world.registerAvatar({
             sendTokensToAvatarOwner: false,
-            avatarOwner: userSigner.address,
+            avatarOwner: avatarOwner.address,
             defaultExperience: experience.address,
             username: "Test Avatar",
             appearanceDetails: "0x",
@@ -236,7 +235,7 @@ describe('Company', () => {
     })
     it('should revoke an erc20 asset', async () => {
         const asset = testERC20.assetAddress.toString();
-        const to = userSigner.address;
+        const to = avatarOwner.address;
         const amount = ethers.parseEther("10.0").toString();
         const result = await company.revoke(asset, to, amount);
         const r = await result.wait();
@@ -244,7 +243,7 @@ describe('Company', () => {
     })
     it('should revoke an erc721 asset', async () => {
         const asset = testERC721.assetAddress.toString();
-        const to = userSigner.address;
+        const to = avatarOwner.address;
         const tokenId = "1";
         const result = await company.revoke(asset, to, tokenId);
         const r = await result.wait();
