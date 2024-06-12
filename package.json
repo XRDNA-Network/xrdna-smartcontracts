@@ -1,18 +1,17 @@
 {
-  "name": "xrdna-smartcontracts",
+  "name": "@xrdna/smart-contracts",
   "version": "1.0.0",
   "description": "Smart contracts for XRDNA's L3 blockchain",
-  "main": "index.js",
+  "main": "dist/src/index.js",
   "repository": "https://github.com/thorium-dev-group/xrdna-smartcontracts",
   "author": "mdcoon <mdcoon1@yahoo.com>",
   "license": "MIT",
-  "private": false,
   "scripts": {
     "clean": "rimraf --glob artifacts/build-info dist *.tsbuildinfo",
     "deploy": "npx hardhat ignition deploy",
     "clear-deployment": "npx hardhat ignition wipe",
     "generate-verify-input": "cat $1 | jq -r '.input' > $1.input.json",
-    "build": "yarn clean && yarn compile && tsc",
+    "build": "yarn clean ; yarn compile && tsc",
     "compile": "hardhat compile --force",
     "test": "hardhat test"
   },
@@ -36,13 +35,15 @@
     "@nomicfoundation/hardhat-toolbox": "^5.0.0",
     "@nomicfoundation/hardhat-verify": "^2.0.7",
     "@openzeppelin/contracts": "^5.0.2",
+    "@tsconfig/node20": "^20.1.4",
     "@typechain/ethers-v6": "^0.5.1",
     "@typechain/hardhat": "^9.1.0",
     "dotenv": "^16.4.5",
-    "ethers": "^6.12.1",
+    "ethers": "^6.13.0",
     "hardhat": "^2.22.4",
     "hardhat-gas-reporter": "^2.1.1",
     "solidity-coverage": "^0.8.12",
     "typechain": "^8.3.2"
-  }
+  },
+  "packageManager": "yarn@4.3.0"
 }
