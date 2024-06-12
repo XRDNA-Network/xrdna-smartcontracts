@@ -237,6 +237,19 @@ const _abi = [
     type: "function",
   },
   {
+    inputs: [],
+    name: "hook",
+    outputs: [
+      {
+        internalType: "contract IAssetHook",
+        name: "",
+        type: "address",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
     inputs: [
       {
         internalType: "bytes",

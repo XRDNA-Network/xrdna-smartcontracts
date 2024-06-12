@@ -74,6 +74,14 @@ export class Company {
         return await RPCRetryHandler.withRetry(() => this.con.world());
     }
 
+    async hook(): Promise<string> {
+        return await RPCRetryHandler.withRetry(() => this.con.hook());
+    }
+
+    async nextPSub(): Promise<bigint> {
+        return await RPCRetryHandler.withRetry(() => this.con.nextPsub());
+    }
+
     async vectorAddress(): Promise<VectorAddress> {
         return await RPCRetryHandler.withRetry(() => this.con.vectorAddress());
     }

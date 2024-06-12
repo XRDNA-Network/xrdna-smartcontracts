@@ -17,6 +17,20 @@ import { IERC20AssetStack } from "./asset/erc20/IERC20AssetStack";
 import { IERC721AssetStack } from "./asset/erc721/IERC721AssetStack";
 import { MultiAssetRegistryStackImpl } from "./asset/MultiAssetRegistryStackImpl";
 
+export interface IEcosystem {
+        world: World,
+        world2: World,
+        company: Company,
+        company2: Company,
+        experience: Experience,
+        experience2: Experience,
+        portalForExperience: IPortalInfo,
+        portalForExperience2: IPortalInfo,
+        avatar: Avatar,
+        testERC20: CreateERC20AssetResult,
+        testERC721: CreateERC721AssetResult
+    }
+
 export enum StackType {
     REGISTRAR = "REGISTRAR",
     ERC20 = "ERC20",
@@ -177,18 +191,7 @@ export class StackFactory {
         throw new Error(`Stack not found: ${type}`);
     }
 
-    async getEcosystem(): Promise<{
-        world: World,
-        world2: World,
-        company: Company,
-        company2: Company,
-        experience: Experience,
-        experience2: Experience,
-        portalForExperience: IPortalInfo,
-        portalForExperience2: IPortalInfo,
-        avatar: Avatar,
-        testERC20: CreateERC20AssetResult,
-        testERC721: CreateERC721AssetResult}> {
+    async getEcosystem(): Promise<IEcosystem> {
         if (!this.world) {
             throw new Error("World not initialized");
         }

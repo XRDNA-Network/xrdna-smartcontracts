@@ -65,4 +65,7 @@ export class ERC721Asset {
     async decimals(): Promise<number> {
         return await  RPCRetryHandler.withRetry(()=>this.asset.decimals());
     }
+    async hook(): Promise<string> {
+        return await  RPCRetryHandler.withRetry(()=>this.asset.hook());
+    }
 }

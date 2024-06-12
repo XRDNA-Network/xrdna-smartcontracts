@@ -105,6 +105,7 @@ export interface NTERC721AssetInterface extends Interface {
       | "encodeInitData"
       | "experienceRegistry"
       | "getApproved"
+      | "hook"
       | "init"
       | "isApprovedForAll"
       | "issuer"
@@ -193,6 +194,7 @@ export interface NTERC721AssetInterface extends Interface {
     functionFragment: "getApproved",
     values: [BigNumberish]
   ): string;
+  encodeFunctionData(functionFragment: "hook", values?: undefined): string;
   encodeFunctionData(functionFragment: "init", values: [BytesLike]): string;
   encodeFunctionData(
     functionFragment: "isApprovedForAll",
@@ -300,6 +302,7 @@ export interface NTERC721AssetInterface extends Interface {
     functionFragment: "getApproved",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "hook", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "init", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "isApprovedForAll",
@@ -578,6 +581,8 @@ export interface NTERC721Asset extends BaseContract {
 
   getApproved: TypedContractMethod<[tokenId: BigNumberish], [string], "view">;
 
+  hook: TypedContractMethod<[], [string], "view">;
+
   init: TypedContractMethod<[initData: BytesLike], [void], "nonpayable">;
 
   isApprovedForAll: TypedContractMethod<
@@ -703,6 +708,9 @@ export interface NTERC721Asset extends BaseContract {
   getFunction(
     nameOrSignature: "getApproved"
   ): TypedContractMethod<[tokenId: BigNumberish], [string], "view">;
+  getFunction(
+    nameOrSignature: "hook"
+  ): TypedContractMethod<[], [string], "view">;
   getFunction(
     nameOrSignature: "init"
   ): TypedContractMethod<[initData: BytesLike], [void], "nonpayable">;
