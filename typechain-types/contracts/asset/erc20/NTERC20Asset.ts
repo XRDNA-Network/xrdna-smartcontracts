@@ -27,19 +27,19 @@ export type BaseAssetArgsStruct = {
   assetFactory: AddressLike;
   assetRegistry: AddressLike;
   avatarRegistry: AddressLike;
-  experienceRegistry: AddressLike;
+  companyRegistry: AddressLike;
 };
 
 export type BaseAssetArgsStructOutput = [
   assetFactory: string,
   assetRegistry: string,
   avatarRegistry: string,
-  experienceRegistry: string
+  companyRegistry: string
 ] & {
   assetFactory: string;
   assetRegistry: string;
   avatarRegistry: string;
-  experienceRegistry: string;
+  companyRegistry: string;
 };
 
 export type AssetCheckArgsStruct = {
@@ -69,7 +69,7 @@ export type ERC20InitDataStruct = {
   issuer: AddressLike;
   decimals: BigNumberish;
   originChainId: BigNumberish;
-  totalSupply: BigNumberish;
+  maxSupply: BigNumberish;
   name: string;
   symbol: string;
 };
@@ -79,7 +79,7 @@ export type ERC20InitDataStructOutput = [
   issuer: string,
   decimals: bigint,
   originChainId: bigint,
-  totalSupply: bigint,
+  maxSupply: bigint,
   name: string,
   symbol: string
 ] & {
@@ -87,7 +87,7 @@ export type ERC20InitDataStructOutput = [
   issuer: string;
   decimals: bigint;
   originChainId: bigint;
-  totalSupply: bigint;
+  maxSupply: bigint;
   name: string;
   symbol: string;
 };
@@ -106,9 +106,9 @@ export interface NTERC20AssetInterface extends Interface {
       | "canMint"
       | "canUseAsset"
       | "canViewAsset"
+      | "companyRegistry"
       | "decimals"
       | "encodeInitData"
-      | "experienceRegistry"
       | "hook"
       | "init"
       | "issuer"
@@ -184,14 +184,14 @@ export interface NTERC20AssetInterface extends Interface {
     functionFragment: "canViewAsset",
     values: [AssetCheckArgsStruct]
   ): string;
+  encodeFunctionData(
+    functionFragment: "companyRegistry",
+    values?: undefined
+  ): string;
   encodeFunctionData(functionFragment: "decimals", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "encodeInitData",
     values: [ERC20InitDataStruct]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "experienceRegistry",
-    values?: undefined
   ): string;
   encodeFunctionData(functionFragment: "hook", values?: undefined): string;
   encodeFunctionData(functionFragment: "init", values: [BytesLike]): string;
@@ -270,13 +270,13 @@ export interface NTERC20AssetInterface extends Interface {
     functionFragment: "canViewAsset",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(
+    functionFragment: "companyRegistry",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "decimals", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "encodeInitData",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "experienceRegistry",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "hook", data: BytesLike): Result;
@@ -498,7 +498,7 @@ export interface NTERC20Asset extends BaseContract {
   balanceOf: TypedContractMethod<[account: AddressLike], [bigint], "view">;
 
   canMint: TypedContractMethod<
-    [to: AddressLike, arg1: BytesLike],
+    [to: AddressLike, data: BytesLike],
     [boolean],
     "view"
   >;
@@ -515,6 +515,8 @@ export interface NTERC20Asset extends BaseContract {
     "view"
   >;
 
+  companyRegistry: TypedContractMethod<[], [string], "view">;
+
   decimals: TypedContractMethod<[], [bigint], "view">;
 
   encodeInitData: TypedContractMethod<
@@ -522,8 +524,6 @@ export interface NTERC20Asset extends BaseContract {
     [string],
     "view"
   >;
-
-  experienceRegistry: TypedContractMethod<[], [string], "view">;
 
   hook: TypedContractMethod<[], [string], "view">;
 
@@ -617,7 +617,7 @@ export interface NTERC20Asset extends BaseContract {
   ): TypedContractMethod<[account: AddressLike], [bigint], "view">;
   getFunction(
     nameOrSignature: "canMint"
-  ): TypedContractMethod<[to: AddressLike, arg1: BytesLike], [boolean], "view">;
+  ): TypedContractMethod<[to: AddressLike, data: BytesLike], [boolean], "view">;
   getFunction(
     nameOrSignature: "canUseAsset"
   ): TypedContractMethod<[args: AssetCheckArgsStruct], [boolean], "view">;
@@ -625,14 +625,14 @@ export interface NTERC20Asset extends BaseContract {
     nameOrSignature: "canViewAsset"
   ): TypedContractMethod<[args: AssetCheckArgsStruct], [boolean], "view">;
   getFunction(
+    nameOrSignature: "companyRegistry"
+  ): TypedContractMethod<[], [string], "view">;
+  getFunction(
     nameOrSignature: "decimals"
   ): TypedContractMethod<[], [bigint], "view">;
   getFunction(
     nameOrSignature: "encodeInitData"
   ): TypedContractMethod<[data: ERC20InitDataStruct], [string], "view">;
-  getFunction(
-    nameOrSignature: "experienceRegistry"
-  ): TypedContractMethod<[], [string], "view">;
   getFunction(
     nameOrSignature: "hook"
   ): TypedContractMethod<[], [string], "view">;

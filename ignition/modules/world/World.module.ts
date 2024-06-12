@@ -30,6 +30,7 @@ export interface IWorldDeploymentResult {
     worldFactory: NamedArtifactContractDeploymentFuture<"WorldFactoryV2">;
 }
 
+const VERSION = 2;
 export default buildModule("WorldV2", (m) => {
     
     const proxy = m.useModule(WorldProxyModule);
@@ -49,7 +50,7 @@ export default buildModule("WorldV2", (m) => {
     const master = m.contract("WorldV2", [args], {
         after: [proxy.worldFactory, proxy.worldRegistry, avatar.avatarRegistry, comp.companyRegistry]
     });
-    m.call(proxy.worldFactory, "setImplementation", [master]);
+    m.call(proxy.worldFactory, "setImplementation", [master, VERSION]);
     return {
         erc20Registry: assets.erc20Registry,
         erc20Factory: assets.erc20Factory,

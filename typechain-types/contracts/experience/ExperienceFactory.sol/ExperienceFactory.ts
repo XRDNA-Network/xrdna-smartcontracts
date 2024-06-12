@@ -48,6 +48,7 @@ export interface ExperienceFactoryInterface extends Interface {
       | "DEFAULT_ADMIN_ROLE"
       | "createExperience"
       | "getImplementation"
+      | "getProxyImplementation"
       | "getRoleAdmin"
       | "grantRole"
       | "hasRole"
@@ -87,6 +88,10 @@ export interface ExperienceFactoryInterface extends Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
+    functionFragment: "getProxyImplementation",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
     functionFragment: "getRoleAdmin",
     values: [BytesLike]
   ): string;
@@ -116,7 +121,7 @@ export interface ExperienceFactoryInterface extends Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "setImplementation",
-    values: [AddressLike]
+    values: [AddressLike, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "setProxyImplementation",
@@ -146,6 +151,10 @@ export interface ExperienceFactoryInterface extends Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "getImplementation",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getProxyImplementation",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -317,6 +326,8 @@ export interface ExperienceFactory extends BaseContract {
 
   getImplementation: TypedContractMethod<[], [string], "view">;
 
+  getProxyImplementation: TypedContractMethod<[], [string], "view">;
+
   getRoleAdmin: TypedContractMethod<[role: BytesLike], [string], "view">;
 
   grantRole: TypedContractMethod<
@@ -352,7 +363,7 @@ export interface ExperienceFactory extends BaseContract {
   >;
 
   setImplementation: TypedContractMethod<
-    [_implementation: AddressLike],
+    [_implementation: AddressLike, version: BigNumberish],
     [void],
     "nonpayable"
   >;
@@ -403,6 +414,9 @@ export interface ExperienceFactory extends BaseContract {
     nameOrSignature: "getImplementation"
   ): TypedContractMethod<[], [string], "view">;
   getFunction(
+    nameOrSignature: "getProxyImplementation"
+  ): TypedContractMethod<[], [string], "view">;
+  getFunction(
     nameOrSignature: "getRoleAdmin"
   ): TypedContractMethod<[role: BytesLike], [string], "view">;
   getFunction(
@@ -441,7 +455,11 @@ export interface ExperienceFactory extends BaseContract {
   ): TypedContractMethod<[_registry: AddressLike], [void], "nonpayable">;
   getFunction(
     nameOrSignature: "setImplementation"
-  ): TypedContractMethod<[_implementation: AddressLike], [void], "nonpayable">;
+  ): TypedContractMethod<
+    [_implementation: AddressLike, version: BigNumberish],
+    [void],
+    "nonpayable"
+  >;
   getFunction(
     nameOrSignature: "setProxyImplementation"
   ): TypedContractMethod<

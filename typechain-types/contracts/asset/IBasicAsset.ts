@@ -49,6 +49,7 @@ export interface IBasicAssetInterface extends Interface {
       | "addHook"
       | "canUseAsset"
       | "canViewAsset"
+      | "hook"
       | "init"
       | "issuer"
       | "originAddress"
@@ -76,6 +77,7 @@ export interface IBasicAssetInterface extends Interface {
     functionFragment: "canViewAsset",
     values: [AssetCheckArgsStruct]
   ): string;
+  encodeFunctionData(functionFragment: "hook", values?: undefined): string;
   encodeFunctionData(functionFragment: "init", values: [BytesLike]): string;
   encodeFunctionData(functionFragment: "issuer", values?: undefined): string;
   encodeFunctionData(
@@ -114,6 +116,7 @@ export interface IBasicAssetInterface extends Interface {
     functionFragment: "canViewAsset",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "hook", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "init", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "issuer", data: BytesLike): Result;
   decodeFunctionResult(
@@ -200,6 +203,8 @@ export interface IBasicAsset extends BaseContract {
     "view"
   >;
 
+  hook: TypedContractMethod<[], [string], "view">;
+
   init: TypedContractMethod<[data: BytesLike], [void], "nonpayable">;
 
   issuer: TypedContractMethod<[], [string], "view">;
@@ -238,6 +243,9 @@ export interface IBasicAsset extends BaseContract {
   getFunction(
     nameOrSignature: "canViewAsset"
   ): TypedContractMethod<[args: AssetCheckArgsStruct], [boolean], "view">;
+  getFunction(
+    nameOrSignature: "hook"
+  ): TypedContractMethod<[], [string], "view">;
   getFunction(
     nameOrSignature: "init"
   ): TypedContractMethod<[data: BytesLike], [void], "nonpayable">;

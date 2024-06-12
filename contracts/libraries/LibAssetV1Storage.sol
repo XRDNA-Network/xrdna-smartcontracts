@@ -29,6 +29,7 @@ struct CommonAssetV1Storage {
 }
 
 struct ERC20V1Storage {
+    uint256 maxSupply;
     uint256 totalSupply;
     mapping(address => uint256) balances;
     mapping(address => mapping(address => uint256)) allowances;

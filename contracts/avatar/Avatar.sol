@@ -22,17 +22,22 @@ import {IMultiAssetRegistry} from '../asset/IMultiAssetRegistry.sol';
 import {AssetCheckArgs} from '../asset/IAssetCondition.sol';
 import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
 import {IBasicAsset} from '../asset/IBasicAsset.sol';
+import {IExperienceRegistry} from '../experience/IExperienceRegistry.sol';
 
-interface IExperienceRegistry {
-    function isExperience(address e) external view returns (bool);
-    function getExperienceByVector(VectorAddress memory location) external view returns (address);
-}
-
+/**
+ * @dev Data structure for initializing an avatar contract
+ */
 struct AvatarInitData {
+    //whether the avatar can receive tokens from a company that does not match its
+    //current experience
     bool canReceiveTokensOutsideOfExperience;
+
+    //specialized appearance details. This could be a URL, encoded model data, or 
+    //whatever a World uses when registering an avatar instance.
     bytes appearanceDetails;
 }
 
+//various registries and factories held as immutable addresses for all avatar instances
 struct BaseContructorArgs {
     address avatarFactory;
     address avatarRegistry;
@@ -42,6 +47,15 @@ struct BaseContructorArgs {
     address multiAssetRegistry;
 }
 
+/**
+ * @title Avatar
+ * @dev The Avatar contract represents a user's avatar in the metaverse. It is the primary
+ * interface for interacting with the avatar's wearables, experiences, and other avatar
+ * specific data. The avatar is a proxy contract that can be upgraded by the Avatar owner.
+ * The avatar owner can set appearance details, move to new experiences, and 
+ * add or remove wearables. The avatar can also receive ERC721 tokens from registered 
+ * assets and companies.
+ */
 contract Avatar is IAvatar, ReentrancyGuard, WearableLinkedList {
     using LibStringCase for string;
     using LibVectorAddress for VectorAddress;
@@ -78,6 +92,10 @@ contract Avatar is IAvatar, ReentrancyGuard, WearableLinkedList {
         _;
     }
 
+    /*
+     * @dev initializes immutable factory and registry addresses inherited by all instances
+     * of avatar
+     */
     constructor(BaseContructorArgs memory args) {
         require(args.avatarFactory != address(0), "Avatar: avatar factory cannot be zero address");
         require(args.experienceRegistry != address(0), "Avatar: experience registry cannot be zero address");
@@ -93,6 +111,9 @@ contract Avatar is IAvatar, ReentrancyGuard, WearableLinkedList {
         assetRegistry = IMultiAssetRegistry(args.multiAssetRegistry);
     }
 
+    /**
+     * Avatars can receive funds when created and during operation.
+     */
     receive() external payable {  }
 
     /**
@@ -116,41 +137,65 @@ contract Avatar is IAvatar, ReentrancyGuard, WearableLinkedList {
         s.owner = _owner;
     }
 
+    /**
+     * @inheritdoc IAvatar
+     */
     function canReceiveTokensOutsideOfExperience() public view override returns (bool) {
         AvatarV1Storage storage s = LibAvatarV1Storage.load();
         return s.canReceiveTokensOutsideOfExperience;
     }
 
+    /**
+     * @inheritdoc IAvatar
+     */
     function owner() public view override returns (address) {
         AvatarV1Storage storage s = LibAvatarV1Storage.load();
         return s.owner;
     }
 
+    /**
+     * @inheritdoc IAvatar
+     */
     function hook() public view returns (IAvatarHook) {
         AvatarV1Storage storage s = LibAvatarV1Storage.load();
         return s.hook;
     }
 
+    /**
+     * @inheritdoc IAvatar
+     */
     function username() public view override returns (string memory) {
         AvatarV1Storage storage s = LibAvatarV1Storage.load();
         return s.username;
     }
 
+    /**
+     * @inheritdoc IAvatar
+     */
     function appearanceDetails() public view override returns (bytes memory) {
         AvatarV1Storage storage s = LibAvatarV1Storage.load();
         return s.appearanceDetails;
     }
 
+    /**
+     * @inheritdoc IAvatar
+     */
     function companySigningNonce(address company) public view override returns (uint256) {
         AvatarV1Storage storage s = LibAvatarV1Storage.load();
         return s.companySigningNonce[company];
     }
 
+    /**
+     * @inheritdoc IAvatar
+     */
     function avatarOwnerSigningNonce() public view override returns (uint256) {
         AvatarV1Storage storage s = LibAvatarV1Storage.load();
         return s.avatarOwnerSigningNonce;
     }
 
+    /**
+     * convenience function to encode init data
+     */
     function encodeInitData(AvatarInitData memory data) public pure returns (bytes memory) {
         return abi.encode(data);
     }
@@ -173,6 +218,9 @@ contract Avatar is IAvatar, ReentrancyGuard, WearableLinkedList {
         return getAllItems();
     }
 
+    /**
+     * @dev Check if the avatar is wearing a specific wearable asset.
+     */
     function isWearing(Wearable calldata wearable) public view override returns (bool) {
         return contains(wearable);
     }
@@ -272,6 +320,9 @@ contract Avatar is IAvatar, ReentrancyGuard, WearableLinkedList {
         emit WearableRemoved(wearable.asset, wearable.tokenId);
     }
 
+    /**
+     * @inheritdoc IAvatar
+     */
     function setHook(IAvatarHook _hook) public override onlyOwner {
         require(address(_hook) != address(0), "Avatar: hook cannot be zero address");
         AvatarV1Storage storage s = LibAvatarV1Storage.load();
@@ -279,6 +330,9 @@ contract Avatar is IAvatar, ReentrancyGuard, WearableLinkedList {
         emit HookSet(address(_hook));
     }
 
+    /**
+     * @inheritdoc IAvatar
+     */
     function removeHook() public override onlyOwner {
         AvatarV1Storage storage s = LibAvatarV1Storage.load();
         delete s.hook;
@@ -302,41 +356,63 @@ contract Avatar is IAvatar, ReentrancyGuard, WearableLinkedList {
         bytes calldata 
     ) public override nonReentrant returns (bytes4) {
         AvatarV1Storage storage s = LibAvatarV1Storage.load();
+        //only registered assets can be received by avatars
         require(assetRegistry.isRegisteredAsset(msg.sender), "Avatar: ERC721 token not from registered asset");
         IERC721 asset = IERC721(msg.sender);
+        //if can't receive tokens outside of experience, check if company matches
         if(!s.canReceiveTokensOutsideOfExperience) {
             address company = IBasicAsset(msg.sender).issuer();
             IExperience loc = s.location;
             require(company == loc.company(), "Avatar: cannot receive tokens outside of experience");
         }
+        //make sure avatar owns the token before accepting it
         require(asset.ownerOf(tokenId) == address(this), "Avatar: ERC721 token not owned by avatar");
         if(address(s.hook) != address(0)) {
+            //give hook the final say
             require(s.hook.onReceiveERC721(address(this), msg.sender, tokenId), "Avatar: hook rejected ERC721 token");
         }
         return this.onERC721Received.selector;
     }
 
+    //verify the company signature for a jump request
     function _verifyCompanySignature(AvatarJumpRequest memory request) internal returns (PortalInfo memory portal) {
+        
+        //get the portal info for the destination experience
         portal = portalRegistry.getPortalInfoById(request.portalId);
+
+        //get the destination experience's owning company
         ICompany company = ICompany(portal.destination.company());
         AvatarV1Storage storage s = LibAvatarV1Storage.load();
+
+        //increment company signing nonce to avoid replays
         uint256 nonce = s.companySigningNonce[address(company)];
         ++s.companySigningNonce[address(company)];
+
+        //companies sign off and agree to the avatar jumping into the experience for the 
+        //given fee. This signature happens off chain between avatar client and company 
+        //infrastructure.
         bytes32 hash = keccak256(abi.encode(request.portalId, request.agreedFee, nonce));
 
         bytes memory b = new bytes(32);
         assembly {
             mstore(add(b, 32), hash) // set the bytes data
         }
+        //make sure signer is a signer for the destination experience's company
         bytes32 sigHash = b.toEthSignedMessageHash();
         address r = ECDSA.recover(sigHash, request.destinationCompanySignature);
         require(company.isSigner(r), "Avatar: company signer is not authorized");
     }
 
+    //verify the avatar owner signature for a jump request
     function _verifyAvatarSignature(DelegatedJumpRequest memory request) internal {
         AvatarV1Storage storage s = LibAvatarV1Storage.load();
+
+        //make sure cannot replay avatar signature
         uint256 nonce = s.avatarOwnerSigningNonce;
         ++s.avatarOwnerSigningNonce;
+
+        //avatar is agreeing to jump into the given destination portal for the given
+        //fee. This signature happens off chain between avatar client and company
         bytes32 hash = keccak256(abi.encode(request.portalId, request.agreedFee, nonce));
 
         bytes memory b = new bytes(32);
@@ -345,19 +421,29 @@ contract Avatar is IAvatar, ReentrancyGuard, WearableLinkedList {
         }
         bytes32 sigHash = b.toEthSignedMessageHash();
         address r = ECDSA.recover(sigHash, request.avatarOwnerSignature);
+        //make sure signer is the avatar owner
         require(r == s.owner, "Avatar: avatar signer is not owner");
     }
 
+    /**
+     * @inheritdoc IAvatar
+     */
     function withdraw(uint256 amount) public override onlyOwner {
         require(amount <= address(this).balance, "Avatar: insufficient balance for withdrawal");
         AvatarV1Storage storage s = LibAvatarV1Storage.load();
         payable(s.owner).transfer(address(this).balance);
     }
 
+    /**
+     * @inheritdoc IAvatar
+     */
     function upgrade(bytes calldata initData) public override onlyOwner {
         avatarRegistry.upgradeAvatar(initData);
     }
 
+    /**
+     * @inheritdoc IAvatar
+     */
     function upgradeComplete(address nextVersion) public override onlyFactory {
        BaseProxyStorage storage ps = LibBaseProxy.load();
         address old = ps.implementation;   

@@ -29,7 +29,9 @@ abstract contract BaseProxy is IBaseProxy, BaseAccess {
         _;
     }
 
-
+    /**
+     * @dev Initializes the proxy with the factory and registry addresses.
+     */
     constructor(BaseProxyConstructorArgs memory args) {
         require(args.factory != address(0), "BaseProxy: factory is zero address");
         require(args.registry != address(0), "BaseProxy: registry is zero address");
@@ -38,7 +40,9 @@ abstract contract BaseProxy is IBaseProxy, BaseAccess {
     }
 
     //must be overridden by proxy implementation
-    function fundsReceived(uint256 amount) internal virtual;
+    function fundsReceived(uint256 amount) internal virtual {
+        //no-op
+    }
 
     function _getStorage() internal pure returns (BaseProxyStorage storage bs) {
         return LibBaseProxy.load();

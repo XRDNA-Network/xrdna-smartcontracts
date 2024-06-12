@@ -13,6 +13,7 @@ export { BaseAccess__factory } from "./BaseAccess__factory";
 export { BaseFactory__factory } from "./BaseFactory__factory";
 export { BaseProxy__factory } from "./BaseProxy__factory";
 export { IBaseAccess__factory } from "./IBaseAccess__factory";
+export { IBaseFactory__factory } from "./IBaseFactory__factory";
 export { IBaseProxy__factory } from "./IBaseProxy__factory";
 export { IRegistrarRegistry__factory } from "./IRegistrarRegistry__factory";
 export { RegistrarRegistry__factory } from "./RegistrarRegistry__factory";

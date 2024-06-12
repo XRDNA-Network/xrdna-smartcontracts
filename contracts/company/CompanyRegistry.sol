@@ -65,7 +65,7 @@ contract CompanyRegistry is ICompanyRegistry, ReentrancyGuard, AccessControl {
             _grantRole(ADMIN_ROLE, args.admins[i]);
         }
     }
-
+    
     receive() external payable {}
 
 
@@ -91,6 +91,12 @@ contract CompanyRegistry is ICompanyRegistry, ReentrancyGuard, AccessControl {
 
     function registerCompany(CompanyRegistrationRequest memory request) external payable onlyWorld nonReentrant returns (address) {
         string memory nm = request.name.lower();
+        /**
+        * WARN: there is an issue with unicode or whitespace characters present in names. 
+        * Off-chain verification should ensure that names are properly trimmed and
+        * filtered with hidden characters if we truly want visually-unique names.
+        */
+        
         require(_companiesByName[nm] == address(0), "CompanyRegistry: company name already taken");
         address company = companyFactory.createCompany(CompanyInitArgs({
             owner: request.owner,

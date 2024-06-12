@@ -38,6 +38,7 @@ export interface BaseRegistryInterface extends Interface {
       | "isRegisteredAsset"
       | "registerAsset"
       | "registeredAssets"
+      | "removeAsset"
       | "renounceRole"
       | "revokeRole"
       | "setAssetFactory"
@@ -98,6 +99,10 @@ export interface BaseRegistryInterface extends Interface {
     values: [AddressLike]
   ): string;
   encodeFunctionData(
+    functionFragment: "removeAsset",
+    values: [AddressLike]
+  ): string;
+  encodeFunctionData(
     functionFragment: "renounceRole",
     values: [BytesLike, AddressLike]
   ): string;
@@ -155,6 +160,10 @@ export interface BaseRegistryInterface extends Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "registeredAssets",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "removeAsset",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -325,6 +334,8 @@ export interface BaseRegistry extends BaseContract {
 
   registeredAssets: TypedContractMethod<[arg0: AddressLike], [boolean], "view">;
 
+  removeAsset: TypedContractMethod<[asset: AddressLike], [void], "nonpayable">;
+
   renounceRole: TypedContractMethod<
     [role: BytesLike, callerConfirmation: AddressLike],
     [void],
@@ -407,6 +418,9 @@ export interface BaseRegistry extends BaseContract {
   getFunction(
     nameOrSignature: "registeredAssets"
   ): TypedContractMethod<[arg0: AddressLike], [boolean], "view">;
+  getFunction(
+    nameOrSignature: "removeAsset"
+  ): TypedContractMethod<[asset: AddressLike], [void], "nonpayable">;
   getFunction(
     nameOrSignature: "renounceRole"
   ): TypedContractMethod<

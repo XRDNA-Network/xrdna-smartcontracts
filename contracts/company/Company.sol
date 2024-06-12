@@ -78,6 +78,12 @@ contract Company is ICompany, BaseAccess, ReentrancyGuard {
         CompanyV1Storage storage s = LibCompanyV1Storage.load();
         require(s.owner == address(0), "Company: already initialized");
         require(request.owner != address(0), "Company: owner cannot be 0x0");
+
+        /**
+        * WARN: there is an issue with unicode or whitespace characters present in names. 
+        * Off-chain verification should ensure that names are properly trimmed and
+        * filtered with hidden characters if we truly want visually-unique names.
+        */
         require(bytes(request.name).length > 0, "Company: name cannot be empty");
         require(request.world != address(0), "Company: world cannot be 0x0");
         s.owner = request.owner;
@@ -122,18 +128,12 @@ contract Company is ICompany, BaseAccess, ReentrancyGuard {
     
     function canMint(address asset, address to, bytes calldata extra) public view returns (bool) {
         
-        if(!assetRegistry.isRegisteredAsset(asset)) {
-            return false;
-        }
+        require(assetRegistry.isRegisteredAsset(asset), "Company: asset not registered");
 
         IMintableAsset mintable = IMintableAsset(asset);
-        if(mintable.issuer() != address(this)) {
-            return false;
-        }
-
-        if(!mintable.canMint(to, extra))  {
-            return false;
-        }
+        require(mintable.issuer() == address(this), "Company: not issuer of asset");
+        
+        require(mintable.canMint(to, extra), "Company: cannot mint to address");
 
         if(!avatarRegistry.isAvatar(to)) {
             return true;
@@ -143,7 +143,7 @@ contract Company is ICompany, BaseAccess, ReentrancyGuard {
         if(!avatar.canReceiveTokensOutsideOfExperience()) {
             IExperience exp = avatar.location();
             require(address(exp) != address(0), "Company: avatar location is not an experience");
-            return exp.company() == address(this);
+            require(exp.company() == address(this), "Company: avatar location is not in an experience owned by this company");
         }
         return true;
     }

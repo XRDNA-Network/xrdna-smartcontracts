@@ -75,6 +75,8 @@ contract Experience is ReentrancyGuard, IExperience {
         ExperienceV1Storage storage s = LibExperienceV1Storage.load();
         require(address(s.company) == address(0), "Experience: already initialized");
         
+
+        
         s.company = IBasicCompany(_company);
         ExperienceInitData memory data = abi.decode(initData, (ExperienceInitData));
         s.vectorAddress = vector;

@@ -63,12 +63,35 @@ export type CompanyInitArgsStructOutput = [
 
 export interface ICompanyFactoryInterface extends Interface {
   getFunction(
-    nameOrSignature: "createCompany" | "supportsVersion" | "upgradeCompany"
+    nameOrSignature:
+      | "createCompany"
+      | "getImplementation"
+      | "getProxyImplementation"
+      | "setImplementation"
+      | "setProxyImplementation"
+      | "supportsVersion"
+      | "upgradeCompany"
   ): FunctionFragment;
 
   encodeFunctionData(
     functionFragment: "createCompany",
     values: [CompanyInitArgsStruct]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getImplementation",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getProxyImplementation",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setImplementation",
+    values: [AddressLike, BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setProxyImplementation",
+    values: [AddressLike]
   ): string;
   encodeFunctionData(
     functionFragment: "supportsVersion",
@@ -81,6 +104,22 @@ export interface ICompanyFactoryInterface extends Interface {
 
   decodeFunctionResult(
     functionFragment: "createCompany",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getImplementation",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getProxyImplementation",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "setImplementation",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "setProxyImplementation",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -142,6 +181,22 @@ export interface ICompanyFactory extends BaseContract {
     "nonpayable"
   >;
 
+  getImplementation: TypedContractMethod<[], [string], "view">;
+
+  getProxyImplementation: TypedContractMethod<[], [string], "view">;
+
+  setImplementation: TypedContractMethod<
+    [_implementation: AddressLike, version: BigNumberish],
+    [void],
+    "nonpayable"
+  >;
+
+  setProxyImplementation: TypedContractMethod<
+    [_proxyImplementation: AddressLike],
+    [void],
+    "nonpayable"
+  >;
+
   supportsVersion: TypedContractMethod<[], [bigint], "view">;
 
   upgradeCompany: TypedContractMethod<
@@ -159,6 +214,26 @@ export interface ICompanyFactory extends BaseContract {
   ): TypedContractMethod<
     [request: CompanyInitArgsStruct],
     [string],
+    "nonpayable"
+  >;
+  getFunction(
+    nameOrSignature: "getImplementation"
+  ): TypedContractMethod<[], [string], "view">;
+  getFunction(
+    nameOrSignature: "getProxyImplementation"
+  ): TypedContractMethod<[], [string], "view">;
+  getFunction(
+    nameOrSignature: "setImplementation"
+  ): TypedContractMethod<
+    [_implementation: AddressLike, version: BigNumberish],
+    [void],
+    "nonpayable"
+  >;
+  getFunction(
+    nameOrSignature: "setProxyImplementation"
+  ): TypedContractMethod<
+    [_proxyImplementation: AddressLike],
+    [void],
     "nonpayable"
   >;
   getFunction(

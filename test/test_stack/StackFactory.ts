@@ -8,7 +8,7 @@ import { WorldStackImpl } from "./world/WorldStackImpl";
 import { CompanyStackImpl } from "./company/CompanyStackImpl";
 import { RegistrarStackImpl} from "./registrar/RegistrarStackImpl";
 import { ethers, network } from "hardhat";
-import { CreateERC20AssetResult, CreateERC721AssetResult, IWorldRegistration, VectorAddress, World, signVectorAddress } from "../../src";
+import { CreateERC20AssetResult, CreateERC721AssetResult, ERC20InitData, IWorldRegistration, VectorAddress, World, signVectorAddress } from "../../src";
 import { Company } from "../../src/company/Company";
 import { Experience } from "../../src/experience";
 import { Avatar } from "../../src/avatar/Avatar";
@@ -251,11 +251,10 @@ export class StackFactory {
             address: await company2Registration.companyAddress.toString(),
             admin: this.admins.companyRegistryAdmin
         });
-        const erc20InitData = {
+        const erc20InitData: ERC20InitData = {
             originChainAddress:  USDC,
             issuer: company.address,
             originChainId: 1n,
-            totalSupply: ethers.parseEther('1000000'),
             decimals: 6,
             name: "Test ERC20 Asset",
             symbol: "TEST20"

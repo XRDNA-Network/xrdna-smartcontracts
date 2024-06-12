@@ -38,6 +38,7 @@ export interface ERC20AssetRegistryInterface extends Interface {
       | "isRegisteredAsset"
       | "registerAsset"
       | "registeredAssets"
+      | "removeAsset"
       | "renounceRole"
       | "revokeRole"
       | "setAssetFactory"
@@ -102,6 +103,10 @@ export interface ERC20AssetRegistryInterface extends Interface {
     values: [AddressLike]
   ): string;
   encodeFunctionData(
+    functionFragment: "removeAsset",
+    values: [AddressLike]
+  ): string;
+  encodeFunctionData(
     functionFragment: "renounceRole",
     values: [BytesLike, AddressLike]
   ): string;
@@ -159,6 +164,10 @@ export interface ERC20AssetRegistryInterface extends Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "registeredAssets",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "removeAsset",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -354,6 +363,8 @@ export interface ERC20AssetRegistry extends BaseContract {
 
   registeredAssets: TypedContractMethod<[arg0: AddressLike], [boolean], "view">;
 
+  removeAsset: TypedContractMethod<[asset: AddressLike], [void], "nonpayable">;
+
   renounceRole: TypedContractMethod<
     [role: BytesLike, callerConfirmation: AddressLike],
     [void],
@@ -436,6 +447,9 @@ export interface ERC20AssetRegistry extends BaseContract {
   getFunction(
     nameOrSignature: "registeredAssets"
   ): TypedContractMethod<[arg0: AddressLike], [boolean], "view">;
+  getFunction(
+    nameOrSignature: "removeAsset"
+  ): TypedContractMethod<[asset: AddressLike], [void], "nonpayable">;
   getFunction(
     nameOrSignature: "renounceRole"
   ): TypedContractMethod<

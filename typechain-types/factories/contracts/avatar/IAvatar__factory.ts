@@ -301,6 +301,19 @@ const _abi = [
     type: "function",
   },
   {
+    inputs: [],
+    name: "hook",
+    outputs: [
+      {
+        internalType: "contract IAvatarHook",
+        name: "",
+        type: "address",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
     inputs: [
       {
         internalType: "address",

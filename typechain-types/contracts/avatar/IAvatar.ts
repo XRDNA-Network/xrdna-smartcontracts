@@ -68,6 +68,7 @@ export interface IAvatarInterface extends Interface {
       | "companySigningNonce"
       | "delegateJump"
       | "getWearables"
+      | "hook"
       | "init"
       | "isWearing"
       | "jump"
@@ -128,6 +129,7 @@ export interface IAvatarInterface extends Interface {
     functionFragment: "getWearables",
     values?: undefined
   ): string;
+  encodeFunctionData(functionFragment: "hook", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "init",
     values: [AddressLike, AddressLike, string, BytesLike]
@@ -206,6 +208,7 @@ export interface IAvatarInterface extends Interface {
     functionFragment: "getWearables",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "hook", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "init", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "isWearing", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "jump", data: BytesLike): Result;
@@ -443,6 +446,8 @@ export interface IAvatar extends BaseContract {
 
   getWearables: TypedContractMethod<[], [WearableStructOutput[]], "view">;
 
+  hook: TypedContractMethod<[], [string], "view">;
+
   init: TypedContractMethod<
     [
       owner: AddressLike,
@@ -542,6 +547,9 @@ export interface IAvatar extends BaseContract {
   getFunction(
     nameOrSignature: "getWearables"
   ): TypedContractMethod<[], [WearableStructOutput[]], "view">;
+  getFunction(
+    nameOrSignature: "hook"
+  ): TypedContractMethod<[], [string], "view">;
   getFunction(
     nameOrSignature: "init"
   ): TypedContractMethod<

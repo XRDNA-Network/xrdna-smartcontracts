@@ -16,24 +16,50 @@ import {IAssetRegistry} from '../IAssetRegistry.sol';
 import {BaseProxyStorage, LibBaseProxy} from '../../libraries/LibBaseProxy.sol';
 import {IAvatar} from '../../avatar/IAvatar.sol';
 
+
+/**
+ * This struct represent the initialization data for the current version of the ERC721 asset
+ * It represents the standard ERC721 fields along with information about the asset's origin 
+ * chain and the company allowed to issue the asset.
+ * 
+ * The company must have been verified to control or "own" the asset on the origin chain. 
+ * Anyone can verify that this is correct by checking the origin chain address and chain id
+ * deployment details of the contract and verifying that the issuer is the same company as 
+ * the company controlling this synthetic version. The ERC20AssetRegistry determines which
+ * assets have been verified. If disputes are discovered, registry admins can remove the 
+ * assets from the registry making the asset unusable in the interoperability protocol.
+ */
 struct ERC721InitData {
+    //must be a company contract
     address issuer;
+
+    //origin chain address of the asset
     address originChainAddress;
+
+    //origin chain id of the asset
     uint256 originChainId;
+
+    //standard ERC721 fields
     string name;
     string symbol;
+
+    //baseURI cannot be empty
     string baseURI;
 }
 
 
-interface IUpgradedERC721 {
-    function setStartingTokenId(uint256 tokenId) external;
-}
-
+/**
+ * @title NTERC721Asset
+ * @dev ERC721 assets within the metaverse interoperability layer represent token balances
+ * on other chains. They cannot be transferred (yet) but can be minted and revoked by the
+ * issuing company. The issuing company had to go through a verification process to determine
+ * whether they are the authority of the original token.
+ */
 contract NTERC721Asset is BaseAsset, IMintableAsset, IERC721, IERC721Metadata, IERC721Errors {
     using Strings for uint256;
 
-    
+    //current version of this asset. This can be used to detect whether upgrades are
+    //available by comparing this version to the asset factory's current supported version.
     uint256 public constant override version = 1;
 
     event ERC721Minted(address indexed to, uint256 tokenId);
@@ -42,31 +68,54 @@ contract NTERC721Asset is BaseAsset, IMintableAsset, IERC721, IERC721Metadata, I
     //called once when master-copy deployed
     constructor(BaseAssetArgs memory args) BaseAsset(args) {}
 
+    //convenience function to use for encoding init data tuple
     function encodeInitData(ERC721InitData memory data) public pure returns (bytes memory) {
         return abi.encode(data);
     }
-
+/**
+     * @dev Initializes the ERC721 asset instance with the provided data. This is called
+     * by the factory during asset creation in the registry.
+     */
     function init(bytes memory initData) public onlyFactory {
         ERC721InitData memory data = abi.decode(initData, (ERC721InitData));
         require(data.issuer != address(0), "NTERC721: issuer is the zero address");
+        
+        //only a registered company can issue tokens
+        require(companyRegistry.isRegisteredCompany(data.issuer), "NTERC721: issuer is not a company");
         require(bytes(data.name).length > 0, "NTERC721: name is empty");
         require(bytes(data.symbol).length > 0, "NTERC721: symbol is empty");
         require(bytes(data.baseURI).length > 0, "NTERC721: baseURI is empty");
+        
         require(data.originChainAddress != address(0), "NTERC721: originChainAddress is the zero address");
         require(data.originChainId > 0, "NTERC721: originChainId is zero");
         ERC721V1Storage storage s = LibAssetV1Storage.loadERC721Storage();
+        require(s.attributes.originAddress == address(0), "NTERC721: asset already initialized");
+
         s.attributes.issuer = data.issuer;
         s.attributes.originAddress = data.originChainAddress;
         s.attributes.originChainId = data.originChainId;
         s.attributes.name = data.name;
         s.attributes.symbol = data.symbol;
-        s.baseURI = data.baseURI;
+        //beause the tokenURI function assumes a trailing '/', we need to add it
+        //if it doesn't exist
+        if(!_endsWith(data.baseURI, "/")) {
+            s.baseURI = string.concat(data.baseURI, "/");
+        } else {
+            s.baseURI = data.baseURI;
+        }
     }
 
+    /**
+     * @dev Upgrades the asset to a new version. Only the issuing company
+     * can opt to upgrade to the latest asset ERC721 implementation.
+     */
     function upgrade(bytes calldata data) public onlyIssuer {
         IAssetRegistry(assetRegistry).upgradeAsset(data);
     }
 
+    /**
+    * @dev Called by the asset factory to complete the upgrade process
+    */
     function upgradeComplete(address nextVersion) public override onlyFactory {
         BaseProxyStorage storage ps = LibBaseProxy.load();
         address old = ps.implementation;
@@ -186,11 +235,23 @@ contract NTERC721Asset is BaseAsset, IMintableAsset, IERC721, IERC721Metadata, I
         revert("NTERC721: token is non-transferable");
     }
 
+    /**
+     * @dev determine if the asset can be minted
+     * @param to the address to mint to
+     * data is not used in minting so it is ignored
+     */
     function canMint(address to, bytes calldata) public pure override returns (bool) {
-        return to != address(0);
+        require(to != address(0), "NTERC721Asset: mint to the zero address");
+        return true;
     }
 
-    function mint(address to, bytes calldata) public nonReentrant onlyIssuer {
+    /**
+     * @dev Mints NFT to the specified address. This can only be called by the issuer
+     * @param to the address to mint tokens to
+     * @param data the data to use for minting, which should be an encoded uint256 amount
+     */
+    function mint(address to, bytes calldata data) public nonReentrant onlyIssuer {
+        require(canMint(to, data), "NTERC721Asset: cannot mint to address");
         ERC721V1Storage storage s = LibAssetV1Storage.loadERC721Storage();
         if(address(s.attributes.hook) != address(0)) {
             bool ok = s.attributes.hook.beforeMint(address(this), to, s.tokenIdCounter+1);
@@ -210,6 +271,14 @@ contract NTERC721Asset is BaseAsset, IMintableAsset, IERC721, IERC721Metadata, I
         _safeMint(to, id);
     }
 
+     /**
+     * @dev Revokes NFT from the specified address. This can only be called by the issuer
+     * @param holder the address to revoke NFT from
+     * @param data the data to use for revoking, which should be an encoded uint256 tokenId
+     * This call is used when asset is transferred on original chain and the company needs
+     * to keep the recipients assets in sync. An oracle will likely be used to ensure the
+     * ownership synchronized.
+     */
     function revoke(address holder, bytes calldata data) public nonReentrant onlyIssuer {
         (uint256 tokenId) = abi.decode(data, (uint256));
         require(holder != address(0), "NTERC721Asset: token does not exist");
@@ -276,22 +345,7 @@ contract NTERC721Asset is BaseAsset, IMintableAsset, IERC721, IERC721Metadata, I
         }
     }
 
-    /**
-     * @dev Unsafe write access to the balances, used by extensions that "mint" tokens using an {ownerOf} override.
-     *
-     * NOTE: the value is limited to type(uint128).max. This protect against _balance overflow. It is unrealistic that
-     * a uint256 would ever overflow from increments when these increments are bounded to uint128 values.
-     *
-     * WARNING: Increasing an account's balance using this function tends to be paired with an override of the
-     * {_ownerOf} function to resolve the ownership of the corresponding tokens so that balances and ownership
-     * remain consistent with one another.
-     */
-    function _increaseBalance(address account, uint128 value) internal virtual {
-        unchecked {
-            LibAssetV1Storage.loadERC721Storage().balances[account] += value;
-        }
-    }
-
+    
     /**
      * @dev Transfers `tokenId` from its current owner to `to`, or alternatively mints (or burns) if the current owner
      * (or `to`) is the zero address. Returns the owner of the `tokenId` before the update.
@@ -486,6 +540,10 @@ contract NTERC721Asset is BaseAsset, IMintableAsset, IERC721, IERC721Metadata, I
     }
 
 
+    //internal helper to verify that the string ends with a suffix value
+    function _endsWith(string memory str, string memory suffix) internal pure returns (bool) {
+        return bytes(str).length >= bytes(suffix).length && bytes(str)[bytes(str).length - bytes(suffix).length] == bytes(suffix)[0];
+    }
 
 
 }

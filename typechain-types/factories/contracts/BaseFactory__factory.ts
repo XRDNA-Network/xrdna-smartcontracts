@@ -164,6 +164,19 @@ const _abi = [
     type: "function",
   },
   {
+    inputs: [],
+    name: "getProxyImplementation",
+    outputs: [
+      {
+        internalType: "address",
+        name: "",
+        type: "address",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
     inputs: [
       {
         internalType: "bytes32",
@@ -299,6 +312,11 @@ const _abi = [
         name: "_implementation",
         type: "address",
       },
+      {
+        internalType: "uint256",
+        name: "version",
+        type: "uint256",
+      },
     ],
     name: "setImplementation",
     outputs: [],
@@ -332,6 +350,19 @@ const _abi = [
         internalType: "bool",
         name: "",
         type: "bool",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "supportsVersion",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
       },
     ],
     stateMutability: "view",

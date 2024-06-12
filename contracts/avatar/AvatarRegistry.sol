@@ -10,11 +10,11 @@ import {VectorAddress} from '../VectorAddress.sol';
 import {IAvatar} from './IAvatar.sol';
 import {IExperience} from '../experience/IExperience.sol';
 import {ReentrancyGuard} from '@openzeppelin/contracts/utils/ReentrancyGuard.sol';
+import {IWorldRegistryV2} from '../world/v0.2/IWorldRegistryV2.sol';
 
-interface IWorldRegistry {
-    function isWorld(address world) external view returns (bool);
-}
-
+/**
+ * Constructor arguments for AvatarRegistry
+ */
 struct AvatarRegistryArgs {
     address mainAdmin;
     address[] admins;
@@ -22,13 +22,17 @@ struct AvatarRegistryArgs {
     address worldRegistry;
 }
 
+/**
+ * @title AvatarRegistry
+ * @dev The AvatarRegistry contract is used to register new avatars.
+ */
 contract AvatarRegistry is IAvatarRegistry, ReentrancyGuard, AccessControl {
     using LibStringCase for string;
 
     bytes32 public constant ADMIN_ROLE = keccak256('ADMIN_ROLE');
 
     IAvatarFactory public avatarFactory;
-    IWorldRegistry public worldRegistry;
+    IWorldRegistryV2 public worldRegistry;
     mapping(string => address) private _avatarsByName;
     mapping(address => bool) private _avatarsByAddress;
     uint256 public override currentAvatarVersion = 1;
@@ -55,7 +59,7 @@ contract AvatarRegistry is IAvatarRegistry, ReentrancyGuard, AccessControl {
         require(args.avatarFactory != address(0), 'AvatarRegistry: factory address cannot be 0');
         require(args.worldRegistry != address(0), 'AvatarRegistry: world registry address cannot be 0');
         avatarFactory = IAvatarFactory(args.avatarFactory);
-        worldRegistry = IWorldRegistry(args.worldRegistry);
+        worldRegistry = IWorldRegistryV2(args.worldRegistry);
         for (uint256 i = 0; i < args.admins.length; i++) {
             require(args.admins[i] != address(0), 'AvatarRegistry: admin address cannot be 0');
             _grantRole(ADMIN_ROLE, args.admins[i]);
@@ -105,6 +109,12 @@ contract AvatarRegistry is IAvatarRegistry, ReentrancyGuard, AccessControl {
         //call must come from world contract to verify that a world signer authorizes the 
         //creation of the avatar.
         string memory lowerName = registration.username.lower();
+        /**
+        * WARN: there is an issue with unicode or whitespace characters present in names. 
+        * Off-chain verification should ensure that names are properly trimmed and
+        * filtered with hidden characters if we truly want visually-unique names.
+        */
+        
         require(_avatarsByName[lowerName] == address(0), 'AvatarRegistry: username already exists');
         proxy = avatarFactory.createAvatar(registration.avatarOwner, registration.defaultExperience, registration.username, registration.initData);
         if(msg.value > 0) {

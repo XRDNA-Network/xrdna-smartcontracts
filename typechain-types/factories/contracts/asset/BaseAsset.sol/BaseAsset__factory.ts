@@ -225,10 +225,10 @@ const _abi = [
   },
   {
     inputs: [],
-    name: "experienceRegistry",
+    name: "companyRegistry",
     outputs: [
       {
-        internalType: "contract IExperienceRegistry",
+        internalType: "contract ICompanyRegistry",
         name: "",
         type: "address",
       },

@@ -3,7 +3,8 @@ import AvatarRegistryModule from "../../avatar/AvatarRegistry.module";
 import ExperienceRegistryModule from "../../experience/ExperienceRegistry.module";
 import NTAssetProxyModule from "./NTERC721Proxy.module";
 
-export default buildModule("NTERC721Assets", (m) => {
+const VERSION = 1;
+export default buildModule("NTERC721Asset", (m) => {
     
     const proxy = m.useModule(NTAssetProxyModule);
     const avatarRegistry = m.useModule(AvatarRegistryModule);
@@ -25,7 +26,7 @@ export default buildModule("NTERC721Assets", (m) => {
     const masterERC = m.contract("NTERC721Asset", [args], {
         after: afterSet
     });
-    m.call(proxy.erc721Factory, "setImplementation", [masterERC]);
+    m.call(proxy.erc721Factory, "setImplementation", [masterERC, VERSION]);
     return {
         erc721Registry: proxy.erc721Registry,
         erc721Factory: proxy.erc721Factory,

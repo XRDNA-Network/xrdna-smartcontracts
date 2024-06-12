@@ -88,6 +88,19 @@ const _abi = [
     inputs: [
       {
         internalType: "address",
+        name: "asset",
+        type: "address",
+      },
+    ],
+    name: "removeAsset",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
         name: "factory",
         type: "address",
       },

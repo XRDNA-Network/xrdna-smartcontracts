@@ -126,10 +126,6 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.ERC20AssetFactory__factory>;
     getContractFactory(
-      name: "INextERC20Version",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.INextERC20Version__factory>;
-    getContractFactory(
       name: "ERC20AssetRegistry",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.ERC20AssetRegistry__factory>;
@@ -145,10 +141,6 @@ declare module "hardhat/types/runtime" {
       name: "ERC721AssetFactory",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.ERC721AssetFactory__factory>;
-    getContractFactory(
-      name: "INextERC721Version",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.INextERC721Version__factory>;
     getContractFactory(
       name: "ERC721AssetRegistry",
       signerOrOptions?: ethers.Signer | FactoryOptions
@@ -345,6 +337,10 @@ declare module "hardhat/types/runtime" {
       name: "IBaseAccess",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IBaseAccess__factory>;
+    getContractFactory(
+      name: "IBaseFactory",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IBaseFactory__factory>;
     getContractFactory(
       name: "IBaseProxy",
       signerOrOptions?: ethers.Signer | FactoryOptions
@@ -627,11 +623,6 @@ declare module "hardhat/types/runtime" {
       signer?: ethers.Signer
     ): Promise<Contracts.ERC20AssetFactory>;
     getContractAt(
-      name: "INextERC20Version",
-      address: string | ethers.Addressable,
-      signer?: ethers.Signer
-    ): Promise<Contracts.INextERC20Version>;
-    getContractAt(
       name: "ERC20AssetRegistry",
       address: string | ethers.Addressable,
       signer?: ethers.Signer
@@ -651,11 +642,6 @@ declare module "hardhat/types/runtime" {
       address: string | ethers.Addressable,
       signer?: ethers.Signer
     ): Promise<Contracts.ERC721AssetFactory>;
-    getContractAt(
-      name: "INextERC721Version",
-      address: string | ethers.Addressable,
-      signer?: ethers.Signer
-    ): Promise<Contracts.INextERC721Version>;
     getContractAt(
       name: "ERC721AssetRegistry",
       address: string | ethers.Addressable,
@@ -901,6 +887,11 @@ declare module "hardhat/types/runtime" {
       address: string | ethers.Addressable,
       signer?: ethers.Signer
     ): Promise<Contracts.IBaseAccess>;
+    getContractAt(
+      name: "IBaseFactory",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IBaseFactory>;
     getContractAt(
       name: "IBaseProxy",
       address: string | ethers.Addressable,
@@ -1190,10 +1181,6 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.ERC20AssetFactory>;
     deployContract(
-      name: "INextERC20Version",
-      signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.INextERC20Version>;
-    deployContract(
       name: "ERC20AssetRegistry",
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.ERC20AssetRegistry>;
@@ -1209,10 +1196,6 @@ declare module "hardhat/types/runtime" {
       name: "ERC721AssetFactory",
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.ERC721AssetFactory>;
-    deployContract(
-      name: "INextERC721Version",
-      signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.INextERC721Version>;
     deployContract(
       name: "ERC721AssetRegistry",
       signerOrOptions?: ethers.Signer | DeployContractOptions
@@ -1409,6 +1392,10 @@ declare module "hardhat/types/runtime" {
       name: "IBaseAccess",
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.IBaseAccess>;
+    deployContract(
+      name: "IBaseFactory",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IBaseFactory>;
     deployContract(
       name: "IBaseProxy",
       signerOrOptions?: ethers.Signer | DeployContractOptions
@@ -1691,11 +1678,6 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.ERC20AssetFactory>;
     deployContract(
-      name: "INextERC20Version",
-      args: any[],
-      signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.INextERC20Version>;
-    deployContract(
       name: "ERC20AssetRegistry",
       args: any[],
       signerOrOptions?: ethers.Signer | DeployContractOptions
@@ -1715,11 +1697,6 @@ declare module "hardhat/types/runtime" {
       args: any[],
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.ERC721AssetFactory>;
-    deployContract(
-      name: "INextERC721Version",
-      args: any[],
-      signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.INextERC721Version>;
     deployContract(
       name: "ERC721AssetRegistry",
       args: any[],
@@ -1965,6 +1942,11 @@ declare module "hardhat/types/runtime" {
       args: any[],
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.IBaseAccess>;
+    deployContract(
+      name: "IBaseFactory",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IBaseFactory>;
     deployContract(
       name: "IBaseProxy",
       args: any[],

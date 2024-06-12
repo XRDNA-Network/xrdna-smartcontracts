@@ -54,7 +54,7 @@ export interface BaseAssetInterface extends Interface {
       | "avatarRegistry"
       | "canUseAsset"
       | "canViewAsset"
-      | "experienceRegistry"
+      | "companyRegistry"
       | "hook"
       | "init"
       | "issuer"
@@ -104,7 +104,7 @@ export interface BaseAssetInterface extends Interface {
     values: [AssetCheckArgsStruct]
   ): string;
   encodeFunctionData(
-    functionFragment: "experienceRegistry",
+    functionFragment: "companyRegistry",
     values?: undefined
   ): string;
   encodeFunctionData(functionFragment: "hook", values?: undefined): string;
@@ -159,7 +159,7 @@ export interface BaseAssetInterface extends Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "experienceRegistry",
+    functionFragment: "companyRegistry",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "hook", data: BytesLike): Result;
@@ -303,7 +303,7 @@ export interface BaseAsset extends BaseContract {
     "view"
   >;
 
-  experienceRegistry: TypedContractMethod<[], [string], "view">;
+  companyRegistry: TypedContractMethod<[], [string], "view">;
 
   hook: TypedContractMethod<[], [string], "view">;
 
@@ -355,7 +355,7 @@ export interface BaseAsset extends BaseContract {
     nameOrSignature: "canViewAsset"
   ): TypedContractMethod<[args: AssetCheckArgsStruct], [boolean], "view">;
   getFunction(
-    nameOrSignature: "experienceRegistry"
+    nameOrSignature: "companyRegistry"
   ): TypedContractMethod<[], [string], "view">;
   getFunction(
     nameOrSignature: "hook"

@@ -12,7 +12,6 @@ export type ERC20InitData = {
     originChainAddress: AddressLike;
     issuer: AddressLike;
     originChainId: bigint;
-    totalSupply: bigint;
     decimals: number;
     name: string;
     symbol: string;

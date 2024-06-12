@@ -14,20 +14,52 @@ import {IAvatar} from '../../avatar/IAvatar.sol';
 import {IAssetHook} from '../IAssetHook.sol';
 import {IAssetRegistry} from '../IAssetRegistry.sol';
 
+/**
+ * This struct represent the initialization data for the current version of the ERC20 asset
+ * It represents the standard ERC20 fields along with information about the asset's origin 
+ * chain and the company allowed to issue the asset.
+ * 
+ * The company must have been verified to control or "own" the asset on the origin chain. 
+ * Anyone can verify that this is correct by checking the origin chain address and chain id
+ * deployment details of the contract and verifying that the issuer is the same company as 
+ * the company controlling this synthetic version. The ERC20AssetRegistry determines which
+ * assets have been verified. If disputes are discovered, registry admins can remove the 
+ * assets from the registry making the asset unusable in the interoperability protocol.
+ */
 struct ERC20InitData {
+    //the address of the original asset on the origin chain
     address originChainAddress;
+
+    //the Company contract address allowed to mint/revoke tokens
     address issuer;
 
+    //the number of decimal places for the token
     uint8 decimals;
+
+    //the chain id of the origin chain
     uint256 originChainId;
-    uint256 totalSupply;
+
+    //maximum supply, set to type(uint256).max for unlimited supply
+    uint256 maxSupply;
+
+    //the name of the token
     string name;
+
+    //the symbol of the token
     string symbol;
 }
 
+/**
+ * @title NTERC20Asset
+ * @dev ERC20 assets within the metaverse interoperability layer represent token balances
+ * on other chains. They cannot be transferred (yet) but can be minted and revoked by the
+ * issuing company. The issuing company had to go through a verification process to determine
+ * whether they are the authority of the original token.
+ */
 contract NTERC20Asset is BaseAsset, IMintableAsset, IERC20, IERC20Metadata, IERC20Errors {
     
-
+    //current version of this asset. This can be used to detect whether upgrades are
+    //available by comparing this version to the asset factory's current supported version.
     uint256 public override version = 1;
 
     event ERC20Minted(address indexed to, uint256 amt);
@@ -36,39 +68,59 @@ contract NTERC20Asset is BaseAsset, IMintableAsset, IERC20, IERC20Metadata, IERC
     //called once at master-copy deployment
     constructor(BaseAssetArgs memory args) BaseAsset(args) {  }
 
+    //convenience function to use for encoding init data tuple
     function encodeInitData(ERC20InitData memory data) public pure returns (bytes memory) {
         return abi.encode(data);
     }
 
+    /**
+     * @dev Initializes the ERC20 asset instance with the provided data. This is called
+     * by the factory during asset creation in the registry.
+     */
     function init(bytes memory initData) public onlyFactory {
         ERC20InitData memory data = abi.decode(initData, (ERC20InitData));
-        require(data.issuer != address(0), "NonTransferableERC20: issuer cannot be zero address");
-        require(data.originChainAddress != address(0), "Asset: originChainAddress cannot be zero address"); 
-        require(data.totalSupply > 0, "NonTransferableERC20: totalSupply must be greater than zero");  
-        require(bytes(data.name).length > 0, "NonTransferableERC20: name cannot be empty");
-        require(bytes(data.symbol).length > 0, "NonTransferableERC20: symbol cannot be empty");
-        require(data.originChainId > 0, "NonTransferableERC20: originChainId must be greater than zero");
+        require(data.issuer != address(0), "NTERC20Asset: issuer cannot be zero address");
+        
+        //only a registered company can issue tokens
+        require(companyRegistry.isRegisteredCompany(data.issuer), "NTERC20Asset: issuer must be registered company");
+        require(data.originChainAddress != address(0), "NTERC20Asset: originChainAddress cannot be zero address"); 
+        require(bytes(data.name).length > 0, "NTERC20Asset: name cannot be empty");
+        require(bytes(data.symbol).length > 0, "NTERC20Asset: symbol cannot be empty");
+        require(data.originChainId > 0, "NTERC20Asset: originChainId must be greater than zero");
+        require(data.maxSupply > 0, "NTERC20Asset: maxSupply must be greater than zero");
         ERC20V1Storage storage s = LibAssetV1Storage.loadERC20Storage();
+        require(s.attributes.originAddress == address(0), "NTERC20Asset: already initialized");
 
         s.attributes.originAddress = data.originChainAddress;
         s.attributes.issuer = data.issuer;
         s.attributes.originChainId = data.originChainId;
-        s.totalSupply = data.totalSupply;
+        s.maxSupply = data.maxSupply;
         s.attributes.name = data.name;
         s.attributes.symbol = data.symbol;
         s.attributes.decimals = data.decimals > 0 ? data.decimals : 18;
     }
 
+
+    /**
+     * @dev Upgrades the asset to a new version. Only the issuing company
+     * can opt to upgrade to the latest asset ERC20 implementation.
+     */
     function upgrade(bytes calldata initData) public onlyIssuer {
         IAssetRegistry(assetRegistry).upgradeAsset(initData);
     }
 
+    /**
+    * @dev Called by the asset factory to complete the upgrade process
+    */
     function upgradeComplete(address newAsset) public onlyFactory {
-        //no-op
+        
         require(newAsset != address(this), "NTERC20Asset: new upgrade contract address cannot match original");
+        //Since this call is made to the asset proxy, we just need to change the 
+        //implementation address so the proxy delegate calls to it instead of this version
         BaseProxyStorage storage ps = LibBaseProxy.load();
+        address old = ps.implementation;
         ps.implementation = newAsset;
-        emit ERC20Upgraded(address(this), newAsset);
+        emit ERC20Upgraded(old, newAsset);
     }
 
     /**
@@ -136,7 +188,7 @@ contract NTERC20Asset is BaseAsset, IMintableAsset, IERC20, IERC20Metadata, IERC
      * - the caller must have a balance of at least `value`.
      */
     function transfer(address, uint256) public virtual returns (bool) {
-       revert("NonTransferableERC20: transfers not allowed yet");
+       revert("NTERC20Asset: transfers not allowed yet");
     }
 
     /**
@@ -150,7 +202,7 @@ contract NTERC20Asset is BaseAsset, IMintableAsset, IERC20, IERC20Metadata, IERC
      * - `spender` cannot be the zero address.
      */
     function approve(address, uint256) public virtual returns (bool) {
-        revert("NonTransferableERC20: approvals not allowed yet");
+        revert("NTERC20Asset: approvals not allowed yet");
     }
 
     /**
@@ -170,40 +222,72 @@ contract NTERC20Asset is BaseAsset, IMintableAsset, IERC20, IERC20Metadata, IERC
      * `value`.
      */
     function transferFrom(address, address, uint256) public virtual returns (bool) {
-        revert("NonTransferableERC20: transfers not allowed yet");
+        revert("NTERC20Asset: transfers not allowed yet");
     }
 
-    function canMint(address to, bytes calldata) public override pure returns (bool) {
-        return to != address(0);
+    /**
+     * @dev determine if the asset can be minted
+     * @param to the address to mint to
+     * @param data the data to use for minting, which should be an encoded uint256 amount
+     */
+    function canMint(address to, bytes calldata data) public override view returns (bool) {
+        require(to != address(0), "NTERC20Asset: cannot mint to zero address");
+        ERC20V1Storage storage s = LibAssetV1Storage.loadERC20Storage();
+        uint256 amt = abi.decode(data, (uint256));
+        require(s.totalSupply + amt <= s.maxSupply, "NTERC20Asset: max supply exceeded");
+        return true;
     }
 
+    /**
+     * @dev Mints tokens to the specified address. This can only be called by the issuer
+     * @param to the address to mint tokens to
+     * @param data the data to use for minting, which should be an encoded uint256 amount
+     */
     function mint(address to, bytes calldata data) public nonReentrant onlyIssuer  {
+        require(canMint(to, data), "NTERC20Asset: cannot mint tokens");
         uint256 amt = abi.decode(data, (uint256));
         CommonAssetV1Storage storage s = _loadCommonAttributes();
+        //check with customization hook installed by company to make further checks before
+        //minting
         if(address(s.hook) != address(0)) {
             bool ok = s.hook.beforeMint(address(this), to, amt);
             if(!ok) {
-                revert("NonTransferableERC20Asset: beforeMint hook rejected request");
+                revert("NTERC20Asset: beforeMint hook rejected request");
             }
         }
+        //if the asset is going to an avatar
         if(avatarRegistry.isAvatar(to)) {
             IAvatar avatar = IAvatar(to);
+            //If the avatar opts to restrict token minting to only experiences/company
+            //they are visiting
             if(!avatar.canReceiveTokensOutsideOfExperience()) {
+                //check that the issuer is the same as the avatar's current experience owner
                 _verifyAvatarLocationMatchesIssuer(IAvatar(to));
             }
         }
 
+        //if all good, mint tokens
         _mint(to, amt);
     }
 
+    /**
+     * @dev Revokes tokens from the specified address. This can only be called by the issuer
+     * @param tgt the address to revoke tokens from
+     * @param data the data to use for revoking, which should be an encoded uint256 amount
+     * This call is used when asset balance changes on original chain and the company needs
+     * to keep the recipients balance in sync. An oracle will likely be used to ensure the
+     * balances are synchronized.
+     */
     function revoke(address tgt, bytes calldata data) public nonReentrant onlyIssuer {
+        require(tgt != address(0), "NTERC20Asset: cannot revoke from zero address");
         IAssetHook hook = _loadCommonAttributes().hook;
         uint256 amt = abi.decode(data, (uint256));
-        require(balanceOf(tgt) >= amt, "NonTransferableERC20Asset: insufficient balance to revoke");
+        require(amt > 0, "NTERC20Asset: revoke amount must be greater than zero");
+        require(balanceOf(tgt) >= amt, "NTERC20Asset: insufficient balance to revoke");
         if(address(hook) != address(0)) {
             bool s = hook.beforeRevoke(address(this), tgt, amt);
             if(!s) {
-                revert("NonTransferableERC20Asset: beforeRevoke hook rejected request");
+                revert("NTERC20Asset: beforeRevoke hook rejected request");
             }
         }
         uint256 bal = balanceOf(tgt);
@@ -220,7 +304,6 @@ contract NTERC20Asset is BaseAsset, IMintableAsset, IERC20, IERC20Metadata, IERC
     function _update(address from, address to, uint256 value) internal virtual {
         ERC20V1Storage storage s = LibAssetV1Storage.loadERC20Storage();
         if (from == address(0)) {
-            // Overflow check required: The rest of the code assumes that totalSupply never overflows
             s.totalSupply += value;
         } else {
             uint256 fromBalance = s.balances[from];
@@ -279,6 +362,7 @@ contract NTERC20Asset is BaseAsset, IMintableAsset, IERC20, IERC20Metadata, IERC
         _update(account, address(0), value);
     }
 
+    //utility to load only common asset attributes required by baseasset contract
     function _loadCommonAttributes() internal view override returns (CommonAssetV1Storage storage) {
         return LibAssetV1Storage.loadERC20Storage().attributes;
     }

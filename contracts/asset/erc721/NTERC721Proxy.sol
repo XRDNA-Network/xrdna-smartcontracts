@@ -7,8 +7,4 @@ import {BaseProxy, BaseProxyConstructorArgs} from '../../BaseProxy.sol';
 contract NTERC721Proxy is BaseProxy {
 
     constructor(BaseProxyConstructorArgs memory args) BaseProxy(args) {}
-
-    function fundsReceived(uint256 amount) internal override {
-        //no-op
-    }
 }
