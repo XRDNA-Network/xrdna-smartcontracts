@@ -1,5 +1,5 @@
 import { buildModule } from "@nomicfoundation/hardhat-ignition/modules";
-import {config} from './config';
+import {config} from '../modules/config';
 
 
 export default buildModule("RegistrarRegistry", (m) => {
@@ -7,6 +7,7 @@ export default buildModule("RegistrarRegistry", (m) => {
     if(!regs || regs.length === 0) {
         throw new Error("Registerers not found");
     }
-    const Registry = m.contract("RegistrarRegistry", [regs]);
+    const acct = m.getAccount(0);
+    const Registry = m.contract("RegistrarRegistry", [acct, regs]);
     return {registry: Registry};
 });

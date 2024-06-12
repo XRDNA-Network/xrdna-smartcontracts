@@ -8,5 +8,6 @@ export type { introspection };
 import type * as math from "./math";
 export type { math };
 export type { Nonces } from "./Nonces";
+export type { ReentrancyGuard } from "./ReentrancyGuard";
 export type { ShortStrings } from "./ShortStrings";
 export type { Strings } from "./Strings";

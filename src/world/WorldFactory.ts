@@ -1,5 +1,5 @@
 import { Signer, TransactionResponse, ethers } from "ethers";
-import {abi as WorldFactoryABI} from "../../artifacts/contracts/world/WorldFactory.sol/WorldFactory.json";
+import {abi as WorldFactoryABI} from "../../artifacts/contracts/world/v0.2/WorldFactoryV2.sol/WorldFactoryV2.json";
 import { RPCRetryHandler } from "../RPCRetryHandler";
 
 /**
@@ -7,18 +7,18 @@ import { RPCRetryHandler } from "../RPCRetryHandler";
  */
 export interface IWorldFactoryOpts {
     address: string;
-    factoryAdmin: Signer;
+    admin: Signer;
 }
 
 export class WorldFactory {
-    private address: string;
-    private factoryAdmin: Signer;
+    readonly address: string;
+    private admin: Signer;
     private factory: ethers.Contract;
 
     constructor(opts: IWorldFactoryOpts) {
         this.address = opts.address;
-        this.factoryAdmin = opts.factoryAdmin;
-        this.factory = new ethers.Contract(this.address, WorldFactoryABI, this.factoryAdmin);
+        this.admin = opts.admin;
+        this.factory = new ethers.Contract(this.address, WorldFactoryABI, this.admin);
     }
 
     /**

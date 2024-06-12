@@ -23,6 +23,25 @@ import type {
   TypedContractMethod,
 } from "../../common";
 
+export type BaseAssetArgsStruct = {
+  assetFactory: AddressLike;
+  assetRegistry: AddressLike;
+  avatarRegistry: AddressLike;
+  experienceRegistry: AddressLike;
+};
+
+export type BaseAssetArgsStructOutput = [
+  assetFactory: string,
+  assetRegistry: string,
+  avatarRegistry: string,
+  experienceRegistry: string
+] & {
+  assetFactory: string;
+  assetRegistry: string;
+  avatarRegistry: string;
+  experienceRegistry: string;
+};
+
 export type ERC20InitDataStruct = {
   originChainAddress: AddressLike;
   issuer: AddressLike;
@@ -59,10 +78,12 @@ export interface NonTransferableERC20AssetInterface extends Interface {
       | "approve"
       | "assetFactory"
       | "assetRegistry"
+      | "assetType"
+      | "avatarRegistry"
       | "balanceOf"
       | "decimals"
       | "encodeInitData"
-      | "hook"
+      | "experienceRegistry"
       | "init"
       | "issuer"
       | "mint"
@@ -76,14 +97,14 @@ export interface NonTransferableERC20AssetInterface extends Interface {
       | "transfer"
       | "transferFrom"
       | "upgrade"
-      | "upgraded"
+      | "version"
   ): FunctionFragment;
 
   getEvent(
     nameOrSignatureOrTopic:
       | "Approval"
-      | "ERC20HookAdded"
-      | "ERC20HookRemoved"
+      | "AssetHookAdded"
+      | "AssetHookRemoved"
       | "ERC20Minted"
       | "ERC20Upgraded"
       | "Transfer"
@@ -109,6 +130,11 @@ export interface NonTransferableERC20AssetInterface extends Interface {
     functionFragment: "assetRegistry",
     values?: undefined
   ): string;
+  encodeFunctionData(functionFragment: "assetType", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: "avatarRegistry",
+    values?: undefined
+  ): string;
   encodeFunctionData(
     functionFragment: "balanceOf",
     values: [AddressLike]
@@ -118,7 +144,10 @@ export interface NonTransferableERC20AssetInterface extends Interface {
     functionFragment: "encodeInitData",
     values: [ERC20InitDataStruct]
   ): string;
-  encodeFunctionData(functionFragment: "hook", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: "experienceRegistry",
+    values?: undefined
+  ): string;
   encodeFunctionData(functionFragment: "init", values: [BytesLike]): string;
   encodeFunctionData(functionFragment: "issuer", values?: undefined): string;
   encodeFunctionData(
@@ -159,7 +188,7 @@ export interface NonTransferableERC20AssetInterface extends Interface {
     functionFragment: "upgrade",
     values: [AddressLike]
   ): string;
-  encodeFunctionData(functionFragment: "upgraded", values?: undefined): string;
+  encodeFunctionData(functionFragment: "version", values?: undefined): string;
 
   decodeFunctionResult(functionFragment: "addHook", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "allowance", data: BytesLike): Result;
@@ -172,13 +201,21 @@ export interface NonTransferableERC20AssetInterface extends Interface {
     functionFragment: "assetRegistry",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "assetType", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "avatarRegistry",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "balanceOf", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "decimals", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "encodeInitData",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "hook", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "experienceRegistry",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "init", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "issuer", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "mint", data: BytesLike): Result;
@@ -204,7 +241,7 @@ export interface NonTransferableERC20AssetInterface extends Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "upgrade", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "upgraded", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "version", data: BytesLike): Result;
 }
 
 export namespace ApprovalEvent {
@@ -225,7 +262,7 @@ export namespace ApprovalEvent {
   export type LogDescription = TypedLogDescription<Event>;
 }
 
-export namespace ERC20HookAddedEvent {
+export namespace AssetHookAddedEvent {
   export type InputTuple = [hook: AddressLike];
   export type OutputTuple = [hook: string];
   export interface OutputObject {
@@ -237,7 +274,7 @@ export namespace ERC20HookAddedEvent {
   export type LogDescription = TypedLogDescription<Event>;
 }
 
-export namespace ERC20HookRemovedEvent {
+export namespace AssetHookRemovedEvent {
   export type InputTuple = [hook: AddressLike];
   export type OutputTuple = [hook: string];
   export interface OutputObject {
@@ -354,6 +391,10 @@ export interface NonTransferableERC20Asset extends BaseContract {
 
   assetRegistry: TypedContractMethod<[], [string], "view">;
 
+  assetType: TypedContractMethod<[], [bigint], "view">;
+
+  avatarRegistry: TypedContractMethod<[], [string], "view">;
+
   balanceOf: TypedContractMethod<[account: AddressLike], [bigint], "view">;
 
   decimals: TypedContractMethod<[], [bigint], "view">;
@@ -364,7 +405,7 @@ export interface NonTransferableERC20Asset extends BaseContract {
     "view"
   >;
 
-  hook: TypedContractMethod<[], [string], "view">;
+  experienceRegistry: TypedContractMethod<[], [string], "view">;
 
   init: TypedContractMethod<[initData: BytesLike], [void], "nonpayable">;
 
@@ -408,7 +449,7 @@ export interface NonTransferableERC20Asset extends BaseContract {
 
   upgrade: TypedContractMethod<[newAsset: AddressLike], [void], "nonpayable">;
 
-  upgraded: TypedContractMethod<[], [boolean], "view">;
+  version: TypedContractMethod<[], [bigint], "view">;
 
   getFunction<T extends ContractMethod = ContractMethod>(
     key: string | FunctionFragment
@@ -438,6 +479,12 @@ export interface NonTransferableERC20Asset extends BaseContract {
     nameOrSignature: "assetRegistry"
   ): TypedContractMethod<[], [string], "view">;
   getFunction(
+    nameOrSignature: "assetType"
+  ): TypedContractMethod<[], [bigint], "view">;
+  getFunction(
+    nameOrSignature: "avatarRegistry"
+  ): TypedContractMethod<[], [string], "view">;
+  getFunction(
     nameOrSignature: "balanceOf"
   ): TypedContractMethod<[account: AddressLike], [bigint], "view">;
   getFunction(
@@ -447,7 +494,7 @@ export interface NonTransferableERC20Asset extends BaseContract {
     nameOrSignature: "encodeInitData"
   ): TypedContractMethod<[data: ERC20InitDataStruct], [string], "view">;
   getFunction(
-    nameOrSignature: "hook"
+    nameOrSignature: "experienceRegistry"
   ): TypedContractMethod<[], [string], "view">;
   getFunction(
     nameOrSignature: "init"
@@ -505,8 +552,8 @@ export interface NonTransferableERC20Asset extends BaseContract {
     nameOrSignature: "upgrade"
   ): TypedContractMethod<[newAsset: AddressLike], [void], "nonpayable">;
   getFunction(
-    nameOrSignature: "upgraded"
-  ): TypedContractMethod<[], [boolean], "view">;
+    nameOrSignature: "version"
+  ): TypedContractMethod<[], [bigint], "view">;
 
   getEvent(
     key: "Approval"
@@ -516,18 +563,18 @@ export interface NonTransferableERC20Asset extends BaseContract {
     ApprovalEvent.OutputObject
   >;
   getEvent(
-    key: "ERC20HookAdded"
+    key: "AssetHookAdded"
   ): TypedContractEvent<
-    ERC20HookAddedEvent.InputTuple,
-    ERC20HookAddedEvent.OutputTuple,
-    ERC20HookAddedEvent.OutputObject
+    AssetHookAddedEvent.InputTuple,
+    AssetHookAddedEvent.OutputTuple,
+    AssetHookAddedEvent.OutputObject
   >;
   getEvent(
-    key: "ERC20HookRemoved"
+    key: "AssetHookRemoved"
   ): TypedContractEvent<
-    ERC20HookRemovedEvent.InputTuple,
-    ERC20HookRemovedEvent.OutputTuple,
-    ERC20HookRemovedEvent.OutputObject
+    AssetHookRemovedEvent.InputTuple,
+    AssetHookRemovedEvent.OutputTuple,
+    AssetHookRemovedEvent.OutputObject
   >;
   getEvent(
     key: "ERC20Minted"
@@ -563,26 +610,26 @@ export interface NonTransferableERC20Asset extends BaseContract {
       ApprovalEvent.OutputObject
     >;
 
-    "ERC20HookAdded(address)": TypedContractEvent<
-      ERC20HookAddedEvent.InputTuple,
-      ERC20HookAddedEvent.OutputTuple,
-      ERC20HookAddedEvent.OutputObject
+    "AssetHookAdded(address)": TypedContractEvent<
+      AssetHookAddedEvent.InputTuple,
+      AssetHookAddedEvent.OutputTuple,
+      AssetHookAddedEvent.OutputObject
     >;
-    ERC20HookAdded: TypedContractEvent<
-      ERC20HookAddedEvent.InputTuple,
-      ERC20HookAddedEvent.OutputTuple,
-      ERC20HookAddedEvent.OutputObject
+    AssetHookAdded: TypedContractEvent<
+      AssetHookAddedEvent.InputTuple,
+      AssetHookAddedEvent.OutputTuple,
+      AssetHookAddedEvent.OutputObject
     >;
 
-    "ERC20HookRemoved(address)": TypedContractEvent<
-      ERC20HookRemovedEvent.InputTuple,
-      ERC20HookRemovedEvent.OutputTuple,
-      ERC20HookRemovedEvent.OutputObject
+    "AssetHookRemoved(address)": TypedContractEvent<
+      AssetHookRemovedEvent.InputTuple,
+      AssetHookRemovedEvent.OutputTuple,
+      AssetHookRemovedEvent.OutputObject
     >;
-    ERC20HookRemoved: TypedContractEvent<
-      ERC20HookRemovedEvent.InputTuple,
-      ERC20HookRemovedEvent.OutputTuple,
-      ERC20HookRemovedEvent.OutputObject
+    AssetHookRemoved: TypedContractEvent<
+      AssetHookRemovedEvent.InputTuple,
+      AssetHookRemovedEvent.OutputTuple,
+      AssetHookRemovedEvent.OutputObject
     >;
 
     "ERC20Minted(address,uint256)": TypedContractEvent<

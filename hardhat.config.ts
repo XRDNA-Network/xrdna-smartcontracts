@@ -28,7 +28,7 @@ const config: HardhatUserConfig = {
   defaultNetwork: 'hardhat',
   etherscan: {
     apiKey: {
-      baseSepolia: process.env.BASE_SEPOLIA_API_KEY || throwError('BASE_SEPOLIA_API_KEY'),
+      baseSepolia: process.env.BASE_SEPOLIA_API_KEY || '',
       
     },
     customChains: [

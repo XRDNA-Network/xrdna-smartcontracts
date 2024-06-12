@@ -1,10 +1,10 @@
 import { AddressLike, Provider, Signer, TransactionResponse, ethers } from "ethers";
-import {abi as WorldRegistryABI} from "../../artifacts/contracts/world/WorldRegistry.sol/WorldRegistry.json";
-import {abi as WorldABI} from "../../artifacts/contracts/world/World.sol/World.json";
-import { IWorldInfo } from "./IWorldInfo";
+import {abi as WorldRegistryABI} from "../../artifacts/contracts/world/v0.2/WorldRegistryV2.sol/WorldRegistryV2.json";
+import {abi as WorldABI} from "../../artifacts/contracts/world/v0.2/WorldV2.sol/WorldV2.json";
 import { LogParser } from "../LogParser";
 import { LogNames } from "../LogNames";
 import { RPCRetryHandler } from "../RPCRetryHandler";
+import { VectorAddress } from "../VectorAddress";
 /**
  * Typescript proxy for WorldRegistry deployed contract.
  */
@@ -13,13 +13,24 @@ export interface IWorldRegistryOpts {
     admin: Provider | Signer;
 }
 
+export interface IWorldRegistration {
+    sendTokensToWorldOwner: boolean;
+    oldWorld: AddressLike;
+    owner: AddressLike;
+    baseVector: VectorAddress;
+    name: string;
+    registrarId: bigint;
+    initData: string;
+    vectorAuthoritySignature: string;
+}
+
 export interface IWorldRegistrationResult {
     receipt: ethers.TransactionReceipt;
     worldAddress: string;
 }
 
 export class WorldRegistry {
-    private address: string;
+    readonly address: string;
     private admin: Provider | Signer;
     private registry: ethers.Contract;
     private worldIfc: ethers.Interface;
@@ -33,19 +44,15 @@ export class WorldRegistry {
 
     async createWorld(props: {
         registrarSigner: Signer,
-        registrarId: bigint,
-        owner: AddressLike,
-        details: IWorldInfo,
-        tokensToOwner: boolean,
+        details: IWorldRegistration,
         tokens?: bigint
     }): Promise<IWorldRegistrationResult> {
         
 
-        const {registrarId, registrarSigner, owner, details, tokensToOwner} = props;
-        //const initData = encodeWorldInfo(details);
-        let initData = await this.worldIfc.encodeFunctionData("encodeInfo", [details]);
-        initData = `0x${initData.substring(10)}`;
-        const t = await RPCRetryHandler.withRetry(() => (this.registry.connect(registrarSigner) as any).register(registrarId, owner, initData, tokensToOwner, {
+        const {registrarSigner, details} = props;
+        
+        
+        const t = await RPCRetryHandler.withRetry(() => (this.registry.connect(registrarSigner) as any).register(details, {
             value: props.tokens
         }));
 
@@ -61,8 +68,16 @@ export class WorldRegistry {
     }
 
     async lookupWorldAddress(name: string): Promise<string> {
-        const addr = await RPCRetryHandler.withRetry(() => this.registry.worldsByName(name.toLowerCase()));
+        const addr = await RPCRetryHandler.withRetry(() => this.registry.getWorldByName(name.toLowerCase()));
         return addr;
+    }
+
+    async isWorld(address: AddressLike): Promise<boolean> {
+        return await RPCRetryHandler.withRetry(() => this.registry.isWorld(address));
+    }
+
+    async  isVectorAddressAuthority(address: AddressLike): Promise<boolean> {
+        return await RPCRetryHandler.withRetry(() => this.registry.isVectorAddressAuthority(address));
     }
 
     async addVectorAddressAuthority(authority: string): Promise<TransactionResponse> {
@@ -71,5 +86,9 @@ export class WorldRegistry {
 
     async removeVectorAddressAuthority(authority: string): Promise<TransactionResponse> {
         return await RPCRetryHandler.withRetry(() =>this.registry.removeVectorAddressAuthority(authority));
+    }
+
+    async upgradeWorld(world: AddressLike): Promise<TransactionResponse> {
+        return await RPCRetryHandler.withRetry(() => this.registry.upgradeWorld(world, ""));
     }
 }

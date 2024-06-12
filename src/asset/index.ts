@@ -1,4 +1,3 @@
-export * from './AssetFactory';
-export * from './AssetRegistry';
-export * from './ERC20Asset';
-export * from './ERC721Asset';
+export * from './erc20';
+export * from './erc721';
+export * from './MultiAssetRegistry';

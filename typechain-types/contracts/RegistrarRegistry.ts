@@ -26,7 +26,9 @@ import type {
 export interface RegistrarRegistryInterface extends Interface {
   getFunction(
     nameOrSignature:
+      | "ADMIN_ROLE"
       | "DEFAULT_ADMIN_ROLE"
+      | "REGISTER_ROLE"
       | "addSigners"
       | "getRoleAdmin"
       | "grantRole"
@@ -53,7 +55,15 @@ export interface RegistrarRegistryInterface extends Interface {
   ): EventFragment;
 
   encodeFunctionData(
+    functionFragment: "ADMIN_ROLE",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
     functionFragment: "DEFAULT_ADMIN_ROLE",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "REGISTER_ROLE",
     values?: undefined
   ): string;
   encodeFunctionData(
@@ -109,8 +119,13 @@ export interface RegistrarRegistryInterface extends Interface {
     values: [BytesLike]
   ): string;
 
+  decodeFunctionResult(functionFragment: "ADMIN_ROLE", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "DEFAULT_ADMIN_ROLE",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "REGISTER_ROLE",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "addSigners", data: BytesLike): Result;
@@ -294,7 +309,11 @@ export interface RegistrarRegistry extends BaseContract {
     event?: TCEvent
   ): Promise<this>;
 
+  ADMIN_ROLE: TypedContractMethod<[], [string], "view">;
+
   DEFAULT_ADMIN_ROLE: TypedContractMethod<[], [string], "view">;
+
+  REGISTER_ROLE: TypedContractMethod<[], [string], "view">;
 
   addSigners: TypedContractMethod<
     [registrarId: BigNumberish, signers: AddressLike[]],
@@ -363,7 +382,13 @@ export interface RegistrarRegistry extends BaseContract {
   ): T;
 
   getFunction(
+    nameOrSignature: "ADMIN_ROLE"
+  ): TypedContractMethod<[], [string], "view">;
+  getFunction(
     nameOrSignature: "DEFAULT_ADMIN_ROLE"
+  ): TypedContractMethod<[], [string], "view">;
+  getFunction(
+    nameOrSignature: "REGISTER_ROLE"
   ): TypedContractMethod<[], [string], "view">;
   getFunction(
     nameOrSignature: "addSigners"

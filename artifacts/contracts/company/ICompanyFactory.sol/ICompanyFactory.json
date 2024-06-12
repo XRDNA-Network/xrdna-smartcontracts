@@ -1,0 +1,120 @@
+{
+  "_format": "hh-sol-artifact-1",
+  "contractName": "ICompanyFactory",
+  "sourceName": "contracts/company/ICompanyFactory.sol",
+  "abi": [
+    {
+      "inputs": [
+        {
+          "components": [
+            {
+              "internalType": "address",
+              "name": "owner",
+              "type": "address"
+            },
+            {
+              "internalType": "address",
+              "name": "world",
+              "type": "address"
+            },
+            {
+              "components": [
+                {
+                  "internalType": "string",
+                  "name": "x",
+                  "type": "string"
+                },
+                {
+                  "internalType": "string",
+                  "name": "y",
+                  "type": "string"
+                },
+                {
+                  "internalType": "string",
+                  "name": "z",
+                  "type": "string"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "t",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "p",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "p_sub",
+                  "type": "uint256"
+                }
+              ],
+              "internalType": "struct VectorAddress",
+              "name": "vector",
+              "type": "tuple"
+            },
+            {
+              "internalType": "bytes",
+              "name": "initData",
+              "type": "bytes"
+            },
+            {
+              "internalType": "string",
+              "name": "name",
+              "type": "string"
+            }
+          ],
+          "internalType": "struct CompanyInitArgs",
+          "name": "request",
+          "type": "tuple"
+        }
+      ],
+      "name": "createCompany",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "supportsVersion",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "company",
+          "type": "address"
+        },
+        {
+          "internalType": "bytes",
+          "name": "initData",
+          "type": "bytes"
+        }
+      ],
+      "name": "upgradeCompany",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "bytecode": "0x",
+  "deployedBytecode": "0x",
+  "linkReferences": {},
+  "deployedLinkReferences": {}
+}

@@ -9,6 +9,8 @@ import "./IRegistrarRegistry.sol";
 
 
 contract RegistrarRegistry is IRegistrarRegistry, AccessControl {
+    bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
+    bytes32 public constant REGISTER_ROLE = keccak256("REGISTER_ROLE");
 
     struct Registrar {
         uint256 id;
@@ -24,19 +26,27 @@ contract RegistrarRegistry is IRegistrarRegistry, AccessControl {
     
 
     modifier onlyRegistrar(uint256 registrarId) {
-        /*console.log("----------- Begin onlyRegistrar -----------");
-        console.log("msg.sender", msg.sender);
-        console.log("registrars[registrarId].signers[msg.sender]", registrars[registrarId].signers[msg.sender]);
-        console.log("check ID", registrarId);
-        console.log("----------- End onlyRegistrar -----------");
-        */
-        require(registrars[registrarId].signers[msg.sender], "RegistrarRegistry: caller is not the registrar");
+        require(registrars[registrarId].signers[msg.sender], "RegistrarRegistry: caller is not a registrar");
         _;
     }
 
-    constructor(address[] memory registerers) {
+    modifier onlyAdmin() {
+        require(hasRole(ADMIN_ROLE, msg.sender), "RegistrarRegistry: caller is not an admin");
+        _;
+    }
+
+    modifier onlyRegisterer {
+        require(hasRole(REGISTER_ROLE, msg.sender), "RegistrarRegistry: caller is not a registerer");
+        _;
+    }
+
+    constructor(address mainAdmin, address[] memory registerers) {
+        require(mainAdmin != address(0), "RegistrarRegistry: mainAdmin cannot be zero address");
+        _grantRole(DEFAULT_ADMIN_ROLE, mainAdmin);
+        _grantRole(ADMIN_ROLE, mainAdmin);
         for (uint256 i = 0; i < registerers.length; i++) {
-            _grantRole(DEFAULT_ADMIN_ROLE, registerers[i]);
+            require(registerers[i] != address(0), "RegistrarRegistry: registerer cannot be address");
+            _grantRole(REGISTER_ROLE, registerers[i]);
         }
     }
 
@@ -44,28 +54,27 @@ contract RegistrarRegistry is IRegistrarRegistry, AccessControl {
         return registrars[id].signers[account];
     }
 
-    function register(address payable signer) public payable onlyRole(DEFAULT_ADMIN_ROLE) {
-        //console.log("----------- Register Begin -----------");
+    function register(address payable signer) public payable onlyRegisterer() {
+        require(signer != address(0), "RegistrarRegistry: signer cannot be zero address");
         ++registrarCount;
         Registrar storage registrar = registrars[registrarCount];
-        //console.log("registrar.id", registrarCount);
         registrar.id = registrarCount;
         registrar.signers[signer] = true;
         if(msg.value > 0) {
             signer.transfer(msg.value);
         }
         emit RegistrarAdded(registrarCount, signer, msg.value);
-        //console.log("----------- Register End -----------");
     }
 
-    function removeRegistrar(uint256 registrarId) public onlyRole(DEFAULT_ADMIN_ROLE) {
+    function removeRegistrar(uint256 registrarId) public onlyAdmin {
         delete registrars[registrarId];
     }
 
     function addSigners(uint256 registrarId, address[] memory signers) public onlyRegistrar(registrarId) {
         Registrar storage registrar = registrars[registrarId];
+    
         for (uint256 i = 0; i < signers.length; i++) {
-            //console.log("adding signer", signers[i]);
+            require(signers[i] != address(0), "RegistrarRegistry: signer cannot be zero address");
             registrar.signers[signers[i]] = true;
         }
         emit SignersAdded(registrarId, signers);
@@ -74,6 +83,7 @@ contract RegistrarRegistry is IRegistrarRegistry, AccessControl {
     function removeSigners(uint256 registrarId, address[] memory signers) public onlyRegistrar(registrarId) {
         Registrar storage registrar = registrars[registrarId];
         for (uint256 i = 0; i < signers.length; i++) {
+            require(signers[i] != address(0), "RegistrarRegistry: signer cannot be zero address");
             delete registrar.signers[signers[i]];
         }
         emit SignersRemoved(registrarId, signers);

@@ -26,13 +26,16 @@ import type {
 export interface AssetRegistryInterface extends Interface {
   getFunction(
     nameOrSignature:
+      | "ADMIN_ROLE"
       | "DEFAULT_ADMIN_ROLE"
       | "addAssetCondition"
       | "assetExists"
       | "assetFactory"
+      | "assetVersions"
       | "assetsByOriginalAddressAndChain"
       | "canUseAsset"
       | "canViewAsset"
+      | "currentAssetVersion"
       | "getAssetCondition"
       | "getRoleAdmin"
       | "grantRole"
@@ -44,6 +47,7 @@ export interface AssetRegistryInterface extends Interface {
       | "renounceRole"
       | "revokeRole"
       | "setAssetFactory"
+      | "setCurrentAssetVersion"
       | "supportsInterface"
       | "upgradeAsset"
   ): FunctionFragment;
@@ -58,6 +62,10 @@ export interface AssetRegistryInterface extends Interface {
       | "RoleRevoked"
   ): EventFragment;
 
+  encodeFunctionData(
+    functionFragment: "ADMIN_ROLE",
+    values?: undefined
+  ): string;
   encodeFunctionData(
     functionFragment: "DEFAULT_ADMIN_ROLE",
     values?: undefined
@@ -75,6 +83,10 @@ export interface AssetRegistryInterface extends Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
+    functionFragment: "assetVersions",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
     functionFragment: "assetsByOriginalAddressAndChain",
     values: [BytesLike]
   ): string;
@@ -85,6 +97,10 @@ export interface AssetRegistryInterface extends Interface {
   encodeFunctionData(
     functionFragment: "canViewAsset",
     values: [AddressLike, AddressLike, AddressLike, AddressLike]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "currentAssetVersion",
+    values: [BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "getAssetCondition",
@@ -131,6 +147,10 @@ export interface AssetRegistryInterface extends Interface {
     values: [AddressLike]
   ): string;
   encodeFunctionData(
+    functionFragment: "setCurrentAssetVersion",
+    values: [BigNumberish, string]
+  ): string;
+  encodeFunctionData(
     functionFragment: "supportsInterface",
     values: [BytesLike]
   ): string;
@@ -139,6 +159,7 @@ export interface AssetRegistryInterface extends Interface {
     values: [AddressLike, BigNumberish, BytesLike]
   ): string;
 
+  decodeFunctionResult(functionFragment: "ADMIN_ROLE", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "DEFAULT_ADMIN_ROLE",
     data: BytesLike
@@ -156,6 +177,10 @@ export interface AssetRegistryInterface extends Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "assetVersions",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "assetsByOriginalAddressAndChain",
     data: BytesLike
   ): Result;
@@ -165,6 +190,10 @@ export interface AssetRegistryInterface extends Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "canViewAsset",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "currentAssetVersion",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -200,6 +229,10 @@ export interface AssetRegistryInterface extends Interface {
   decodeFunctionResult(functionFragment: "revokeRole", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "setAssetFactory",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "setCurrentAssetVersion",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -351,6 +384,8 @@ export interface AssetRegistry extends BaseContract {
     event?: TCEvent
   ): Promise<this>;
 
+  ADMIN_ROLE: TypedContractMethod<[], [string], "view">;
+
   DEFAULT_ADMIN_ROLE: TypedContractMethod<[], [string], "view">;
 
   addAssetCondition: TypedContractMethod<
@@ -366,6 +401,8 @@ export interface AssetRegistry extends BaseContract {
   >;
 
   assetFactory: TypedContractMethod<[], [string], "view">;
+
+  assetVersions: TypedContractMethod<[arg0: BigNumberish], [string], "view">;
 
   assetsByOriginalAddressAndChain: TypedContractMethod<
     [arg0: BytesLike],
@@ -392,6 +429,12 @@ export interface AssetRegistry extends BaseContract {
       experience: AddressLike
     ],
     [boolean],
+    "view"
+  >;
+
+  currentAssetVersion: TypedContractMethod<
+    [assetType: BigNumberish],
+    [string],
     "view"
   >;
 
@@ -457,6 +500,12 @@ export interface AssetRegistry extends BaseContract {
     "nonpayable"
   >;
 
+  setCurrentAssetVersion: TypedContractMethod<
+    [assetType: BigNumberish, version: string],
+    [void],
+    "nonpayable"
+  >;
+
   supportsInterface: TypedContractMethod<
     [interfaceId: BytesLike],
     [boolean],
@@ -465,7 +514,7 @@ export interface AssetRegistry extends BaseContract {
 
   upgradeAsset: TypedContractMethod<
     [asset: AddressLike, assetType: BigNumberish, initData: BytesLike],
-    [void],
+    [string],
     "nonpayable"
   >;
 
@@ -473,6 +522,9 @@ export interface AssetRegistry extends BaseContract {
     key: string | FunctionFragment
   ): T;
 
+  getFunction(
+    nameOrSignature: "ADMIN_ROLE"
+  ): TypedContractMethod<[], [string], "view">;
   getFunction(
     nameOrSignature: "DEFAULT_ADMIN_ROLE"
   ): TypedContractMethod<[], [string], "view">;
@@ -493,6 +545,9 @@ export interface AssetRegistry extends BaseContract {
   getFunction(
     nameOrSignature: "assetFactory"
   ): TypedContractMethod<[], [string], "view">;
+  getFunction(
+    nameOrSignature: "assetVersions"
+  ): TypedContractMethod<[arg0: BigNumberish], [string], "view">;
   getFunction(
     nameOrSignature: "assetsByOriginalAddressAndChain"
   ): TypedContractMethod<[arg0: BytesLike], [string], "view">;
@@ -520,6 +575,9 @@ export interface AssetRegistry extends BaseContract {
     [boolean],
     "view"
   >;
+  getFunction(
+    nameOrSignature: "currentAssetVersion"
+  ): TypedContractMethod<[assetType: BigNumberish], [string], "view">;
   getFunction(
     nameOrSignature: "getAssetCondition"
   ): TypedContractMethod<[asset: AddressLike], [string], "view">;
@@ -578,13 +636,20 @@ export interface AssetRegistry extends BaseContract {
     nameOrSignature: "setAssetFactory"
   ): TypedContractMethod<[_assetFactory: AddressLike], [void], "nonpayable">;
   getFunction(
+    nameOrSignature: "setCurrentAssetVersion"
+  ): TypedContractMethod<
+    [assetType: BigNumberish, version: string],
+    [void],
+    "nonpayable"
+  >;
+  getFunction(
     nameOrSignature: "supportsInterface"
   ): TypedContractMethod<[interfaceId: BytesLike], [boolean], "view">;
   getFunction(
     nameOrSignature: "upgradeAsset"
   ): TypedContractMethod<
     [asset: AddressLike, assetType: BigNumberish, initData: BytesLike],
-    [void],
+    [string],
     "nonpayable"
   >;
 

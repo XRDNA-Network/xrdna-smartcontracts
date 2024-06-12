@@ -58,6 +58,10 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IERC20__factory>;
     getContractFactory(
+      name: "ERC721",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.ERC721__factory>;
+    getContractFactory(
       name: "IERC721Metadata",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IERC721Metadata__factory>;
@@ -94,6 +98,10 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.Nonces__factory>;
     getContractFactory(
+      name: "ReentrancyGuard",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.ReentrancyGuard__factory>;
+    getContractFactory(
       name: "ShortStrings",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.ShortStrings__factory>;
@@ -102,21 +110,61 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.Strings__factory>;
     getContractFactory(
-      name: "AssetFactory",
+      name: "BaseAsset",
       signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.AssetFactory__factory>;
+    ): Promise<Contracts.BaseAsset__factory>;
     getContractFactory(
-      name: "IBasicAsset",
+      name: "IExperienceRegistry",
       signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.IBasicAsset__factory>;
+    ): Promise<Contracts.IExperienceRegistry__factory>;
     getContractFactory(
-      name: "AssetRegistry",
+      name: "BaseRegistry",
       signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.AssetRegistry__factory>;
+    ): Promise<Contracts.BaseRegistry__factory>;
     getContractFactory(
-      name: "IBasicAsset",
+      name: "ERC20AssetFactory",
       signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.IBasicAsset__factory>;
+    ): Promise<Contracts.ERC20AssetFactory__factory>;
+    getContractFactory(
+      name: "INextERC20Version",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.INextERC20Version__factory>;
+    getContractFactory(
+      name: "ERC20AssetRegistry",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.ERC20AssetRegistry__factory>;
+    getContractFactory(
+      name: "NTERC20Asset",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.NTERC20Asset__factory>;
+    getContractFactory(
+      name: "NTERC20Proxy",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.NTERC20Proxy__factory>;
+    getContractFactory(
+      name: "ERC721AssetFactory",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.ERC721AssetFactory__factory>;
+    getContractFactory(
+      name: "INextERC721Version",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.INextERC721Version__factory>;
+    getContractFactory(
+      name: "ERC721AssetRegistry",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.ERC721AssetRegistry__factory>;
+    getContractFactory(
+      name: "IUpgradedERC721",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IUpgradedERC721__factory>;
+    getContractFactory(
+      name: "NTERC721Asset",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.NTERC721Asset__factory>;
+    getContractFactory(
+      name: "NTERC721Proxy",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.NTERC721Proxy__factory>;
     getContractFactory(
       name: "IAssetCondition",
       signerOrOptions?: ethers.Signer | FactoryOptions
@@ -134,29 +182,233 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IAssetRegistry__factory>;
     getContractFactory(
-      name: "NonTransferableERC20Asset",
+      name: "IBasicAsset",
       signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.NonTransferableERC20Asset__factory>;
+    ): Promise<Contracts.IBasicAsset__factory>;
     getContractFactory(
-      name: "IUpgradedERC721",
+      name: "IMintableAsset",
       signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.IUpgradedERC721__factory>;
+    ): Promise<Contracts.IMintableAsset__factory>;
     getContractFactory(
-      name: "NonTransferableERC721Asset",
+      name: "IMultiAssetRegistry",
       signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.NonTransferableERC721Asset__factory>;
+    ): Promise<Contracts.IMultiAssetRegistry__factory>;
+    getContractFactory(
+      name: "MultiAssetRegistry",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.MultiAssetRegistry__factory>;
     getContractFactory(
       name: "FilterByWorld",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.FilterByWorld__factory>;
     getContractFactory(
+      name: "Avatar",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.Avatar__factory>;
+    getContractFactory(
+      name: "IExperienceRegistry",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IExperienceRegistry__factory>;
+    getContractFactory(
+      name: "AvatarFactory",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.AvatarFactory__factory>;
+    getContractFactory(
+      name: "INextAvatarVersion",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.INextAvatarVersion__factory>;
+    getContractFactory(
+      name: "AvatarProxy",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.AvatarProxy__factory>;
+    getContractFactory(
+      name: "AvatarRegistry",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.AvatarRegistry__factory>;
+    getContractFactory(
+      name: "IWorldRegistry",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IWorldRegistry__factory>;
+    getContractFactory(
+      name: "IAvatar",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IAvatar__factory>;
+    getContractFactory(
+      name: "IAvatarFactory",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IAvatarFactory__factory>;
+    getContractFactory(
+      name: "IAvatarHook",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IAvatarHook__factory>;
+    getContractFactory(
+      name: "IAvatarRegistry",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IAvatarRegistry__factory>;
+    getContractFactory(
+      name: "WearableLinkedList",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.WearableLinkedList__factory>;
+    getContractFactory(
+      name: "BaseAccess",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.BaseAccess__factory>;
+    getContractFactory(
+      name: "BaseFactory",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.BaseFactory__factory>;
+    getContractFactory(
+      name: "BaseProxy",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.BaseProxy__factory>;
+    getContractFactory(
+      name: "Company",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.Company__factory>;
+    getContractFactory(
+      name: "INextVersion",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.INextVersion__factory>;
+    getContractFactory(
+      name: "CompanyFactory",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.CompanyFactory__factory>;
+    getContractFactory(
+      name: "INextCompanyVersion",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.INextCompanyVersion__factory>;
+    getContractFactory(
+      name: "CompanyProxy",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.CompanyProxy__factory>;
+    getContractFactory(
+      name: "CompanyRegistry",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.CompanyRegistry__factory>;
+    getContractFactory(
+      name: "ICompany",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.ICompany__factory>;
+    getContractFactory(
+      name: "ICompanyFactory",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.ICompanyFactory__factory>;
+    getContractFactory(
+      name: "ICompanyHook",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.ICompanyHook__factory>;
+    getContractFactory(
+      name: "ICompanyRegistry",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.ICompanyRegistry__factory>;
+    getContractFactory(
+      name: "Experience",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.Experience__factory>;
+    getContractFactory(
+      name: "ExperienceFactory",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.ExperienceFactory__factory>;
+    getContractFactory(
+      name: "INextExperienceVersion",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.INextExperienceVersion__factory>;
+    getContractFactory(
+      name: "ExperienceProxy",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.ExperienceProxy__factory>;
+    getContractFactory(
+      name: "ExperienceRegistry",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.ExperienceRegistry__factory>;
+    getContractFactory(
+      name: "IBasicCompany",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IBasicCompany__factory>;
+    getContractFactory(
+      name: "IExperience",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IExperience__factory>;
+    getContractFactory(
+      name: "IExperienceFactory",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IExperienceFactory__factory>;
+    getContractFactory(
+      name: "IExperienceHook",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IExperienceHook__factory>;
+    getContractFactory(
+      name: "IExperienceRegistry",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IExperienceRegistry__factory>;
+    getContractFactory(
+      name: "IBaseAccess",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IBaseAccess__factory>;
+    getContractFactory(
+      name: "IBaseProxy",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IBaseProxy__factory>;
+    getContractFactory(
       name: "IRegistrarRegistry",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IRegistrarRegistry__factory>;
     getContractFactory(
+      name: "LibAssetV1Storage",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.LibAssetV1Storage__factory>;
+    getContractFactory(
+      name: "LibAvatarV1Storage",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.LibAvatarV1Storage__factory>;
+    getContractFactory(
+      name: "LibBaseProxy",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.LibBaseProxy__factory>;
+    getContractFactory(
+      name: "LibProxyAccess",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.LibProxyAccess__factory>;
+    getContractFactory(
+      name: "LibExperienceV1Storage",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.LibExperienceV1Storage__factory>;
+    getContractFactory(
+      name: "LibWorldV2Storage",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.LibWorldV2Storage__factory>;
+    getContractFactory(
+      name: "IBasicAvatarRegistry",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IBasicAvatarRegistry__factory>;
+    getContractFactory(
+      name: "IPortalCondition",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IPortalCondition__factory>;
+    getContractFactory(
+      name: "IPortalRegistry",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IPortalRegistry__factory>;
+    getContractFactory(
+      name: "IUpgradeMigration",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IUpgradeMigration__factory>;
+    getContractFactory(
+      name: "PortalRegistry",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.PortalRegistry__factory>;
+    getContractFactory(
       name: "RegistrarRegistry",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.RegistrarRegistry__factory>;
+    getContractFactory(
+      name: "TestERC20",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.TestERC20__factory>;
+    getContractFactory(
+      name: "TestERC721",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.TestERC721__factory>;
     getContractFactory(
       name: "IBasicWorld",
       signerOrOptions?: ethers.Signer | FactoryOptions
@@ -185,6 +437,50 @@ declare module "hardhat/types/runtime" {
       name: "WorldRegistry",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.WorldRegistry__factory>;
+    getContractFactory(
+      name: "IWorldFactoryV2",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IWorldFactoryV2__factory>;
+    getContractFactory(
+      name: "IWorldHook",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IWorldHook__factory>;
+    getContractFactory(
+      name: "IWorldProxy",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IWorldProxy__factory>;
+    getContractFactory(
+      name: "IWorldRegistryV2",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IWorldRegistryV2__factory>;
+    getContractFactory(
+      name: "IWorldV2",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IWorldV2__factory>;
+    getContractFactory(
+      name: "INextVersion",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.INextVersion__factory>;
+    getContractFactory(
+      name: "WorldFactoryV2",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.WorldFactoryV2__factory>;
+    getContractFactory(
+      name: "WorldProxy",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.WorldProxy__factory>;
+    getContractFactory(
+      name: "IWorldRegistryV1",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IWorldRegistryV1__factory>;
+    getContractFactory(
+      name: "WorldRegistryV2",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.WorldRegistryV2__factory>;
+    getContractFactory(
+      name: "WorldV2",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.WorldV2__factory>;
     getContractFactory(
       name: "XRDNAGasToken",
       signerOrOptions?: ethers.Signer | FactoryOptions
@@ -246,6 +542,11 @@ declare module "hardhat/types/runtime" {
       signer?: ethers.Signer
     ): Promise<Contracts.IERC20>;
     getContractAt(
+      name: "ERC721",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.ERC721>;
+    getContractAt(
       name: "IERC721Metadata",
       address: string | ethers.Addressable,
       signer?: ethers.Signer
@@ -291,6 +592,11 @@ declare module "hardhat/types/runtime" {
       signer?: ethers.Signer
     ): Promise<Contracts.Nonces>;
     getContractAt(
+      name: "ReentrancyGuard",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.ReentrancyGuard>;
+    getContractAt(
       name: "ShortStrings",
       address: string | ethers.Addressable,
       signer?: ethers.Signer
@@ -301,25 +607,75 @@ declare module "hardhat/types/runtime" {
       signer?: ethers.Signer
     ): Promise<Contracts.Strings>;
     getContractAt(
-      name: "AssetFactory",
+      name: "BaseAsset",
       address: string | ethers.Addressable,
       signer?: ethers.Signer
-    ): Promise<Contracts.AssetFactory>;
+    ): Promise<Contracts.BaseAsset>;
     getContractAt(
-      name: "IBasicAsset",
+      name: "IExperienceRegistry",
       address: string | ethers.Addressable,
       signer?: ethers.Signer
-    ): Promise<Contracts.IBasicAsset>;
+    ): Promise<Contracts.IExperienceRegistry>;
     getContractAt(
-      name: "AssetRegistry",
+      name: "BaseRegistry",
       address: string | ethers.Addressable,
       signer?: ethers.Signer
-    ): Promise<Contracts.AssetRegistry>;
+    ): Promise<Contracts.BaseRegistry>;
     getContractAt(
-      name: "IBasicAsset",
+      name: "ERC20AssetFactory",
       address: string | ethers.Addressable,
       signer?: ethers.Signer
-    ): Promise<Contracts.IBasicAsset>;
+    ): Promise<Contracts.ERC20AssetFactory>;
+    getContractAt(
+      name: "INextERC20Version",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.INextERC20Version>;
+    getContractAt(
+      name: "ERC20AssetRegistry",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.ERC20AssetRegistry>;
+    getContractAt(
+      name: "NTERC20Asset",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.NTERC20Asset>;
+    getContractAt(
+      name: "NTERC20Proxy",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.NTERC20Proxy>;
+    getContractAt(
+      name: "ERC721AssetFactory",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.ERC721AssetFactory>;
+    getContractAt(
+      name: "INextERC721Version",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.INextERC721Version>;
+    getContractAt(
+      name: "ERC721AssetRegistry",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.ERC721AssetRegistry>;
+    getContractAt(
+      name: "IUpgradedERC721",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IUpgradedERC721>;
+    getContractAt(
+      name: "NTERC721Asset",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.NTERC721Asset>;
+    getContractAt(
+      name: "NTERC721Proxy",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.NTERC721Proxy>;
     getContractAt(
       name: "IAssetCondition",
       address: string | ethers.Addressable,
@@ -341,35 +697,290 @@ declare module "hardhat/types/runtime" {
       signer?: ethers.Signer
     ): Promise<Contracts.IAssetRegistry>;
     getContractAt(
-      name: "NonTransferableERC20Asset",
+      name: "IBasicAsset",
       address: string | ethers.Addressable,
       signer?: ethers.Signer
-    ): Promise<Contracts.NonTransferableERC20Asset>;
+    ): Promise<Contracts.IBasicAsset>;
     getContractAt(
-      name: "IUpgradedERC721",
+      name: "IMintableAsset",
       address: string | ethers.Addressable,
       signer?: ethers.Signer
-    ): Promise<Contracts.IUpgradedERC721>;
+    ): Promise<Contracts.IMintableAsset>;
     getContractAt(
-      name: "NonTransferableERC721Asset",
+      name: "IMultiAssetRegistry",
       address: string | ethers.Addressable,
       signer?: ethers.Signer
-    ): Promise<Contracts.NonTransferableERC721Asset>;
+    ): Promise<Contracts.IMultiAssetRegistry>;
+    getContractAt(
+      name: "MultiAssetRegistry",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.MultiAssetRegistry>;
     getContractAt(
       name: "FilterByWorld",
       address: string | ethers.Addressable,
       signer?: ethers.Signer
     ): Promise<Contracts.FilterByWorld>;
     getContractAt(
+      name: "Avatar",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.Avatar>;
+    getContractAt(
+      name: "IExperienceRegistry",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IExperienceRegistry>;
+    getContractAt(
+      name: "AvatarFactory",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.AvatarFactory>;
+    getContractAt(
+      name: "INextAvatarVersion",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.INextAvatarVersion>;
+    getContractAt(
+      name: "AvatarProxy",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.AvatarProxy>;
+    getContractAt(
+      name: "AvatarRegistry",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.AvatarRegistry>;
+    getContractAt(
+      name: "IWorldRegistry",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IWorldRegistry>;
+    getContractAt(
+      name: "IAvatar",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IAvatar>;
+    getContractAt(
+      name: "IAvatarFactory",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IAvatarFactory>;
+    getContractAt(
+      name: "IAvatarHook",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IAvatarHook>;
+    getContractAt(
+      name: "IAvatarRegistry",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IAvatarRegistry>;
+    getContractAt(
+      name: "WearableLinkedList",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.WearableLinkedList>;
+    getContractAt(
+      name: "BaseAccess",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.BaseAccess>;
+    getContractAt(
+      name: "BaseFactory",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.BaseFactory>;
+    getContractAt(
+      name: "BaseProxy",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.BaseProxy>;
+    getContractAt(
+      name: "Company",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.Company>;
+    getContractAt(
+      name: "INextVersion",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.INextVersion>;
+    getContractAt(
+      name: "CompanyFactory",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.CompanyFactory>;
+    getContractAt(
+      name: "INextCompanyVersion",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.INextCompanyVersion>;
+    getContractAt(
+      name: "CompanyProxy",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.CompanyProxy>;
+    getContractAt(
+      name: "CompanyRegistry",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.CompanyRegistry>;
+    getContractAt(
+      name: "ICompany",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.ICompany>;
+    getContractAt(
+      name: "ICompanyFactory",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.ICompanyFactory>;
+    getContractAt(
+      name: "ICompanyHook",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.ICompanyHook>;
+    getContractAt(
+      name: "ICompanyRegistry",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.ICompanyRegistry>;
+    getContractAt(
+      name: "Experience",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.Experience>;
+    getContractAt(
+      name: "ExperienceFactory",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.ExperienceFactory>;
+    getContractAt(
+      name: "INextExperienceVersion",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.INextExperienceVersion>;
+    getContractAt(
+      name: "ExperienceProxy",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.ExperienceProxy>;
+    getContractAt(
+      name: "ExperienceRegistry",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.ExperienceRegistry>;
+    getContractAt(
+      name: "IBasicCompany",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IBasicCompany>;
+    getContractAt(
+      name: "IExperience",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IExperience>;
+    getContractAt(
+      name: "IExperienceFactory",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IExperienceFactory>;
+    getContractAt(
+      name: "IExperienceHook",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IExperienceHook>;
+    getContractAt(
+      name: "IExperienceRegistry",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IExperienceRegistry>;
+    getContractAt(
+      name: "IBaseAccess",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IBaseAccess>;
+    getContractAt(
+      name: "IBaseProxy",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IBaseProxy>;
+    getContractAt(
       name: "IRegistrarRegistry",
       address: string | ethers.Addressable,
       signer?: ethers.Signer
     ): Promise<Contracts.IRegistrarRegistry>;
     getContractAt(
+      name: "LibAssetV1Storage",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.LibAssetV1Storage>;
+    getContractAt(
+      name: "LibAvatarV1Storage",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.LibAvatarV1Storage>;
+    getContractAt(
+      name: "LibBaseProxy",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.LibBaseProxy>;
+    getContractAt(
+      name: "LibProxyAccess",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.LibProxyAccess>;
+    getContractAt(
+      name: "LibExperienceV1Storage",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.LibExperienceV1Storage>;
+    getContractAt(
+      name: "LibWorldV2Storage",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.LibWorldV2Storage>;
+    getContractAt(
+      name: "IBasicAvatarRegistry",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IBasicAvatarRegistry>;
+    getContractAt(
+      name: "IPortalCondition",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IPortalCondition>;
+    getContractAt(
+      name: "IPortalRegistry",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IPortalRegistry>;
+    getContractAt(
+      name: "IUpgradeMigration",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IUpgradeMigration>;
+    getContractAt(
+      name: "PortalRegistry",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.PortalRegistry>;
+    getContractAt(
       name: "RegistrarRegistry",
       address: string | ethers.Addressable,
       signer?: ethers.Signer
     ): Promise<Contracts.RegistrarRegistry>;
+    getContractAt(
+      name: "TestERC20",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.TestERC20>;
+    getContractAt(
+      name: "TestERC721",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.TestERC721>;
     getContractAt(
       name: "IBasicWorld",
       address: string | ethers.Addressable,
@@ -405,6 +1016,61 @@ declare module "hardhat/types/runtime" {
       address: string | ethers.Addressable,
       signer?: ethers.Signer
     ): Promise<Contracts.WorldRegistry>;
+    getContractAt(
+      name: "IWorldFactoryV2",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IWorldFactoryV2>;
+    getContractAt(
+      name: "IWorldHook",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IWorldHook>;
+    getContractAt(
+      name: "IWorldProxy",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IWorldProxy>;
+    getContractAt(
+      name: "IWorldRegistryV2",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IWorldRegistryV2>;
+    getContractAt(
+      name: "IWorldV2",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IWorldV2>;
+    getContractAt(
+      name: "INextVersion",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.INextVersion>;
+    getContractAt(
+      name: "WorldFactoryV2",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.WorldFactoryV2>;
+    getContractAt(
+      name: "WorldProxy",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.WorldProxy>;
+    getContractAt(
+      name: "IWorldRegistryV1",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IWorldRegistryV1>;
+    getContractAt(
+      name: "WorldRegistryV2",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.WorldRegistryV2>;
+    getContractAt(
+      name: "WorldV2",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.WorldV2>;
     getContractAt(
       name: "XRDNAGasToken",
       address: string | ethers.Addressable,
@@ -456,6 +1122,10 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.IERC20>;
     deployContract(
+      name: "ERC721",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.ERC721>;
+    deployContract(
       name: "IERC721Metadata",
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.IERC721Metadata>;
@@ -492,6 +1162,10 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.Nonces>;
     deployContract(
+      name: "ReentrancyGuard",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.ReentrancyGuard>;
+    deployContract(
       name: "ShortStrings",
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.ShortStrings>;
@@ -500,21 +1174,61 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.Strings>;
     deployContract(
-      name: "AssetFactory",
+      name: "BaseAsset",
       signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.AssetFactory>;
+    ): Promise<Contracts.BaseAsset>;
     deployContract(
-      name: "IBasicAsset",
+      name: "IExperienceRegistry",
       signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.IBasicAsset>;
+    ): Promise<Contracts.IExperienceRegistry>;
     deployContract(
-      name: "AssetRegistry",
+      name: "BaseRegistry",
       signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.AssetRegistry>;
+    ): Promise<Contracts.BaseRegistry>;
     deployContract(
-      name: "IBasicAsset",
+      name: "ERC20AssetFactory",
       signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.IBasicAsset>;
+    ): Promise<Contracts.ERC20AssetFactory>;
+    deployContract(
+      name: "INextERC20Version",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.INextERC20Version>;
+    deployContract(
+      name: "ERC20AssetRegistry",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.ERC20AssetRegistry>;
+    deployContract(
+      name: "NTERC20Asset",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.NTERC20Asset>;
+    deployContract(
+      name: "NTERC20Proxy",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.NTERC20Proxy>;
+    deployContract(
+      name: "ERC721AssetFactory",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.ERC721AssetFactory>;
+    deployContract(
+      name: "INextERC721Version",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.INextERC721Version>;
+    deployContract(
+      name: "ERC721AssetRegistry",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.ERC721AssetRegistry>;
+    deployContract(
+      name: "IUpgradedERC721",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IUpgradedERC721>;
+    deployContract(
+      name: "NTERC721Asset",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.NTERC721Asset>;
+    deployContract(
+      name: "NTERC721Proxy",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.NTERC721Proxy>;
     deployContract(
       name: "IAssetCondition",
       signerOrOptions?: ethers.Signer | DeployContractOptions
@@ -532,29 +1246,233 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.IAssetRegistry>;
     deployContract(
-      name: "NonTransferableERC20Asset",
+      name: "IBasicAsset",
       signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.NonTransferableERC20Asset>;
+    ): Promise<Contracts.IBasicAsset>;
     deployContract(
-      name: "IUpgradedERC721",
+      name: "IMintableAsset",
       signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.IUpgradedERC721>;
+    ): Promise<Contracts.IMintableAsset>;
     deployContract(
-      name: "NonTransferableERC721Asset",
+      name: "IMultiAssetRegistry",
       signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.NonTransferableERC721Asset>;
+    ): Promise<Contracts.IMultiAssetRegistry>;
+    deployContract(
+      name: "MultiAssetRegistry",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.MultiAssetRegistry>;
     deployContract(
       name: "FilterByWorld",
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.FilterByWorld>;
     deployContract(
+      name: "Avatar",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.Avatar>;
+    deployContract(
+      name: "IExperienceRegistry",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IExperienceRegistry>;
+    deployContract(
+      name: "AvatarFactory",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.AvatarFactory>;
+    deployContract(
+      name: "INextAvatarVersion",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.INextAvatarVersion>;
+    deployContract(
+      name: "AvatarProxy",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.AvatarProxy>;
+    deployContract(
+      name: "AvatarRegistry",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.AvatarRegistry>;
+    deployContract(
+      name: "IWorldRegistry",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IWorldRegistry>;
+    deployContract(
+      name: "IAvatar",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IAvatar>;
+    deployContract(
+      name: "IAvatarFactory",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IAvatarFactory>;
+    deployContract(
+      name: "IAvatarHook",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IAvatarHook>;
+    deployContract(
+      name: "IAvatarRegistry",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IAvatarRegistry>;
+    deployContract(
+      name: "WearableLinkedList",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.WearableLinkedList>;
+    deployContract(
+      name: "BaseAccess",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.BaseAccess>;
+    deployContract(
+      name: "BaseFactory",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.BaseFactory>;
+    deployContract(
+      name: "BaseProxy",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.BaseProxy>;
+    deployContract(
+      name: "Company",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.Company>;
+    deployContract(
+      name: "INextVersion",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.INextVersion>;
+    deployContract(
+      name: "CompanyFactory",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.CompanyFactory>;
+    deployContract(
+      name: "INextCompanyVersion",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.INextCompanyVersion>;
+    deployContract(
+      name: "CompanyProxy",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.CompanyProxy>;
+    deployContract(
+      name: "CompanyRegistry",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.CompanyRegistry>;
+    deployContract(
+      name: "ICompany",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.ICompany>;
+    deployContract(
+      name: "ICompanyFactory",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.ICompanyFactory>;
+    deployContract(
+      name: "ICompanyHook",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.ICompanyHook>;
+    deployContract(
+      name: "ICompanyRegistry",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.ICompanyRegistry>;
+    deployContract(
+      name: "Experience",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.Experience>;
+    deployContract(
+      name: "ExperienceFactory",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.ExperienceFactory>;
+    deployContract(
+      name: "INextExperienceVersion",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.INextExperienceVersion>;
+    deployContract(
+      name: "ExperienceProxy",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.ExperienceProxy>;
+    deployContract(
+      name: "ExperienceRegistry",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.ExperienceRegistry>;
+    deployContract(
+      name: "IBasicCompany",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IBasicCompany>;
+    deployContract(
+      name: "IExperience",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IExperience>;
+    deployContract(
+      name: "IExperienceFactory",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IExperienceFactory>;
+    deployContract(
+      name: "IExperienceHook",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IExperienceHook>;
+    deployContract(
+      name: "IExperienceRegistry",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IExperienceRegistry>;
+    deployContract(
+      name: "IBaseAccess",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IBaseAccess>;
+    deployContract(
+      name: "IBaseProxy",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IBaseProxy>;
+    deployContract(
       name: "IRegistrarRegistry",
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.IRegistrarRegistry>;
     deployContract(
+      name: "LibAssetV1Storage",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.LibAssetV1Storage>;
+    deployContract(
+      name: "LibAvatarV1Storage",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.LibAvatarV1Storage>;
+    deployContract(
+      name: "LibBaseProxy",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.LibBaseProxy>;
+    deployContract(
+      name: "LibProxyAccess",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.LibProxyAccess>;
+    deployContract(
+      name: "LibExperienceV1Storage",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.LibExperienceV1Storage>;
+    deployContract(
+      name: "LibWorldV2Storage",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.LibWorldV2Storage>;
+    deployContract(
+      name: "IBasicAvatarRegistry",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IBasicAvatarRegistry>;
+    deployContract(
+      name: "IPortalCondition",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IPortalCondition>;
+    deployContract(
+      name: "IPortalRegistry",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IPortalRegistry>;
+    deployContract(
+      name: "IUpgradeMigration",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IUpgradeMigration>;
+    deployContract(
+      name: "PortalRegistry",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.PortalRegistry>;
+    deployContract(
       name: "RegistrarRegistry",
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.RegistrarRegistry>;
+    deployContract(
+      name: "TestERC20",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.TestERC20>;
+    deployContract(
+      name: "TestERC721",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.TestERC721>;
     deployContract(
       name: "IBasicWorld",
       signerOrOptions?: ethers.Signer | DeployContractOptions
@@ -583,6 +1501,50 @@ declare module "hardhat/types/runtime" {
       name: "WorldRegistry",
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.WorldRegistry>;
+    deployContract(
+      name: "IWorldFactoryV2",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IWorldFactoryV2>;
+    deployContract(
+      name: "IWorldHook",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IWorldHook>;
+    deployContract(
+      name: "IWorldProxy",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IWorldProxy>;
+    deployContract(
+      name: "IWorldRegistryV2",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IWorldRegistryV2>;
+    deployContract(
+      name: "IWorldV2",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IWorldV2>;
+    deployContract(
+      name: "INextVersion",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.INextVersion>;
+    deployContract(
+      name: "WorldFactoryV2",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.WorldFactoryV2>;
+    deployContract(
+      name: "WorldProxy",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.WorldProxy>;
+    deployContract(
+      name: "IWorldRegistryV1",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IWorldRegistryV1>;
+    deployContract(
+      name: "WorldRegistryV2",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.WorldRegistryV2>;
+    deployContract(
+      name: "WorldV2",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.WorldV2>;
     deployContract(
       name: "XRDNAGasToken",
       signerOrOptions?: ethers.Signer | DeployContractOptions
@@ -644,6 +1606,11 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.IERC20>;
     deployContract(
+      name: "ERC721",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.ERC721>;
+    deployContract(
       name: "IERC721Metadata",
       args: any[],
       signerOrOptions?: ethers.Signer | DeployContractOptions
@@ -689,6 +1656,11 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.Nonces>;
     deployContract(
+      name: "ReentrancyGuard",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.ReentrancyGuard>;
+    deployContract(
       name: "ShortStrings",
       args: any[],
       signerOrOptions?: ethers.Signer | DeployContractOptions
@@ -699,25 +1671,75 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.Strings>;
     deployContract(
-      name: "AssetFactory",
+      name: "BaseAsset",
       args: any[],
       signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.AssetFactory>;
+    ): Promise<Contracts.BaseAsset>;
     deployContract(
-      name: "IBasicAsset",
+      name: "IExperienceRegistry",
       args: any[],
       signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.IBasicAsset>;
+    ): Promise<Contracts.IExperienceRegistry>;
     deployContract(
-      name: "AssetRegistry",
+      name: "BaseRegistry",
       args: any[],
       signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.AssetRegistry>;
+    ): Promise<Contracts.BaseRegistry>;
     deployContract(
-      name: "IBasicAsset",
+      name: "ERC20AssetFactory",
       args: any[],
       signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.IBasicAsset>;
+    ): Promise<Contracts.ERC20AssetFactory>;
+    deployContract(
+      name: "INextERC20Version",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.INextERC20Version>;
+    deployContract(
+      name: "ERC20AssetRegistry",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.ERC20AssetRegistry>;
+    deployContract(
+      name: "NTERC20Asset",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.NTERC20Asset>;
+    deployContract(
+      name: "NTERC20Proxy",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.NTERC20Proxy>;
+    deployContract(
+      name: "ERC721AssetFactory",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.ERC721AssetFactory>;
+    deployContract(
+      name: "INextERC721Version",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.INextERC721Version>;
+    deployContract(
+      name: "ERC721AssetRegistry",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.ERC721AssetRegistry>;
+    deployContract(
+      name: "IUpgradedERC721",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IUpgradedERC721>;
+    deployContract(
+      name: "NTERC721Asset",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.NTERC721Asset>;
+    deployContract(
+      name: "NTERC721Proxy",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.NTERC721Proxy>;
     deployContract(
       name: "IAssetCondition",
       args: any[],
@@ -739,35 +1761,290 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.IAssetRegistry>;
     deployContract(
-      name: "NonTransferableERC20Asset",
+      name: "IBasicAsset",
       args: any[],
       signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.NonTransferableERC20Asset>;
+    ): Promise<Contracts.IBasicAsset>;
     deployContract(
-      name: "IUpgradedERC721",
+      name: "IMintableAsset",
       args: any[],
       signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.IUpgradedERC721>;
+    ): Promise<Contracts.IMintableAsset>;
     deployContract(
-      name: "NonTransferableERC721Asset",
+      name: "IMultiAssetRegistry",
       args: any[],
       signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.NonTransferableERC721Asset>;
+    ): Promise<Contracts.IMultiAssetRegistry>;
+    deployContract(
+      name: "MultiAssetRegistry",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.MultiAssetRegistry>;
     deployContract(
       name: "FilterByWorld",
       args: any[],
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.FilterByWorld>;
     deployContract(
+      name: "Avatar",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.Avatar>;
+    deployContract(
+      name: "IExperienceRegistry",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IExperienceRegistry>;
+    deployContract(
+      name: "AvatarFactory",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.AvatarFactory>;
+    deployContract(
+      name: "INextAvatarVersion",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.INextAvatarVersion>;
+    deployContract(
+      name: "AvatarProxy",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.AvatarProxy>;
+    deployContract(
+      name: "AvatarRegistry",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.AvatarRegistry>;
+    deployContract(
+      name: "IWorldRegistry",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IWorldRegistry>;
+    deployContract(
+      name: "IAvatar",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IAvatar>;
+    deployContract(
+      name: "IAvatarFactory",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IAvatarFactory>;
+    deployContract(
+      name: "IAvatarHook",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IAvatarHook>;
+    deployContract(
+      name: "IAvatarRegistry",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IAvatarRegistry>;
+    deployContract(
+      name: "WearableLinkedList",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.WearableLinkedList>;
+    deployContract(
+      name: "BaseAccess",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.BaseAccess>;
+    deployContract(
+      name: "BaseFactory",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.BaseFactory>;
+    deployContract(
+      name: "BaseProxy",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.BaseProxy>;
+    deployContract(
+      name: "Company",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.Company>;
+    deployContract(
+      name: "INextVersion",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.INextVersion>;
+    deployContract(
+      name: "CompanyFactory",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.CompanyFactory>;
+    deployContract(
+      name: "INextCompanyVersion",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.INextCompanyVersion>;
+    deployContract(
+      name: "CompanyProxy",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.CompanyProxy>;
+    deployContract(
+      name: "CompanyRegistry",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.CompanyRegistry>;
+    deployContract(
+      name: "ICompany",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.ICompany>;
+    deployContract(
+      name: "ICompanyFactory",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.ICompanyFactory>;
+    deployContract(
+      name: "ICompanyHook",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.ICompanyHook>;
+    deployContract(
+      name: "ICompanyRegistry",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.ICompanyRegistry>;
+    deployContract(
+      name: "Experience",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.Experience>;
+    deployContract(
+      name: "ExperienceFactory",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.ExperienceFactory>;
+    deployContract(
+      name: "INextExperienceVersion",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.INextExperienceVersion>;
+    deployContract(
+      name: "ExperienceProxy",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.ExperienceProxy>;
+    deployContract(
+      name: "ExperienceRegistry",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.ExperienceRegistry>;
+    deployContract(
+      name: "IBasicCompany",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IBasicCompany>;
+    deployContract(
+      name: "IExperience",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IExperience>;
+    deployContract(
+      name: "IExperienceFactory",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IExperienceFactory>;
+    deployContract(
+      name: "IExperienceHook",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IExperienceHook>;
+    deployContract(
+      name: "IExperienceRegistry",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IExperienceRegistry>;
+    deployContract(
+      name: "IBaseAccess",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IBaseAccess>;
+    deployContract(
+      name: "IBaseProxy",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IBaseProxy>;
+    deployContract(
       name: "IRegistrarRegistry",
       args: any[],
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.IRegistrarRegistry>;
     deployContract(
+      name: "LibAssetV1Storage",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.LibAssetV1Storage>;
+    deployContract(
+      name: "LibAvatarV1Storage",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.LibAvatarV1Storage>;
+    deployContract(
+      name: "LibBaseProxy",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.LibBaseProxy>;
+    deployContract(
+      name: "LibProxyAccess",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.LibProxyAccess>;
+    deployContract(
+      name: "LibExperienceV1Storage",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.LibExperienceV1Storage>;
+    deployContract(
+      name: "LibWorldV2Storage",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.LibWorldV2Storage>;
+    deployContract(
+      name: "IBasicAvatarRegistry",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IBasicAvatarRegistry>;
+    deployContract(
+      name: "IPortalCondition",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IPortalCondition>;
+    deployContract(
+      name: "IPortalRegistry",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IPortalRegistry>;
+    deployContract(
+      name: "IUpgradeMigration",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IUpgradeMigration>;
+    deployContract(
+      name: "PortalRegistry",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.PortalRegistry>;
+    deployContract(
       name: "RegistrarRegistry",
       args: any[],
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.RegistrarRegistry>;
+    deployContract(
+      name: "TestERC20",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.TestERC20>;
+    deployContract(
+      name: "TestERC721",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.TestERC721>;
     deployContract(
       name: "IBasicWorld",
       args: any[],
@@ -803,6 +2080,61 @@ declare module "hardhat/types/runtime" {
       args: any[],
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.WorldRegistry>;
+    deployContract(
+      name: "IWorldFactoryV2",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IWorldFactoryV2>;
+    deployContract(
+      name: "IWorldHook",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IWorldHook>;
+    deployContract(
+      name: "IWorldProxy",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IWorldProxy>;
+    deployContract(
+      name: "IWorldRegistryV2",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IWorldRegistryV2>;
+    deployContract(
+      name: "IWorldV2",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IWorldV2>;
+    deployContract(
+      name: "INextVersion",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.INextVersion>;
+    deployContract(
+      name: "WorldFactoryV2",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.WorldFactoryV2>;
+    deployContract(
+      name: "WorldProxy",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.WorldProxy>;
+    deployContract(
+      name: "IWorldRegistryV1",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IWorldRegistryV1>;
+    deployContract(
+      name: "WorldRegistryV2",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.WorldRegistryV2>;
+    deployContract(
+      name: "WorldV2",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.WorldV2>;
     deployContract(
       name: "XRDNAGasToken",
       args: any[],

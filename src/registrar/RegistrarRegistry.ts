@@ -23,7 +23,7 @@ export interface IRegistrationResult {
 }
 
 export class RegistrarRegistry {
-    private address: string;
+    readonly address: string;
     private admin: Provider | Signer;
     private registry: ethers.Contract;
     private logParser: LogParser;

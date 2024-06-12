@@ -1,0 +1,81 @@
+{
+  "_format": "hh-sol-artifact-1",
+  "contractName": "IExperienceRegistry",
+  "sourceName": "contracts/avatar/Avatar.sol",
+  "abi": [
+    {
+      "inputs": [
+        {
+          "components": [
+            {
+              "internalType": "string",
+              "name": "x",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "y",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "z",
+              "type": "string"
+            },
+            {
+              "internalType": "uint256",
+              "name": "t",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "p",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "p_sub",
+              "type": "uint256"
+            }
+          ],
+          "internalType": "struct VectorAddress",
+          "name": "location",
+          "type": "tuple"
+        }
+      ],
+      "name": "getExperienceByVector",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "e",
+          "type": "address"
+        }
+      ],
+      "name": "isExperience",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ],
+  "bytecode": "0x",
+  "deployedBytecode": "0x",
+  "linkReferences": {},
+  "deployedLinkReferences": {}
+}
