@@ -3,12 +3,14 @@
 pragma solidity ^0.8.24;
 
 import {AccessControl} from '@openzeppelin/contracts/access/AccessControl.sol';
+import {IBaseFactory} from './IBaseFactory.sol';
 
-abstract contract BaseFactory is AccessControl {
+abstract contract BaseFactory is IBaseFactory, AccessControl {
     bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
     address implementation;
     address proxyImplementation;
     address authorizedRegistry;
+    uint256 public override supportsVersion;
 
     event AuthorizedRegistryChanged(address indexed oldRegistry, address indexed newRegistry);
     
@@ -33,9 +35,15 @@ abstract contract BaseFactory is AccessControl {
         proxyImplementation = _proxyImplementation;
     }
 
-    function setImplementation(address _implementation) public onlyRole(ADMIN_ROLE) {
+    function getProxyImplementation() public view returns (address) {
+        return proxyImplementation;
+    }
+
+    function setImplementation(address _implementation, uint256 version) public onlyRole(ADMIN_ROLE) {
         require(_implementation != address(0), "BaseFactory: implementation cannot be zero address");
+        require(version > supportsVersion, "BaseFactory: version must be greater than current version");
         implementation = _implementation;
+        supportsVersion = version;
     }
 
     function getImplementation() public view returns (address) {

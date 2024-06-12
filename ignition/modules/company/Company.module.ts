@@ -5,7 +5,7 @@ import ExperienceModule from "../experience/Experience.module";
 import CompanyProxyModule from './CompanyProxy.module';
 
 
-
+const VERSION = 1;
 export default buildModule("Company", (m) => {
     
     const proxy = m.useModule(CompanyProxyModule);
@@ -27,7 +27,7 @@ export default buildModule("Company", (m) => {
                 assetReg.multiAssetRegistry,
                 avatarReg.avatarRegistry]
     });
-    m.call(proxy.companyFactory, "setImplementation", [master]);
+    m.call(proxy.companyFactory, "setImplementation", [master, VERSION]);
     return {
         companyRegistry: proxy.companyRegistry,
         companyFactory: proxy.companyFactory,

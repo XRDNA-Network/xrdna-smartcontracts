@@ -5,6 +5,7 @@ pragma solidity ^0.8.24;
 import {IAssetRegistry} from './IAssetRegistry.sol';
 import {AccessControl} from '@openzeppelin/contracts/access/AccessControl.sol';
 import {IAssetFactory} from './IAssetFactory.sol';
+import {IMintableAsset } from './IMintableAsset.sol';
 
 abstract contract BaseRegistry is IAssetRegistry, AccessControl {
 
@@ -56,5 +57,13 @@ abstract contract BaseRegistry is IAssetRegistry, AccessControl {
 
     function upgradeAsset(bytes calldata initData) external onlyAsset {
         assetFactory.upgradeAsset(msg.sender, initData);
+    }
+
+    function removeAsset(address asset) public override onlyAdmin {
+        require(registeredAssets[asset], "AssetRegistry: asset not registered");
+        registeredAssets[asset] = false;
+        IMintableAsset ba = IMintableAsset(asset);
+        bytes32 hash = keccak256(abi.encode(ba.originAddress(), ba.originChainId()));
+        assetsByOriginalAddressAndChain[hash] = address(0);
     }
 }

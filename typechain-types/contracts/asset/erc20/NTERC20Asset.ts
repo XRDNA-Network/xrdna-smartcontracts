@@ -69,7 +69,6 @@ export type ERC20InitDataStruct = {
   issuer: AddressLike;
   decimals: BigNumberish;
   originChainId: BigNumberish;
-  totalSupply: BigNumberish;
   name: string;
   symbol: string;
 };
@@ -79,7 +78,6 @@ export type ERC20InitDataStructOutput = [
   issuer: string,
   decimals: bigint,
   originChainId: bigint,
-  totalSupply: bigint,
   name: string,
   symbol: string
 ] & {
@@ -87,7 +85,6 @@ export type ERC20InitDataStructOutput = [
   issuer: string;
   decimals: bigint;
   originChainId: bigint;
-  totalSupply: bigint;
   name: string;
   symbol: string;
 };

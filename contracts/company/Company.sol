@@ -112,18 +112,12 @@ contract Company is ICompany, BaseAccess, ReentrancyGuard {
     
     function canMint(address asset, address to, bytes calldata extra) public view returns (bool) {
         
-        if(!assetRegistry.isRegisteredAsset(asset)) {
-            return false;
-        }
+        require(assetRegistry.isRegisteredAsset(asset), "Company: asset not registered");
 
         IMintableAsset mintable = IMintableAsset(asset);
-        if(mintable.issuer() != address(this)) {
-            return false;
-        }
-
-        if(!mintable.canMint(to, extra))  {
-            return false;
-        }
+        require(mintable.issuer() == address(this), "Company: not issuer of asset");
+        
+        require(mintable.canMint(to, extra), "Company: cannot mint to address");
 
         if(!avatarRegistry.isAvatar(to)) {
             return true;
@@ -133,7 +127,7 @@ contract Company is ICompany, BaseAccess, ReentrancyGuard {
         if(!avatar.canReceiveTokensOutsideOfExperience()) {
             IExperience exp = avatar.location();
             require(address(exp) != address(0), "Company: avatar location is not an experience");
-            return exp.company() == address(this);
+            require(exp.company() == address(this), "Company: avatar location is not in an experience owned by this company");
         }
         return true;
     }

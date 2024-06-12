@@ -321,6 +321,19 @@ const _abi = [
   {
     inputs: [
       {
+        internalType: "address",
+        name: "asset",
+        type: "address",
+      },
+    ],
+    name: "removeAsset",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
         internalType: "bytes32",
         name: "role",
         type: "bytes32",

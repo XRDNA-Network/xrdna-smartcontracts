@@ -12,4 +12,5 @@ interface IAssetRegistry {
     function isRegisteredAsset(address asset) external view returns (bool);
     function registerAsset(bytes calldata initData) external returns (address asset);
     function upgradeAsset(bytes calldata initData) external;
+    function removeAsset(address asset) external;
 }

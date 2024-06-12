@@ -12,7 +12,7 @@ import { Experience } from "../src/experience";
 import { ExperienceStackImpl } from "./test_stack/experience/ExperienceStackImpl";
 import {abi as BaseAssetABI} from "../artifacts/contracts/asset/BaseAsset.sol/BaseAsset.json"
 import { IERC20AssetStack } from "./test_stack/asset/erc20/IERC20AssetStack";
-import { CreateERC20AssetResult, CreateERC721AssetResult, ERC20AssetRegistry, ERC721AssetRegistry, MultiAssetRegistry } from "../src";
+import { CreateERC20AssetResult, CreateERC721AssetResult, ERC20AssetRegistry, ERC20InitData, ERC721AssetRegistry, MultiAssetRegistry } from "../src";
 import { IERC721AssetStack } from "./test_stack/asset/erc721/IERC721AssetStack";
 import { IMultiAssetRegistryStack } from "./test_stack/asset/IMultiAssetRegistryStack";
 
@@ -95,11 +95,10 @@ describe('Company', () => {
             admin: companyOwner,
             
         })
-        const erc20InitData = {
+        const erc20InitData: ERC20InitData = {
             originChainAddress: await testERC20Asset.getAddress(),
             issuer: company.address,
             originChainId: 1n,
-            totalSupply: ethers.parseEther('1000000'),
             decimals: 18,
             name: "Test ERC20 Asset",
             symbol: "TEST20"
