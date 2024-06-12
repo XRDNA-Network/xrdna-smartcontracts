@@ -15,6 +15,7 @@ export type ERC20InitData = {
     decimals: number;
     name: string;
     symbol: string;
+    maxSupply: bigint;
 }
 
 export class ERC20Asset {

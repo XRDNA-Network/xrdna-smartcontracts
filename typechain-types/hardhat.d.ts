@@ -114,10 +114,6 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.BaseAsset__factory>;
     getContractFactory(
-      name: "IExperienceRegistry",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.IExperienceRegistry__factory>;
-    getContractFactory(
       name: "BaseRegistry",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.BaseRegistry__factory>;
@@ -145,10 +141,6 @@ declare module "hardhat/types/runtime" {
       name: "ERC721AssetRegistry",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.ERC721AssetRegistry__factory>;
-    getContractFactory(
-      name: "IUpgradedERC721",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.IUpgradedERC721__factory>;
     getContractFactory(
       name: "NTERC721Asset",
       signerOrOptions?: ethers.Signer | FactoryOptions
@@ -198,10 +190,6 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.Avatar__factory>;
     getContractFactory(
-      name: "IExperienceRegistry",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.IExperienceRegistry__factory>;
-    getContractFactory(
       name: "AvatarFactory",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.AvatarFactory__factory>;
@@ -217,10 +205,6 @@ declare module "hardhat/types/runtime" {
       name: "AvatarRegistry",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.AvatarRegistry__factory>;
-    getContractFactory(
-      name: "IWorldRegistry",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.IWorldRegistry__factory>;
     getContractFactory(
       name: "IAvatar",
       signerOrOptions?: ethers.Signer | FactoryOptions
@@ -608,11 +592,6 @@ declare module "hardhat/types/runtime" {
       signer?: ethers.Signer
     ): Promise<Contracts.BaseAsset>;
     getContractAt(
-      name: "IExperienceRegistry",
-      address: string | ethers.Addressable,
-      signer?: ethers.Signer
-    ): Promise<Contracts.IExperienceRegistry>;
-    getContractAt(
       name: "BaseRegistry",
       address: string | ethers.Addressable,
       signer?: ethers.Signer
@@ -647,11 +626,6 @@ declare module "hardhat/types/runtime" {
       address: string | ethers.Addressable,
       signer?: ethers.Signer
     ): Promise<Contracts.ERC721AssetRegistry>;
-    getContractAt(
-      name: "IUpgradedERC721",
-      address: string | ethers.Addressable,
-      signer?: ethers.Signer
-    ): Promise<Contracts.IUpgradedERC721>;
     getContractAt(
       name: "NTERC721Asset",
       address: string | ethers.Addressable,
@@ -713,11 +687,6 @@ declare module "hardhat/types/runtime" {
       signer?: ethers.Signer
     ): Promise<Contracts.Avatar>;
     getContractAt(
-      name: "IExperienceRegistry",
-      address: string | ethers.Addressable,
-      signer?: ethers.Signer
-    ): Promise<Contracts.IExperienceRegistry>;
-    getContractAt(
       name: "AvatarFactory",
       address: string | ethers.Addressable,
       signer?: ethers.Signer
@@ -737,11 +706,6 @@ declare module "hardhat/types/runtime" {
       address: string | ethers.Addressable,
       signer?: ethers.Signer
     ): Promise<Contracts.AvatarRegistry>;
-    getContractAt(
-      name: "IWorldRegistry",
-      address: string | ethers.Addressable,
-      signer?: ethers.Signer
-    ): Promise<Contracts.IWorldRegistry>;
     getContractAt(
       name: "IAvatar",
       address: string | ethers.Addressable,
@@ -1169,10 +1133,6 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.BaseAsset>;
     deployContract(
-      name: "IExperienceRegistry",
-      signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.IExperienceRegistry>;
-    deployContract(
       name: "BaseRegistry",
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.BaseRegistry>;
@@ -1200,10 +1160,6 @@ declare module "hardhat/types/runtime" {
       name: "ERC721AssetRegistry",
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.ERC721AssetRegistry>;
-    deployContract(
-      name: "IUpgradedERC721",
-      signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.IUpgradedERC721>;
     deployContract(
       name: "NTERC721Asset",
       signerOrOptions?: ethers.Signer | DeployContractOptions
@@ -1253,10 +1209,6 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.Avatar>;
     deployContract(
-      name: "IExperienceRegistry",
-      signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.IExperienceRegistry>;
-    deployContract(
       name: "AvatarFactory",
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.AvatarFactory>;
@@ -1272,10 +1224,6 @@ declare module "hardhat/types/runtime" {
       name: "AvatarRegistry",
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.AvatarRegistry>;
-    deployContract(
-      name: "IWorldRegistry",
-      signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.IWorldRegistry>;
     deployContract(
       name: "IAvatar",
       signerOrOptions?: ethers.Signer | DeployContractOptions
@@ -1663,11 +1611,6 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.BaseAsset>;
     deployContract(
-      name: "IExperienceRegistry",
-      args: any[],
-      signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.IExperienceRegistry>;
-    deployContract(
       name: "BaseRegistry",
       args: any[],
       signerOrOptions?: ethers.Signer | DeployContractOptions
@@ -1702,11 +1645,6 @@ declare module "hardhat/types/runtime" {
       args: any[],
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.ERC721AssetRegistry>;
-    deployContract(
-      name: "IUpgradedERC721",
-      args: any[],
-      signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.IUpgradedERC721>;
     deployContract(
       name: "NTERC721Asset",
       args: any[],
@@ -1768,11 +1706,6 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.Avatar>;
     deployContract(
-      name: "IExperienceRegistry",
-      args: any[],
-      signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.IExperienceRegistry>;
-    deployContract(
       name: "AvatarFactory",
       args: any[],
       signerOrOptions?: ethers.Signer | DeployContractOptions
@@ -1792,11 +1725,6 @@ declare module "hardhat/types/runtime" {
       args: any[],
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.AvatarRegistry>;
-    deployContract(
-      name: "IWorldRegistry",
-      args: any[],
-      signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.IWorldRegistry>;
     deployContract(
       name: "IAvatar",
       args: any[],

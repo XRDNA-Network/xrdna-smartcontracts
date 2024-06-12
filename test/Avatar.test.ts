@@ -75,5 +75,19 @@ describe('Avatar', () => {
         expect(wearables.find(w => w.tokenId == tokenId.tokenId)).to.not.be.undefined;
         
     })
+    it('should remove a wearable from an avatar', async () => {
+        const {avatar, testERC721} = ecosystem;
+        const wearables = await avatar.getWearables();
+        const wearable = wearables[0];
+        const r = await avatar.removeWearable(wearable);
+        expect(r).to.not.be.undefined;
+        const r2 = await r.wait();
+        if (!r2) {
+            throw new Error("Transaction failed");
+        }
+        expect(r2.status).to.equal(1);
+        const wearables2 = await avatar.getWearables();
+        expect(wearables2.find(w => w.tokenId == wearable.tokenId)).to.be.undefined;
+    })
 
 })
