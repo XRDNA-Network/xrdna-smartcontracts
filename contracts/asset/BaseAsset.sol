@@ -11,6 +11,7 @@ import {IExperience} from '../experience/IExperience.sol';
 import {CommonAssetV1Storage} from '../libraries/LibAssetV1Storage.sol';
 import {IBasicAsset} from './IBasicAsset.sol';
 import {IAssetCondition, AssetCheckArgs} from './IAssetCondition.sol';
+import {ICompanyRegistry} from '../company/ICompanyRegistry.sol';
 
 interface IExperienceRegistry {
     function getExperienceByVector(VectorAddress memory va) external view returns (IExperience);
@@ -20,7 +21,7 @@ struct BaseAssetArgs {
     address assetFactory;
     address assetRegistry;
     address avatarRegistry;
-    address experienceRegistry;
+    address companyRegistry;
 }
 
 abstract contract BaseAsset is IBasicAsset, ReentrancyGuard {
@@ -37,7 +38,8 @@ abstract contract BaseAsset is IBasicAsset, ReentrancyGuard {
     address public immutable assetFactory;
     address public immutable assetRegistry;
     IAvatarRegistry public immutable avatarRegistry;
-    IExperienceRegistry public immutable experienceRegistry;
+    ICompanyRegistry public immutable companyRegistry;
+
 
 
     modifier onlyFactory() {
@@ -54,11 +56,11 @@ abstract contract BaseAsset is IBasicAsset, ReentrancyGuard {
         require(args.assetFactory != address(0), "BaseAsset: assetFactory is the zero address");
         require(args.assetRegistry != address(0), "BaseAsset: assetRegistry is the zero address");
         require(args.avatarRegistry != address(0), "BaseAsset: avatarRegistry is the zero address");
-        require(args.experienceRegistry != address(0), "BaseAsset: experienceRegistry is the zero address");
+        require(args.companyRegistry != address(0), "BaseAsset: companyRegistry is the zero address");
         assetFactory = args.assetFactory;
         assetRegistry = args.assetRegistry;
         avatarRegistry = IAvatarRegistry(args.avatarRegistry);
-        experienceRegistry = IExperienceRegistry(args.experienceRegistry);
+        companyRegistry = ICompanyRegistry(args.companyRegistry);
     }
 
 
@@ -122,6 +124,8 @@ abstract contract BaseAsset is IBasicAsset, ReentrancyGuard {
         return s.condition.canUse(args);
     }
 
+    
+
     function _verifyAvatarLocationMatchesIssuer(IAvatar avatar) internal view {
         //get the avatar's current location
         IExperience exp = avatar.location();
@@ -131,4 +135,6 @@ abstract contract BaseAsset is IBasicAsset, ReentrancyGuard {
     }
 
     function _loadCommonAttributes() internal view virtual returns (CommonAssetV1Storage storage);
+
+
 }

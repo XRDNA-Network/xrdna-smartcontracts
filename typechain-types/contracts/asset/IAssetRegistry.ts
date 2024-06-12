@@ -28,6 +28,7 @@ export interface IAssetRegistryInterface extends Interface {
       | "currentAssetVersion"
       | "isRegisteredAsset"
       | "registerAsset"
+      | "removeAsset"
       | "setAssetFactory"
       | "upgradeAsset"
   ): FunctionFragment;
@@ -47,6 +48,10 @@ export interface IAssetRegistryInterface extends Interface {
   encodeFunctionData(
     functionFragment: "registerAsset",
     values: [BytesLike]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "removeAsset",
+    values: [AddressLike]
   ): string;
   encodeFunctionData(
     functionFragment: "setAssetFactory",
@@ -71,6 +76,10 @@ export interface IAssetRegistryInterface extends Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "registerAsset",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "removeAsset",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -146,6 +155,8 @@ export interface IAssetRegistry extends BaseContract {
     "nonpayable"
   >;
 
+  removeAsset: TypedContractMethod<[asset: AddressLike], [void], "nonpayable">;
+
   setAssetFactory: TypedContractMethod<
     [factory: AddressLike],
     [void],
@@ -178,6 +189,9 @@ export interface IAssetRegistry extends BaseContract {
   getFunction(
     nameOrSignature: "registerAsset"
   ): TypedContractMethod<[initData: BytesLike], [string], "nonpayable">;
+  getFunction(
+    nameOrSignature: "removeAsset"
+  ): TypedContractMethod<[asset: AddressLike], [void], "nonpayable">;
   getFunction(
     nameOrSignature: "setAssetFactory"
   ): TypedContractMethod<[factory: AddressLike], [void], "nonpayable">;

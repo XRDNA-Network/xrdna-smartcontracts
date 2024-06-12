@@ -8,7 +8,7 @@ import AvatarProxyModule from './AvatarProxy.module';
 import NTAssetMasterModule from "../asset/MultiAssetRegistry.module";
 
 
-
+const VERSION = 1;
 export default buildModule("Avatar", (m) => {
     
     const proxy = m.useModule(AvatarProxyModule);
@@ -35,7 +35,7 @@ export default buildModule("Avatar", (m) => {
                 assets.erc721Master
             ]
     });
-    m.call(proxy.avatarFactory, "setImplementation", [master]);
+    m.call(proxy.avatarFactory, "setImplementation", [master, VERSION]);
     return {
         avatarMasterCopy: master,
         avatarRegistry: proxy.avatarRegistry,

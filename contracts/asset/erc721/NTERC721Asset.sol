@@ -49,9 +49,11 @@ contract NTERC721Asset is BaseAsset, IMintableAsset, IERC721, IERC721Metadata, I
     function init(bytes memory initData) public onlyFactory {
         ERC721InitData memory data = abi.decode(initData, (ERC721InitData));
         require(data.issuer != address(0), "NTERC721: issuer is the zero address");
+        require(companyRegistry.isRegisteredCompany(data.issuer), "NTERC721: issuer is not a company");
         require(bytes(data.name).length > 0, "NTERC721: name is empty");
         require(bytes(data.symbol).length > 0, "NTERC721: symbol is empty");
         require(bytes(data.baseURI).length > 0, "NTERC721: baseURI is empty");
+        
         require(data.originChainAddress != address(0), "NTERC721: originChainAddress is the zero address");
         require(data.originChainId > 0, "NTERC721: originChainId is zero");
         ERC721V1Storage storage s = LibAssetV1Storage.loadERC721Storage();
@@ -60,7 +62,11 @@ contract NTERC721Asset is BaseAsset, IMintableAsset, IERC721, IERC721Metadata, I
         s.attributes.originChainId = data.originChainId;
         s.attributes.name = data.name;
         s.attributes.symbol = data.symbol;
-        s.baseURI = data.baseURI;
+        if(!_endsWith(data.baseURI, "/")) {
+            s.baseURI = string.concat(data.baseURI, "/");
+        } else {
+            s.baseURI = data.baseURI;
+        }
     }
 
     function upgrade(bytes calldata data) public onlyIssuer {
@@ -187,10 +193,12 @@ contract NTERC721Asset is BaseAsset, IMintableAsset, IERC721, IERC721Metadata, I
     }
 
     function canMint(address to, bytes calldata) public pure override returns (bool) {
-        return to != address(0);
+        require(to != address(0), "NTERC721Asset: mint to the zero address");
+        return true;
     }
 
-    function mint(address to, bytes calldata) public nonReentrant onlyIssuer {
+    function mint(address to, bytes calldata data) public nonReentrant onlyIssuer {
+        require(canMint(to, data), "NTERC721Asset: cannot mint to address");
         ERC721V1Storage storage s = LibAssetV1Storage.loadERC721Storage();
         if(address(s.attributes.hook) != address(0)) {
             bool ok = s.attributes.hook.beforeMint(address(this), to, s.tokenIdCounter+1);
@@ -276,22 +284,7 @@ contract NTERC721Asset is BaseAsset, IMintableAsset, IERC721, IERC721Metadata, I
         }
     }
 
-    /**
-     * @dev Unsafe write access to the balances, used by extensions that "mint" tokens using an {ownerOf} override.
-     *
-     * NOTE: the value is limited to type(uint128).max. This protect against _balance overflow. It is unrealistic that
-     * a uint256 would ever overflow from increments when these increments are bounded to uint128 values.
-     *
-     * WARNING: Increasing an account's balance using this function tends to be paired with an override of the
-     * {_ownerOf} function to resolve the ownership of the corresponding tokens so that balances and ownership
-     * remain consistent with one another.
-     */
-    function _increaseBalance(address account, uint128 value) internal virtual {
-        unchecked {
-            LibAssetV1Storage.loadERC721Storage().balances[account] += value;
-        }
-    }
-
+    
     /**
      * @dev Transfers `tokenId` from its current owner to `to`, or alternatively mints (or burns) if the current owner
      * (or `to`) is the zero address. Returns the owner of the `tokenId` before the update.
@@ -486,6 +479,9 @@ contract NTERC721Asset is BaseAsset, IMintableAsset, IERC721, IERC721Metadata, I
     }
 
 
+    function _endsWith(string memory str, string memory suffix) internal pure returns (bool) {
+        return bytes(str).length >= bytes(suffix).length && bytes(str)[bytes(str).length - bytes(suffix).length] == bytes(suffix)[0];
+    }
 
 
 }
