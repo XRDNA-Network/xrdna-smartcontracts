@@ -40,7 +40,7 @@ abstract contract BaseProxy is IBaseProxy, BaseAccess {
     }
 
     //must be overridden by proxy implementation
-    function fundsReceived(uint256 amount) internal {
+    function fundsReceived(uint256 amount) internal virtual {
         //no-op
     }
 

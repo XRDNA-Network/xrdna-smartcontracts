@@ -27,19 +27,19 @@ export type BaseAssetArgsStruct = {
   assetFactory: AddressLike;
   assetRegistry: AddressLike;
   avatarRegistry: AddressLike;
-  experienceRegistry: AddressLike;
+  companyRegistry: AddressLike;
 };
 
 export type BaseAssetArgsStructOutput = [
   assetFactory: string,
   assetRegistry: string,
   avatarRegistry: string,
-  experienceRegistry: string
+  companyRegistry: string
 ] & {
   assetFactory: string;
   assetRegistry: string;
   avatarRegistry: string;
-  experienceRegistry: string;
+  companyRegistry: string;
 };
 
 export type AssetCheckArgsStruct = {
@@ -102,9 +102,10 @@ export interface NTERC721AssetInterface extends Interface {
       | "canMint"
       | "canUseAsset"
       | "canViewAsset"
+      | "companyRegistry"
       | "encodeInitData"
-      | "experienceRegistry"
       | "getApproved"
+      | "hook"
       | "init"
       | "isApprovedForAll"
       | "issuer"
@@ -182,17 +183,18 @@ export interface NTERC721AssetInterface extends Interface {
     values: [AssetCheckArgsStruct]
   ): string;
   encodeFunctionData(
-    functionFragment: "encodeInitData",
-    values: [ERC721InitDataStruct]
+    functionFragment: "companyRegistry",
+    values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "experienceRegistry",
-    values?: undefined
+    functionFragment: "encodeInitData",
+    values: [ERC721InitDataStruct]
   ): string;
   encodeFunctionData(
     functionFragment: "getApproved",
     values: [BigNumberish]
   ): string;
+  encodeFunctionData(functionFragment: "hook", values?: undefined): string;
   encodeFunctionData(functionFragment: "init", values: [BytesLike]): string;
   encodeFunctionData(
     functionFragment: "isApprovedForAll",
@@ -289,17 +291,18 @@ export interface NTERC721AssetInterface extends Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "encodeInitData",
+    functionFragment: "companyRegistry",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "experienceRegistry",
+    functionFragment: "encodeInitData",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
     functionFragment: "getApproved",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "hook", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "init", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "isApprovedForAll",
@@ -568,15 +571,17 @@ export interface NTERC721Asset extends BaseContract {
     "view"
   >;
 
+  companyRegistry: TypedContractMethod<[], [string], "view">;
+
   encodeInitData: TypedContractMethod<
     [data: ERC721InitDataStruct],
     [string],
     "view"
   >;
 
-  experienceRegistry: TypedContractMethod<[], [string], "view">;
-
   getApproved: TypedContractMethod<[tokenId: BigNumberish], [string], "view">;
+
+  hook: TypedContractMethod<[], [string], "view">;
 
   init: TypedContractMethod<[initData: BytesLike], [void], "nonpayable">;
 
@@ -589,7 +594,7 @@ export interface NTERC721Asset extends BaseContract {
   issuer: TypedContractMethod<[], [string], "view">;
 
   mint: TypedContractMethod<
-    [to: AddressLike, arg1: BytesLike],
+    [to: AddressLike, data: BytesLike],
     [void],
     "nonpayable"
   >;
@@ -695,14 +700,17 @@ export interface NTERC721Asset extends BaseContract {
     nameOrSignature: "canViewAsset"
   ): TypedContractMethod<[args: AssetCheckArgsStruct], [boolean], "view">;
   getFunction(
+    nameOrSignature: "companyRegistry"
+  ): TypedContractMethod<[], [string], "view">;
+  getFunction(
     nameOrSignature: "encodeInitData"
   ): TypedContractMethod<[data: ERC721InitDataStruct], [string], "view">;
   getFunction(
-    nameOrSignature: "experienceRegistry"
-  ): TypedContractMethod<[], [string], "view">;
-  getFunction(
     nameOrSignature: "getApproved"
   ): TypedContractMethod<[tokenId: BigNumberish], [string], "view">;
+  getFunction(
+    nameOrSignature: "hook"
+  ): TypedContractMethod<[], [string], "view">;
   getFunction(
     nameOrSignature: "init"
   ): TypedContractMethod<[initData: BytesLike], [void], "nonpayable">;
@@ -719,7 +727,7 @@ export interface NTERC721Asset extends BaseContract {
   getFunction(
     nameOrSignature: "mint"
   ): TypedContractMethod<
-    [to: AddressLike, arg1: BytesLike],
+    [to: AddressLike, data: BytesLike],
     [void],
     "nonpayable"
   >;

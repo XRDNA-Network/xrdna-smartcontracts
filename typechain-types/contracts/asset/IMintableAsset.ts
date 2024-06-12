@@ -50,6 +50,7 @@ export interface IMintableAssetInterface extends Interface {
       | "canMint"
       | "canUseAsset"
       | "canViewAsset"
+      | "hook"
       | "init"
       | "issuer"
       | "mint"
@@ -83,6 +84,7 @@ export interface IMintableAssetInterface extends Interface {
     functionFragment: "canViewAsset",
     values: [AssetCheckArgsStruct]
   ): string;
+  encodeFunctionData(functionFragment: "hook", values?: undefined): string;
   encodeFunctionData(functionFragment: "init", values: [BytesLike]): string;
   encodeFunctionData(functionFragment: "issuer", values?: undefined): string;
   encodeFunctionData(
@@ -130,6 +132,7 @@ export interface IMintableAssetInterface extends Interface {
     functionFragment: "canViewAsset",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "hook", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "init", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "issuer", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "mint", data: BytesLike): Result;
@@ -224,6 +227,8 @@ export interface IMintableAsset extends BaseContract {
     "view"
   >;
 
+  hook: TypedContractMethod<[], [string], "view">;
+
   init: TypedContractMethod<[data: BytesLike], [void], "nonpayable">;
 
   issuer: TypedContractMethod<[], [string], "view">;
@@ -277,6 +282,9 @@ export interface IMintableAsset extends BaseContract {
   getFunction(
     nameOrSignature: "canViewAsset"
   ): TypedContractMethod<[args: AssetCheckArgsStruct], [boolean], "view">;
+  getFunction(
+    nameOrSignature: "hook"
+  ): TypedContractMethod<[], [string], "view">;
   getFunction(
     nameOrSignature: "init"
   ): TypedContractMethod<[data: BytesLike], [void], "nonpayable">;

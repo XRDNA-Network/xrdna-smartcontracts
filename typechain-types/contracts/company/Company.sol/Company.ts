@@ -128,10 +128,12 @@ export interface CompanyInterface extends Interface {
       | "delegateJumpForAvatar"
       | "encodeExperienceArgs"
       | "experienceRegistry"
+      | "hook"
       | "init"
       | "isSigner"
       | "mint"
       | "name"
+      | "nextPsub"
       | "owner"
       | "removeAssetCondition"
       | "removeAssetHook"
@@ -217,6 +219,7 @@ export interface CompanyInterface extends Interface {
     functionFragment: "experienceRegistry",
     values?: undefined
   ): string;
+  encodeFunctionData(functionFragment: "hook", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "init",
     values: [CompanyInitArgsStruct]
@@ -230,6 +233,7 @@ export interface CompanyInterface extends Interface {
     values: [AddressLike, AddressLike, BytesLike]
   ): string;
   encodeFunctionData(functionFragment: "name", values?: undefined): string;
+  encodeFunctionData(functionFragment: "nextPsub", values?: undefined): string;
   encodeFunctionData(functionFragment: "owner", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "removeAssetCondition",
@@ -325,10 +329,12 @@ export interface CompanyInterface extends Interface {
     functionFragment: "experienceRegistry",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "hook", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "init", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "isSigner", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "mint", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "name", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "nextPsub", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "removeAssetCondition",
@@ -599,6 +605,8 @@ export interface Company extends BaseContract {
 
   experienceRegistry: TypedContractMethod<[], [string], "view">;
 
+  hook: TypedContractMethod<[], [string], "view">;
+
   init: TypedContractMethod<
     [request: CompanyInitArgsStruct],
     [void],
@@ -614,6 +622,8 @@ export interface Company extends BaseContract {
   >;
 
   name: TypedContractMethod<[], [string], "view">;
+
+  nextPsub: TypedContractMethod<[], [bigint], "view">;
 
   owner: TypedContractMethod<[], [string], "view">;
 
@@ -738,6 +748,9 @@ export interface Company extends BaseContract {
     nameOrSignature: "experienceRegistry"
   ): TypedContractMethod<[], [string], "view">;
   getFunction(
+    nameOrSignature: "hook"
+  ): TypedContractMethod<[], [string], "view">;
+  getFunction(
     nameOrSignature: "init"
   ): TypedContractMethod<
     [request: CompanyInitArgsStruct],
@@ -757,6 +770,9 @@ export interface Company extends BaseContract {
   getFunction(
     nameOrSignature: "name"
   ): TypedContractMethod<[], [string], "view">;
+  getFunction(
+    nameOrSignature: "nextPsub"
+  ): TypedContractMethod<[], [bigint], "view">;
   getFunction(
     nameOrSignature: "owner"
   ): TypedContractMethod<[], [string], "view">;

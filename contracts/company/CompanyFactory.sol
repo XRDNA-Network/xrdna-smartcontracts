@@ -13,7 +13,6 @@ interface INextCompanyVersion {
 }
 
 contract CompanyFactory is BaseFactory, ICompanyFactory {
-    uint256 public constant override supportsVersion = 1;
 
     constructor(address mainAdmin, address[] memory admins) BaseFactory(mainAdmin, admins) {}
 

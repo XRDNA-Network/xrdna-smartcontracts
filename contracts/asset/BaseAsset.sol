@@ -48,7 +48,6 @@ abstract contract BaseAsset is IBasicAsset, ReentrancyGuard {
     ICompanyRegistry public immutable companyRegistry;
 
 
-
     modifier onlyFactory() {
         require(msg.sender == assetFactory, "BaseAsset: only factory allowed");
         _;
@@ -105,16 +104,13 @@ abstract contract BaseAsset is IBasicAsset, ReentrancyGuard {
     /**
      * @inheritdoc IBasicAsset
      */
-    function hook() external view override returns (IAssetHook) {
+    function hook() external view returns (IAssetHook) {
         return _loadCommonAttributes().hook;
     }
 
-    /**
-     * @inheritdoc IBasicAsset
-     */
     function addHook(IAssetHook _hook) public override onlyIssuer {
         CommonAssetV1Storage storage s = _loadCommonAttributes();
-        require(address(s.hook) != address(0), "BaseAsset: hook cannot be zero address");
+        require(address(_hook) != address(0), "BaseAsset: hook cannot be zero address");
         s.hook = _hook;
         emit AssetHookAdded(address(_hook));
     }
