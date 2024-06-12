@@ -3,10 +3,10 @@
 pragma solidity ^0.8.24;
 
 import {CompanyInitArgs} from './ICompany.sol';
+import {IBaseFactory} from '../IBaseFactory.sol';
 
-interface ICompanyFactory {
+interface ICompanyFactory is IBaseFactory {
     
-    function supportsVersion() external view returns (uint256);
     function upgradeCompany(address company, bytes calldata initData) external;
     function createCompany(CompanyInitArgs memory request) external returns (address);
 }

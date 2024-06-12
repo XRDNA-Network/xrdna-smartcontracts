@@ -80,9 +80,13 @@ abstract contract BaseAsset is IBasicAsset, ReentrancyGuard {
         return _loadCommonAttributes().originChainId;
     }
 
+    function hook() external view returns (IAssetHook) {
+        return _loadCommonAttributes().hook;
+    }
+
     function addHook(IAssetHook _hook) public override onlyIssuer {
         CommonAssetV1Storage storage s = _loadCommonAttributes();
-        require(address(s.hook) != address(0), "BaseAsset: hook cannot be zero address");
+        require(address(_hook) != address(0), "BaseAsset: hook cannot be zero address");
         s.hook = _hook;
         emit AssetHookAdded(address(_hook));
     }

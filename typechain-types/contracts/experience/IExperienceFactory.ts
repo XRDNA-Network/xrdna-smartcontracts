@@ -43,6 +43,10 @@ export interface IExperienceFactoryInterface extends Interface {
   getFunction(
     nameOrSignature:
       | "createExperience"
+      | "getImplementation"
+      | "getProxyImplementation"
+      | "setImplementation"
+      | "setProxyImplementation"
       | "supportsVersion"
       | "upgradeExperience"
   ): FunctionFragment;
@@ -50,6 +54,22 @@ export interface IExperienceFactoryInterface extends Interface {
   encodeFunctionData(
     functionFragment: "createExperience",
     values: [AddressLike, string, VectorAddressStruct, BytesLike]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getImplementation",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getProxyImplementation",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setImplementation",
+    values: [AddressLike, BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setProxyImplementation",
+    values: [AddressLike]
   ): string;
   encodeFunctionData(
     functionFragment: "supportsVersion",
@@ -62,6 +82,22 @@ export interface IExperienceFactoryInterface extends Interface {
 
   decodeFunctionResult(
     functionFragment: "createExperience",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getImplementation",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getProxyImplementation",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "setImplementation",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "setProxyImplementation",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -128,6 +164,22 @@ export interface IExperienceFactory extends BaseContract {
     "nonpayable"
   >;
 
+  getImplementation: TypedContractMethod<[], [string], "view">;
+
+  getProxyImplementation: TypedContractMethod<[], [string], "view">;
+
+  setImplementation: TypedContractMethod<
+    [_implementation: AddressLike, version: BigNumberish],
+    [void],
+    "nonpayable"
+  >;
+
+  setProxyImplementation: TypedContractMethod<
+    [_proxyImplementation: AddressLike],
+    [void],
+    "nonpayable"
+  >;
+
   supportsVersion: TypedContractMethod<[], [bigint], "view">;
 
   upgradeExperience: TypedContractMethod<
@@ -150,6 +202,26 @@ export interface IExperienceFactory extends BaseContract {
       data: BytesLike
     ],
     [string],
+    "nonpayable"
+  >;
+  getFunction(
+    nameOrSignature: "getImplementation"
+  ): TypedContractMethod<[], [string], "view">;
+  getFunction(
+    nameOrSignature: "getProxyImplementation"
+  ): TypedContractMethod<[], [string], "view">;
+  getFunction(
+    nameOrSignature: "setImplementation"
+  ): TypedContractMethod<
+    [_implementation: AddressLike, version: BigNumberish],
+    [void],
+    "nonpayable"
+  >;
+  getFunction(
+    nameOrSignature: "setProxyImplementation"
+  ): TypedContractMethod<
+    [_proxyImplementation: AddressLike],
+    [void],
     "nonpayable"
   >;
   getFunction(

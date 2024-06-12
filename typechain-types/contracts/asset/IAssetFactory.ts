@@ -3,6 +3,7 @@
 /* eslint-disable */
 import type {
   BaseContract,
+  BigNumberish,
   BytesLike,
   FunctionFragment,
   Result,
@@ -22,12 +23,35 @@ import type {
 
 export interface IAssetFactoryInterface extends Interface {
   getFunction(
-    nameOrSignature: "createAsset" | "supportsVersion" | "upgradeAsset"
+    nameOrSignature:
+      | "createAsset"
+      | "getImplementation"
+      | "getProxyImplementation"
+      | "setImplementation"
+      | "setProxyImplementation"
+      | "supportsVersion"
+      | "upgradeAsset"
   ): FunctionFragment;
 
   encodeFunctionData(
     functionFragment: "createAsset",
     values: [BytesLike]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getImplementation",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getProxyImplementation",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setImplementation",
+    values: [AddressLike, BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setProxyImplementation",
+    values: [AddressLike]
   ): string;
   encodeFunctionData(
     functionFragment: "supportsVersion",
@@ -40,6 +64,22 @@ export interface IAssetFactoryInterface extends Interface {
 
   decodeFunctionResult(
     functionFragment: "createAsset",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getImplementation",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getProxyImplementation",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "setImplementation",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "setProxyImplementation",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -101,6 +141,22 @@ export interface IAssetFactory extends BaseContract {
     "nonpayable"
   >;
 
+  getImplementation: TypedContractMethod<[], [string], "view">;
+
+  getProxyImplementation: TypedContractMethod<[], [string], "view">;
+
+  setImplementation: TypedContractMethod<
+    [_implementation: AddressLike, version: BigNumberish],
+    [void],
+    "nonpayable"
+  >;
+
+  setProxyImplementation: TypedContractMethod<
+    [_proxyImplementation: AddressLike],
+    [void],
+    "nonpayable"
+  >;
+
   supportsVersion: TypedContractMethod<[], [bigint], "view">;
 
   upgradeAsset: TypedContractMethod<
@@ -116,6 +172,26 @@ export interface IAssetFactory extends BaseContract {
   getFunction(
     nameOrSignature: "createAsset"
   ): TypedContractMethod<[initData: BytesLike], [string], "nonpayable">;
+  getFunction(
+    nameOrSignature: "getImplementation"
+  ): TypedContractMethod<[], [string], "view">;
+  getFunction(
+    nameOrSignature: "getProxyImplementation"
+  ): TypedContractMethod<[], [string], "view">;
+  getFunction(
+    nameOrSignature: "setImplementation"
+  ): TypedContractMethod<
+    [_implementation: AddressLike, version: BigNumberish],
+    [void],
+    "nonpayable"
+  >;
+  getFunction(
+    nameOrSignature: "setProxyImplementation"
+  ): TypedContractMethod<
+    [_proxyImplementation: AddressLike],
+    [void],
+    "nonpayable"
+  >;
   getFunction(
     nameOrSignature: "supportsVersion"
   ): TypedContractMethod<[], [bigint], "view">;

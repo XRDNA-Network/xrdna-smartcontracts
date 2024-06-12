@@ -61,4 +61,8 @@ export class ERC20Asset {
         return await  RPCRetryHandler.withRetry(()=>this.asset.decimals());
     }
 
+    async hook(): Promise<string> {
+        return await  RPCRetryHandler.withRetry(()=>this.asset.hook());
+    }
+
 }

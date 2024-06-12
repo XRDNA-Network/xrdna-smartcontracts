@@ -12,9 +12,11 @@ import { Experience } from "../src/experience";
 import { ExperienceStackImpl } from "./test_stack/experience/ExperienceStackImpl";
 import {abi as BaseAssetABI} from "../artifacts/contracts/asset/BaseAsset.sol/BaseAsset.json"
 import { IERC20AssetStack } from "./test_stack/asset/erc20/IERC20AssetStack";
-import { CreateERC20AssetResult, CreateERC721AssetResult, ERC20AssetRegistry, ERC20InitData, ERC721AssetRegistry, MultiAssetRegistry } from "../src";
+import { CreateERC20AssetResult, CreateERC721AssetResult, ERC20Asset, ERC20AssetRegistry, ERC20InitData, ERC721Asset, ERC721AssetRegistry, MultiAssetRegistry } from "../src";
 import { IERC721AssetStack } from "./test_stack/asset/erc721/IERC721AssetStack";
 import { IMultiAssetRegistryStack } from "./test_stack/asset/IMultiAssetRegistryStack";
+import exp from "constants";
+import { PortalStackImpl } from "./test_stack/portal/PortalStackImpl";
 
 
 describe('Company', () => {
@@ -90,6 +92,7 @@ describe('Company', () => {
             name: "Test Company"
         })
         
+        
         company = new Company({
             address: await companyInfo.companyAddress.toString(),
             admin: companyOwner,
@@ -143,6 +146,7 @@ describe('Company', () => {
         expect(expRes).to.not.be.undefined;
         expect(expRes.experienceAddress).to.not.be.undefined;
         expect(expRes.portalId).to.not.be.undefined;
+        
 
         experience = new Experience({
             address: expRes.experienceAddress.toString(),
@@ -178,7 +182,9 @@ describe('Company', () => {
     it('should retrieve vector of a company', async () => {
         const v = await company.vectorAddress();
         expect(v).to.not.be.undefined;
-
+        // created experience above, so p_sub should be greater than 0
+        const nextPSub = await company.nextPSub();
+        expect(nextPSub).to.be.greaterThan(0);
     })
 
     it('should add a signer to a company', async () => {
@@ -200,6 +206,8 @@ describe('Company', () => {
         const r = await result.wait();
         expect(result).to.not.be.undefined;
         expect(r?.status).to.equal(1);
+        const isSigner = await company.isSigner(signer.address);
+        expect(isSigner).to.be.false;
     })
     // ------------------- Asset tests -------------------
     it('should be able to mint an ERC20 asset', async () => {
@@ -224,6 +232,9 @@ describe('Company', () => {
         const r = await company.mintERC20(asset, to, amount);
         expect(r.receipt.status).to.equal(1);
         expect(r.amount).to.be.greaterThan(0);
+        const erc20 = new ERC20Asset({address: asset, provider: ethers.provider})
+        const balance = await erc20.balanceOf(to);
+        expect(balance).to.equal(amount);
     })
     
     it('should mint an erc721 asset', async () => {
@@ -233,7 +244,12 @@ describe('Company', () => {
         expect(r.receipt.status).to.equal(1);
         expect(r.tokenId).to.be.greaterThan(0);
         mintedERC721TokenId = r.tokenId;
-        
+        const assetCon = new ERC721Asset({address: asset, provider: ethers.provider})
+        const owner = await assetCon.ownerOf(r.tokenId);
+        const balance = await assetCon.balanceOf(to);
+        expect(owner).to.equal(to);
+        expect(balance).to.equal(1);
+
     })
     it('should revoke an erc20 asset', async () => {
         const asset = testERC20.assetAddress.toString();
@@ -242,6 +258,9 @@ describe('Company', () => {
         const result = await company.revoke(asset, to, amount);
         const r = await result.wait();
         expect(r?.status).to.equal(1);
+        const assetCon = new ERC20Asset({address: asset, provider: ethers.provider})
+        const balance = await assetCon.balanceOf(to);
+        expect(balance).to.equal(0);
     })
     it('should revoke an erc721 asset', async () => {
         const asset = testERC721.assetAddress.toString();
@@ -250,6 +269,9 @@ describe('Company', () => {
         const result = await company.revoke(asset, to, tokenId);
         const r = await result.wait();
         expect(r?.status).to.equal(1);
+        const assetCon = new ERC721Asset({address: asset, provider: ethers.provider})
+        const balance = await assetCon.balanceOf(to);
+        expect(balance).to.equal(0);
     })
     // ------------------- Hook tests -------------------
     it('should add a hook tocompany', async () => {
@@ -259,6 +281,8 @@ describe('Company', () => {
         const r = await result.wait();
         expect(result).to.not.be.undefined;
         expect(r?.status).to.equal(1);
+        const hookAddr = await company.hook();
+        expect(hookAddr.toLowerCase()).to.equal(hook.toLowerCase());
        
     })
     it('should remove a hook from company', async () => {
@@ -266,11 +290,16 @@ describe('Company', () => {
         const r = await result.wait();
         expect(result).to.not.be.undefined;
         expect(r?.status).to.equal(1);
+        const hookAddr = await company.hook();
+        const ZeroAddress = '0x' + '0'.repeat(40);
+        expect(hookAddr).to.equal(ZeroAddress);
     })
     // ------------------- Experience tests -------------------
     it('should add experience to a company', async () => {
-        expect(experience).to.not.be.undefined;
-        expect(experience.address).to.not.be.undefined;
+        const expAddress = experience.address;
+        const experienceRegistry = await experienceStack.getExperienceRegistry();
+        const isExp = await experienceRegistry.isExperience(expAddress);
+        expect(isExp).to.be.true;
     })
 
     it('should add experience condition to a company', async () => {
@@ -280,12 +309,21 @@ describe('Company', () => {
         const r = await result.wait();
         expect(result).to.not.be.undefined;
         expect(r?.status).to.equal(1);
+        const prStack = stack.getStack<PortalStackImpl>(StackType.PORTAL);
+        const portalRegistry = prStack.getPortalRegistry();
+        const portalInfo = await portalRegistry.getPortalInfoById(experience.portalId);
+        expect(portalInfo.condition.toString().toLowerCase()).to.equal(condition.toLowerCase());
     })
     it('should remove experience condition from a company', async () => {
         const result = await company.removeExperienceCondition(experience.address);
         const r = await result.wait();
         expect(result).to.not.be.undefined;
         expect(r?.status).to.equal(1);
+        const prStack = stack.getStack<PortalStackImpl>(StackType.PORTAL);
+        const portalRegistry = prStack.getPortalRegistry();
+        const portalInfo = await portalRegistry.getPortalInfoById(experience.portalId);
+        const ZeroAddress = '0x' + '0'.repeat(40);
+        expect(portalInfo.condition).to.equal(ZeroAddress);
     })
     it('should change portal fee for a company', async () => {
         const fee = ethers.parseEther("0.1").toString();
@@ -293,20 +331,50 @@ describe('Company', () => {
         const r = await result.wait();
         expect(result).to.not.be.undefined;
         expect(r?.status).to.equal(1);
+        const prStack = stack.getStack<PortalStackImpl>(StackType.PORTAL);
+        const portalRegistry = prStack.getPortalRegistry();
+        const portalInfo = await portalRegistry.getPortalInfoById(experience.portalId);
+        expect(portalInfo.fee.toString()).to.equal(fee);
     })
     // --------------------Asset Hook tests --------------------
     it('should add an asset hook to a company', async () => {
         const hook = ethers.hexlify(ethers.randomBytes(20));
-        const result = await company.setHook(hook);
-        const r = await result.wait();
-        expect(result).to.not.be.undefined;
-        expect(r?.status).to.equal(1);
+        const erc20Result = await company.addAssetHook(testERC20.assetAddress.toString(), hook);
+        const erc20R = await erc20Result.wait();
+        expect(erc20Result).to.not.be.undefined;
+        expect(erc20R?.status).to.equal(1);
+
+        const erc20 = new ERC20Asset({address: testERC20.assetAddress.toString(), provider: ethers.provider})
+        const hookAddr = await erc20.hook();
+        expect(hookAddr.toLowerCase()).to.equal(hook.toLowerCase());
+
+        const erc721Result = await company.addAssetHook(testERC721.assetAddress.toString(), hook);
+        const erc721R = await erc721Result.wait();
+        expect(erc721Result).to.not.be.undefined;
+        expect(erc721R?.status).to.equal(1);
+
+
+        const erc721 = new ERC721Asset({address: testERC721.assetAddress.toString(), provider: ethers.provider})
+        const hookAddr2 = await erc721.hook();
+        expect(hookAddr2.toLowerCase()).to.equal(hook.toLowerCase());
     })
-    it('should remove an asset hook from a company', async () => {
-        const result = await company.removeHook();
+    it('should remove an asset hook from an asset', async () => {
+        const result = await company.removeAssetHook(testERC20.assetAddress.toString());
         const r = await result.wait();
         expect(result).to.not.be.undefined;
         expect(r?.status).to.equal(1);
+        const erc20 = new ERC20Asset({address: testERC20.assetAddress.toString(), provider: ethers.provider})
+        const hookAddr = await erc20.hook();
+        const ZeroAddress = '0x' + '0'.repeat(40);
+        expect(hookAddr).to.equal(ZeroAddress);
+
+        const result2 = await company.removeAssetHook(testERC721.assetAddress.toString());
+        const r2 = await result2.wait();
+        expect(result2).to.not.be.undefined;
+        expect(r2?.status).to.equal(1);
+        const erc721 = new ERC721Asset({address: testERC721.assetAddress.toString(), provider: ethers.provider})
+        const hookAddr2 = await erc721.hook();
+        expect(hookAddr2).to.equal(ZeroAddress);
     })
     // -------------------- withdraw tests --------------------
     it('should withdraw tokens from a company', async () => {
@@ -318,6 +386,8 @@ describe('Company', () => {
         const r = await result.wait();
         expect(result).to.not.be.undefined;
         expect(r?.status).to.equal(1);
+        const bal = await ethers.provider.getBalance(company.address);
+        expect(bal).to.equal(0);
     })
 
     // -------------------- upgrade tests --------------------

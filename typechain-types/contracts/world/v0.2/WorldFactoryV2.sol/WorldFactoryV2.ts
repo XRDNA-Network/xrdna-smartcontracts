@@ -70,6 +70,7 @@ export interface WorldFactoryV2Interface extends Interface {
       | "DEFAULT_ADMIN_ROLE"
       | "createWorld"
       | "getImplementation"
+      | "getProxyImplementation"
       | "getRoleAdmin"
       | "grantRole"
       | "hasRole"
@@ -80,6 +81,7 @@ export interface WorldFactoryV2Interface extends Interface {
       | "setImplementation"
       | "setProxyImplementation"
       | "supportsInterface"
+      | "supportsVersion"
       | "upgradeWorld"
   ): FunctionFragment;
 
@@ -105,6 +107,10 @@ export interface WorldFactoryV2Interface extends Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "getImplementation",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getProxyImplementation",
     values?: undefined
   ): string;
   encodeFunctionData(
@@ -137,7 +143,7 @@ export interface WorldFactoryV2Interface extends Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "setImplementation",
-    values: [AddressLike]
+    values: [AddressLike, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "setProxyImplementation",
@@ -146,6 +152,10 @@ export interface WorldFactoryV2Interface extends Interface {
   encodeFunctionData(
     functionFragment: "supportsInterface",
     values: [BytesLike]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "supportsVersion",
+    values?: undefined
   ): string;
   encodeFunctionData(
     functionFragment: "upgradeWorld",
@@ -163,6 +173,10 @@ export interface WorldFactoryV2Interface extends Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "getImplementation",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getProxyImplementation",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -191,6 +205,10 @@ export interface WorldFactoryV2Interface extends Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "supportsInterface",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "supportsVersion",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -325,6 +343,8 @@ export interface WorldFactoryV2 extends BaseContract {
 
   getImplementation: TypedContractMethod<[], [string], "view">;
 
+  getProxyImplementation: TypedContractMethod<[], [string], "view">;
+
   getRoleAdmin: TypedContractMethod<[role: BytesLike], [string], "view">;
 
   grantRole: TypedContractMethod<
@@ -360,7 +380,7 @@ export interface WorldFactoryV2 extends BaseContract {
   >;
 
   setImplementation: TypedContractMethod<
-    [_implementation: AddressLike],
+    [_implementation: AddressLike, version: BigNumberish],
     [void],
     "nonpayable"
   >;
@@ -376,6 +396,8 @@ export interface WorldFactoryV2 extends BaseContract {
     [boolean],
     "view"
   >;
+
+  supportsVersion: TypedContractMethod<[], [bigint], "view">;
 
   upgradeWorld: TypedContractMethod<
     [world: AddressLike, initData: BytesLike],
@@ -402,6 +424,9 @@ export interface WorldFactoryV2 extends BaseContract {
   >;
   getFunction(
     nameOrSignature: "getImplementation"
+  ): TypedContractMethod<[], [string], "view">;
+  getFunction(
+    nameOrSignature: "getProxyImplementation"
   ): TypedContractMethod<[], [string], "view">;
   getFunction(
     nameOrSignature: "getRoleAdmin"
@@ -442,7 +467,11 @@ export interface WorldFactoryV2 extends BaseContract {
   ): TypedContractMethod<[_registry: AddressLike], [void], "nonpayable">;
   getFunction(
     nameOrSignature: "setImplementation"
-  ): TypedContractMethod<[_implementation: AddressLike], [void], "nonpayable">;
+  ): TypedContractMethod<
+    [_implementation: AddressLike, version: BigNumberish],
+    [void],
+    "nonpayable"
+  >;
   getFunction(
     nameOrSignature: "setProxyImplementation"
   ): TypedContractMethod<
@@ -453,6 +482,9 @@ export interface WorldFactoryV2 extends BaseContract {
   getFunction(
     nameOrSignature: "supportsInterface"
   ): TypedContractMethod<[interfaceId: BytesLike], [boolean], "view">;
+  getFunction(
+    nameOrSignature: "supportsVersion"
+  ): TypedContractMethod<[], [bigint], "view">;
   getFunction(
     nameOrSignature: "upgradeWorld"
   ): TypedContractMethod<

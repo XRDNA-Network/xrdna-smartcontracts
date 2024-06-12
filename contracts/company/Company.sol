@@ -109,6 +109,16 @@ contract Company is ICompany, BaseAccess, ReentrancyGuard {
         CompanyV1Storage storage s = LibCompanyV1Storage.load();
         return s.vectorAddress;
     }
+
+    function nextPsub() external view returns (uint256) {
+        CompanyV1Storage storage s = LibCompanyV1Storage.load();
+        return s.nextPsub;
+    }
+
+    function hook() external view returns (ICompanyHook) {
+        CompanyV1Storage storage s = LibCompanyV1Storage.load();
+        return s.hook;
+    }
     
     function canMint(address asset, address to, bytes calldata extra) public view returns (bool) {
         

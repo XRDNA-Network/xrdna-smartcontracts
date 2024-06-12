@@ -21,6 +21,7 @@ export type { BaseAccess } from "./BaseAccess";
 export type { BaseFactory } from "./BaseFactory";
 export type { BaseProxy } from "./BaseProxy";
 export type { IBaseAccess } from "./IBaseAccess";
+export type { IBaseFactory } from "./IBaseFactory";
 export type { IBaseProxy } from "./IBaseProxy";
 export type { IRegistrarRegistry } from "./IRegistrarRegistry";
 export type { RegistrarRegistry } from "./RegistrarRegistry";

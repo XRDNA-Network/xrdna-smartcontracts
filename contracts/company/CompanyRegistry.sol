@@ -65,7 +65,7 @@ contract CompanyRegistry is ICompanyRegistry, ReentrancyGuard, AccessControl {
             _grantRole(ADMIN_ROLE, args.admins[i]);
         }
     }
-
+    
     receive() external payable {}
 
 

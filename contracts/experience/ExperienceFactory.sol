@@ -16,8 +16,6 @@ interface INextExperienceVersion {
 
 contract ExperienceFactory is BaseFactory, IExperienceFactory {
 
-    uint256 public constant override supportsVersion = 1;
-    
     address experienceRegistry;
     address expImplementation;
 
