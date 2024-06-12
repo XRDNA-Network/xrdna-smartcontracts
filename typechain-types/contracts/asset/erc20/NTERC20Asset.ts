@@ -109,6 +109,7 @@ export interface NTERC20AssetInterface extends Interface {
       | "decimals"
       | "encodeInitData"
       | "experienceRegistry"
+      | "hook"
       | "init"
       | "issuer"
       | "mint"
@@ -192,6 +193,7 @@ export interface NTERC20AssetInterface extends Interface {
     functionFragment: "experienceRegistry",
     values?: undefined
   ): string;
+  encodeFunctionData(functionFragment: "hook", values?: undefined): string;
   encodeFunctionData(functionFragment: "init", values: [BytesLike]): string;
   encodeFunctionData(functionFragment: "issuer", values?: undefined): string;
   encodeFunctionData(
@@ -277,6 +279,7 @@ export interface NTERC20AssetInterface extends Interface {
     functionFragment: "experienceRegistry",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "hook", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "init", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "issuer", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "mint", data: BytesLike): Result;
@@ -522,6 +525,8 @@ export interface NTERC20Asset extends BaseContract {
 
   experienceRegistry: TypedContractMethod<[], [string], "view">;
 
+  hook: TypedContractMethod<[], [string], "view">;
+
   init: TypedContractMethod<[initData: BytesLike], [void], "nonpayable">;
 
   issuer: TypedContractMethod<[], [string], "view">;
@@ -627,6 +632,9 @@ export interface NTERC20Asset extends BaseContract {
   ): TypedContractMethod<[data: ERC20InitDataStruct], [string], "view">;
   getFunction(
     nameOrSignature: "experienceRegistry"
+  ): TypedContractMethod<[], [string], "view">;
+  getFunction(
+    nameOrSignature: "hook"
   ): TypedContractMethod<[], [string], "view">;
   getFunction(
     nameOrSignature: "init"

@@ -55,6 +55,7 @@ export interface BaseAssetInterface extends Interface {
       | "canUseAsset"
       | "canViewAsset"
       | "experienceRegistry"
+      | "hook"
       | "init"
       | "issuer"
       | "originAddress"
@@ -106,6 +107,7 @@ export interface BaseAssetInterface extends Interface {
     functionFragment: "experienceRegistry",
     values?: undefined
   ): string;
+  encodeFunctionData(functionFragment: "hook", values?: undefined): string;
   encodeFunctionData(functionFragment: "init", values: [BytesLike]): string;
   encodeFunctionData(functionFragment: "issuer", values?: undefined): string;
   encodeFunctionData(
@@ -160,6 +162,7 @@ export interface BaseAssetInterface extends Interface {
     functionFragment: "experienceRegistry",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "hook", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "init", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "issuer", data: BytesLike): Result;
   decodeFunctionResult(
@@ -302,6 +305,8 @@ export interface BaseAsset extends BaseContract {
 
   experienceRegistry: TypedContractMethod<[], [string], "view">;
 
+  hook: TypedContractMethod<[], [string], "view">;
+
   init: TypedContractMethod<[data: BytesLike], [void], "nonpayable">;
 
   issuer: TypedContractMethod<[], [string], "view">;
@@ -351,6 +356,9 @@ export interface BaseAsset extends BaseContract {
   ): TypedContractMethod<[args: AssetCheckArgsStruct], [boolean], "view">;
   getFunction(
     nameOrSignature: "experienceRegistry"
+  ): TypedContractMethod<[], [string], "view">;
+  getFunction(
+    nameOrSignature: "hook"
   ): TypedContractMethod<[], [string], "view">;
   getFunction(
     nameOrSignature: "init"
