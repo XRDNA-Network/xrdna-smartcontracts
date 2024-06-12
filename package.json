@@ -8,12 +8,12 @@
   "license": "MIT",
   "private": false,
   "scripts": {
-    "clean": "rimraf --glob artifacts/contracts artifacts/build-info dist *.tsbuildinfo",
+    "clean": "rimraf --glob artifacts/build-info dist *.tsbuildinfo",
     "deploy": "npx hardhat ignition deploy",
     "clear-deployment": "npx hardhat ignition wipe",
     "generate-verify-input": "cat $1 | jq -r '.input' > $1.input.json",
     "build": "yarn clean && yarn compile && tsc",
-    "compile": "hardhat compile",
+    "compile": "hardhat compile --force",
     "test": "hardhat test"
   },
   "devDependencies": {

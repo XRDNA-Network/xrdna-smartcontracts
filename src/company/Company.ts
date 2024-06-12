@@ -1,11 +1,10 @@
-import { AddressLike, Contract, Provider, Signer, TransactionReceipt, TransactionResponse } from "ethers";
+import { AddressLike, Contract, Provider, Signer, TransactionReceipt, TransactionResponse, ethers } from "ethers";
 import {abi} from "../../artifacts/contracts/company/Company.sol/Company.json";
 import { RPCRetryHandler } from "../RPCRetryHandler";
 import { VectorAddress } from "../VectorAddress";
 import { LogParser } from "../LogParser";
 import { LogNames } from "../LogNames";
-import { Experience, IExperienceInitData } from "../experience";
-import { ethers } from "hardhat";
+import { Experience } from "../experience";
 import { Avatar } from "../avatar/Avatar";
 import { ERC20Asset, ERC721Asset } from "../asset";
 

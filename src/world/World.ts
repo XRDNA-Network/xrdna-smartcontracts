@@ -170,7 +170,7 @@ export class World {
             throw new Error(`Transaction failed: ${receipt.transactionHash}`);
         }
         const logs = this.parser.parseLogs(receipt);
-        const args = logs[LogNames.WorldUpgraded];
+        const args = logs.get(LogNames.WorldUpgraded);
         if (!args) {
             throw new Error("WorldUpgraded event not found in logs");
         }

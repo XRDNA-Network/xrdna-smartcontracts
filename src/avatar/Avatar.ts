@@ -1,8 +1,7 @@
-import { AddressLike, Contract, Provider, Signer, TransactionResponse } from "ethers";
+import { AddressLike, Contract, Provider, Signer, TransactionResponse, ethers } from "ethers";
 import {abi} from "../../artifacts/contracts/avatar/Avatar.sol/Avatar.json";
 import { RPCRetryHandler } from "../RPCRetryHandler";
 import { VectorAddress } from "../VectorAddress";
-import { ethers } from "hardhat";
 import { LogParser } from "../LogParser";
 import { LogNames } from "../LogNames";
 
