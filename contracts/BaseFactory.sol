@@ -20,6 +20,10 @@ abstract contract BaseFactory is IBaseFactory, AccessControl {
         _;
     }
 
+    /**
+     * @dev Initializes the contract with the main admin (role assigner) and a list of 
+     * admins (can only change factory)
+     */
     constructor(address mainAdmin, address[] memory admins) {
         require(mainAdmin != address(0), "BaseFactory: main admin cannot be zero address");
         _grantRole(DEFAULT_ADMIN_ROLE, mainAdmin);

@@ -7,11 +7,19 @@ import {AccessControl} from '@openzeppelin/contracts/access/AccessControl.sol';
 import {IAssetRegistry} from './IAssetRegistry.sol';
 
 struct MultiAssetRegistryConstructorArgs {
+    //role assigner and registry admin
     address mainAdmin;
+
+    //register admins
     address[] admins;
+
+    //initial set of registries to check
     IAssetRegistry[] registries;
 }
 
+/*
+ * @inheritdoc IMultiAssetRegistry
+ */
 contract MultiAssetRegistry is IMultiAssetRegistry, AccessControl {
 
     bytes32 public constant ADMIN_ROLE = keccak256('ADMIN_ROLE');
@@ -38,6 +46,9 @@ contract MultiAssetRegistry is IMultiAssetRegistry, AccessControl {
         }
     }
 
+    /**
+     * @inheritdoc IMultiAssetRegistry
+     */
     function isRegisteredAsset(address asset) external view override returns (bool) {
         for (uint256 i = 0; i < registries.length; i++) {
             if (registries[i].isRegisteredAsset(asset)) {
@@ -47,6 +58,9 @@ contract MultiAssetRegistry is IMultiAssetRegistry, AccessControl {
         return false;
     }
 
+    /**
+     * @inheritdoc IMultiAssetRegistry
+     */
     function registerRegistry(IAssetRegistry registry) external onlyAdmin override {
         require(registry != IAssetRegistry(address(0)), 'MultiAssetRegistry: registry is the zero address');
         registries.push(registry);

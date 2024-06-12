@@ -78,6 +78,12 @@ contract Company is ICompany, BaseAccess, ReentrancyGuard {
         CompanyV1Storage storage s = LibCompanyV1Storage.load();
         require(s.owner == address(0), "Company: already initialized");
         require(request.owner != address(0), "Company: owner cannot be 0x0");
+
+        /**
+        * WARN: there is an issue with unicode or whitespace characters present in names. 
+        * Off-chain verification should ensure that names are properly trimmed and
+        * filtered with hidden characters if we truly want visually-unique names.
+        */
         require(bytes(request.name).length > 0, "Company: name cannot be empty");
         require(request.world != address(0), "Company: world cannot be 0x0");
         s.owner = request.owner;

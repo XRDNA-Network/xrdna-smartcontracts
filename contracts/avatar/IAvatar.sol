@@ -117,6 +117,11 @@ interface IAvatar is IERC721Receiver {
 
 
     /**
+     * @dev Get the address of any custom installed hook for the avatar
+     */
+    function hook() external view returns (IAvatarHook);
+    
+    /**
      * @dev Set a hook contract for the avatar. This must be called by the avatar owner.
      */
     function setHook(IAvatarHook hook) external;

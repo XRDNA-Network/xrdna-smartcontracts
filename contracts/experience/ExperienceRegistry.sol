@@ -97,6 +97,11 @@ contract ExperienceRegistry is IExperienceRegistry, ReentrancyGuard, AccessContr
     function registerExperience(RegisterExperienceRequest memory request) public  onlyCompany nonReentrant returns(address, uint256) {
         IBasicCompany company = IBasicCompany(msg.sender);
         string memory lowerName = request.name.lower();
+        /**
+        * WARN: there is an issue with unicode or whitespace characters present in names. 
+        * Off-chain verification should ensure that names are properly trimmed and
+        * filtered with hidden characters if we truly want visually-unique names.
+        */
         require(experiencesByName[lowerName].company == address(0), "ExperienceRegistry: experience name already exists");
         IExperience exp = IExperience(experienceFactory.createExperience(msg.sender, request.name, request.vector, request.initData));
         bytes32 hash = keccak256(abi.encode(request.vector.asLookupKey()));

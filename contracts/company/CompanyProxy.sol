@@ -6,8 +6,4 @@ import {BaseProxy, BaseProxyConstructorArgs} from '../BaseProxy.sol';
 
 contract CompanyProxy is BaseProxy {
     constructor(BaseProxyConstructorArgs memory args) BaseProxy(args) {}
-
-    function fundsReceived(uint256 amount) internal override {
-        //no-op
-    }
 }

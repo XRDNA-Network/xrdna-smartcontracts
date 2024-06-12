@@ -10,7 +10,4 @@ contract WorldProxy is BaseProxy {
     
     constructor(BaseProxyConstructorArgs memory args) BaseProxy(args) {}
 
-    function fundsReceived(uint256 amount) override internal {
-        //no-op
-    }
 }
