@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env bash
 
 NETWORK=$1;
 if [ -z "$NETWORK" ]; then
