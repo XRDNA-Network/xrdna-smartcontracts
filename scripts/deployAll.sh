@@ -8,7 +8,7 @@ fi
 CWD=`pwd`
 echo "Deploying to $NETWORK from $CWD"
 # World module encapsulates all other modules so deploying it deploys all
-MODULES=(./ignition/modules/asset/World.module.ts)
+MODULES=(./ignition/modules/world/World.module.ts)
 
 for module in ${MODULES[@]};
 do
