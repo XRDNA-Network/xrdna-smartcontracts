@@ -438,13 +438,9 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.WorldRegistry__factory>;
     getContractFactory(
-      name: "IWorld0_2",
+      name: "IWorldFactoryV2",
       signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.IWorld0_2__factory>;
-    getContractFactory(
-      name: "IWorldFactory0_2",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.IWorldFactory0_2__factory>;
+    ): Promise<Contracts.IWorldFactoryV2__factory>;
     getContractFactory(
       name: "IWorldHook",
       signerOrOptions?: ethers.Signer | FactoryOptions
@@ -454,33 +450,37 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IWorldProxy__factory>;
     getContractFactory(
-      name: "IWorldRegistry0_2",
+      name: "IWorldRegistryV2",
       signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.IWorldRegistry0_2__factory>;
+    ): Promise<Contracts.IWorldRegistryV2__factory>;
     getContractFactory(
-      name: "World0_2",
+      name: "IWorldV2",
       signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.World0_2__factory>;
+    ): Promise<Contracts.IWorldV2__factory>;
     getContractFactory(
       name: "INextVersion",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.INextVersion__factory>;
     getContractFactory(
-      name: "WorldFactory0_2",
+      name: "WorldFactoryV2",
       signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.WorldFactory0_2__factory>;
+    ): Promise<Contracts.WorldFactoryV2__factory>;
     getContractFactory(
       name: "WorldProxy",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.WorldProxy__factory>;
     getContractFactory(
-      name: "IWorldRegistry0_1",
+      name: "IWorldRegistryV1",
       signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.IWorldRegistry0_1__factory>;
+    ): Promise<Contracts.IWorldRegistryV1__factory>;
     getContractFactory(
-      name: "WorldRegistry0_2",
+      name: "WorldRegistryV2",
       signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.WorldRegistry0_2__factory>;
+    ): Promise<Contracts.WorldRegistryV2__factory>;
+    getContractFactory(
+      name: "WorldV2",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.WorldV2__factory>;
     getContractFactory(
       name: "XRDNAGasToken",
       signerOrOptions?: ethers.Signer | FactoryOptions
@@ -1017,15 +1017,10 @@ declare module "hardhat/types/runtime" {
       signer?: ethers.Signer
     ): Promise<Contracts.WorldRegistry>;
     getContractAt(
-      name: "IWorld0_2",
+      name: "IWorldFactoryV2",
       address: string | ethers.Addressable,
       signer?: ethers.Signer
-    ): Promise<Contracts.IWorld0_2>;
-    getContractAt(
-      name: "IWorldFactory0_2",
-      address: string | ethers.Addressable,
-      signer?: ethers.Signer
-    ): Promise<Contracts.IWorldFactory0_2>;
+    ): Promise<Contracts.IWorldFactoryV2>;
     getContractAt(
       name: "IWorldHook",
       address: string | ethers.Addressable,
@@ -1037,40 +1032,45 @@ declare module "hardhat/types/runtime" {
       signer?: ethers.Signer
     ): Promise<Contracts.IWorldProxy>;
     getContractAt(
-      name: "IWorldRegistry0_2",
+      name: "IWorldRegistryV2",
       address: string | ethers.Addressable,
       signer?: ethers.Signer
-    ): Promise<Contracts.IWorldRegistry0_2>;
+    ): Promise<Contracts.IWorldRegistryV2>;
     getContractAt(
-      name: "World0_2",
+      name: "IWorldV2",
       address: string | ethers.Addressable,
       signer?: ethers.Signer
-    ): Promise<Contracts.World0_2>;
+    ): Promise<Contracts.IWorldV2>;
     getContractAt(
       name: "INextVersion",
       address: string | ethers.Addressable,
       signer?: ethers.Signer
     ): Promise<Contracts.INextVersion>;
     getContractAt(
-      name: "WorldFactory0_2",
+      name: "WorldFactoryV2",
       address: string | ethers.Addressable,
       signer?: ethers.Signer
-    ): Promise<Contracts.WorldFactory0_2>;
+    ): Promise<Contracts.WorldFactoryV2>;
     getContractAt(
       name: "WorldProxy",
       address: string | ethers.Addressable,
       signer?: ethers.Signer
     ): Promise<Contracts.WorldProxy>;
     getContractAt(
-      name: "IWorldRegistry0_1",
+      name: "IWorldRegistryV1",
       address: string | ethers.Addressable,
       signer?: ethers.Signer
-    ): Promise<Contracts.IWorldRegistry0_1>;
+    ): Promise<Contracts.IWorldRegistryV1>;
     getContractAt(
-      name: "WorldRegistry0_2",
+      name: "WorldRegistryV2",
       address: string | ethers.Addressable,
       signer?: ethers.Signer
-    ): Promise<Contracts.WorldRegistry0_2>;
+    ): Promise<Contracts.WorldRegistryV2>;
+    getContractAt(
+      name: "WorldV2",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.WorldV2>;
     getContractAt(
       name: "XRDNAGasToken",
       address: string | ethers.Addressable,
@@ -1502,13 +1502,9 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.WorldRegistry>;
     deployContract(
-      name: "IWorld0_2",
+      name: "IWorldFactoryV2",
       signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.IWorld0_2>;
-    deployContract(
-      name: "IWorldFactory0_2",
-      signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.IWorldFactory0_2>;
+    ): Promise<Contracts.IWorldFactoryV2>;
     deployContract(
       name: "IWorldHook",
       signerOrOptions?: ethers.Signer | DeployContractOptions
@@ -1518,33 +1514,37 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.IWorldProxy>;
     deployContract(
-      name: "IWorldRegistry0_2",
+      name: "IWorldRegistryV2",
       signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.IWorldRegistry0_2>;
+    ): Promise<Contracts.IWorldRegistryV2>;
     deployContract(
-      name: "World0_2",
+      name: "IWorldV2",
       signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.World0_2>;
+    ): Promise<Contracts.IWorldV2>;
     deployContract(
       name: "INextVersion",
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.INextVersion>;
     deployContract(
-      name: "WorldFactory0_2",
+      name: "WorldFactoryV2",
       signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.WorldFactory0_2>;
+    ): Promise<Contracts.WorldFactoryV2>;
     deployContract(
       name: "WorldProxy",
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.WorldProxy>;
     deployContract(
-      name: "IWorldRegistry0_1",
+      name: "IWorldRegistryV1",
       signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.IWorldRegistry0_1>;
+    ): Promise<Contracts.IWorldRegistryV1>;
     deployContract(
-      name: "WorldRegistry0_2",
+      name: "WorldRegistryV2",
       signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.WorldRegistry0_2>;
+    ): Promise<Contracts.WorldRegistryV2>;
+    deployContract(
+      name: "WorldV2",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.WorldV2>;
     deployContract(
       name: "XRDNAGasToken",
       signerOrOptions?: ethers.Signer | DeployContractOptions
@@ -2081,15 +2081,10 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.WorldRegistry>;
     deployContract(
-      name: "IWorld0_2",
+      name: "IWorldFactoryV2",
       args: any[],
       signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.IWorld0_2>;
-    deployContract(
-      name: "IWorldFactory0_2",
-      args: any[],
-      signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.IWorldFactory0_2>;
+    ): Promise<Contracts.IWorldFactoryV2>;
     deployContract(
       name: "IWorldHook",
       args: any[],
@@ -2101,40 +2096,45 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.IWorldProxy>;
     deployContract(
-      name: "IWorldRegistry0_2",
+      name: "IWorldRegistryV2",
       args: any[],
       signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.IWorldRegistry0_2>;
+    ): Promise<Contracts.IWorldRegistryV2>;
     deployContract(
-      name: "World0_2",
+      name: "IWorldV2",
       args: any[],
       signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.World0_2>;
+    ): Promise<Contracts.IWorldV2>;
     deployContract(
       name: "INextVersion",
       args: any[],
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.INextVersion>;
     deployContract(
-      name: "WorldFactory0_2",
+      name: "WorldFactoryV2",
       args: any[],
       signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.WorldFactory0_2>;
+    ): Promise<Contracts.WorldFactoryV2>;
     deployContract(
       name: "WorldProxy",
       args: any[],
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.WorldProxy>;
     deployContract(
-      name: "IWorldRegistry0_1",
+      name: "IWorldRegistryV1",
       args: any[],
       signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.IWorldRegistry0_1>;
+    ): Promise<Contracts.IWorldRegistryV1>;
     deployContract(
-      name: "WorldRegistry0_2",
+      name: "WorldRegistryV2",
       args: any[],
       signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.WorldRegistry0_2>;
+    ): Promise<Contracts.WorldRegistryV2>;
+    deployContract(
+      name: "WorldV2",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.WorldV2>;
     deployContract(
       name: "XRDNAGasToken",
       args: any[],

@@ -6,7 +6,7 @@ import {ICompanyRegistry, CompanyRegistrationRequest} from './ICompanyRegistry.s
 import {AccessControl} from '@openzeppelin/contracts/access/AccessControl.sol';
 import {ReentrancyGuard} from '@openzeppelin/contracts/utils/ReentrancyGuard.sol';
 import {ICompanyFactory} from './ICompanyFactory.sol';
-import {IWorldRegistry0_2} from '../world/v0.2/IWorldRegistry0_2.sol';
+import {IWorldRegistryV2} from '../world/v0.2/IWorldRegistryV2.sol';
 import {LibStringCase} from '../LibStringCase.sol';
 import {CompanyInitArgs} from './ICompany.sol';
 import {VectorAddress, LibVectorAddress} from '../VectorAddress.sol';
@@ -26,7 +26,7 @@ contract CompanyRegistry is ICompanyRegistry, ReentrancyGuard, AccessControl {
     bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
 
     ICompanyFactory public companyFactory;
-    IWorldRegistry0_2 public worldRegistry;
+    IWorldRegistryV2 public worldRegistry;
 
     mapping(string => address) _companiesByName;
     mapping(address => bool) _companies;
@@ -59,7 +59,7 @@ contract CompanyRegistry is ICompanyRegistry, ReentrancyGuard, AccessControl {
         require(args.companyFactory != address(0), "CompanyRegistry: factory address cannot be 0");
         require(args.worldRegistry != address(0), "CompanyRegistry: world registry address cannot be 0");
         companyFactory = ICompanyFactory(args.companyFactory);
-        worldRegistry = IWorldRegistry0_2(args.worldRegistry);
+        worldRegistry = IWorldRegistryV2(args.worldRegistry);
         for (uint256 i = 0; i < args.admins.length; i++) {
             require(args.admins[i] != address(0), "CompanyRegistry: admin address cannot be 0");
             _grantRole(ADMIN_ROLE, args.admins[i]);
@@ -84,7 +84,7 @@ contract CompanyRegistry is ICompanyRegistry, ReentrancyGuard, AccessControl {
 
     function setWorldRegistry(address registry) public onlyAdmin {
         require(registry != address(0), "CompanyRegistry: world registry address cannot be 0");
-        worldRegistry = IWorldRegistry0_2(registry);
+        worldRegistry = IWorldRegistryV2(registry);
     }
 
     

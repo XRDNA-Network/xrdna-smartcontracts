@@ -69,9 +69,9 @@ contract World is IWorld, AccessControl {
         (WorldInfo memory info) = abi.decode(initData, (WorldInfo));
         //console.log("Decoded init data", info.name, info.baseVector.asLookupKey());
 
-        address signer = info.baseVector.getSigner(info.vectorAuthorizedSignature);
+       // address signer = info.baseVector.getSigner(info.vectorAuthorizedSignature);
         
-        require(worldRegistry.isVectorAddressAuthority(signer), "World: unauthorized vector address");
+       // require(worldRegistry.isVectorAddressAuthority(signer), "World: unauthorized vector address");
         //console.log("Decoded init data", info.name, info.baseVector.asLookupKey());
         baseVector = info.baseVector;
         name = info.name;

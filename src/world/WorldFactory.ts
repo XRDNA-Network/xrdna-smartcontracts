@@ -1,5 +1,5 @@
 import { Signer, TransactionResponse, ethers } from "ethers";
-import {abi as WorldFactoryABI} from "../../artifacts/contracts/world/v0.2/WorldFactory0_2.sol/WorldFactory0_2.json";
+import {abi as WorldFactoryABI} from "../../artifacts/contracts/world/v0.2/WorldFactoryV2.sol/WorldFactoryV2.json";
 import { RPCRetryHandler } from "../RPCRetryHandler";
 
 /**

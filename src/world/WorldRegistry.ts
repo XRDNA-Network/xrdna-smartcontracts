@@ -1,6 +1,6 @@
 import { AddressLike, Provider, Signer, TransactionResponse, ethers } from "ethers";
-import {abi as WorldRegistryABI} from "../../artifacts/contracts/world/v0.2/WorldRegistry0_2.sol/WorldRegistry0_2.json";
-import {abi as WorldABI} from "../../artifacts/contracts/world/v0.2/World0_2.sol/World0_2.json";
+import {abi as WorldRegistryABI} from "../../artifacts/contracts/world/v0.2/WorldRegistryV2.sol/WorldRegistryV2.json";
+import {abi as WorldABI} from "../../artifacts/contracts/world/v0.2/WorldV2.sol/WorldV2.json";
 import { LogParser } from "../LogParser";
 import { LogNames } from "../LogNames";
 import { RPCRetryHandler } from "../RPCRetryHandler";

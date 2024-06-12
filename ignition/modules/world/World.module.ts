@@ -4,7 +4,6 @@ import AvatarModule from "../avatar/Avatar.module";
 import MultiAssetModule from "../asset/MultiAssetRegistry.module";
 import PortalRegistryModule from "../portal/PortalRegistry.module";
 import { NamedArtifactContractDeploymentFuture } from "@nomicfoundation/ignition-core";
-import { RegistrarRegistry } from "../../../src";
 import RegistrarRegistryModule from "../RegistrarRegistry.module";
 import WorldProxyModule from './WorldProxy.module';
 
@@ -26,12 +25,12 @@ export interface IWorldDeploymentResult {
     experienceFactory: NamedArtifactContractDeploymentFuture<"ExperienceFactory">;
     portalRegistry: NamedArtifactContractDeploymentFuture<"PortalRegistry">;
     registrarRegistry: NamedArtifactContractDeploymentFuture<"RegistrarRegistry">;
-    worldMasterCopy: NamedArtifactContractDeploymentFuture<"World0_2">;
-    worldRegistry: NamedArtifactContractDeploymentFuture<"WorldRegistry0_2">;
-    worldFactory: NamedArtifactContractDeploymentFuture<"WorldFactory0_2">;
+    worldMasterCopy: NamedArtifactContractDeploymentFuture<"WorldV2">;
+    worldRegistry: NamedArtifactContractDeploymentFuture<"WorldRegistryV2">;
+    worldFactory: NamedArtifactContractDeploymentFuture<"WorldFactoryV2">;
 }
 
-export default buildModule("World0_2", (m) => {
+export default buildModule("WorldV2", (m) => {
     
     const proxy = m.useModule(WorldProxyModule);
     
@@ -47,7 +46,7 @@ export default buildModule("World0_2", (m) => {
         companyRegistry: comp.companyRegistry,
         avatarRegistry: avatar.avatarRegistry
     }
-    const master = m.contract("World0_2", [args], {
+    const master = m.contract("WorldV2", [args], {
         after: [proxy.worldFactory, proxy.worldRegistry, avatar.avatarRegistry, comp.companyRegistry]
     });
     m.call(proxy.worldFactory, "setImplementation", [master]);

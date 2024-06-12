@@ -5,7 +5,6 @@ pragma solidity ^0.8.24;
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
-import "hardhat/console.sol";
 
 struct VectorAddress {
     string  x;
@@ -45,11 +44,12 @@ library LibVectorAddress {
         return keccak256(abi.encodePacked(asLookupKey(self))) == keccak256(abi.encodePacked(asLookupKey(other)));
     }
 
-    function getSigner(VectorAddress memory self, bytes memory signature) internal pure returns (address) {
+    function getSigner(VectorAddress memory self, uint256 registrarId, bytes memory signature) internal pure returns (address) {
         string memory asKey = asLookupKey(self);
+        bytes memory merged = abi.encode(asKey, registrarId);
         //NOTE: have to convert the bytes32 to bytes in order for message hash 
         //prefix to match what's being done off-chain.
-        bytes32 hash = keccak256(bytes(asKey));
+        bytes32 hash = keccak256(merged);
         bytes memory b = new bytes(32);
         assembly {
             mstore(add(b, 32), hash) // set the bytes data

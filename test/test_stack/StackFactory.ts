@@ -137,7 +137,7 @@ export class StackFactory {
             p_sub: 0n
         } as VectorAddress;
 
-        const sig = await signVectorAddress(baseVector, this.admins.worldRegistryAdmin);
+        const sig = await signVectorAddress(baseVector, this.registrarId, this.admins.worldRegistryAdmin);
         const worldRegistration = {
             baseVector,
             name: "Test World",
@@ -202,7 +202,7 @@ export class StackFactory {
             p_sub: 0n
         } as VectorAddress;
 
-        const sig = await signVectorAddress(baseVector, this.admins.worldRegistryAdmin);
+        const sig = await signVectorAddress(baseVector, this.registrarId!, this.admins.worldRegistryAdmin);
         const worldRegistration = {
             baseVector,
             name: "Test World 2",

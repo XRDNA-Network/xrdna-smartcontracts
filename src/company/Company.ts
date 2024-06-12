@@ -166,7 +166,6 @@ export class Company {
     }
 
     async revoke(asset: string, holder: string, amountOrTokenId: bigint): Promise<TransactionResponse> {
-        console.log("revoke", asset, holder, amountOrTokenId);
         const data = ethers.AbiCoder.defaultAbiCoder().encode(["uint256"], [amountOrTokenId]);
         return await RPCRetryHandler.withRetry(() => this.con.revoke(asset, holder, data));
     }
