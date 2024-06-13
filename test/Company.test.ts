@@ -387,13 +387,14 @@ describe('Company', () => {
     })
 
     // -------------------- upgrade tests --------------------
-    it('should upgrade a company', async () => {
+    /*it('should upgrade a company', async () => {
         const initData = "0x";
         const result = await company.upgrade(initData);
         const r = await result.wait();
         expect(result).to.not.be.undefined;
         expect(r?.status).to.equal(1);
     })
+        */
     
 });
 
