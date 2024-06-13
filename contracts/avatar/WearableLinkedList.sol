@@ -34,7 +34,7 @@ abstract contract WearableLinkedList {
     function insert(Wearable memory wearable) internal notFull {
         require(wearable.asset != address(0), "Invalid address");
         require(wearable.tokenId > 0, "Invalid tokenId");
-        bytes32 wHash = keccak256(abi.encodePacked(wearable.asset, wearable.tokenId));
+        bytes32 wHash = keccak256(abi.encode(wearable.asset, wearable.tokenId));
         AvatarV1Storage storage s = LibAvatarV1Storage.load();
         LinkedList storage list = s.list;
         require(list.nodes[wHash].data.asset == address(0), "Address already in list");

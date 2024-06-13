@@ -16,6 +16,7 @@ import { IPortalInfo } from "../../src/portal";
 import { IERC20AssetStack } from "./asset/erc20/IERC20AssetStack";
 import { IERC721AssetStack } from "./asset/erc721/IERC721AssetStack";
 import { MultiAssetRegistryStackImpl } from "./asset/MultiAssetRegistryStackImpl";
+import { XRDNASigners } from "../../src";
 
 export interface IEcosystem {
         world: World,
@@ -49,41 +50,45 @@ const BAYC = "0xBC4CA0EdA7647A8aB7C2061c2E118A18a936f13D";
 export interface IStackAdmins {
     assetRegistryAdmin: Signer;
     avatarRegistryAdmin: Signer;
-    avatarOwner: Signer;
     companyRegistryAdmin: Signer;
     experienceRegistryAdmin: Signer;
     portalRegistryAdmin: Signer;
     registrarAdmin: Signer;
     registrarSigner: Signer;
     worldRegistryAdmin: Signer;
-    worldOwner: Signer;
+    vectorAuthority: Signer;
+}
 
+export interface IEntityOwners {
+    avatarOwner: Signer;
+    companyOwner: Signer;
+    worldOwner: Signer;
 }
 
 export class StackFactory {
     stacksByType: Map<string, any> = new Map();
     registrarId?: bigint;
     world?: World;
-    constructor(readonly admins: IStackAdmins) {}
+    readonly admins: IStackAdmins;
+    constructor(readonly owners: IEntityOwners) {
+        const xrdna = new XRDNASigners(ethers.provider);
+        const config = xrdna.testingConfig;
+        this.admins = {
+            assetRegistryAdmin: config.assetRegistryAdmin,
+            avatarRegistryAdmin: config.avatarRegistryAdmin,
+            companyRegistryAdmin: config.companyRegistryAdmin,
+            experienceRegistryAdmin: config.experienceRegistryAdmin,
+            portalRegistryAdmin: config.portalRegistryAdmin,
+            registrarAdmin: config.registrarRegistryAdmin,
+            registrarSigner: config.registrarRegistryAdmin,
+            worldRegistryAdmin: config.worldRegistryAdmin,
+            vectorAuthority: config.vectorAddressAuthority
+        }
+       
+    }
 
 
     async init(): Promise<{world: World, worldRegistration: IWorldRegistration}> {
-
-        //registrar admin is XRDNA signer
-        await network.provider.request({
-            method: "hardhat_impersonateAccount",
-            params: ["0x28ba8a72cc5d3eafdbd27929b658e446c697148b"],
-        });
-        const t = await this.admins.registrarAdmin.sendTransaction({
-            to: "0x28ba8a72cc5d3eafdbd27929b658e446c697148b",
-            value: ethers.parseEther("100.0")
-        });
-        const r = await t.wait();
-        if(!r!.status) {
-            throw new Error("Failed to fund registrar admin");
-        }
-        this.admins.registrarAdmin = await ethers.getSigner("0x28ba8a72cc5d3eafdbd27929b658e446c697148b");
-        this.admins.registrarSigner = this.admins.registrarAdmin;
 
         const world = new WorldStackImpl(this);
         const worldDeployment = await world.deploy();
@@ -158,7 +163,7 @@ export class StackFactory {
             initData: "0x",
             vectorAuthoritySignature: sig,
             oldWorld: ZeroAddress,
-            owner: await this.admins.worldOwner.getAddress(),
+            owner: await this.owners.worldOwner.getAddress(),
             registrarId: this.registrarId,
             sendTokensToWorldOwner: false
         };
@@ -175,7 +180,7 @@ export class StackFactory {
         }
         this.world = new World({
             address: wRes.worldAddress,
-            admin: this.admins.worldOwner
+            admin: this.owners.worldOwner
         });
         return {
             world: this.world,
@@ -212,7 +217,7 @@ export class StackFactory {
             initData: "0x",
             vectorAuthoritySignature: sig,
             oldWorld: ZeroAddress,
-            owner: await this.admins.worldOwner.getAddress(),
+            owner: await this.owners.worldOwner.getAddress(),
             registrarId: this.registrarId!,
             sendTokensToWorldOwner: false
         };
@@ -230,7 +235,7 @@ export class StackFactory {
         }
         const world2 = new World({
             address: wRes.worldAddress,
-            admin: this.admins.worldOwner
+            admin: this.owners.worldOwner
         });
 
         const companyRegistration = await this.world.registerCompany({
@@ -298,7 +303,7 @@ export class StackFactory {
         
         const avatarRegistration = await this.world.registerAvatar({
             sendTokensToAvatarOwner: false,
-            avatarOwner: this.admins.avatarOwner.getAddress(),
+            avatarOwner: this.owners.avatarOwner.getAddress(),
             defaultExperience: experience.address,
             username: "Test Avatar",
             appearanceDetails: "0x",
@@ -307,7 +312,7 @@ export class StackFactory {
 
         const avatar = new Avatar({
             address: avatarRegistration.avatarAddress.toString(),
-            admin: this.admins.avatarOwner
+            admin: this.owners.avatarOwner
         });
 
         const pr = this.getStack<PortalStackImpl>(StackType.PORTAL).getPortalRegistry();

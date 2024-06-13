@@ -8,9 +8,6 @@ describe('Avatar', () => {
     let sf: StackFactory;
     let admins: IStackAdmins
     let world: World;
-    let registrarAdmin: ethers.Signer;
-    let registrarSigner: ethers.Signer;
-    let worldRegistryAdmin: ethers.Signer;
     let worldOwner: ethers.Signer;
     let avatarOwner: ethers.Signer;
     let companyOwner: ethers.Signer;
@@ -18,25 +15,16 @@ describe('Avatar', () => {
 
     before(async () => {
         const signers = await ethers.getSigners();
-        registrarAdmin = signers[0];
-        registrarSigner = signers[0];
-        worldRegistryAdmin = signers[0];
         worldOwner = signers[1];
         companyOwner = signers[2];
         avatarOwner = signers[3];
-        admins = {
-            assetRegistryAdmin: signers[0],
-            avatarRegistryAdmin: signers[0],
-            companyRegistryAdmin: signers[0],
-            experienceRegistryAdmin: signers[0],
-            portalRegistryAdmin: signers[0],
-            registrarAdmin,
-            registrarSigner,
-            worldRegistryAdmin,
-            worldOwner,
-            avatarOwner
-        }
-        sf = new StackFactory(admins);
+        
+        sf = new StackFactory({
+            worldOwner: worldOwner,
+            companyOwner: companyOwner,
+            avatarOwner: avatarOwner
+        });
+        admins = sf.admins;
         const {world:w, worldRegistration: wr} = await sf.init();
         
         ecosystem = await sf.getEcosystem();
@@ -78,6 +66,7 @@ describe('Avatar', () => {
     it('should remove a wearable from an avatar', async () => {
         const {avatar, testERC721} = ecosystem;
         const wearables = await avatar.getWearables();
+
         const wearable = wearables[0];
         const r = await avatar.removeWearable(wearable);
         expect(r).to.not.be.undefined;

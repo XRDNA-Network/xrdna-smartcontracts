@@ -1,15 +1,18 @@
 import { buildModule } from "@nomicfoundation/hardhat-ignition/modules";
-import {config} from "../config";
+import {XRDNASigners} from '../../../src';
+import {network} from 'hardhat';
 import CompanyFactoryModule from "./CompanyFactory.module";
 import WorldRegistryModule0_2 from "../world/WorldRegistry.module";
 
 export default buildModule("CompanyRegistry", (m) => {
     
-    const admins = config.companyRegistryAdmins;
-
+   
+    const xrdna = new XRDNASigners();
+    const config = xrdna.deployment[network.config.chainId || 55555];
+    const acct = config.companyRegistryAdmin;
+    const admins = config.companyRegistryOtherAdmins;
     const fac = m.useModule(CompanyFactoryModule);
     const wReg = m.useModule(WorldRegistryModule0_2);
-    const acct = m.getAccount(0);
 
     const args = {
         mainAdmin: acct,

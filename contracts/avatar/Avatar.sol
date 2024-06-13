@@ -316,6 +316,8 @@ contract Avatar is IAvatar, ReentrancyGuard, WearableLinkedList {
      * @dev Remove a wearable asset from the avatar. This must be called by the avatar owner.
      */
     function removeWearable(Wearable calldata wearable) public onlyOwner override {
+        require(wearable.asset != address(0), "Avatar: wearable asset cannot be zero address");
+        require(wearable.tokenId > 0, "Avatar: wearable tokenId cannot be zero");
         remove(wearable);
         emit WearableRemoved(wearable.asset, wearable.tokenId);
     }

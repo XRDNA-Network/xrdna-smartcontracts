@@ -20,5 +20,9 @@ interface ICompanyHook {
      * @dev Called before minting an asset.
      */
     function beforeMint(address asset, address to, uint256 amount) external returns (bool);
+    
+    /**
+     * @dev Called before revoking an asset.
+     */
     function beforeRevoke(address asset, address holder, uint256 amountOrTokenId) external returns (bool);
 }

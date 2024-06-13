@@ -18,6 +18,7 @@ struct WorldRegistryContructorArgs {
     address registrarRegistry;
     address defaultAdmin;
     address oldWorldRegistry;
+    address[] otherAdmins;
 }
 
 interface IWorldRegistryV1 {
@@ -69,7 +70,11 @@ contract WorldRegistryV2 is IWorldRegistryV2, ReentrancyGuard, AccessControl {
         registrarRegistry = IRegistrarRegistry(args.registrarRegistry);
         _grantRole(DEFAULT_ADMIN_ROLE, args.defaultAdmin);
         _grantRole(ADMIN_ROLE, args.defaultAdmin);
-        _grantRole(VECTOR_AUTHORITY_ROLE, args.defaultAdmin);
+        _grantRole(VECTOR_AUTHORITY_ROLE, args.vectorAuthority);
+        for(uint256 i = 0; i < args.otherAdmins.length; i++) {
+            require(args.otherAdmins[i] != address(0), "WorldRegistry0_2: otherAdmins cannot contain 0x0");
+            _grantRole(ADMIN_ROLE, args.otherAdmins[i]);
+        }
     }
 
     receive() external payable {

@@ -8,6 +8,13 @@ export interface IExperienceRegistryOpts {
     admin: Provider | Signer;
 }
 
+export interface IExperienceInfo {
+    company: string;
+    world: string;
+    experience: string;
+    portalId: bigint;
+}
+
 export class ExperienceRegistry {
     private con: Contract;
     readonly address: string;
@@ -29,5 +36,15 @@ export class ExperienceRegistry {
 
     async registerExperience(bytes: string): Promise<TransactionResponse> {
         return await RPCRetryHandler.withRetry(() => this.con.registerExperience(bytes));
+    }
+
+    async getExperienceInfo(address: string): Promise<IExperienceInfo> {
+        const r = await RPCRetryHandler.withRetry(() => this.con.experiencesByAddress(address));
+        return {
+            company: r[0],
+            world: r[1],
+            experience: r[2],
+            portalId: r[3]
+        } as IExperienceInfo;
     }
 }

@@ -44,6 +44,7 @@ contract RegistrarRegistry is IRegistrarRegistry, AccessControl {
         require(mainAdmin != address(0), "RegistrarRegistry: mainAdmin cannot be zero address");
         _grantRole(DEFAULT_ADMIN_ROLE, mainAdmin);
         _grantRole(ADMIN_ROLE, mainAdmin);
+        _grantRole(REGISTER_ROLE, mainAdmin);
         for (uint256 i = 0; i < registerers.length; i++) {
             require(registerers[i] != address(0), "RegistrarRegistry: registerer cannot be address");
             _grantRole(REGISTER_ROLE, registerers[i]);

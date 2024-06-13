@@ -57,7 +57,13 @@ export class Avatar {
     }
 
     async getWearables(): Promise<IWearable[]> {
-        return await RPCRetryHandler.withRetry(() => this.con.getWearables());
+        const r = await RPCRetryHandler.withRetry(() => this.con.getWearables());
+        return r.map((w: any) => {
+            return {
+                asset: w[0],
+                tokenId: w[1]
+            } as IWearable;
+        });
     }
 
     async setCanReceiveTokensOutsideOfExperience(canReceive: boolean): Promise<TransactionResponse> {

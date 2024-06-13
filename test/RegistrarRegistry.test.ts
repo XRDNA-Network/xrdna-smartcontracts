@@ -27,14 +27,7 @@ describe("RegistrarRegistry", () => {
             registrarAdmin = signers[0];
             registrarSigner = signers[0];
             stack = new StackFactory({
-                assetRegistryAdmin: signers[0],
-                avatarRegistryAdmin: signers[0],
-                companyRegistryAdmin: signers[0],
-                experienceRegistryAdmin: signers[0],
-                portalRegistryAdmin: signers[0],
-                registrarAdmin,
-                registrarSigner,
-                worldRegistryAdmin: signers[0],
+                companyOwner: signers[1],
                 worldOwner: signers[1],
                 avatarOwner: signers[1],
             });

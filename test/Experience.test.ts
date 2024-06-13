@@ -30,23 +30,13 @@ describe('Experience', () => {
     before(async () => {
         signers = await ethers.getSigners();
         
-        registrarAdmin = signers[0];
-        registrarSigner = signers[0];
-        worldRegistryAdmin = signers[0];
         worldOwner = signers[1];
         companyOwner = signers[2];
         avatarOwner = signers[3];
         stack = new StackFactory({
-            assetRegistryAdmin: signers[0],
-            avatarRegistryAdmin: signers[0],
-            companyRegistryAdmin: signers[0],
-            experienceRegistryAdmin: signers[0],
-            portalRegistryAdmin: signers[0],
-            registrarAdmin,
-            registrarSigner,
-            worldRegistryAdmin,
-            worldOwner,
-            avatarOwner
+            worldOwner: worldOwner,
+            companyOwner: companyOwner,
+            avatarOwner: avatarOwner,
         });
         const {world:w, worldRegistration: wr} = await stack.init();
         world = w;

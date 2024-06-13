@@ -20,16 +20,13 @@ import { PortalStackImpl } from "./test_stack/portal/PortalStackImpl";
 
 
 describe('Company', () => {
-    let signers: HardhatEthersSigner[];
-    let registrarAdmin:HardhatEthersSigner
-    let registrarSigner:HardhatEthersSigner
-    let worldRegistryAdmin:HardhatEthersSigner
-    let worldOwner:HardhatEthersSigner
-    let companyOwner:HardhatEthersSigner
-    let avatarOwner:HardhatEthersSigner
     let stack: StackFactory;
     let company: Company;
     let world: World;
+    let signers: HardhatEthersSigner[];
+    let avatarOwner: HardhatEthersSigner;
+    let companyOwner: HardhatEthersSigner;
+    let worldOwner: HardhatEthersSigner;
     let companyInfo: ICompanyRegistrationResult
     let erc20Stack: IERC20AssetStack;
     let erc20Registry: ERC20AssetRegistry;
@@ -47,24 +44,14 @@ describe('Company', () => {
     let mintedERC721TokenId: bigint;
     before(async () => {
         signers = await ethers.getSigners();
-        
-        registrarAdmin = signers[0];
-        registrarSigner = signers[0];
-        worldRegistryAdmin = signers[0];
-        worldOwner = signers[1];
-        companyOwner = signers[2];
-        avatarOwner = signers[3];
+        avatarOwner = signers[2];
+        companyOwner = signers[3];
+        worldOwner = signers[4];
+
         stack = new StackFactory({
-            assetRegistryAdmin: signers[0],
-            avatarRegistryAdmin: signers[0],
-            avatarOwner,
-            companyRegistryAdmin: signers[0],
-            experienceRegistryAdmin: signers[0],
-            portalRegistryAdmin: signers[0],
-            registrarAdmin,
-            registrarSigner,
-            worldRegistryAdmin,
-            worldOwner
+            worldOwner: worldOwner,
+            companyOwner: companyOwner,
+            avatarOwner: avatarOwner
         });
         const {world:w, worldRegistration: wr} = await stack.init();
         world = w;
@@ -103,6 +90,7 @@ describe('Company', () => {
             issuer: company.address,
             originChainId: 1n,
             decimals: 18,
+            maxSupply: ethers.MaxUint256,
             name: "Test ERC20 Asset",
             symbol: "TEST20"
         }
@@ -182,9 +170,8 @@ describe('Company', () => {
     it('should retrieve vector of a company', async () => {
         const v = await company.vectorAddress();
         expect(v).to.not.be.undefined;
-        // created experience above, so p_sub should be greater than 0
-        const nextPSub = await company.nextPSub();
-        expect(nextPSub).to.be.greaterThan(0);
+
+        expect(v.p).to.be.greaterThan(0);
     })
 
     it('should add a signer to a company', async () => {
@@ -299,7 +286,16 @@ describe('Company', () => {
         const expAddress = experience.address;
         const experienceRegistry = await experienceStack.getExperienceRegistry();
         const isExp = await experienceRegistry.isExperience(expAddress);
+        const {portalId} = await experienceRegistry.getExperienceInfo(expAddress);
         expect(isExp).to.be.true;
+        const expInstance = new Experience({
+            address: expAddress,
+            portalId: portalId,
+            provider: ethers.provider
+        });
+        const vector = await expInstance.vectorAddress();
+        expect(vector.p).to.be.greaterThan(0);
+        expect(vector.p_sub).to.be.greaterThan(0);
     })
 
     it('should add experience condition to a company', async () => {
@@ -378,7 +374,7 @@ describe('Company', () => {
     })
     // -------------------- withdraw tests --------------------
     it('should withdraw tokens from a company', async () => {
-        registrarSigner.sendTransaction({
+        await stack.admins.registrarAdmin.sendTransaction({
             to: company.address,
             value: ethers.parseEther("1.0")
         });

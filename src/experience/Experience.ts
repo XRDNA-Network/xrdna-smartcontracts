@@ -47,7 +47,15 @@ export class Experience {
     }
 
     async vectorAddress(): Promise<VectorAddress> {
-        return await RPCRetryHandler.withRetry(() => this.con.vectorAddress());
+        const r = await RPCRetryHandler.withRetry(() => this.con.vectorAddress());
+        return {
+            x: r[0],
+            y: r[1],
+            z: r[2],
+            t: r[3],
+            p: r[4],
+            p_sub: r[5]
+        } as VectorAddress;
     }
 
 }

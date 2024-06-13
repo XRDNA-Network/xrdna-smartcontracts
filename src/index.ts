@@ -4,4 +4,4 @@ export * from './asset';
 export * from './registrar';
 export * from './world';
 export * from './ChainIds';
-export * from './ContractAddresses';
+export * from './XRDNASigners';

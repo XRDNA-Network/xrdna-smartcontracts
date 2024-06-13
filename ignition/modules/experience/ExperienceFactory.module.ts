@@ -1,10 +1,15 @@
 import { buildModule } from "@nomicfoundation/hardhat-ignition/modules";
-import {config} from "../config";
+import {XRDNASigners} from '../../../src';
+import {network} from 'hardhat';
+
 
 export default buildModule("ExperienceFactory", (m) => {
     
-    const admins = config.experienceFactoryAdmins;
-    const acct = m.getAccount(0);
+    const xrdna = new XRDNASigners();
+    const config = xrdna.deployment[network.config.chainId || 55555];
+    const acct = config.experienceFactoryAdmin;
+    const admins = config.experienceFactoryOtherAdmins;
+
     const Factory = m.contract("ExperienceFactory", [acct, admins]);
     return {experienceFactory: Factory};
 });

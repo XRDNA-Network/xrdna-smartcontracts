@@ -12,6 +12,10 @@ import {CompanyInitArgs} from './ICompany.sol';
 import {VectorAddress, LibVectorAddress} from '../VectorAddress.sol';
 import {ICompany} from './ICompany.sol';
 
+
+/**
+ * @dev Args for the company registry
+ */
 struct CompanyRegistryArgs {
     address mainAdmin;
     address companyFactory;
@@ -19,6 +23,12 @@ struct CompanyRegistryArgs {
     address[] admins;
 }
 
+/**
+ * @title CompanyRegistry
+ * @dev Registry of companies. This contract is responsible for deploying new companies
+ * and keeping track of the current version of the company implementations. The registry
+ * is also responsible for upgrading companies to a new version.
+ */
 contract CompanyRegistry is ICompanyRegistry, ReentrancyGuard, AccessControl {
     using LibStringCase for string;
     using LibVectorAddress for VectorAddress;
@@ -68,27 +78,39 @@ contract CompanyRegistry is ICompanyRegistry, ReentrancyGuard, AccessControl {
     
     receive() external payable {}
 
-
+    /**
+     * @inheritdoc ICompanyRegistry
+     */
     function isRegisteredCompany(address company) external view returns (bool) {
         return _companies[company];
     }
 
+    /**
+     * @inheritdoc ICompanyRegistry
+     */
     function currentCompanyVersion() external view override returns (uint256) {
         return companyFactory.supportsVersion();
     }
 
+    /**
+     * @inheritdoc ICompanyRegistry
+     */
     function setCompanyFactory(address factory) public onlyAdmin {
         require(factory != address(0), "CompanyRegistry: factory address cannot be 0");
         companyFactory = ICompanyFactory(factory);
     }
 
+    /**
+     * @inheritdoc ICompanyRegistry
+     */
     function setWorldRegistry(address registry) public onlyAdmin {
         require(registry != address(0), "CompanyRegistry: world registry address cannot be 0");
         worldRegistry = IWorldRegistryV2(registry);
     }
 
-    
-
+    /**
+     * @inheritdoc ICompanyRegistry
+     */
     function registerCompany(CompanyRegistrationRequest memory request) external payable onlyWorld nonReentrant returns (address) {
         string memory nm = request.name.lower();
         /**
@@ -98,6 +120,8 @@ contract CompanyRegistry is ICompanyRegistry, ReentrancyGuard, AccessControl {
         */
         
         require(_companiesByName[nm] == address(0), "CompanyRegistry: company name already taken");
+        
+        //create a new company proxy
         address company = companyFactory.createCompany(CompanyInitArgs({
             owner: request.owner,
             world: msg.sender,
@@ -106,10 +130,13 @@ contract CompanyRegistry is ICompanyRegistry, ReentrancyGuard, AccessControl {
             name: request.name
         }));
         require(company != address(0), "CompanyRegistry: company creation failed");
+
+        //index by name, etc.
         _companiesByName[nm] = company;
         _companies[company] = true;
         _companiesByVector[keccak256(bytes(request.vector.asLookupKey()))] = company;
         if(msg.value > 0) {
+            //transfer funds according to request
             if(request.sendTokensToCompanyOwner) {
                 payable(request.owner).transfer(msg.value);
             } else {
@@ -120,6 +147,9 @@ contract CompanyRegistry is ICompanyRegistry, ReentrancyGuard, AccessControl {
         return company;
     }
 
+    /**
+     * @inheritdoc ICompanyRegistry
+     */
     function upgradeCompany(bytes calldata initData) external onlyCompany nonReentrant {
         companyFactory.upgradeCompany(msg.sender, initData);
     }

@@ -32,7 +32,6 @@ contract MultiAssetRegistry is IMultiAssetRegistry, AccessControl {
 
     constructor(MultiAssetRegistryConstructorArgs memory args) {
         require(args.mainAdmin != address(0), 'MultiAssetRegistry: mainAdmin is the zero address');
-        require(args.admins.length > 0, 'MultiAssetRegistry: no admins');
         require(args.registries.length > 0, 'MultiAssetRegistry: no registries');
         _grantRole(DEFAULT_ADMIN_ROLE, args.mainAdmin);
         _grantRole(ADMIN_ROLE, args.mainAdmin);
