@@ -104,4 +104,87 @@ describe('JumpTest', () => {
         expect(aAfter).to.be.not.null;
         expect(aAfter.toString()).to.be.equal(aB4.toString());
     });
+    it('should not allow a jump with unagreed upon fee', async () => {
+        const {experience, experience2, portalForExperience2, company2, avatar} = ecosystem;
+        const nonce = await avatar.getCompanySigningNonce(company2.address);
+        const current = await avatar.location();
+        expect(current).to.be.not.null;
+        expect(current.toString().toLowerCase()).to.be.equal(experience.address.toLowerCase());
+        const b4Bal = await avatar.tokenBalance();
+        expect(b4Bal).to.be.not.null;
+        expect(b4Bal.toString()).to.be.not.equal("0");
+        const sig = await company2.signJumpRequest({
+            fee: portalForExperience2.fee,
+            nonce,
+            portalId: experience2.portalId
+        })
+        try {
+            await avatar.jump({
+                agreedFee: 0n,
+                destinationCompanySignature: sig,
+                portalId: experience2.portalId
+            })
+        
+        } catch (e) {
+            expect(e.message).to.be.equal("VM Exception while processing transaction: reverted with reason string 'Avatar: company signer is not authorized'")
+        }
+        expect(await avatar.location()).to.be.equal(experience.address);
+       
+    })
+
+    it('should not allow a jump to a different portal Id than agreed', async () => {
+        const {experience, experience2, portalForExperience2, company2, avatar} = ecosystem;
+        const nonce = await avatar.getCompanySigningNonce(company2.address);
+        const current = await avatar.location();
+        expect(current).to.be.not.null;
+        expect(current.toString().toLowerCase()).to.be.equal(experience.address.toLowerCase());
+        const b4Bal = await avatar.tokenBalance();
+        expect(b4Bal).to.be.not.null;
+        expect(b4Bal.toString()).to.be.not.equal("0");
+        const sig = await company2.signJumpRequest({
+            fee: portalForExperience2.fee,
+            nonce,
+            portalId: experience2.portalId
+        })
+        try {
+            await avatar.jump({
+                agreedFee: portalForExperience2.fee,
+                destinationCompanySignature: sig,
+                portalId: experience.portalId
+            })
+        
+        } catch (e) {
+            expect(e.message).to.be.equal("VM Exception while processing transaction: reverted with reason string 'Avatar: company signer is not authorized'")
+        }
+        expect(await avatar.location()).to.be.equal(experience.address);
+       
+    })
+
+    it('should not allow a delegate jump with unauthorized signer', async () => {
+        const {experience, experience2, portalForExperience, company, avatar} = ecosystem;
+        const nonce = 100n;
+        const current = await avatar.location();
+        expect(current).to.be.not.null;
+        expect(current.toString().toLowerCase()).to.be.equal(experience.address.toLowerCase());
+        const aB4 = await avatar.tokenBalance();
+        const b4Bal = await company.tokenBalance();
+        expect(b4Bal).to.be.not.null;
+        expect(b4Bal.toString()).to.be.not.equal("0");
+        const sig = await avatar.signJumpRequest({
+            fee: portalForExperience.fee,
+            nonce,
+            portalId: experience2.portalId
+        });
+        try {
+            await company.payForAvatarJump({
+                portalId: experience.portalId,
+                agreedFee: portalForExperience.fee,
+                avatarOwnerSignature: sig,
+                avatar
+            });
+        } catch (e) {
+            expect(e.message).to.be.equal("VM Exception while processing transaction: reverted with reason string 'Avatar: avatar signer is not owner'")
+        }
+        expect(await avatar.location()).to.be.equal(experience.address);
+    })
 });

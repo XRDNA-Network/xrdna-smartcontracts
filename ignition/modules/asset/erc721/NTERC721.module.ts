@@ -2,6 +2,7 @@ import { buildModule } from "@nomicfoundation/hardhat-ignition/modules";
 import AvatarRegistryModule from "../../avatar/AvatarRegistry.module";
 import CompanyRegistryModule from "../../company/CompanyRegistry.module";
 import NTAssetProxyModule from "./NTERC721Proxy.module";
+import CompanyRegistryModule from "../../company/CompanyRegistry.module";
 
 const VERSION = 1;
 export default buildModule("NTERC721Asset", (m) => {

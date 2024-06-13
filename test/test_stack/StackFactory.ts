@@ -257,7 +257,8 @@ export class StackFactory {
             originChainId: 1n,
             decimals: 6,
             name: "Test ERC20 Asset",
-            symbol: "TEST20"
+            symbol: "TEST20",
+            maxSupply: 100000000000000000000n
         }
         const erc721InitData = {
             issuer: company.address,
@@ -266,6 +267,7 @@ export class StackFactory {
             symbol: "BAYC",
             baseURI: "https://boredapeyachtclub.com",
             originChainId: 1n
+
         }
         const erc20Registry = this.getStack<IERC20AssetStack>(StackType.ERC20).getERC20Registry();
         const testERC20 = await erc20Registry.registerAsset(erc20InitData)
