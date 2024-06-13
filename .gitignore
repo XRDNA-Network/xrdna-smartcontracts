@@ -20,6 +20,7 @@ pids
 lib-cov
 
 ignition/deployments/*/journal.jsonl
+typechain-types/*
 
 # Coverage directory used by tools like istanbul
 coverage
