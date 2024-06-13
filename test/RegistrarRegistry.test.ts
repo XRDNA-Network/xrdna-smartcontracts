@@ -25,13 +25,14 @@ describe("RegistrarRegistry", () => {
             signers = await ethers.getSigners();
         
             registrarAdmin = signers[0];
-            registrarSigner = signers[0];
+            registrarSigner = signers[9];
             stack = new StackFactory({
                 companyOwner: signers[1],
                 worldOwner: signers[1],
                 avatarOwner: signers[1],
             });
             await stack.init();
+            
         })
 
         it("should register", async () => {

@@ -1,4 +1,4 @@
-import { Provider, Signer, ethers } from "ethers";
+import { Provider, Signer, TransactionResponse, ethers } from "ethers";
 import {abi as RegistrarRegistryABI} from "../../artifacts/contracts/RegistrarRegistry.sol/RegistrarRegistry.json";
 import { LogParser } from "../LogParser";
 import { LogNames } from "../LogNames";
@@ -54,7 +54,13 @@ export class RegistrarRegistry {
         return {receipt: r, registrarId: id};
     }
 
-    
+    async addSigner(id: bigint, address: string): Promise<TransactionResponse> {
+        if(!this.registry) {
+            throw new Error("Registry not deployed");
+        }
+        const t = await RPCRetryHandler.withRetry(()=>this.registry.addSigner(id, address));
+        return t;
+    }
 
     async isSignerForRegistrar(props: {
         registrarId: bigint, signer: string

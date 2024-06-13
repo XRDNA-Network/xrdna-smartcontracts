@@ -64,6 +64,19 @@
           "internalType": "uint256",
           "name": "registrarId",
           "type": "uint256"
+        }
+      ],
+      "name": "removeRegistrar",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "registrarId",
+          "type": "uint256"
         },
         {
           "internalType": "address[]",
