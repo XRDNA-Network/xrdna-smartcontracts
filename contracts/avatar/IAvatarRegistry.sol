@@ -64,6 +64,9 @@ interface IAvatarRegistry {
      */
     function upgradeAvatar(bytes calldata initData) external;
 
+    /**
+     * @dev Get the current avatar version supported by the registry's underlying factory
+     */
     function currentAvatarVersion() external view returns (uint256);
-    function setCurrentAvatarVersion(uint256 version) external;
+
 }

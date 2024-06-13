@@ -133,7 +133,6 @@ export interface CompanyInterface extends Interface {
       | "isSigner"
       | "mint"
       | "name"
-      | "nextPsub"
       | "owner"
       | "removeAssetCondition"
       | "removeAssetHook"
@@ -233,7 +232,6 @@ export interface CompanyInterface extends Interface {
     values: [AddressLike, AddressLike, BytesLike]
   ): string;
   encodeFunctionData(functionFragment: "name", values?: undefined): string;
-  encodeFunctionData(functionFragment: "nextPsub", values?: undefined): string;
   encodeFunctionData(functionFragment: "owner", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "removeAssetCondition",
@@ -334,7 +332,6 @@ export interface CompanyInterface extends Interface {
   decodeFunctionResult(functionFragment: "isSigner", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "mint", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "name", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "nextPsub", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "removeAssetCondition",
@@ -623,8 +620,6 @@ export interface Company extends BaseContract {
 
   name: TypedContractMethod<[], [string], "view">;
 
-  nextPsub: TypedContractMethod<[], [bigint], "view">;
-
   owner: TypedContractMethod<[], [string], "view">;
 
   removeAssetCondition: TypedContractMethod<
@@ -770,9 +765,6 @@ export interface Company extends BaseContract {
   getFunction(
     nameOrSignature: "name"
   ): TypedContractMethod<[], [string], "view">;
-  getFunction(
-    nameOrSignature: "nextPsub"
-  ): TypedContractMethod<[], [bigint], "view">;
   getFunction(
     nameOrSignature: "owner"
   ): TypedContractMethod<[], [string], "view">;

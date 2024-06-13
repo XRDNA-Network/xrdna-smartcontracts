@@ -3,6 +3,7 @@
 /* eslint-disable */
 import type {
   BaseContract,
+  BigNumberish,
   BytesLike,
   FunctionFragment,
   Result,
@@ -22,12 +23,39 @@ import type {
 
 export interface IAvatarFactoryInterface extends Interface {
   getFunction(
-    nameOrSignature: "createAvatar" | "upgradeAvatar"
+    nameOrSignature:
+      | "createAvatar"
+      | "getImplementation"
+      | "getProxyImplementation"
+      | "setImplementation"
+      | "setProxyImplementation"
+      | "supportsVersion"
+      | "upgradeAvatar"
   ): FunctionFragment;
 
   encodeFunctionData(
     functionFragment: "createAvatar",
     values: [AddressLike, AddressLike, string, BytesLike]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getImplementation",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getProxyImplementation",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setImplementation",
+    values: [AddressLike, BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setProxyImplementation",
+    values: [AddressLike]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "supportsVersion",
+    values?: undefined
   ): string;
   encodeFunctionData(
     functionFragment: "upgradeAvatar",
@@ -36,6 +64,26 @@ export interface IAvatarFactoryInterface extends Interface {
 
   decodeFunctionResult(
     functionFragment: "createAvatar",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getImplementation",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getProxyImplementation",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "setImplementation",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "setProxyImplementation",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "supportsVersion",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -98,6 +146,24 @@ export interface IAvatarFactory extends BaseContract {
     "nonpayable"
   >;
 
+  getImplementation: TypedContractMethod<[], [string], "view">;
+
+  getProxyImplementation: TypedContractMethod<[], [string], "view">;
+
+  setImplementation: TypedContractMethod<
+    [_implementation: AddressLike, version: BigNumberish],
+    [void],
+    "nonpayable"
+  >;
+
+  setProxyImplementation: TypedContractMethod<
+    [_proxyImplementation: AddressLike],
+    [void],
+    "nonpayable"
+  >;
+
+  supportsVersion: TypedContractMethod<[], [bigint], "view">;
+
   upgradeAvatar: TypedContractMethod<
     [avatar: AddressLike, initData: BytesLike],
     [void],
@@ -120,6 +186,29 @@ export interface IAvatarFactory extends BaseContract {
     [string],
     "nonpayable"
   >;
+  getFunction(
+    nameOrSignature: "getImplementation"
+  ): TypedContractMethod<[], [string], "view">;
+  getFunction(
+    nameOrSignature: "getProxyImplementation"
+  ): TypedContractMethod<[], [string], "view">;
+  getFunction(
+    nameOrSignature: "setImplementation"
+  ): TypedContractMethod<
+    [_implementation: AddressLike, version: BigNumberish],
+    [void],
+    "nonpayable"
+  >;
+  getFunction(
+    nameOrSignature: "setProxyImplementation"
+  ): TypedContractMethod<
+    [_proxyImplementation: AddressLike],
+    [void],
+    "nonpayable"
+  >;
+  getFunction(
+    nameOrSignature: "supportsVersion"
+  ): TypedContractMethod<[], [bigint], "view">;
   getFunction(
     nameOrSignature: "upgradeAvatar"
   ): TypedContractMethod<

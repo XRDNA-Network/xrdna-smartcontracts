@@ -185,19 +185,6 @@ const _abi = [
   {
     inputs: [
       {
-        internalType: "uint256",
-        name: "version",
-        type: "uint256",
-      },
-    ],
-    name: "setCurrentAvatarVersion",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
         internalType: "bytes",
         name: "initData",
         type: "bytes",

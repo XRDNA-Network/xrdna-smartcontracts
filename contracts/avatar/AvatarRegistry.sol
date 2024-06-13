@@ -35,7 +35,6 @@ contract AvatarRegistry is IAvatarRegistry, ReentrancyGuard, AccessControl {
     IWorldRegistryV2 public worldRegistry;
     mapping(string => address) private _avatarsByName;
     mapping(address => bool) private _avatarsByAddress;
-    uint256 public override currentAvatarVersion = 1;
 
     modifier onlyAvatar {
         require(_avatarsByAddress[msg.sender], 'AvatarRegistry: caller is not an avatar');
@@ -133,7 +132,8 @@ contract AvatarRegistry is IAvatarRegistry, ReentrancyGuard, AccessControl {
         avatarFactory.upgradeAvatar(msg.sender, initData);
     }
 
-    function setCurrentAvatarVersion(uint256 v) public onlyAdmin {
-        currentAvatarVersion = v;
+    function currentAvatarVersion() external view returns (uint256) {
+        return avatarFactory.supportsVersion();
     }
+
 }

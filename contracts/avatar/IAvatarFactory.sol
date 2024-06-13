@@ -2,7 +2,9 @@
 // Compatible with OpenZeppelin Contracts ^5.0.0
 pragma solidity ^0.8.24;
 
-interface IAvatarFactory {
+import {IBaseFactory} from '../IBaseFactory.sol';
+
+interface IAvatarFactory is IBaseFactory {
 
     /**
      * @dev Upgrades an existing avatar to the latest version. Called by the registry

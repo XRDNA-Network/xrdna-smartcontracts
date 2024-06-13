@@ -6,8 +6,10 @@ import {Wearable, LinkedList, Node, AvatarV1Storage, LibAvatarV1Storage} from '.
 
 /**
  * @title LinkedList
- * @dev A doubly linked list of addresses for use in other contracts when they need 
- * fast insert and delete operations.
+ * @dev A doubly linked list of wearables for avatars. Because avatars will add and 
+ * remove wearables frequently, a linked list is the most efficient data structure vs. 
+ * arrays. Maps would be good except that we need to iterate over the list in order to
+ * get all the wearables.
  */
 abstract contract WearableLinkedList {
     

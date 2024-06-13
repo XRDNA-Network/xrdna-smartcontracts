@@ -285,6 +285,24 @@ const _abi = [
   {
     inputs: [
       {
+        internalType: "address",
+        name: "experience",
+        type: "address",
+      },
+      {
+        internalType: "uint256",
+        name: "fee",
+        type: "uint256",
+      },
+    ],
+    name: "changeExperiencePortalFee",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
         components: [
           {
             internalType: "address",
@@ -315,6 +333,19 @@ const _abi = [
     name: "delegateJumpForAvatar",
     outputs: [],
     stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "hook",
+    outputs: [
+      {
+        internalType: "contract ICompanyHook",
+        name: "",
+        type: "address",
+      },
+    ],
+    stateMutability: "view",
     type: "function",
   },
   {

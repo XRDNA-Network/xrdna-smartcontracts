@@ -98,7 +98,9 @@ export interface ICompanyInterface extends Interface {
       | "addExperienceCondition"
       | "addSigners"
       | "canMint"
+      | "changeExperiencePortalFee"
       | "delegateJumpForAvatar"
+      | "hook"
       | "init"
       | "isSigner"
       | "mint"
@@ -157,9 +159,14 @@ export interface ICompanyInterface extends Interface {
     values: [AddressLike, AddressLike, BytesLike]
   ): string;
   encodeFunctionData(
+    functionFragment: "changeExperiencePortalFee",
+    values: [AddressLike, BigNumberish]
+  ): string;
+  encodeFunctionData(
     functionFragment: "delegateJumpForAvatar",
     values: [DelegatedAvatarJumpRequestStruct]
   ): string;
+  encodeFunctionData(functionFragment: "hook", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "init",
     values: [CompanyInitArgsStruct]
@@ -237,9 +244,14 @@ export interface ICompanyInterface extends Interface {
   decodeFunctionResult(functionFragment: "addSigners", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "canMint", data: BytesLike): Result;
   decodeFunctionResult(
+    functionFragment: "changeExperiencePortalFee",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "delegateJumpForAvatar",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "hook", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "init", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "isSigner", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "mint", data: BytesLike): Result;
@@ -486,11 +498,19 @@ export interface ICompany extends BaseContract {
     "view"
   >;
 
+  changeExperiencePortalFee: TypedContractMethod<
+    [experience: AddressLike, fee: BigNumberish],
+    [void],
+    "nonpayable"
+  >;
+
   delegateJumpForAvatar: TypedContractMethod<
     [request: DelegatedAvatarJumpRequestStruct],
     [void],
     "nonpayable"
   >;
+
+  hook: TypedContractMethod<[], [string], "view">;
 
   init: TypedContractMethod<
     [args: CompanyInitArgsStruct],
@@ -599,12 +619,22 @@ export interface ICompany extends BaseContract {
     "view"
   >;
   getFunction(
+    nameOrSignature: "changeExperiencePortalFee"
+  ): TypedContractMethod<
+    [experience: AddressLike, fee: BigNumberish],
+    [void],
+    "nonpayable"
+  >;
+  getFunction(
     nameOrSignature: "delegateJumpForAvatar"
   ): TypedContractMethod<
     [request: DelegatedAvatarJumpRequestStruct],
     [void],
     "nonpayable"
   >;
+  getFunction(
+    nameOrSignature: "hook"
+  ): TypedContractMethod<[], [string], "view">;
   getFunction(
     nameOrSignature: "init"
   ): TypedContractMethod<[args: CompanyInitArgsStruct], [void], "nonpayable">;

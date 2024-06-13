@@ -3,7 +3,6 @@
 /* eslint-disable */
 import type {
   BaseContract,
-  BigNumberish,
   BytesLike,
   FunctionFragment,
   Result,
@@ -54,7 +53,6 @@ export interface IAvatarRegistryInterface extends Interface {
       | "nameAvailable"
       | "registerAvatar"
       | "setAvatarFactory"
-      | "setCurrentAvatarVersion"
       | "upgradeAvatar"
   ): FunctionFragment;
 
@@ -87,10 +85,6 @@ export interface IAvatarRegistryInterface extends Interface {
     values: [AddressLike]
   ): string;
   encodeFunctionData(
-    functionFragment: "setCurrentAvatarVersion",
-    values: [BigNumberish]
-  ): string;
-  encodeFunctionData(
     functionFragment: "upgradeAvatar",
     values: [BytesLike]
   ): string;
@@ -114,10 +108,6 @@ export interface IAvatarRegistryInterface extends Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "setAvatarFactory",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "setCurrentAvatarVersion",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -224,12 +214,6 @@ export interface IAvatarRegistry extends BaseContract {
     "nonpayable"
   >;
 
-  setCurrentAvatarVersion: TypedContractMethod<
-    [version: BigNumberish],
-    [void],
-    "nonpayable"
-  >;
-
   upgradeAvatar: TypedContractMethod<
     [initData: BytesLike],
     [void],
@@ -262,9 +246,6 @@ export interface IAvatarRegistry extends BaseContract {
   getFunction(
     nameOrSignature: "setAvatarFactory"
   ): TypedContractMethod<[factory: AddressLike], [void], "nonpayable">;
-  getFunction(
-    nameOrSignature: "setCurrentAvatarVersion"
-  ): TypedContractMethod<[version: BigNumberish], [void], "nonpayable">;
   getFunction(
     nameOrSignature: "upgradeAvatar"
   ): TypedContractMethod<[initData: BytesLike], [void], "nonpayable">;
