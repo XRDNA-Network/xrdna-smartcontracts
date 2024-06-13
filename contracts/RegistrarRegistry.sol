@@ -29,6 +29,7 @@ contract RegistrarRegistry is IRegistrarRegistry, AccessControl {
     
 
     modifier onlyRegistrar(uint256 registrarId) {
+        require(registrars[registrarId].id != 0, "RegistrarRegistry: registrar id does not exist");
         require(registrars[registrarId].signers[msg.sender], "RegistrarRegistry: caller is not a registrar");
         _;
     }
