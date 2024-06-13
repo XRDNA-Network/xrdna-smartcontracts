@@ -594,11 +594,47 @@
       "inputs": [
         {
           "internalType": "address",
+          "name": "asset",
+          "type": "address"
+        },
+        {
+          "internalType": "bytes",
+          "name": "initData",
+          "type": "bytes"
+        }
+      ],
+      "name": "upgradeAsset",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
           "name": "nextVersion",
           "type": "address"
         }
       ],
       "name": "upgradeComplete",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "experience",
+          "type": "address"
+        },
+        {
+          "internalType": "bytes",
+          "name": "initData",
+          "type": "bytes"
+        }
+      ],
+      "name": "upgradeExperience",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"

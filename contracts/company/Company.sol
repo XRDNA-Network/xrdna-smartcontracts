@@ -327,4 +327,19 @@ contract Company is ICompany, BaseAccess, ReentrancyGuard {
             avatarOwnerSignature: request.avatarOwnerSignature
         }));
     }
+
+    /**
+        * @inheritdoc ICompany
+     */
+    function upgradeExperience(address experience, bytes memory initData) public onlyAdmin {
+        IExperience exp = IExperience(experience);
+        exp.upgrade(initData);
+    }
+
+    /**
+        * @inheritdoc ICompany
+     */
+    function upgradeAsset(address asset, bytes memory initData) public onlyAdmin {
+        IMintableAsset(asset).upgrade(initData);
+    }
 }

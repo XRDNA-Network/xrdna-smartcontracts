@@ -234,25 +234,6 @@
     {
       "inputs": [
         {
-          "internalType": "address",
-          "name": "query",
-          "type": "address"
-        }
-      ],
-      "name": "isClone",
-      "outputs": [
-        {
-          "internalType": "bool",
-          "name": "result",
-          "type": "bool"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
           "internalType": "bytes32",
           "name": "role",
           "type": "bytes32"

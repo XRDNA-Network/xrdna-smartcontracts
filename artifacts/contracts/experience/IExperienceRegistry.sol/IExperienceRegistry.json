@@ -50,6 +50,47 @@
     {
       "inputs": [
         {
+          "internalType": "address",
+          "name": "exp",
+          "type": "address"
+        }
+      ],
+      "name": "getExperienceByAddress",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "address",
+              "name": "company",
+              "type": "address"
+            },
+            {
+              "internalType": "address",
+              "name": "world",
+              "type": "address"
+            },
+            {
+              "internalType": "contract IExperience",
+              "name": "experience",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256",
+              "name": "portalId",
+              "type": "uint256"
+            }
+          ],
+          "internalType": "struct ExperienceInfo",
+          "name": "",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
           "components": [
             {
               "internalType": "string",
@@ -88,6 +129,47 @@
         }
       ],
       "name": "getExperienceByVector",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "address",
+              "name": "company",
+              "type": "address"
+            },
+            {
+              "internalType": "address",
+              "name": "world",
+              "type": "address"
+            },
+            {
+              "internalType": "contract IExperience",
+              "name": "experience",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256",
+              "name": "portalId",
+              "type": "uint256"
+            }
+          ],
+          "internalType": "struct ExperienceInfo",
+          "name": "",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "string",
+          "name": "name",
+          "type": "string"
+        }
+      ],
+      "name": "getExperiencesByName",
       "outputs": [
         {
           "components": [

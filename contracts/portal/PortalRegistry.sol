@@ -10,13 +10,14 @@ import {IPortalCondition} from './IPortalCondition.sol';
 import {IAvatarRegistry} from '../avatar/IAvatarRegistry.sol';
 import {IAvatar} from '../avatar/IAvatar.sol';
 
-interface IUpgradeMigration {
-    function setStartingPortalIdCounter(uint256 counter) external;
-}
-
+/**
+ * @title PortalRegistry
+ * @dev The registry for all portals in the metaverse
+ */
 contract PortalRegistry is IPortalRegistry, AccessControl {
     using LibVectorAddress for VectorAddress;
 
+    //temporary structure used for jumping requests
     struct PortalJumpMetadata {
         IExperience sourceExperience;
         IExperience destinationExperience;
@@ -30,23 +31,24 @@ contract PortalRegistry is IPortalRegistry, AccessControl {
 
     bytes32 constant public ADMIN_ROLE = keccak256("ADMIN_ROLE");
 
-    bool public upgraded;
     address public experienceRegistry;
     IAvatarRegistry public avatarRegistry;
     
+    //portals by portal id
     mapping(uint256 => PortalInfo) portals;
+
+    //portal IDs by destination vector address hash
     mapping(bytes32 => uint256)  portalIdsByVectorHash;
+
+    //portal IDs by destination experience address
     mapping(address => uint256)  portalIdsByExperience;
+
+    //portal id counter
     uint256 nextPortalId;
 
     modifier onlyRegistry {
         require(experienceRegistry != address(0), "PortalRegistry: experience registry not set");
         require(msg.sender == experienceRegistry, "PortalRegistry: caller is not the experience registry");
-        _;
-    }
-
-    modifier notUpgraded {
-        require(!upgraded, "PortalRegistry: contract has been upgraded");
         _;
     }
 
@@ -74,42 +76,66 @@ contract PortalRegistry is IPortalRegistry, AccessControl {
 
     receive() external payable {}
 
-    function setExperienceRegistry(address registry) public onlyRole(ADMIN_ROLE) notUpgraded() {
+    /**
+     * @dev set the experience registry. Only admin can call this
+     */
+    function setExperienceRegistry(address registry) public onlyRole(ADMIN_ROLE) {
        require(registry != address(0), "PortalRegistry: invalid registry address");
        experienceRegistry = registry;
     }
 
-    function setAvatarRegistry(address registry) public onlyRole(ADMIN_ROLE) notUpgraded() {
+    /**
+     * @dev set the avatar registry. Only admin can call this
+     */
+    function setAvatarRegistry(address registry) public onlyRole(ADMIN_ROLE)  {
         require(registry != address(0), "PortalRegistry: invalid registry address");
         avatarRegistry = IAvatarRegistry(registry);
     }
 
+    /**
+     * @inheritdoc IPortalRegistry
+     */
     function getPortalInfoById(uint256 portalId) external view returns (PortalInfo memory) {
         return portals[portalId];
     }
 
+    /**
+     * @inheritdoc IPortalRegistry
+     */
     function getPortalInfoByAddress(address experience) external view returns (PortalInfo memory) {
         uint256 portalId = portalIdsByExperience[experience];
         return portals[portalId];
     }
 
+    /**
+     * @inheritdoc IPortalRegistry
+     */
     function getPortalInfoByVectorAddress(VectorAddress memory va) external view returns (PortalInfo memory) {
         bytes32 hash = keccak256(abi.encode(va.asLookupKey()));
         uint256 portalId = portalIdsByVectorHash[hash];
         return portals[portalId];
     }
 
+    /**
+     * @inheritdoc IPortalRegistry
+     */
     function getIdForExperience(address experience) external view returns (uint256) {
         return portalIdsByExperience[experience];
     }
 
+    /**
+     * @inheritdoc IPortalRegistry
+     */
     function getIdForVectorAddress(VectorAddress memory va) external view returns (uint256) {
         bytes32 hash = keccak256(abi.encode(va.asLookupKey()));
         return portalIdsByVectorHash[hash];
     }
     
     
-    function addPortal(AddPortalRequest memory req) external onlyRegistry notUpgraded returns (uint256) {
+    /**
+     * @inheritdoc IPortalRegistry
+     */
+    function addPortal(AddPortalRequest memory req) external onlyRegistry returns (uint256) {
         
         VectorAddress memory va = req.destination.vectorAddress();
         bytes32 hash = keccak256(abi.encode(va.asLookupKey()));
@@ -127,7 +153,10 @@ contract PortalRegistry is IPortalRegistry, AccessControl {
         return portalId;
     }
 
-    function jumpRequest(uint256 portalId) external payable onlyAvatar notUpgraded returns (bytes memory) {
+    /**
+     * @inheritdoc IPortalRegistry
+     */
+    function jumpRequest(uint256 portalId) external payable onlyAvatar returns (bytes memory) {
         
         /**
          * This contract delegates jump request authorization to the avatar. Only the avatar
@@ -164,8 +193,10 @@ contract PortalRegistry is IPortalRegistry, AccessControl {
          
     }
 
-    //NOTE: must be called by a registered destination experience contract
-    function addCondition(IPortalCondition condition) external onlyExperience notUpgraded {
+    /**
+        * @inheritdoc IPortalRegistry
+     */
+    function addCondition(IPortalCondition condition) external onlyExperience {
         require(address(condition) != address(0), "PortalRegistry: condition address cannot be 0");
         uint256 id = portalIdsByExperience[msg.sender];
         require(id != 0, "PortalRegistry: experience not found");
@@ -173,27 +204,28 @@ contract PortalRegistry is IPortalRegistry, AccessControl {
         emit PortalConditionAdded(id, address(condition));
     }
 
-    //NOTE: must be called by a registered destination experience contract
-    function removeCondition() external onlyExperience notUpgraded {
+    /**
+     * @inheritdoc IPortalRegistry
+     */
+    function removeCondition() external onlyExperience {
         uint256 portalId = portalIdsByExperience[msg.sender];
         portals[portalId].condition = IPortalCondition(address(0));
         emit PortalConditionRemoved(portalId);
     }
 
-    function changePortalFee(uint256 newFee) external onlyExperience notUpgraded {
+    /**
+     * @inheritdoc IPortalRegistry
+     */
+    function changePortalFee(uint256 newFee) external onlyExperience {
         uint256 portalId = portalIdsByExperience[msg.sender];
         portals[portalId].fee = newFee;
         emit PortalFeeChanged(portalId, newFee);
     }
 
-    function upgradeRegistry(address newRegistry) public onlyRole(ADMIN_ROLE) notUpgraded {
-        require(newRegistry != address(0), "PortalRegistry: zero address not valid");
-        IUpgradeMigration(newRegistry).setStartingPortalIdCounter(nextPortalId);
-        upgraded = true;
-        emit PortalRegistryUpgraded(newRegistry);
-    }
-
-    function upgradeExperiencePortal(address oldExperience, address newExperience) public onlyRegistry notUpgraded {
+    /**
+     * @inheritdoc IPortalRegistry
+     */
+    function upgradeExperiencePortal(address oldExperience, address newExperience) public onlyRegistry {
         uint256 portalId = portalIdsByExperience[oldExperience];
         require(portalId != 0, "PortalRegistry: old experience not found");
         portalIdsByExperience[newExperience] = portalId;
@@ -203,6 +235,7 @@ contract PortalRegistry is IPortalRegistry, AccessControl {
     }
 
 
+    //utility function to gather experience details for a jump request
     function _getExperienceDetails(uint256 destPortalId) internal view returns (PortalJumpMetadata memory meta) {
         //get avatar's current location
         IAvatar avatar = IAvatar(msg.sender);

@@ -2,7 +2,8 @@
 // Compatible with OpenZeppelin Contracts ^5.0.0
 pragma solidity ^0.8.24;
 
-import {Wearable, LinkedList, Node, AvatarV1Storage, LibAvatarV1Storage} from '../libraries/LibAvatarV1Storage.sol';  
+import {Wearable, AvatarV1Storage, LibAvatarV1Storage} from '../libraries/LibAvatarV1Storage.sol';  
+import {LinkedList, LibLinkedList} from '../libraries/LibLinkedList.sol';
 
 /**
  * @title LinkedList
@@ -13,7 +14,8 @@ import {Wearable, LinkedList, Node, AvatarV1Storage, LibAvatarV1Storage} from '.
  */
 abstract contract WearableLinkedList {
     
-    
+    using LibLinkedList for LinkedList;
+
     uint256 public constant MAX_SIZE = 200;
 
     // Modifier to check if the list is not empty
@@ -34,27 +36,9 @@ abstract contract WearableLinkedList {
     function insert(Wearable memory wearable) internal notFull {
         require(wearable.asset != address(0), "Invalid address");
         require(wearable.tokenId > 0, "Invalid tokenId");
-        bytes32 wHash = keccak256(abi.encode(wearable.asset, wearable.tokenId));
         AvatarV1Storage storage s = LibAvatarV1Storage.load();
         LinkedList storage list = s.list;
-        require(list.nodes[wHash].data.asset == address(0), "Address already in list");
-
-        Node memory newNode = Node({
-            data: wearable,
-            prev: list.tail,
-            next: bytes32(0)
-        });
-
-        if (list.size == 0) {
-            list.head = wHash;
-            list.tail = wHash;
-        } else {
-            list.nodes[list.tail].next = wHash;
-            list.tail = wHash;
-        }
-
-        list.nodes[wHash] = newNode;
-        list.size++;
+        list.insert(wearable);
     }
 
     // Function to remove an address from the list
@@ -62,30 +46,10 @@ abstract contract WearableLinkedList {
         (address data, uint256 tokenId) = (wearable.asset, wearable.tokenId);
         require(data != address(0), "Invalid address");
         require(tokenId > 0, "Invalid token id");
-        bytes32 wHash = keccak256(abi.encode(data, tokenId));
+        
         AvatarV1Storage storage s = LibAvatarV1Storage.load();
         LinkedList storage list = s.list;
-
-        if(list.nodes[wHash].data.asset == address(0)) {
-            return;
-        }
-
-        Node memory node = list.nodes[wHash];
-
-        if (node.prev != bytes32(0)) {
-            list.nodes[node.prev].next = node.next;
-        } else {
-            list.head = node.next;
-        }
-
-        if (node.next != bytes32(0)) {
-            list.nodes[node.next].prev = node.prev;
-        } else {
-            list.tail = node.prev;
-        }
-
-        delete list.nodes[wHash];
-        list.size--;
+        list.remove(wearable);
     }
 
     // Function to get the size of the list

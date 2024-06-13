@@ -190,6 +190,14 @@ export class Company {
         return await RPCRetryHandler.withRetry(() => this.con.upgradeComplete(nextVersion));
     }   
 
+    async upgradeExperience(address: string, initData: string): Promise<TransactionResponse> {
+        return await RPCRetryHandler.withRetry(() => this.con.upgradeExperience(address, initData));
+    }
+
+    async upgradeAsset(address: string, initData: string): Promise<TransactionResponse> {
+        return await RPCRetryHandler.withRetry(() => this.con.upgradeAsset(address, initData));
+    }
+
     async withdraw(amount: string): Promise<TransactionResponse> {
         return await RPCRetryHandler.withRetry(() => this.con.withdraw(amount));
     }

@@ -95,10 +95,4 @@ interface IPortalRegistry {
      * called by the experience registry when the experience is upgraded.
      */
     function upgradeExperiencePortal(address oldExperience, address newExperience) external;
-
-    /**
-     * If the registry is replaced, this function should be called with thew new registry 
-     * so that any applicable state (portal id counter for example) can be transferred to the new registry.
-     */
-    function upgradeRegistry(address newRegistry) external;
 }

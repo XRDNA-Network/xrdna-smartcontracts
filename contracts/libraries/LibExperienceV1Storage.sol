@@ -4,22 +4,44 @@ pragma solidity ^0.8.24;
 
 import {VectorAddress} from '../VectorAddress.sol';
 import {IExperienceHook} from '../experience/IExperienceHook.sol';
-import {IBasicCompany} from '../experience/IBasicCompany.sol';
+import {ICompany} from '../company/ICompany.sol';
 
+/**
+ * Storage data for ExperienceV1
+ */
 struct ExperienceV1Storage {
-    IBasicCompany company;
+    //company that owns the experience
+    ICompany company;
+
+    //operating world
     address world;
+
+    //custom hook installed by company
     IExperienceHook hook;
+
+    //experience's spatial vector address assigned by company
     VectorAddress vectorAddress;
+
+    //experience's globally unique name
     string name;
+
+    //any fee to enter the experience
     uint256 entryFee;
+
+    //experience's connection details, which depends on experience implementation offchain
     bytes connectionDetails;
 }
 
+/**
+ * @dev Library for loading ExperienceV1Storage
+ */
 library LibExperienceV1Storage {
     
         bytes32 public constant EXPERIENCE_V1_STORAGE_SLOT = keccak256("_ExperienceV1Storage");
     
+        /**
+         * @dev Load ExperienceV1Storage from storage
+         */
         function load() internal pure returns (ExperienceV1Storage storage s) {
             bytes32 slot = EXPERIENCE_V1_STORAGE_SLOT;
             assembly {

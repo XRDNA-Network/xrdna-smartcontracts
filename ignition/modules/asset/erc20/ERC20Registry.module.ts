@@ -7,6 +7,7 @@ export default buildModule("ERC20AssetRegistry", (m) => {
     
     const fac = m.useModule(AssetFactoryModule);
     const xrdna = new XRDNASigners();
+    
     const deployConfig = xrdna.deployment[network.config.chainId || 55555];
     const acct = deployConfig.assetRegistryAdmin;
     const others = deployConfig.assetRegistryOtherAdmins;

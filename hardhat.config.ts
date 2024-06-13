@@ -48,6 +48,10 @@ const config: HardhatUserConfig = {
     hardhat: {
       chainId: 55555,
     },
+    localhost: {
+      chainId: 55555,
+      url: 'http://localhost:8545',
+    },
     xrdna_testnet: {
       chainId: 26379,
       url: 'https://rpc-xrdna-testnet-s1zvdnqr3d.t.conduit.xyz',

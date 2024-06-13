@@ -1,6 +1,4 @@
 import { buildModule } from "@nomicfoundation/ignition-core";
-import AvatarFactoryModule from "./AvatarFactory.module";
-import AvatarRegistryModule from "./AvatarRegistry.module";
 import CompanyRegistryModule from "../company/CompanyRegistry.module";
 import ExperienceRegistryModule from "../experience/ExperienceRegistry.module";
 import PortalRegistryModule from "../portal/PortalRegistry.module";
@@ -16,6 +14,7 @@ export default buildModule("Avatar", (m) => {
     const expReg = m.useModule(ExperienceRegistryModule);
     const portalReg = m.useModule(PortalRegistryModule);
     const assets = m.useModule(NTAssetMasterModule);
+    const libLinkedList = m.library("LibLinkedList");
 
     const args = {
         avatarFactory: proxy.avatarFactory,
@@ -26,6 +25,9 @@ export default buildModule("Avatar", (m) => {
         multiAssetRegistry: assets.multiAssetRegistry
     }
     const master = m.contract("Avatar", [args], {
+        libraries: {
+            LibLinkedList: libLinkedList
+        },
         after: [proxy.avatarFactory, 
                 proxy.avatarRegistry, 
                 expReg.experienceRegistry,

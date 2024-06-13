@@ -27,6 +27,11 @@ contract AvatarFactory is BaseFactory, IAvatarFactory {
      * @inheritdoc IAvatarFactory
      */
     function upgradeAvatar(address avatar, bytes calldata initData) public override onlyAuthorizedRegistry {
+        //to upgrade, we just need to change its underlying implementation. 
+        //so first, make sure it doesn't already have the latest implementation
+        address impl = IBaseProxy(avatar).getImplementation();
+        require(impl != implementation, "Already on the latest version");
+
         IAvatar(avatar).upgradeComplete(implementation);
         INextAvatarVersion(avatar).init(initData);
     }

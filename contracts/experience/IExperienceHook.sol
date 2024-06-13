@@ -2,6 +2,10 @@
 // Compatible with OpenZeppelin Contracts ^5.0.0
 pragma solidity ^0.8.24;
 
+/**
+ * @dev Interface for a hook that can be added to an experience to further evaluate
+ * an avatar's request to portal into the experience.
+ */
 interface IExperienceHook {
     /**
      * @dev This function is called before a jump entry is made to the destination experience.

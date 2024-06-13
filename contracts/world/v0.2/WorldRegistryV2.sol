@@ -41,7 +41,6 @@ contract WorldRegistryV2 is IWorldRegistryV2, ReentrancyGuard, AccessControl {
     mapping(string => address) _worldsByName;
     mapping(address => bool) _worlds;
     mapping(bytes32 => address) _worldsByVector;
-    string public currentWorldVersion = "0.2";
 
     modifier onlyAdmin {
         require(hasRole(ADMIN_ROLE, msg.sender), "WorldRegistry0_2: caller is not admin");
@@ -81,37 +80,54 @@ contract WorldRegistryV2 is IWorldRegistryV2, ReentrancyGuard, AccessControl {
        
     }
 
-    function setCurrentWorldVersion(string memory version) external onlyAdmin {
-        currentWorldVersion = version;
-    }
-
+    /**
+     * @inheritdoc IWorldRegistryV2
+     */
     function getWorldByName(string memory name) external view returns (address) {
         return _worldsByName[name.lower()];
     }
 
+    /**
+     * @inheritdoc IWorldRegistryV2
+     */
     function isWorld(address world) external view returns (bool) {
         return _worlds[world];
     }
 
+    /**
+     * @inheritdoc IWorldRegistryV2
+     */
     function isVectorAddressAuthority(address auth) external view returns(bool) {
         return hasRole(VECTOR_AUTHORITY_ROLE, auth);
     }
 
+    /**
+     * @inheritdoc IWorldRegistryV2
+     */
     function setWorldFactory(address factory) external onlyAdmin {
         require(factory != address(0), "WorldRegistry0_2: factory cannot be 0x0");
         worldFactory = IWorldFactoryV2(factory);
     }
 
+    /**
+     * @inheritdoc IWorldRegistryV2
+     */
     function addVectorAddressAuthority(address auth) external onlyAdmin {
         require(auth != address(0), "WorldRegistry0_2: auth cannot be 0x0");
         _grantRole(VECTOR_AUTHORITY_ROLE, auth);
     }
 
+    /**
+     * @inheritdoc IWorldRegistryV2
+     */
     function removeVectorAddressAuthority(address auth) external onlyAdmin {
         require(auth != address(0), "WorldRegistry0_2: auth cannot be 0x0");
         _revokeRole(VECTOR_AUTHORITY_ROLE, auth);
     }
 
+    /**
+     * @inheritdoc IWorldRegistryV2
+     */
     function register(WorldRegistrationRequest memory request) external payable onlyRegistrar(request.registrarId) nonReentrant  {
         string memory name = request.name.lower();
         require(_worldsByName[name] == address(0), "WorldRegistry0_2: name already in use");
@@ -156,28 +172,15 @@ contract WorldRegistryV2 is IWorldRegistryV2, ReentrancyGuard, AccessControl {
         emit WorldRegistered(world, request.owner, va);
     }
 
-    function registrarUpgradeWorld(uint256 registrarId, address oldWorld, bytes calldata initData) external onlyRegistrar(registrarId) nonReentrant {
-        
-        require(previousRegistry.isWorld(oldWorld), "WorldRegistry0_2: oldWorld is not a valid world upgradeable by registrar");
-        IWorld old = IWorld(oldWorld);
-
-        WorldCreateRequest memory req = WorldCreateRequest({
-            owner: old.getOwner(),
-            oldWorld: oldWorld,
-            baseVector: old.getBaseVector(),
-            name: old.getName().lower(),
-            initData: initData
-        });
-        address world = worldFactory.createWorld(req);
-        require(world != address(0), "WorldRegistry0_2: world creation failed");
-        _worldsByName[old.getName().lower()] = world;
-        _worlds[world] = true;
-        _worldsByVector[keccak256(bytes(old.getBaseVector().asLookupKey()))] = world;
-        old.upgrade(world);
+    /**
+     * @inheritdoc IWorldRegistryV2
+     */
+    function upgradeWorld(bytes calldata initData) public onlyWorld nonReentrant {
+        worldFactory.upgradeWorld(msg.sender, initData);
     }
 
-    function worldUpgradeSelf(bytes calldata initData) public onlyWorld nonReentrant {
-        worldFactory.upgradeWorld(msg.sender, initData);
+    function currentWorldVersion() external view override returns (uint256) {
+        return worldFactory.supportsVersion();
     }
 
 }

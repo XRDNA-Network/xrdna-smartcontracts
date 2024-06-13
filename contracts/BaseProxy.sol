@@ -6,11 +6,16 @@ import {IBaseProxy} from './IBaseProxy.sol';
 import {BaseProxyStorage, LibProxyAccess, LibBaseProxy} from './libraries/LibBaseProxy.sol';
 import {BaseAccess} from './BaseAccess.sol';
 
+//base proxy constructor args
 struct BaseProxyConstructorArgs {
     address factory;
     address registry;
 }
 
+/**
+ * @title BaseProxy
+ * @dev Base proxy contract that provides common functionality for proxies.
+ */
 abstract contract BaseProxy is IBaseProxy, BaseAccess {
     using LibProxyAccess for BaseProxyStorage;
 
@@ -39,21 +44,26 @@ abstract contract BaseProxy is IBaseProxy, BaseAccess {
         registry = args.registry;
     }
 
-    //must be overridden by proxy implementation
-    function fundsReceived(uint256 amount) internal virtual {
-        //no-op
-    }
-
+    /**
+     * convenience function to get the storage for basic proxy
+     */
     function _getStorage() internal pure returns (BaseProxyStorage storage bs) {
         return LibBaseProxy.load();
     }
 
+    /**
+     * @inheritdoc IBaseProxy
+     */
     function getImplementation() external view returns (address) {
         BaseProxyStorage storage bs = _getStorage();
         return bs.implementation;
     }
 
 
+    /**
+     * @dev called by the factory to set the implementation address for this proxy to 
+     * delegate to.
+     */
     function initProxy(address _implementation) public onlyFactory {
         require(_implementation != address(0), "WorldProxy: implementation is zero address");
         BaseProxyStorage storage bs = _getStorage();
@@ -63,7 +73,6 @@ abstract contract BaseProxy is IBaseProxy, BaseAccess {
 
     receive() external payable {
         emit ReceivedFunds(msg.sender, msg.value);
-        fundsReceived(msg.value);
     }
 
     fallback() external payable {

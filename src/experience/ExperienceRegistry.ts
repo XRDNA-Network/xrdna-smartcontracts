@@ -30,16 +30,32 @@ export class ExperienceRegistry {
         return await RPCRetryHandler.withRetry(() => this.con.isExperience(exp));
     }
 
-    async getExperienceByVector(vector: VectorAddress): Promise<string> {
-        return await RPCRetryHandler.withRetry(() => this.con.getExperienceByVector(vector));
-    }
-
     async registerExperience(bytes: string): Promise<TransactionResponse> {
         return await RPCRetryHandler.withRetry(() => this.con.registerExperience(bytes));
     }
 
     async getExperienceInfo(address: string): Promise<IExperienceInfo> {
-        const r = await RPCRetryHandler.withRetry(() => this.con.experiencesByAddress(address));
+        const r = await RPCRetryHandler.withRetry(() => this.con.getExperienceByAddress(address));
+        return {
+            company: r[0],
+            world: r[1],
+            experience: r[2],
+            portalId: r[3]
+        } as IExperienceInfo;
+    }
+
+    async getExperienceByName(name: string): Promise<IExperienceInfo> {
+        const r = await RPCRetryHandler.withRetry(() => this.con.getExperienceByName(name));
+        return {
+            company: r[0],
+            world: r[1],
+            experience: r[2],
+            portalId: r[3]
+        } as IExperienceInfo;
+    }
+
+    async getExperienceByVector(vector: VectorAddress): Promise<IExperienceInfo> {
+        const r = await RPCRetryHandler.withRetry(() => this.con.getExperienceByVector(vector));
         return {
             company: r[0],
             world: r[1],

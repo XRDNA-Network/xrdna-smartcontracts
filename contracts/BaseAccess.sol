@@ -4,6 +4,11 @@ pragma solidity ^0.8.24;
 import {BaseProxyStorage, LibProxyAccess, LibBaseProxy} from './libraries/LibBaseProxy.sol';
 import {IBaseAccess} from './IBaseAccess.sol';
 
+/**
+ * @dev Base contract for access control held in version-bases storage (i.e. not AccessControl 
+ * from OpenZeppelin Contracts). This contract is meant to be inherited by other contracts that
+ * store role information in versioned storage structs.
+ */
 abstract contract BaseAccess is IBaseAccess {
     using LibProxyAccess for BaseProxyStorage;
 
@@ -25,10 +30,14 @@ abstract contract BaseAccess is IBaseAccess {
         _;
     }
 
+    /**
+      * @dev add signing authorities to the contract. Only the admin role can do this.
+     */
     function addSigners(address[] calldata signers) external override onlyAdmin {
         _addSigners(signers);
     }
 
+    //internally used to add signers to the contract when admin not yet assigned
     function _addSigners(address[] calldata signers) internal {
         BaseProxyStorage storage bs = LibBaseProxy.load();
         for (uint256 i = 0; i < signers.length; i++) {
@@ -38,10 +47,14 @@ abstract contract BaseAccess is IBaseAccess {
         }
     }
 
+    /**
+     * @dev remove signers from the contract. only admin can do this.
+     */
     function removeSigners(address[] calldata signers) external override onlyAdmin {
         _removeSigners(signers);
     }
 
+    //internally remove signers when admin not required
     function _removeSigners(address[] calldata signers) internal {
         BaseProxyStorage storage bs = LibBaseProxy.load();
         for (uint256 i = 0; i < signers.length; i++) {
@@ -50,6 +63,9 @@ abstract contract BaseAccess is IBaseAccess {
         }
     }
 
+    /**
+     * @dev check if an address is a signer
+     */
     function isSigner(address signer) external view override returns (bool) {
         BaseProxyStorage storage bs = LibBaseProxy.load();
         return bs.hasRole(LibProxyAccess.SIGNER_ROLE, signer);

@@ -214,4 +214,13 @@ interface ICompany is IBaseAccess {
      */
     function delegateJumpForAvatar(DelegatedAvatarJumpRequest calldata request) external;
     
+    /**
+     * @dev Upgrades the experience to the next version. Only the owner can upgrade the experience.
+     */
+    function upgradeExperience(address experience, bytes memory initData) external;
+
+    /**
+     * @dev Upgrades the asset to the next version. Only the owner can upgrade the asset.
+     */
+    function upgradeAsset(address asset, bytes memory initData) external;
 }

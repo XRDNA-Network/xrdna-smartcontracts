@@ -6,6 +6,11 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Permit.sol";
 
+/**
+ * NOTE: This is a temporary gas token deployed to Base sepolia network
+ * for use in the testnet XRDNA ecosystem. It is not intended for use in
+ * mainnet launch.
+ */
 contract XRDNAGasToken is ERC20, AccessControl, ERC20Permit {
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
 

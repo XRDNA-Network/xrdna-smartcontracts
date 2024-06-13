@@ -16,6 +16,7 @@ import {BaseProxyStorage, LibProxyAccess, LibBaseProxy} from '../../libraries/Li
 import {WorldV2Storage, LibWorldV2Storage} from '../../libraries/LibWorldV2Storage.sol';
 import {BaseAccess} from '../../BaseAccess.sol';
 
+//master world copy constructor args
 struct WorldConstructorArgs {
     address worldFactory;
     address worldRegistry;
@@ -23,6 +24,11 @@ struct WorldConstructorArgs {
     address avatarRegistry;
 }
 
+/**
+ * @dev World contract version 2. This contract is responsible for registering and
+ * managing companies and avatars within a world. There was an early version "1" but it 
+ * was just for prototype purposes.
+ */
 contract WorldV2 is IWorldV2, BaseAccess, ReentrancyGuard {
     using LibStringCase for string;
     using LibProxyAccess for BaseProxyStorage;
@@ -62,6 +68,9 @@ contract WorldV2 is IWorldV2, BaseAccess, ReentrancyGuard {
         emit ReceivedFunds(msg.sender, msg.value);
     }
 
+    /**
+     * @inheritdoc IWorldV2
+     */
     function init(WorldCreateRequest memory request) external onlyFactory {
         BaseProxyStorage storage bs = LibBaseProxy.load();
 
@@ -82,21 +91,33 @@ contract WorldV2 is IWorldV2, BaseAccess, ReentrancyGuard {
         bs.grantRole(LibProxyAccess.SIGNER_ROLE, ws.owner);
     }
 
+    /**
+        * @inheritdoc IWorldV2
+     */
     function getOwner() external view returns (address) {
         WorldV2Storage storage ws = LibWorldV2Storage.load();
         return ws.owner;
     }
 
+    /**
+        * @inheritdoc IWorldV2
+     */
     function getBaseVector() external view returns (VectorAddress memory) {
         WorldV2Storage storage ws = LibWorldV2Storage.load();
         return ws.baseVector;
     }
 
+    /**
+        * @inheritdoc IWorldV2
+     */
     function getName() external view returns (string memory) {
         WorldV2Storage storage ws = LibWorldV2Storage.load();
         return ws.name;
     }
 
+    /**
+        * @inheritdoc IWorldV2
+     */
     function registerCompany(CompanyRegistrationArgs memory args) public payable onlySigner nonReentrant returns (address company) {
         require(args.owner != address(0), "World0_2: company owner cannot be zero address");
         require(bytes(args.name).length > 0, "World0_2: company name cannot be empty");
@@ -111,8 +132,8 @@ contract WorldV2 is IWorldV2, BaseAccess, ReentrancyGuard {
             y: ws.baseVector.y,
             z: ws.baseVector.z,
             t: ws.baseVector.t,
-            p: ws.nextP,
-            p_sub: 0
+            p: ws.nextP, //increment for each new company
+            p_sub: 0 //experience offset set to zero for new companies within a world
         });
         company = companyRegistry.registerCompany{value: msg.value}(CompanyRegistrationRequest({
             owner: args.owner,
@@ -125,6 +146,9 @@ contract WorldV2 is IWorldV2, BaseAccess, ReentrancyGuard {
         emit CompanyRegistered(company, vector, args.name);
     }
 
+    /**
+        * @inheritdoc IWorldV2
+     */
     function registerAvatar(AvatarRegistrationRequest memory args) external payable onlySigner nonReentrant returns (address avatar) {
         require(args.avatarOwner != address(0), "World0_2: avatar owner cannot be zero address");
         require(bytes(args.username).length > 0, "World0_2: avatar username cannot be empty");
@@ -144,11 +168,16 @@ contract WorldV2 is IWorldV2, BaseAccess, ReentrancyGuard {
         emit AvatarRegistered(avatar, args.defaultExperience);
     }
 
-
+    /**
+        * @inheritdoc IWorldV2
+     */
     function upgrade(bytes calldata initData) public onlyAdmin {
-        worldRegistry.worldUpgradeSelf(initData);
+        worldRegistry.upgradeWorld(initData);
     }
 
+    /**
+        * @inheritdoc IWorldV2
+     */
     function upgradeComplete(address nextVersion) public onlyFactory {
         BaseProxyStorage storage bs = LibBaseProxy.load();
         address old = bs.implementation;
@@ -156,6 +185,9 @@ contract WorldV2 is IWorldV2, BaseAccess, ReentrancyGuard {
         emit WorldUpgraded(old, nextVersion);
     }
 
+    /**
+        * @inheritdoc IWorldV2
+     */
     function setHook(IWorldHook _hook) external onlyAdmin {
         require(address(_hook) != address(0), "World0_2: hook cannot be zero address");
         WorldV2Storage storage ws = LibWorldV2Storage.load();
@@ -163,12 +195,18 @@ contract WorldV2 is IWorldV2, BaseAccess, ReentrancyGuard {
         emit WorldHookSet(address(_hook));
     }
 
+    /**
+        * @inheritdoc IWorldV2
+     */
     function removeHook() external onlyAdmin {
         WorldV2Storage storage ws = LibWorldV2Storage.load();
         ws.hook = IWorldHook(address(0));
         emit WorldHookRemoved();
     }
 
+    /**
+        * @inheritdoc IWorldV2
+     */
     function withdraw(uint256 amount) external onlyAdmin {
         require(amount <= address(this).balance, "World0_2: amount exceeds balance");
         WorldV2Storage storage ws = LibWorldV2Storage.load();

@@ -23,6 +23,7 @@ import {AssetCheckArgs} from '../asset/IAssetCondition.sol';
 import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
 import {IBasicAsset} from '../asset/IBasicAsset.sol';
 import {IExperienceRegistry} from '../experience/IExperienceRegistry.sol';
+import {LibLinkedList, LinkedList} from '../libraries/LibLinkedList.sol';
 
 /**
  * @dev Data structure for initializing an avatar contract
@@ -56,10 +57,11 @@ struct BaseContructorArgs {
  * add or remove wearables. The avatar can also receive ERC721 tokens from registered 
  * assets and companies.
  */
-contract Avatar is IAvatar, ReentrancyGuard, WearableLinkedList {
+contract Avatar is IAvatar, ReentrancyGuard {
     using LibStringCase for string;
     using LibVectorAddress for VectorAddress;
     using MessageHashUtils for bytes;
+    using LibLinkedList for LinkedList;
 
     //set on constructor of master copy of avatar
     address public immutable avatarFactory;
@@ -135,6 +137,7 @@ contract Avatar is IAvatar, ReentrancyGuard, WearableLinkedList {
         s.canReceiveTokensOutsideOfExperience = data.canReceiveTokensOutsideOfExperience;
         s.appearanceDetails = data.appearanceDetails;
         s.owner = _owner;
+        s.list.maxSize = 200;
     }
 
     /**
@@ -215,14 +218,16 @@ contract Avatar is IAvatar, ReentrancyGuard, WearableLinkedList {
      * limit of 200 wearables per avatar due to gas restrictions.
      */
     function getWearables() public view override returns (Wearable[] memory) {
-        return getAllItems();
+        AvatarV1Storage storage s = LibAvatarV1Storage.load();
+        return s.list.getAllItems();
     }
 
     /**
      * @dev Check if the avatar is wearing a specific wearable asset.
      */
     function isWearing(Wearable calldata wearable) public view override returns (bool) {
-        return contains(wearable);
+        AvatarV1Storage storage s = LibAvatarV1Storage.load();
+        return s.list.contains(wearable);
     }
 
      /**
@@ -308,7 +313,8 @@ contract Avatar is IAvatar, ReentrancyGuard, WearableLinkedList {
         })), "Avatar: wearable asset cannot be used by avatar");
 
         require(wAsset.ownerOf(wearable.tokenId) == address(this), "Avatar: wearable token not owned by avatar");
-        insert(wearable);
+        AvatarV1Storage storage s = LibAvatarV1Storage.load();
+        s.list.insert(wearable);
         emit WearableAdded(wearable.asset, wearable.tokenId);
     }
 
@@ -318,7 +324,8 @@ contract Avatar is IAvatar, ReentrancyGuard, WearableLinkedList {
     function removeWearable(Wearable calldata wearable) public onlyOwner override {
         require(wearable.asset != address(0), "Avatar: wearable asset cannot be zero address");
         require(wearable.tokenId > 0, "Avatar: wearable tokenId cannot be zero");
-        remove(wearable);
+        AvatarV1Storage storage s = LibAvatarV1Storage.load();
+        s.list.remove(wearable);
         emit WearableRemoved(wearable.asset, wearable.tokenId);
     }
 

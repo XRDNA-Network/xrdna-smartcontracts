@@ -26,16 +26,9 @@ describe('JumpTest', () => {
         companyOwner = signers[2];
         avatarOwner = signers[3];
         stack = new StackFactory({
-            assetRegistryAdmin: signers[0],
-            avatarRegistryAdmin: signers[0],
             avatarOwner,
-            companyRegistryAdmin: signers[0],
-            experienceRegistryAdmin: signers[0],
-            portalRegistryAdmin: signers[0],
-            registrarAdmin,
-            registrarSigner,
-            worldRegistryAdmin,
-            worldOwner
+            worldOwner,
+            companyOwner
         });
         const {world:w, worldRegistration: wr} = await stack.init();
         world = w;
@@ -49,6 +42,7 @@ describe('JumpTest', () => {
         const current = await avatar.location();
         expect(current).to.be.not.null;
         expect(current.toString().toLowerCase()).to.be.equal(experience.address.toLowerCase());
+        const companyBal = await company2.tokenBalance();
         const b4Bal = await avatar.tokenBalance();
         expect(b4Bal).to.be.not.null;
         expect(b4Bal.toString()).to.be.not.equal("0");
@@ -69,8 +63,11 @@ describe('JumpTest', () => {
         expect(loc).to.be.not.null;
         expect(loc.toString().toLowerCase()).to.be.equal(experience2.address.toLowerCase());
         const afterBal = await avatar.tokenBalance();
+        const afterCompanyBal = await company2.tokenBalance();
         expect(afterBal).to.be.not.null;
         expect(afterBal.toString()).to.be.equal( (b4Bal - portalForExperience2.fee).toString());
+        expect(afterCompanyBal).to.be.not.null;
+        expect(afterCompanyBal.toString()).to.be.equal( (companyBal + portalForExperience2.fee).toString());
     });
 
     it("Should allow a delegated jump from company", async () => {

@@ -27,6 +27,10 @@ contract CompanyFactory is BaseFactory, ICompanyFactory {
      * @inheritdoc ICompanyFactory
      */
     function upgradeCompany(address company, bytes calldata initData) public override onlyAuthorizedRegistry {
+       //to upgrade, we just need to change its underlying implementation. 
+        //so first, make sure it doesn't already have the latest implementation
+        address impl = IBaseProxy(company).getImplementation();
+        require(impl != implementation, "Already on the latest version");
         ICompany(company).upgradeComplete(implementation);
         INextCompanyVersion(company).init(initData);
     }

@@ -17,6 +17,11 @@ contract ERC721AssetFactory is BaseFactory, IAssetFactory {
     constructor(address mainAdmin, address[] memory admins) BaseFactory(mainAdmin, admins) {}
 
     function upgradeAsset(address asset, bytes calldata initData) external override {
+        //to upgrade an asset, we just need to change its underlying implementation. 
+        //so first, make sure the asset doesn't already have the latest implementation
+        address impl = IBaseProxy(asset).getImplementation();
+        require(impl != implementation, "Already on the latest version");
+        
         IMintableAsset(asset).upgradeComplete(implementation);
         IMintableAsset(asset).init(initData);
     }

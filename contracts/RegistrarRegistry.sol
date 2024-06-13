@@ -4,10 +4,13 @@ pragma solidity ^0.8.24;
 
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "./IRegistrarRegistry.sol";
-//import "hardhat/console.sol";
 
-
-
+/**
+ * @title RegistrarRegistry
+ * @dev The registrar registry holds registrar IDs and their list of authorized signers. Registrars
+ * are the only entity allowed to regsiter worlds in the world registry. They must go through XRDNA
+ * to be approved as a registrar.
+ */
 contract RegistrarRegistry is IRegistrarRegistry, AccessControl {
     bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
     bytes32 public constant REGISTER_ROLE = keccak256("REGISTER_ROLE");
@@ -51,10 +54,16 @@ contract RegistrarRegistry is IRegistrarRegistry, AccessControl {
         }
     }
 
+    /**
+     * @inheritdoc IRegistrarRegistry
+     */
     function isRegistrar(uint256 id, address account) public view returns (bool) {
         return registrars[id].signers[account];
     }
 
+    /**
+     * @inheritdoc IRegistrarRegistry
+     */
     function register(address payable signer) public payable onlyRegisterer() {
         require(signer != address(0), "RegistrarRegistry: signer cannot be zero address");
         ++registrarCount;
@@ -67,10 +76,16 @@ contract RegistrarRegistry is IRegistrarRegistry, AccessControl {
         emit RegistrarAdded(registrarCount, signer, msg.value);
     }
 
+    /**
+     * @inheritdoc IRegistrarRegistry
+     */
     function removeRegistrar(uint256 registrarId) public onlyAdmin {
         delete registrars[registrarId];
     }
 
+    /**
+     * @inheritdoc IRegistrarRegistry
+     */
     function addSigners(uint256 registrarId, address[] memory signers) public onlyRegistrar(registrarId) {
         Registrar storage registrar = registrars[registrarId];
     
@@ -81,6 +96,9 @@ contract RegistrarRegistry is IRegistrarRegistry, AccessControl {
         emit SignersAdded(registrarId, signers);
     }
 
+    /**
+     * @inheritdoc IRegistrarRegistry
+     */
     function removeSigners(uint256 registrarId, address[] memory signers) public onlyRegistrar(registrarId) {
         Registrar storage registrar = registrars[registrarId];
         for (uint256 i = 0; i < signers.length; i++) {

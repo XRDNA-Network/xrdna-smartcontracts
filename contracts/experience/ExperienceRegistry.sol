@@ -6,13 +6,14 @@ import {AccessControl} from '@openzeppelin/contracts/access/AccessControl.sol';
 import {IExperienceFactory} from './IExperienceFactory.sol';
 import {IExperience} from './IExperience.sol';
 import {VectorAddress, LibVectorAddress} from '../VectorAddress.sol';
-import {IBasicCompany} from './IBasicCompany.sol';
 import {IPortalRegistry, AddPortalRequest} from '../portal/IPortalRegistry.sol';
 import {ICompanyRegistry} from '../company/ICompanyRegistry.sol';
 import {LibStringCase} from '../LibStringCase.sol';
 import {IExperienceRegistry, ExperienceInfo, RegisterExperienceRequest} from './IExperienceRegistry.sol';
 import {ReentrancyGuard} from '@openzeppelin/contracts/utils/ReentrancyGuard.sol';
+import {ICompany} from '../company/ICompany.sol';
 
+//registry constructor args
 struct ExperienceRegistryConstructorArgs {
     address mainAdmin;
     address experienceFactory;
@@ -21,6 +22,10 @@ struct ExperienceRegistryConstructorArgs {
     address[] admins;
 }
 
+/**
+ * @title ExperienceRegistry
+ * @dev Registry contract for Experiences
+ */
 contract ExperienceRegistry is IExperienceRegistry, ReentrancyGuard, AccessControl {
     using LibVectorAddress for VectorAddress;
     using LibStringCase for string;
@@ -32,13 +37,13 @@ contract ExperienceRegistry is IExperienceRegistry, ReentrancyGuard, AccessContr
     IExperienceFactory experienceFactory;
     
     // Mapping from vector address hash to experience details
-    mapping(bytes32 => ExperienceInfo) public _experiencesByVectorHash;
+    mapping(bytes32 => ExperienceInfo) _experiencesByVectorHash;
 
     //mapping of experience info by its contract address
-    mapping(address => ExperienceInfo) public experiencesByAddress;
+    mapping(address => ExperienceInfo) experiencesByAddress;
 
     //enforce globally unique names
-    mapping(string => ExperienceInfo) public experiencesByName;
+    mapping(string => ExperienceInfo) experiencesByName;
 
     modifier onlyCompany() {
         require(companyRegistry.isRegisteredCompany(msg.sender), "ExperienceRegistry: caller is not a company");
@@ -67,35 +72,70 @@ contract ExperienceRegistry is IExperienceRegistry, ReentrancyGuard, AccessContr
         }
     }
 
+    /**
+        * @inheritdoc IExperienceRegistry
+     */
     function currentExperienceVersion() public view override returns (uint256) {
         return experienceFactory.supportsVersion();
     }
 
+    /**
+        * @inheritdoc IExperienceRegistry
+     */
     function setCompanyRegistry(ICompanyRegistry reg) public onlyRole(ADMIN_ROLE) {
         require(address(reg) != address(0), "ExperienceRegistry: zero address not valid");
         companyRegistry = reg;
     }
 
+    /**
+        * @inheritdoc IExperienceRegistry
+     */
     function setPortalRegistry(IPortalRegistry reg) public onlyRole(ADMIN_ROLE) {
         require(address(reg) != address(0), "ExperienceRegistry: zero address not valid");
         portalRegistry = reg;
     }
 
+    /**
+        * @inheritdoc IExperienceRegistry
+     */
     function setExperienceFactory(address factory) public onlyRole(ADMIN_ROLE) {
         require(factory != address(0), "ExperienceRegistry: zero address not valid");
         experienceFactory = IExperienceFactory(factory);
     }
 
+    /**
+     * @inheritdoc IExperienceRegistry
+     */
     function isExperience(address exp) public view returns (bool) {
         return experiencesByAddress[exp].company != address(0);
     }
 
+    /**
+     * @inheritdoc IExperienceRegistry
+     */
     function getExperienceByVector(VectorAddress memory vector) public view override returns (ExperienceInfo memory) {
         return _experiencesByVectorHash[keccak256(abi.encode(vector.asLookupKey()))];
     }
 
+    /**
+     * @inheritdoc IExperienceRegistry
+     */
+    function getExperienceByAddress(address exp) public view override returns (ExperienceInfo memory) {
+        return experiencesByAddress[exp];
+    }
+
+    /**
+     * @inheritdoc IExperienceRegistry
+     */
+    function getExperiencesByName(string memory name) public view override returns (ExperienceInfo memory) {
+        return experiencesByName[name.lower()];
+    }
+
+    /**
+     * @inheritdoc IExperienceRegistry
+     */
     function registerExperience(RegisterExperienceRequest memory request) public  onlyCompany nonReentrant returns(address, uint256) {
-        IBasicCompany company = IBasicCompany(msg.sender);
+        ICompany company = ICompany(msg.sender);
         string memory lowerName = request.name.lower();
         /**
         * WARN: there is an issue with unicode or whitespace characters present in names. 
@@ -122,6 +162,9 @@ contract ExperienceRegistry is IExperienceRegistry, ReentrancyGuard, AccessContr
         return (address(exp), portalId);
     }
 
+    /**
+     * @inheritdoc IExperienceRegistry
+     */
     function upgradeExperience(bytes calldata initData) public onlyExperience nonReentrant {
         experienceFactory.upgradeExperience(msg.sender, initData);
     }
