@@ -97,6 +97,11 @@ interface IWorldV2 is IBaseAccess {
     function removeHook() external;
 
     /**
+     * @dev Returns the world hook.
+     */
+    function hook() external view returns (IWorldHook);
+
+    /**
      * @dev Withdraws funds from the world contract. Must be called by the world admin.
      */
     function withdraw(uint256 amount) external;

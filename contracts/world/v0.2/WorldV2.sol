@@ -190,6 +190,7 @@ contract WorldV2 is IWorldV2, BaseAccess, ReentrancyGuard {
      */
     function setHook(IWorldHook _hook) external onlyAdmin {
         require(address(_hook) != address(0), "World0_2: hook cannot be zero address");
+        require(address(_hook).code.length > 0, "World0_2: hook address is not a contract");
         WorldV2Storage storage ws = LibWorldV2Storage.load();
         ws.hook = _hook;
         emit WorldHookSet(address(_hook));
@@ -203,6 +204,14 @@ contract WorldV2 is IWorldV2, BaseAccess, ReentrancyGuard {
         ws.hook = IWorldHook(address(0));
         emit WorldHookRemoved();
     }
+
+    /**
+        * @inheritdoc IWorldV2
+     */
+     function hook() external view returns (IWorldHook) {
+         WorldV2Storage storage ws = LibWorldV2Storage.load();
+         return ws.hook;
+     }
 
     /**
         * @inheritdoc IWorldV2

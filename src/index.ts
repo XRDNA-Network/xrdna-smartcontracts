@@ -6,3 +6,4 @@ export * from './registrar';
 export * from './VectorAddress';
 export * from './world';
 export * from './XRDNASigners';
+export * from './interfaces';

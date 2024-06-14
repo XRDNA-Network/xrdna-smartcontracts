@@ -5,13 +5,18 @@ import { VectorAddress } from "../VectorAddress";
 import { LogParser } from "../LogParser";
 import { LogNames } from "../LogNames";
 import { Avatar } from "../avatar/Avatar";
+import { ISupportsSigners } from "../interfaces/ISupportsSigners";
+import { ISupportsVector } from "../interfaces";
+import { IUpgradeResult, IUpgradeable } from "../interfaces/IUpgradeable";
+import { ISupportsHooks } from "../interfaces/ISupportsHooks";
+import { ISupportsFunds } from "../interfaces/ISupportsFunds";
 
 /**
  * Typescript proxy for World instance
  */
 export interface IWorldOpts {
     address: string;
-    admin: Signer;
+    admin: Signer | Provider;
 }
 
 export interface ICompanyRegistrationRequest {
@@ -49,12 +54,13 @@ export interface IAvatarRegistrationResult {
     receipt: TransactionReceipt;
 }
 
-export interface IUpgradeResult {
-    receipt: TransactionReceipt;
-    newWorldAddress: string;
-}
 
-export class World {
+
+export class World implements ISupportsSigners, 
+                              ISupportsVector, 
+                              IUpgradeable,
+                              ISupportsHooks,
+                              ISupportsFunds {
     readonly address: string;
     readonly admin: Provider | Signer;
     private world: ethers.Contract;
@@ -79,7 +85,7 @@ export class World {
         return await RPCRetryHandler.withRetry(() => this.world.isSigner(address));
     }
 
-    async getBaseVector(): Promise<VectorAddress> {
+    async getVectorAddress(): Promise<VectorAddress> {
         return await RPCRetryHandler.withRetry(() => this.world.getBaseVector());
     }
 
@@ -91,23 +97,29 @@ export class World {
         return await RPCRetryHandler.withRetry(() => this.world.withdraw(amount));
     }
 
+    async addFunds(amount: bigint): Promise<TransactionResponse> {
+        if(!this.admin || !this.admin.sendTransaction) {
+            throw new Error("Cannot add funds without an admin signer");
+        }
+        return await RPCRetryHandler.withRetry(() => this.admin.sendTransaction!({
+            to: this.address,
+            value: amount
+        }));
+    }
+
+    async getBalance(): Promise<bigint> {
+        const p: Provider = this.admin.provider || this.admin as Provider;
+        if(!p) {
+            throw new Error("Cannot get balance without a provider");
+        }
+        return await RPCRetryHandler.withRetry(() => p.getBalance(this.address));
+    }
+
     async version(): Promise<bigint> {
         return await RPCRetryHandler.withRetry(() => this.world.version());
     }
 
-    async _onlyV2(): Promise<void> {
-        try {
-            const v = await this.version();
-            if(v && v != 2n) {
-                throw new Error(`Unsupported version number: ${v}`);
-            }
-        } catch (e:any) {
-            throw new Error(`This function only supported in V2 contracts: ${e.message}`);
-        }
-    }
-
     async registerCompany(request: ICompanyRegistrationRequest, tokens?: bigint): Promise<ICompanyRegistrationResult> {
-        await this._onlyV2();
         
         const t = await RPCRetryHandler.withRetry(() => this.world.registerCompany({
             owner: request.owner,
@@ -134,7 +146,6 @@ export class World {
     }
 
     async registerAvatar(request: IAvatarRegistrationRequest, tokens?: bigint): Promise<IAvatarRegistrationResult> {
-        await this._onlyV2();
         const enc = Avatar.encodeInitData({
             appearanceDetails: request.appearanceDetails,
             canReceiveTokensOutsideOfExperience: request.canReceiveTokensOutsideOfExperience
@@ -162,7 +173,6 @@ export class World {
     }
 
     async upgrade(newWorldInitData: string): Promise<IUpgradeResult> {
-        await this._onlyV2();
 
         const t = await RPCRetryHandler.withRetry(() => this.world.upgrade(newWorldInitData));
         const receipt = await t.wait();
@@ -180,13 +190,19 @@ export class World {
         };
     }
 
-    async setHook(hook: AddressLike): Promise<TransactionResponse> {
-        await this._onlyV2();
+    async getImplementation(): Promise<string> {
+        return await RPCRetryHandler.withRetry(() => this.world.getImplementation());
+    }
+
+    async setHook(hook: string): Promise<TransactionResponse> {
         return await RPCRetryHandler.withRetry(() => this.world.setHook(hook));
     }
 
     async removeHook(): Promise<TransactionResponse> {
-        await this._onlyV2();
         return await RPCRetryHandler.withRetry(() => this.world.removeHook());
+    }
+
+    async getHook(): Promise<string> {
+        return await RPCRetryHandler.withRetry(() => this.world.hook());
     }
 }

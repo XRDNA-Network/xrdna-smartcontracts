@@ -7,6 +7,7 @@ import { StackFactory, StackType } from "./test_stack/StackFactory";
 import { Signer } from "ethers";
 import { Company } from "../src/company/Company";
 import { Experience } from "../src/experience";
+import { IAvatarStack } from "./test_stack/avatar/IAvatarStack";
 
 describe("World Registration", () => {
 
@@ -35,14 +36,7 @@ describe("World Registration", () => {
         companyOwner = signers[2];
         avatarOwner = signers[3];
         stack = new StackFactory({
-            assetRegistryAdmin: signers[0],
-            avatarRegistryAdmin: signers[0],
-            companyRegistryAdmin: signers[0],
-            experienceRegistryAdmin: signers[0],
-            portalRegistryAdmin: signers[0],
-            registrarAdmin,
-            registrarSigner,
-            worldRegistryAdmin,
+            companyOwner,
             worldOwner,
             avatarOwner
         });
@@ -157,6 +151,31 @@ describe("World Registration", () => {
         expect(r!.status).to.equal(1);
         const after = await ethers.provider.getBalance(worldOwner.address);
         expect(after).to.be.greaterThan(b4);
+    });
+
+    ///////////////////////////////////////////////////////////////////////
+    // Hook registration
+    ///////////////////////////////////////////////////////////////////////
+    it("Should register a hook", async () => {
+        const avatar = stack.getStack<IAvatarStack>(StackType.AVATAR);
+        //hook has to be an address, so we're just faking using another deployed contract
+        const fakeHook = avatar.getAvatarRegistry().address;
+        const t = await world.setHook(fakeHook);
+        const r = await t.wait();
+        expect(r).to.not.be.undefined;
+        expect(r!.status).to.equal(1);
+        const hook = await world.getHook();
+        expect(hook).to.equal(fakeHook);
+
+    });
+
+    it("Should remove a hook", async () => {
+        const t = await world.removeHook();
+        const r = await t.wait();
+        expect(r).to.not.be.undefined;
+        expect(r!.status).to.equal(1);
+        const hook = await world.getHook();
+        expect(hook).to.equal(ethers.ZeroAddress);
     });
 
     ///////////////////////////////////////////////////////////////////////
