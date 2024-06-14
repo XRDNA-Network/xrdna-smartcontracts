@@ -55,6 +55,19 @@
       "type": "event"
     },
     {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "company",
+          "type": "address"
+        }
+      ],
+      "name": "CompanyRemoved",
+      "type": "event"
+    },
+    {
       "inputs": [],
       "name": "currentCompanyVersion",
       "outputs": [
@@ -162,6 +175,19 @@
         }
       ],
       "stateMutability": "payable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "company",
+          "type": "address"
+        }
+      ],
+      "name": "removeCompany",
+      "outputs": [],
+      "stateMutability": "nonpayable",
       "type": "function"
     },
     {

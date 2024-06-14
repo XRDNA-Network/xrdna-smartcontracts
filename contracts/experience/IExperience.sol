@@ -27,6 +27,7 @@ interface IExperience {
     event HookRemoved(address indexed hook);
     event ExperienceUpgraded(address indexed oldVersion, address indexed newVersion);
     event PortalFeeChanged(uint256 newFee);
+    event ExperienceDeactivated();
     
     /**
      * @dev Returns the version of the experience contract. Can be compared with factory
@@ -43,6 +44,17 @@ interface IExperience {
      * @dev Returns the world that this experience is in
      */
     function world() external view returns (address);
+
+    /**
+     * @dev Returns whether the experience is active or not
+     */
+    function isActive() external view returns (bool);
+
+    /**
+     * @dev Deactivates the experience. This can only be called by the experience registry and 
+     * initiated by the parent company.
+     */
+    function deactive() external;
 
     /**
      * @dev Returns the spatial vector address for this experience, which is derived

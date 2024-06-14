@@ -10,6 +10,10 @@ import {ICompany} from '../company/ICompany.sol';
  * Storage data for ExperienceV1
  */
 struct ExperienceV1Storage {
+
+    //whether the experience contract is active or has been deactivated by the parent company
+    bool active; 
+
     //company that owns the experience
     ICompany company;
 

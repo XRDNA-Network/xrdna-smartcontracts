@@ -56,6 +56,12 @@
     {
       "anonymous": false,
       "inputs": [],
+      "name": "CompanyDeactivated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [],
       "name": "CompanyHookRemoved",
       "type": "event"
     },
@@ -70,6 +76,12 @@
         }
       ],
       "name": "CompanyHookSet",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [],
+      "name": "CompanyReactivated",
       "type": "event"
     },
     {
@@ -108,6 +120,25 @@
         }
       ],
       "name": "ExperienceAdded",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "experience",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "portalId",
+          "type": "uint256"
+        }
+      ],
+      "name": "ExperienceRemoved",
       "type": "event"
     },
     {
@@ -290,6 +321,13 @@
         }
       ],
       "name": "changeExperiencePortalFee",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "deactivate",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
@@ -483,6 +521,13 @@
       "type": "function"
     },
     {
+      "inputs": [],
+      "name": "reactivate",
+      "outputs": [],
+      "stateMutability": "payable",
+      "type": "function"
+    },
+    {
       "inputs": [
         {
           "internalType": "address",
@@ -504,6 +549,19 @@
         }
       ],
       "name": "removeAssetHook",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "experience",
+          "type": "address"
+        }
+      ],
+      "name": "removeExperience",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"

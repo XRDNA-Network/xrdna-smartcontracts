@@ -4,7 +4,7 @@ pragma solidity ^0.8.24;
 
 import {VectorAddress} from '../VectorAddress.sol';
 import {IExperience} from './IExperience.sol';
-import {ICompanyRegistry} from '../company/ICompanyRegistry.sol';
+import {IWorldRegistryV2} from '../world/v0.2/IWorldRegistryV2.sol';
 import {IPortalRegistry} from '../portal/IPortalRegistry.sol';
 
 /**
@@ -14,6 +14,7 @@ import {IPortalRegistry} from '../portal/IPortalRegistry.sol';
  */
 struct RegisterExperienceRequest {
     VectorAddress vector;
+    address company;
     bytes initData;
     string name;
 }
@@ -35,6 +36,7 @@ struct ExperienceInfo {
 interface IExperienceRegistry {
     
     event ExperienceRegistered(address indexed world, address indexed company, address indexed experience, string name);
+    event ExperienceRemoved(address indexed experience, uint256 indexed portalId);
     
     /**
      * @dev Returns experience info for the given vector address.
@@ -57,9 +59,9 @@ interface IExperienceRegistry {
     function setExperienceFactory(address factory) external;
 
     /**
-     * @dev Sets the company registry that is used to validate company addresses. Only admin can do this
+     * @dev Sets the world registry that is used to validate world addresses. Only admin can do this
      */
-    function setCompanyRegistry(ICompanyRegistry reg) external;
+    function setWorldRegistry(IWorldRegistryV2 reg) external;
 
     /**
      * @dev Sets the portal registry that is used to manage portals. Only admin can do this
@@ -78,6 +80,11 @@ interface IExperienceRegistry {
      */
     function registerExperience(RegisterExperienceRequest memory request) external returns (address, uint256);
     
+    /**
+     * @dev Removes an experience from the registry. This can only be called by a world in which the experience lives.
+     */
+    function removeExperience(address company, address exp) external returns (uint256 portalId);
+
     /**
      * @dev Upgrades an experience to a new version. This can only be called by the experience itself,
      * which is initiated from a company contract

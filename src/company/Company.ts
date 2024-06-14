@@ -7,6 +7,7 @@ import { LogNames } from "../LogNames";
 import { Experience } from "../experience";
 import { Avatar } from "../avatar/Avatar";
 import { ERC20Asset, ERC721Asset } from "../asset";
+import { ISupportsFunds, ISupportsHooks, ISupportsSigners, ISupportsVector, IUpgradeResult, IUpgradeable } from "../interfaces";
 
 export interface ICompanyOpts {
     address: string;
@@ -49,7 +50,11 @@ export interface IMintERC721Result {
     tokenId: bigint;
 }
 
-export class Company {
+export class Company implements ISupportsFunds,
+                                ISupportsHooks,
+                                ISupportsSigners,
+                                ISupportsVector,
+                                IUpgradeable {
     private con: Contract;
     readonly address: string;
     private admin: Provider | Signer;
@@ -62,6 +67,9 @@ export class Company {
         this.parser = new LogParser(abi, this.address);
     }
     
+    ////////////////////////////////////////////////////////////////////////
+    // General information
+    ////////////////////////////////////////////////////////////////////////
     async owner(): Promise<string> {
         return await RPCRetryHandler.withRetry(() => this.con.owner());
     }
@@ -74,66 +82,41 @@ export class Company {
         return await RPCRetryHandler.withRetry(() => this.con.world());
     }
 
-    async hook(): Promise<string> {
-        return await RPCRetryHandler.withRetry(() => this.con.hook());
-    }
-
-    async vectorAddress(): Promise<VectorAddress> {
-        const r = await RPCRetryHandler.withRetry(() => this.con.vectorAddress());
+    async getVectorAddress(): Promise<VectorAddress> {
+        const t = await RPCRetryHandler.withRetry(() => this.con.vectorAddress());
         return {
-            x: r[0],
-            y: r[1],
-            z: r[2],
-            t: r[3],
-            p: r[4],
-            p_sub: r[5]
-        } as VectorAddress;
+            x: t[0],
+            y: t[1],
+            z: t[2],
+            t: t[3],
+            p: t[4],
+            p_sub: t[5]
+        } as VectorAddress;    
     }
 
+    
+    ////////////////////////////////////////////////////////////////////////
+    // ISupportsSigners interface
+    ////////////////////////////////////////////////////////////////////////
     async isSigner(address: string): Promise<boolean> {
         return await RPCRetryHandler.withRetry(() => this.con.isSigner(address));
     }
 
-    async canMint(asset: string, to: string, amount: string): Promise<boolean> {
+    async addSigners(signers: string[]): Promise<TransactionResponse> {
+        return await RPCRetryHandler.withRetry(() => this.con.addSigners(signers));
+    }
+
+    async removeSigners(signers: string[]): Promise<TransactionResponse> {
+        return await RPCRetryHandler.withRetry(() => this.con.removeSigners(signers));
+    }
+
+    
+    ////////////////////////////////////////////////////////////////////////
+    // ISupportsFunds interface
+    ////////////////////////////////////////////////////////////////////////
+    async canMint(asset: string, to: string, amount: bigint): Promise<boolean> {
         const data = ethers.AbiCoder.defaultAbiCoder().encode(["uint256"], [amount]);
         return await RPCRetryHandler.withRetry(() => this.con.canMint(asset, to, data));
-    }
-
-    async upgraded(): Promise<boolean> {
-        return await RPCRetryHandler.withRetry(() => this.con.upgraded());
-    }
-
-    async addSigner(signer: string): Promise<TransactionResponse> {
-        return await RPCRetryHandler.withRetry(() => this.con.addSigners([signer]));
-    }
-
-    async removeSigner(signer: string): Promise<TransactionResponse> {
-        return await RPCRetryHandler.withRetry(() => this.con.removeSigners([signer]));
-    }
-
-    async addExperience(exp: IAddExperienceArgs): Promise<IAddExperienceResult> {
-        const init = Experience.encodeInitData({
-            entryFee: exp.entryFee,
-            connectionDetails: exp.connectionDetails
-        });
-        const t = await RPCRetryHandler.withRetry(() => this.con.addExperience({
-            name: exp.name,
-            initData: init
-        }));
-        const r = await t.wait();
-        if(!r.status) {
-            throw new Error("Transaction failed with status 0");
-        }
-        const logs = this.parser.parseLogs(r);
-        const args = logs.get(LogNames.ExperienceAdded);
-        if(!args) {
-            throw new Error("ExperienceAdded log not found");
-        }
-        return {
-            receipt: r,
-            experienceAddress: args[0],
-            portalId: args[1]
-        };
     }
 
     async mintERC20(asset: string, to: string, amount: bigint): Promise<IMintERC20Result> {
@@ -182,26 +165,64 @@ export class Company {
         return await RPCRetryHandler.withRetry(() => this.con.revoke(asset, holder, data));
     }
 
-    async upgrade(initData: string): Promise<TransactionResponse> {
-        return await RPCRetryHandler.withRetry(() => this.con.upgrade(initData));
+
+    ////////////////////////////////////////////////////////////////////////
+    // IUpgradeable interface
+    ////////////////////////////////////////////////////////////////////////
+    async upgrade(initData: string): Promise<IUpgradeResult> {
+        const t = await RPCRetryHandler.withRetry(() => this.con.upgrade(initData));
+        const r = await t.wait();
+        if(!r.status) {
+            throw new Error("Transaction failed with status 0");
+        }
+        const logs = this.parser.parseLogs(r);
+        const args = logs.get(LogNames.CompanyUpgraded);
+        if(!args) {
+            throw new Error("CompanyUpgraded log not found");
+        }
+        return {
+            receipt: r,
+            newImplementationAddress: args[1]
+        };
     }
 
-    async upgradeComplete(nextVersion: string): Promise<TransactionResponse> {
-        return await RPCRetryHandler.withRetry(() => this.con.upgradeComplete(nextVersion));
-    }   
-
-    async upgradeExperience(address: string, initData: string): Promise<TransactionResponse> {
-        return await RPCRetryHandler.withRetry(() => this.con.upgradeExperience(address, initData));
+    async version(): Promise<bigint> {
+        return await RPCRetryHandler.withRetry(() => this.con.version());
     }
 
-    async upgradeAsset(address: string, initData: string): Promise<TransactionResponse> {
-        return await RPCRetryHandler.withRetry(() => this.con.upgradeAsset(address, initData));
+    async getImplementation(): Promise<string> {
+        return await RPCRetryHandler.withRetry(() => this.con.getImplementation());
     }
 
-    async withdraw(amount: string): Promise<TransactionResponse> {
+    ////////////////////////////////////////////////////////////////////////
+    // ISupportsFunds interface
+    ////////////////////////////////////////////////////////////////////////
+    async withdraw(amount: bigint): Promise<TransactionResponse> {
         return await RPCRetryHandler.withRetry(() => this.con.withdraw(amount));
     }
 
+    async addFunds(amount: bigint): Promise<TransactionResponse> {
+       if(!this.admin.sendTransaction) {
+            throw new Error("Cannot add funds without a signer");
+        }
+        return await RPCRetryHandler.withRetry(() => this.admin.sendTransaction!({
+            to: this.address,
+            value: amount
+        }));
+    }
+
+    async getBalance(): Promise<bigint> {
+        const p = this.admin.provider || this.admin as Provider;
+        if(!p) {
+            throw new Error("Cannot get balance without a provider");
+        }
+        return await RPCRetryHandler.withRetry(() => p.getBalance(this.address));
+    }
+
+
+    ////////////////////////////////////////////////////////////////////////
+    // ISupportsHooks interface
+    ////////////////////////////////////////////////////////////////////////
     async setHook(hook: string): Promise<TransactionResponse> {
         return await RPCRetryHandler.withRetry(() => this.con.setHook(hook));
     }
@@ -209,7 +230,44 @@ export class Company {
     async removeHook() {
         return await RPCRetryHandler.withRetry(() => this.con.removeHook());
     }
+
+    async getHook(): Promise<string> {
+        return await RPCRetryHandler.withRetry(() => this.con.hook());
+    }
+
+
+    ////////////////////////////////////////////////////////////////////////
+    // Experience related functions
+    ////////////////////////////////////////////////////////////////////////
+    async addExperience(exp: IAddExperienceArgs): Promise<IAddExperienceResult> {
+        const init = Experience.encodeInitData({
+            entryFee: exp.entryFee,
+            connectionDetails: exp.connectionDetails
+        });
+        const t = await RPCRetryHandler.withRetry(() => this.con.addExperience({
+            name: exp.name,
+            initData: init
+        }));
+        const r = await t.wait();
+        if(!r.status) {
+            throw new Error("Transaction failed with status 0");
+        }
+        const logs = this.parser.parseLogs(r);
+        const args = logs.get(LogNames.ExperienceAdded);
+        if(!args) {
+            throw new Error("ExperienceAdded log not found");
+        }
+        return {
+            receipt: r,
+            experienceAddress: args[0],
+            portalId: args[1]
+        };
+    }
     
+    async upgradeExperience(address: string, initData: string): Promise<TransactionResponse> {
+        return await RPCRetryHandler.withRetry(() => this.con.upgradeExperience(address, initData));
+    }
+
     async addExperienceCondition(exp: string, condition: string): Promise<TransactionResponse> {
         return await RPCRetryHandler.withRetry(() => this.con.addExperienceCondition(exp, condition));
     }
@@ -222,6 +280,14 @@ export class Company {
         return await RPCRetryHandler.withRetry(() => this.con.changeExperiencePortalFee(exp, fee));
     }
 
+
+    ////////////////////////////////////////////////////////////////////////
+    // Asset related functions
+    ////////////////////////////////////////////////////////////////////////
+    async upgradeAsset(address: string, initData: string): Promise<TransactionResponse> {
+        return await RPCRetryHandler.withRetry(() => this.con.upgradeAsset(address, initData));
+    }
+
     async addAssetHook(asset: AddressLike, hook: AddressLike): Promise<TransactionResponse> {
         return await RPCRetryHandler.withRetry(() => this.con.addAssetHook(asset, hook));
     }
@@ -229,6 +295,10 @@ export class Company {
         return await RPCRetryHandler.withRetry(() => this.con.removeAssetHook(asset));
     }
 
+
+    ////////////////////////////////////////////////////////////////////////
+    // Avatar related functions
+    ////////////////////////////////////////////////////////////////////////
     async signJumpRequest(props: {
         nonce: bigint;
         portalId: bigint;
@@ -266,9 +336,4 @@ export class Company {
         } as IDelegatedAvatarJumpResult;
 
     }
-
-    async tokenBalance(): Promise<bigint> {
-        return await RPCRetryHandler.withRetry(() => this.admin.provider!.getBalance(this.address));
-    }
-
 }

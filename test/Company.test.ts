@@ -168,7 +168,7 @@ describe('Company', () => {
         expect(w).to.equal(world.address);
     })
     it('should retrieve vector of a company', async () => {
-        const v = await company.vectorAddress();
+        const v = await company.getVectorAddress();
         expect(v).to.not.be.undefined;
 
         expect(v.p).to.be.greaterThan(0);
@@ -176,7 +176,7 @@ describe('Company', () => {
 
     it('should add a signer to a company', async () => {
         const signer = HardhatTestKeys[4];
-        const result = await company.addSigner(signer.address);
+        const result = await company.addSigners([signer.address]);
         const r = await result.wait();
         expect(result).to.not.be.undefined;
         expect(r?.status).to.equal(1);
@@ -189,7 +189,7 @@ describe('Company', () => {
 
     it('should remove a signer from a company', async () => {
         const signer = HardhatTestKeys[4];
-        const result = await company.removeSigner(signer.address);
+        const result = await company.removeSigners([signer.address]);
         const r = await result.wait();
         expect(result).to.not.be.undefined;
         expect(r?.status).to.equal(1);
@@ -207,7 +207,7 @@ describe('Company', () => {
     it('should be able to mint an ERC721 asset', async () => {
         const asset = testERC721.assetAddress.toString();
         const to = avatar.avatarAddress.toString();
-        const tokenId = "1";
+        const tokenId = 1n;
         const result = await company.canMint(asset, to, tokenId);
         expect(result).to.be.true;
     })
@@ -268,7 +268,7 @@ describe('Company', () => {
         const r = await result.wait();
         expect(result).to.not.be.undefined;
         expect(r?.status).to.equal(1);
-        const hookAddr = await company.hook();
+        const hookAddr = await company.getHook();
         expect(hookAddr.toLowerCase()).to.equal(hook.toLowerCase());
        
     })
@@ -277,7 +277,7 @@ describe('Company', () => {
         const r = await result.wait();
         expect(result).to.not.be.undefined;
         expect(r?.status).to.equal(1);
-        const hookAddr = await company.hook();
+        const hookAddr = await company.getHook();
         const ZeroAddress = '0x' + '0'.repeat(40);
         expect(hookAddr).to.equal(ZeroAddress);
     })

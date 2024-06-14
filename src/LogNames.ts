@@ -23,6 +23,7 @@ export const LogNames = {
 
     //company 
     ExperienceAdded: "ExperienceAdded",
+    CompanyUpgraded: "CompanyUpgraded",
 
     //avatar
     JumpSuccess: "JumpSuccess",

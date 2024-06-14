@@ -150,6 +150,22 @@ contract CompanyRegistry is ICompanyRegistry, ReentrancyGuard, AccessControl {
     /**
      * @inheritdoc ICompanyRegistry
      */
+    function removeCompany(address company) external onlyWorld nonReentrant {
+        ICompany c = ICompany(company);
+        require(c.world() == msg.sender, "CompanyRegistry: caller is not the parent world for company");
+        require(_companies[company], "CompanyRegistry: company not registered");
+        VectorAddress memory vector = c.vectorAddress();
+
+        ICompany(company).deactivate();
+        delete _companies[company];
+        delete _companiesByName[ICompany(company).name().lower()];
+        delete _companiesByVector[keccak256(bytes(vector.asLookupKey()))];
+        emit CompanyRemoved(company);
+    }
+
+    /**
+     * @inheritdoc ICompanyRegistry
+     */
     function upgradeCompany(bytes calldata initData) external onlyCompany nonReentrant {
         companyFactory.upgradeCompany(msg.sender, initData);
     }

@@ -7,3 +7,4 @@ export * from './VectorAddress';
 export * from './world';
 export * from './XRDNASigners';
 export * from './interfaces';
+export * from './company';

@@ -21,6 +21,7 @@ interface IPortalRegistry {
 
     event JumpSuccessful(uint256 indexed portalId, address indexed avatar, address indexed destination);
     event PortalAdded(uint256 indexed portalId, address indexed experience);
+    event PortalRemoved(uint256 indexed portalId, address indexed experience);
     event PortalConditionAdded(uint256 indexed portalId, address indexed condition);
     event PortalConditionRemoved(uint256 indexed portalId);
     event PortalRegistryUpgraded(address newRegistry);
@@ -63,6 +64,13 @@ interface IPortalRegistry {
      * @param AddPortalRequest The request to add a new portal
      */
     function addPortal(AddPortalRequest memory) external returns (uint256);
+
+    /**
+     * @dev Removes a portal from the registry. This must be called by the experience registry
+     * when an experience is removed.
+     * @param portalId The ID of the portal to remove
+     */
+    function removePortal(uint256 portalId) external;
 
     /**
      * @dev Initiates a jump request to the destination experience. This must be called

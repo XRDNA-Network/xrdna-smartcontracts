@@ -9,6 +9,10 @@ import {ICompanyHook} from '../company/ICompanyHook.sol';
  
  */
 struct CompanyV1Storage {
+    
+    //whether the company contract is active or has been deactivated by the parent world
+    bool active;
+
     //company primary owner address
     address owner;
 

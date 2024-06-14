@@ -35,6 +35,25 @@
       "type": "event"
     },
     {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "experience",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "portalId",
+          "type": "uint256"
+        }
+      ],
+      "name": "ExperienceRemoved",
+      "type": "event"
+    },
+    {
       "inputs": [],
       "name": "currentExperienceVersion",
       "outputs": [
@@ -263,6 +282,11 @@
               "type": "tuple"
             },
             {
+              "internalType": "address",
+              "name": "company",
+              "type": "address"
+            },
+            {
               "internalType": "bytes",
               "name": "initData",
               "type": "bytes"
@@ -297,13 +321,24 @@
     {
       "inputs": [
         {
-          "internalType": "contract ICompanyRegistry",
-          "name": "reg",
+          "internalType": "address",
+          "name": "company",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "exp",
           "type": "address"
         }
       ],
-      "name": "setCompanyRegistry",
-      "outputs": [],
+      "name": "removeExperience",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "portalId",
+          "type": "uint256"
+        }
+      ],
       "stateMutability": "nonpayable",
       "type": "function"
     },
@@ -329,6 +364,19 @@
         }
       ],
       "name": "setPortalRegistry",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "contract IWorldRegistryV2",
+          "name": "reg",
+          "type": "address"
+        }
+      ],
+      "name": "setWorldRegistry",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"

@@ -37,7 +37,8 @@ struct CompanyRegistrationRequest {
 interface ICompanyRegistry {
 
     event CompanyRegistered(address indexed company, VectorAddress indexed);
-
+    event CompanyRemoved(address indexed company);
+    
     /**
      * @dev Returns the current version of the company implementation. This is derived
      * from the company factory.
@@ -67,6 +68,11 @@ interface ICompanyRegistry {
      */
     function registerCompany(CompanyRegistrationRequest memory request) external payable returns (address);
     
+    /**
+     * @dev Removes a company from the company registry. This can only be called by a world admin.
+     */
+    function removeCompany(address company) external;
+
     /**
      * @dev Upgrades a company to a new version. This is called by the company contract 
      * to ensure authorization is checked prior to upgrading.

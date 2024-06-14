@@ -6,6 +6,7 @@ import PortalRegistryModule from "../portal/PortalRegistry.module";
 import { NamedArtifactContractDeploymentFuture } from "@nomicfoundation/ignition-core";
 import RegistrarRegistryModule from "../RegistrarRegistry.module";
 import WorldProxyModule from './WorldProxy.module';
+import { experience } from "../../../typechain-types/contracts";
 
 export interface IWorldDeploymentResult {
     erc20AssetRegistry: NamedArtifactContractDeploymentFuture<"ERC20AssetRegistry">;
@@ -45,10 +46,18 @@ export default buildModule("WorldV2", (m) => {
         worldFactory: proxy.worldFactory,
         worldRegistry: proxy.worldRegistry,
         companyRegistry: comp.companyRegistry,
-        avatarRegistry: avatar.avatarRegistry
+        avatarRegistry: avatar.avatarRegistry,
+        experienceRegistry: comp.experienceRegistry,
     }
+    
     const master = m.contract("WorldV2", [args], {
-        after: [proxy.worldFactory, proxy.worldRegistry, avatar.avatarRegistry, comp.companyRegistry]
+        after: [
+            proxy.worldFactory, 
+            proxy.worldRegistry, 
+            avatar.avatarRegistry, 
+            comp.companyRegistry,
+            comp.experienceRegistry
+        ]
     });
     m.call(proxy.worldFactory, "setImplementation", [master, VERSION]);
     return {

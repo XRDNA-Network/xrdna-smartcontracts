@@ -15,6 +15,9 @@ import {ReentrancyGuard} from '@openzeppelin/contracts/utils/ReentrancyGuard.sol
 import {BaseProxyStorage, LibProxyAccess, LibBaseProxy} from '../../libraries/LibBaseProxy.sol';
 import {WorldV2Storage, LibWorldV2Storage} from '../../libraries/LibWorldV2Storage.sol';
 import {BaseAccess} from '../../BaseAccess.sol';
+import {RegisterExperienceRequest} from '../../experience/IExperienceRegistry.sol';
+import {IExperienceRegistry} from '../../experience/IExperienceRegistry.sol';
+import {ICompany} from '../../company/ICompany.sol';
 
 //master world copy constructor args
 struct WorldConstructorArgs {
@@ -22,6 +25,7 @@ struct WorldConstructorArgs {
     address worldRegistry;
     address companyRegistry;
     address avatarRegistry;
+    address experienceRegistry;
 }
 
 /**
@@ -40,6 +44,7 @@ contract WorldV2 is IWorldV2, BaseAccess, ReentrancyGuard {
     address public immutable worldFactory;
     ICompanyRegistry public immutable companyRegistry;
     IAvatarRegistry public immutable avatarRegistry;
+    IExperienceRegistry public immutable experienceRegistry;
 
     modifier onlyFactory {
         require(worldFactory != address(0), "World0_2: worldFactory not set");
@@ -53,15 +58,23 @@ contract WorldV2 is IWorldV2, BaseAccess, ReentrancyGuard {
         _;
     }
 
+    modifier onlyCompany {
+        require(address(companyRegistry) != address(0), "World0_2: companyRegistry not set");
+        require(companyRegistry.isRegisteredCompany(msg.sender), "World0_2: caller is not company");
+        _;
+    }
+
     constructor(WorldConstructorArgs memory args) {
         require(args.worldFactory != address(0), "World0_2: worldFactory cannot be zero address");
         require(args.worldRegistry != address(0), "World0_2: worldRegistry cannot be zero address");
         require(args.companyRegistry != address(0), "World0_2: companyRegistry cannot be zero address");
         require(args.avatarRegistry != address(0), "World0_2: avatarRegistry cannot be zero address");
+        require(args.experienceRegistry != address(0), "World0_2: experienceRegistry cannot be zero address");
         worldRegistry = IWorldRegistryV2(args.worldRegistry);
         worldFactory = args.worldFactory;
         companyRegistry = ICompanyRegistry(args.companyRegistry);
         avatarRegistry = IAvatarRegistry(args.avatarRegistry);
+        experienceRegistry = IExperienceRegistry(args.experienceRegistry);
     }
 
     receive() external payable {
@@ -144,6 +157,36 @@ contract WorldV2 is IWorldV2, BaseAccess, ReentrancyGuard {
         }));
         
         emit CompanyRegistered(company, vector, args.name);
+    }
+
+    /**
+        * @inheritdoc IWorldV2
+     */
+    function removeCompany(address company) public onlyAdmin nonReentrant {
+        ICompany c = ICompany(company);
+        require(c.world() == address(this), "World0_2: company world does not match this world contract");
+        companyRegistry.removeCompany(company);
+        emit CompanyRemoved(company);
+    }
+
+    /**
+        * @inheritdoc IWorldV2
+     */
+    function registerExperience(RegisterExperienceRequest memory req) public onlyCompany nonReentrant returns (address experience, uint256) {
+        require(req.company == msg.sender, "World0_2: caller does not match company in request");
+        require(ICompany(msg.sender).world() == address(this), "World0_2: company world does not match this world contract");
+        require(req.vector.p_sub > 0, "World0_2: p_sub must not be zero for experience registration");
+        (address exp, uint256 portalId) = experienceRegistry.registerExperience(req);
+        emit ExperienceAdded(exp, req.company, portalId);
+        return (exp, portalId);
+    }
+    
+    /**
+        * @inheritdoc IWorldV2
+     */
+    function deactivateExperience(address experience) public onlyCompany nonReentrant returns (uint256) {
+        require(ICompany(msg.sender).world() == address(this), "World0_2: company world does not match this world contract");
+        return experienceRegistry.removeExperience(msg.sender, experience);
     }
 
     /**

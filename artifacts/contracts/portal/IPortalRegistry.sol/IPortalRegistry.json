@@ -137,6 +137,25 @@
       "type": "event"
     },
     {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "portalId",
+          "type": "uint256"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "experience",
+          "type": "address"
+        }
+      ],
+      "name": "PortalRemoved",
+      "type": "event"
+    },
+    {
       "inputs": [
         {
           "internalType": "contract IPortalCondition",
@@ -425,6 +444,19 @@
     {
       "inputs": [],
       "name": "removeCondition",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "portalId",
+          "type": "uint256"
+        }
+      ],
+      "name": "removePortal",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"

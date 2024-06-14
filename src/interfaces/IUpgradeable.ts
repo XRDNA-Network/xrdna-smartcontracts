@@ -2,7 +2,7 @@ import { TransactionReceipt } from "ethers";
 
 export interface IUpgradeResult {
     receipt: TransactionReceipt;
-    newWorldAddress: string;
+    newImplementationAddress: string;
 }
 
 export interface IUpgradeable {

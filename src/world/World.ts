@@ -186,7 +186,7 @@ export class World implements ISupportsSigners,
         }
         return {
             receipt,
-            newWorldAddress: args[1]
+            newImplementationAddress: args[1]
         };
     }
 

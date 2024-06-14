@@ -7,6 +7,7 @@ import {WorldCreateRequest} from './IWorldFactoryV2.sol';
 import {VectorAddress} from '../../VectorAddress.sol';
 import {IWorldHook} from './IWorldHook.sol';
 import {IBaseAccess} from '../../IBaseAccess.sol';
+import {RegisterExperienceRequest} from '../../experience/IExperienceRegistry.sol';
 
 /**
  * Request to register a new company
@@ -33,10 +34,12 @@ struct CompanyRegistrationArgs {
 interface IWorldV2 is IBaseAccess {
 
     event CompanyRegistered(address indexed company, VectorAddress vector, string name);
+    event CompanyRemoved(address indexed company);
     event AvatarRegistered(address indexed avatar, address indexed experience);
     event WorldUpgraded(address indexed oldWorld, address indexed newWorld);
     event WorldHookSet(address indexed hook);
     event WorldHookRemoved();
+    event ExperienceAdded(address indexed experience, address indexed company, uint256 indexed portalId);
 
     /**
      * @dev Returns the owner of the world contract.
@@ -65,11 +68,27 @@ interface IWorldV2 is IBaseAccess {
     function registerCompany(CompanyRegistrationArgs memory args) external payable returns (address company);
     
     /**
+     * @dev Removes a company from company registry. This can only be called by a world admin.
+     */
+    function removeCompany(address company) external;
+
+    /**
      * @dev Registers an avatar to operate within the world. This can only be called by 
      * a world signer.
      */
     function registerAvatar(AvatarRegistrationRequest memory args) external payable returns (address avatar);
     
+    /**
+     * @dev Registers an experience to operate within the world. This can only be called by 
+     * a registered company whose "world" is set to this world contract.
+     */
+    function registerExperience(RegisterExperienceRequest memory req) external returns (address experience, uint256 portalId);
+    
+    /**
+     * @dev Deactivates an experience. This can only be called by the owning company
+     */
+    function deactivateExperience(address experience) external returns (uint256 portalId);
+
     /**
      * @dev Upgrades the world contract to a new version. Must be called by the world admin.
      */

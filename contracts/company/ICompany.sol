@@ -64,11 +64,14 @@ struct CompanyInitArgs {
 interface ICompany is IBaseAccess {
 
     event ExperienceAdded(address indexed experience, uint256 portalId);
+    event ExperienceRemoved(address indexed experience, uint256 portalId);
     event CompanyUpgraded(address indexed oldVersion, address indexed nextVersion);
     event CompanyHookSet(address indexed hook);
     event CompanyHookRemoved();
     event AssetMinted(address indexed asset, address indexed to, uint256 amountOrTokenId);
     event AssetRevoked(address indexed asset, address indexed holder, uint256 amountOrTokenId);
+    event CompanyDeactivated();
+    event CompanyReactivated();
 
     /**
      * @dev Returns the version of the company contract implementation. Can be compared
@@ -118,6 +121,12 @@ interface ICompany is IBaseAccess {
      */
     function addExperience(AddExperienceArgs memory args) external;
 
+    /**
+     * @dev Removes an experience from the world. This also removes the portal into the 
+     * experience and unregisters it from the PortalRegistry. This can only be called
+     * by company admin
+     */
+    function removeExperience(address experience) external;
     /**
      * @dev Mints the given amount of the given asset to the given address. The data
      * parameter is dependent on the type of asset.
@@ -223,4 +232,17 @@ interface ICompany is IBaseAccess {
      * @dev Upgrades the asset to the next version. Only the owner can upgrade the asset.
      */
     function upgradeAsset(address asset, bytes memory initData) external;
+
+    /**
+     * Deactivate essentially makes the world contract inoperable. This can only be 
+     * called by the company registry and is initiated from the operating world contract.
+     * Any funds in the contract will be forwarded to the company owner when deactivated.
+     */
+    function deactivate() external;
+
+    /**
+     * Reactivate makes the world contract operable again. This can only be called by the 
+     * company registry and is initiated from the operating world contract.
+     */
+    function reactivate() external payable;
 }

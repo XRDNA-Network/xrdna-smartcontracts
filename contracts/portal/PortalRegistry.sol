@@ -46,7 +46,7 @@ contract PortalRegistry is IPortalRegistry, AccessControl {
     //portal id counter
     uint256 nextPortalId;
 
-    modifier onlyRegistry {
+    modifier onlyExperienceRegistry {
         require(experienceRegistry != address(0), "PortalRegistry: experience registry not set");
         require(msg.sender == experienceRegistry, "PortalRegistry: caller is not the experience registry");
         _;
@@ -135,7 +135,7 @@ contract PortalRegistry is IPortalRegistry, AccessControl {
     /**
      * @inheritdoc IPortalRegistry
      */
-    function addPortal(AddPortalRequest memory req) external onlyRegistry returns (uint256) {
+    function addPortal(AddPortalRequest memory req) external onlyExperienceRegistry returns (uint256) {
         
         VectorAddress memory va = req.destination.vectorAddress();
         bytes32 hash = keccak256(abi.encode(va.asLookupKey()));
@@ -151,6 +151,20 @@ contract PortalRegistry is IPortalRegistry, AccessControl {
         });
         emit PortalAdded(portalId, address(req.destination));
         return portalId;
+    }
+
+    /**
+     * @inheritdoc IPortalRegistry
+     */
+    function removePortal(uint256 portalId) external onlyExperienceRegistry {
+        PortalInfo storage portal = portals[portalId];
+        require(address(portal.destination) != address(0), "PortalRegistry: portal not found");
+
+        address dest = address(portal.destination);
+        delete portalIdsByExperience[address(portal.destination)];
+        delete portalIdsByVectorHash[keccak256(abi.encode(portal.destination.vectorAddress().asLookupKey()))];
+        delete portals[portalId];
+        emit PortalRemoved(portalId, dest);
     }
 
     /**
@@ -225,7 +239,7 @@ contract PortalRegistry is IPortalRegistry, AccessControl {
     /**
      * @inheritdoc IPortalRegistry
      */
-    function upgradeExperiencePortal(address oldExperience, address newExperience) public onlyRegistry {
+    function upgradeExperiencePortal(address oldExperience, address newExperience) public onlyExperienceRegistry {
         uint256 portalId = portalIdsByExperience[oldExperience];
         require(portalId != 0, "PortalRegistry: old experience not found");
         portalIdsByExperience[newExperience] = portalId;

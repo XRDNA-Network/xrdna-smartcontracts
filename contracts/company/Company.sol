@@ -20,6 +20,8 @@ import {IBasicAsset} from '../asset/IBasicAsset.sol';
 import {BaseAccess} from '../BaseAccess.sol';
 import {IMintableAsset} from '../asset/IMintableAsset.sol';
 import {IAssetCondition} from '../asset/IAssetCondition.sol';
+import {IWorldV2} from '../world/v0.2/IWorldV2.sol';
+import "hardhat/console.sol";
 
 //constructor arguments for master copy of Company
 struct CompanyConstructorArgs {
@@ -61,6 +63,11 @@ contract Company is ICompany, BaseAccess, ReentrancyGuard {
         _;
     }
 
+    modifier onlyActive {
+        CompanyV1Storage storage s = LibCompanyV1Storage.load();
+        require(s.active, "Company: company is not active");
+        _;
+    }
 
     constructor(CompanyConstructorArgs memory args) {
         require(args.companyFactory != address(0), "Company: companyFactory cannot be 0x0");
@@ -77,6 +84,27 @@ contract Company is ICompany, BaseAccess, ReentrancyGuard {
 
     //Funds are transferred to company contract so must be able to receive
     receive() external payable {}
+
+    /**
+     * @inheritdoc ICompany
+     */
+    function deactivate() external onlyRegistry {
+        CompanyV1Storage storage s = LibCompanyV1Storage.load();
+        s.active = false;
+        if(address(this).balance > 0) {
+            payable(s.owner).transfer(address(this).balance);
+        }
+        emit CompanyDeactivated();
+    }
+
+    /**
+     * @inheritdoc ICompany
+     */
+    function reactivate() external payable onlyRegistry {
+        CompanyV1Storage storage s = LibCompanyV1Storage.load();
+        s.active = true;
+        emit CompanyReactivated();
+    }
 
     /**
      * @inheritdoc ICompany
@@ -146,7 +174,7 @@ contract Company is ICompany, BaseAccess, ReentrancyGuard {
     /**
      * @inheritdoc ICompany
      */
-    function canMint(address asset, address to, bytes calldata extra) public view returns (bool) {
+    function canMint(address asset, address to, bytes calldata extra) public view onlyActive returns (bool) {
         //check if asset is allowed
         require(assetRegistry.isRegisteredAsset(asset), "Company: asset not registered");
 
@@ -180,7 +208,7 @@ contract Company is ICompany, BaseAccess, ReentrancyGuard {
     /**
         * @inheritdoc ICompany
      */
-    function addExperience(AddExperienceArgs memory args) external onlySigner nonReentrant {
+    function addExperience(AddExperienceArgs memory args) external onlySigner onlyActive nonReentrant {
         CompanyV1Storage storage s = LibCompanyV1Storage.load();
         ++s.nextPsub;
         VectorAddress memory expVector = VectorAddress({
@@ -192,19 +220,29 @@ contract Company is ICompany, BaseAccess, ReentrancyGuard {
             p_sub: s.nextPsub
         });
         RegisterExperienceRequest memory req = RegisterExperienceRequest({
+            company: address(this),
             name: args.name,
             vector: expVector,
             initData: args.initData
         });
-        (address exp, uint256 portalId) = experienceRegistry.registerExperience(req);
+        console.log("REgistering experienc with world", s.world);
+        (address exp, uint256 portalId) = IWorldV2(s.world).registerExperience(req);
         emit ExperienceAdded(exp, portalId);
-        
     }
 
     /**
         * @inheritdoc ICompany
      */
-    function mint(address asset, address to, bytes calldata data) public onlySigner nonReentrant {
+    function removeExperience(address experience) public onlyAdmin onlyActive nonReentrant {
+        CompanyV1Storage storage s = LibCompanyV1Storage.load();
+        uint256 portalId = IWorldV2(s.world).deactivateExperience(experience);
+        emit ExperienceRemoved(experience, portalId);
+    }
+
+    /**
+        * @inheritdoc ICompany
+     */
+    function mint(address asset, address to, bytes calldata data) public onlySigner onlyActive nonReentrant {
         require(canMint(asset, to, data), "Company: cannot mint asset");
         
         IMintableAsset(asset).mint(to, data);
@@ -213,7 +251,7 @@ contract Company is ICompany, BaseAccess, ReentrancyGuard {
     /**
         * @inheritdoc ICompany
      */
-    function revoke(address asset, address holder, bytes calldata data) public onlySigner nonReentrant {
+    function revoke(address asset, address holder, bytes calldata data) public onlySigner onlyActive nonReentrant {
         require(assetRegistry.isRegisteredAsset(asset), "Company: asset not registered");
         IMintableAsset mintable = IMintableAsset(asset);
         require(mintable.issuer() == address(this), "Company: not issuer of asset");
@@ -223,7 +261,7 @@ contract Company is ICompany, BaseAccess, ReentrancyGuard {
     /**
         * @inheritdoc ICompany
      */
-    function upgrade(bytes memory initData) public onlyAdmin {
+    function upgrade(bytes memory initData) public onlyAdmin onlyActive {
         companyRegistry.upgradeCompany(initData);
     }
 
@@ -240,7 +278,7 @@ contract Company is ICompany, BaseAccess, ReentrancyGuard {
     /**
         * @inheritdoc ICompany
      */
-    function withdraw (uint256 amount) public onlyAdmin {
+    function withdraw (uint256 amount) public onlyAdmin onlyActive {
         require(amount <= address(this).balance, "Company: insufficient balance");
         CompanyV1Storage storage s = LibCompanyV1Storage.load();
         payable(s.owner).transfer(amount);
@@ -249,7 +287,7 @@ contract Company is ICompany, BaseAccess, ReentrancyGuard {
     /**
         * @inheritdoc ICompany
      */
-    function setHook(ICompanyHook _hook) public onlyAdmin {
+    function setHook(ICompanyHook _hook) public onlyAdmin onlyActive {
         require(address(_hook) != address(0), "Company: hook cannot be 0x0");
         CompanyV1Storage storage s = LibCompanyV1Storage.load();
         s.hook = _hook;
@@ -258,7 +296,7 @@ contract Company is ICompany, BaseAccess, ReentrancyGuard {
     /**
         * @inheritdoc ICompany
      */
-    function removeHook() public onlyAdmin {
+    function removeHook() public onlyAdmin onlyActive {
         CompanyV1Storage storage s = LibCompanyV1Storage.load();
         s.hook = ICompanyHook(address(0));
     }
@@ -266,7 +304,7 @@ contract Company is ICompany, BaseAccess, ReentrancyGuard {
     /**
         * @inheritdoc ICompany
      */
-    function addExperienceCondition(address experience, address condition) public onlyAdmin {
+    function addExperienceCondition(address experience, address condition) public onlyAdmin onlyActive {
         IExperience exp = IExperience(experience);
         exp.addPortalCondition(IPortalCondition(condition));
     }
@@ -274,7 +312,7 @@ contract Company is ICompany, BaseAccess, ReentrancyGuard {
     /**
         * @inheritdoc ICompany
      */
-    function removeExperienceCondition(address experience) public onlyAdmin {
+    function removeExperienceCondition(address experience) public onlyAdmin onlyActive {
         IExperience exp = IExperience(experience);
         exp.removePortalCondition();
     }
@@ -282,7 +320,7 @@ contract Company is ICompany, BaseAccess, ReentrancyGuard {
     /**
         * @inheritdoc ICompany
      */
-    function changeExperiencePortalFee(address experience, uint256 fee) public onlyAdmin {
+    function changeExperiencePortalFee(address experience, uint256 fee) public onlyAdmin onlyActive {
         IExperience exp = IExperience(experience);
         exp.changePortalFee(fee);
     }
@@ -290,35 +328,35 @@ contract Company is ICompany, BaseAccess, ReentrancyGuard {
     /**
         * @inheritdoc ICompany
      */
-    function addAssetHook(address asset, IAssetHook aHook) public onlyAdmin {
+    function addAssetHook(address asset, IAssetHook aHook) public onlyAdmin onlyActive {
         IBasicAsset(asset).addHook(aHook);
     }
 
     /**
         * @inheritdoc ICompany
      */
-    function removeAssetHook(address asset) public onlyAdmin {
+    function removeAssetHook(address asset) public onlyAdmin onlyActive {
         IBasicAsset(asset).removeHook();
     }
 
     /**
         * @inheritdoc ICompany
      */
-    function addAssetCondition(address asset, address condition) public onlyAdmin {
+    function addAssetCondition(address asset, address condition) public onlyAdmin onlyActive {
         IBasicAsset(asset).addCondition(IAssetCondition(condition));
     }
 
     /**
         * @inheritdoc ICompany
      */
-    function removeAssetCondition(address asset) public onlyAdmin {
+    function removeAssetCondition(address asset) public onlyAdmin onlyActive {
         IBasicAsset(asset).removeCondition();
     }
 
     /**
         * @inheritdoc ICompany
      */
-    function delegateJumpForAvatar(DelegatedAvatarJumpRequest calldata request) public override onlySigner {
+    function delegateJumpForAvatar(DelegatedAvatarJumpRequest calldata request) public override onlySigner onlyActive {
         IAvatar avatar = IAvatar(request.avatar);
         //go through avatar contract to make the jump so that it pays the fee
         avatar.delegateJump(DelegatedJumpRequest({
@@ -331,7 +369,7 @@ contract Company is ICompany, BaseAccess, ReentrancyGuard {
     /**
         * @inheritdoc ICompany
      */
-    function upgradeExperience(address experience, bytes memory initData) public onlyAdmin {
+    function upgradeExperience(address experience, bytes memory initData) public onlyAdmin onlyActive {
         IExperience exp = IExperience(experience);
         exp.upgrade(initData);
     }
@@ -339,7 +377,7 @@ contract Company is ICompany, BaseAccess, ReentrancyGuard {
     /**
         * @inheritdoc ICompany
      */
-    function upgradeAsset(address asset, bytes memory initData) public onlyAdmin {
+    function upgradeAsset(address asset, bytes memory initData) public onlyAdmin onlyActive {
         IMintableAsset(asset).upgrade(initData);
     }
 }

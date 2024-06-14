@@ -59,6 +59,11 @@ contract Experience is ReentrancyGuard, IExperience {
         _;
     }
 
+    modifier onlyActive {
+        ExperienceV1Storage storage s = LibExperienceV1Storage.load();
+        require(s.active, "Experience: not active");
+        _;
+    }
     
 
     modifier onlyCompany() {
@@ -99,6 +104,26 @@ contract Experience is ReentrancyGuard, IExperience {
         s.name = _name;
         s.entryFee = data.entryFee;
         s.connectionDetails = data.connectionDetails;
+    }
+
+    /**
+     * @inheritdoc IExperience
+     */
+    function isActive() external view returns (bool) {
+        ExperienceV1Storage storage s = LibExperienceV1Storage.load();
+        return s.active;
+    }
+
+    /**
+        * @inheritdoc IExperience
+     */
+    function deactive() external override onlyRegistry {
+        ExperienceV1Storage storage s = LibExperienceV1Storage.load();
+        s.active = false;
+        if(address(this).balance > 0) {
+            payable(address(s.company)).transfer(address(this).balance);
+        }
+        emit ExperienceDeactivated();
     }
 
     /**
@@ -159,7 +184,7 @@ contract Experience is ReentrancyGuard, IExperience {
     /**
      * @inheritdoc IExperience
      */
-    function addHook(IExperienceHook _hook) external override onlyCompany {
+    function addHook(IExperienceHook _hook) external override onlyCompany onlyActive {
         require(address(_hook) != address(0), "Experience: hook zero address");
         ExperienceV1Storage storage s = LibExperienceV1Storage.load();
         s.hook = _hook;
@@ -169,7 +194,7 @@ contract Experience is ReentrancyGuard, IExperience {
     /**
      * @inheritdoc IExperience
      */
-    function removeHook() external override onlyCompany {
+    function removeHook() external override onlyCompany onlyActive {
         ExperienceV1Storage storage s = LibExperienceV1Storage.load();
         require(address(s.hook) != address(0), "Experience: hook not set");
         address a = address(s.hook);
@@ -180,21 +205,21 @@ contract Experience is ReentrancyGuard, IExperience {
     /**
      * @inheritdoc IExperience
      */
-    function addPortalCondition(IPortalCondition condition) public onlyCompany {
+    function addPortalCondition(IPortalCondition condition) public onlyCompany onlyActive {
         portalRegistry.addCondition(condition);
     }
 
     /**
      * @inheritdoc IExperience
      */
-    function removePortalCondition() public onlyCompany {
+    function removePortalCondition() public onlyCompany onlyActive {
         portalRegistry.removeCondition();
     }
 
     /**
      * @inheritdoc IExperience
      */
-    function changePortalFee(uint256 fee) public onlyCompany {
+    function changePortalFee(uint256 fee) public onlyCompany onlyActive {
         ExperienceV1Storage storage s = LibExperienceV1Storage.load();
         s.entryFee = fee;
         portalRegistry.changePortalFee(fee);
@@ -204,7 +229,7 @@ contract Experience is ReentrancyGuard, IExperience {
     /**
      * @inheritdoc IExperience
      */
-    function entering(JumpEntryRequest memory request) external payable override nonReentrant onlyPortalRegistry returns (bytes memory)  {
+    function entering(JumpEntryRequest memory request) external payable override nonReentrant onlyPortalRegistry onlyActive returns (bytes memory)  {
         ExperienceV1Storage storage s = LibExperienceV1Storage.load();
         if(address(s.hook) != address(0)) {
             bool ok = s.hook.beforeJumpEntry(address(this), request.sourceWorld, request.sourceCompany, request.avatar);
@@ -221,14 +246,14 @@ contract Experience is ReentrancyGuard, IExperience {
     /**
      * @inheritdoc IExperience
      */
-    function upgrade(bytes memory initData) external override onlyCompany {
+    function upgrade(bytes memory initData) external override onlyCompany onlyActive {
         experienceRegistry.upgradeExperience(initData);
     }
 
     /**
      * @inheritdoc IExperience
      */
-    function upgradeComplete(address nextVersion) public override onlyFactory {
+    function upgradeComplete(address nextVersion) public override onlyFactory onlyActive {
         BaseProxyStorage storage ps = LibBaseProxy.load();
         address old = ps.implementation;
         ps.implementation = nextVersion;

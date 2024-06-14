@@ -85,6 +85,44 @@
         {
           "indexed": true,
           "internalType": "address",
+          "name": "company",
+          "type": "address"
+        }
+      ],
+      "name": "CompanyRemoved",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "experience",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "company",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "portalId",
+          "type": "uint256"
+        }
+      ],
+      "name": "ExperienceAdded",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
           "name": "sender",
           "type": "address"
         },
@@ -172,6 +210,25 @@
       ],
       "name": "addSigners",
       "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "experience",
+          "type": "address"
+        }
+      ],
+      "name": "deactivateExperience",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "portalId",
+          "type": "uint256"
+        }
+      ],
       "stateMutability": "nonpayable",
       "type": "function"
     },
@@ -435,6 +492,97 @@
         }
       ],
       "stateMutability": "payable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "components": [
+            {
+              "components": [
+                {
+                  "internalType": "string",
+                  "name": "x",
+                  "type": "string"
+                },
+                {
+                  "internalType": "string",
+                  "name": "y",
+                  "type": "string"
+                },
+                {
+                  "internalType": "string",
+                  "name": "z",
+                  "type": "string"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "t",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "p",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "p_sub",
+                  "type": "uint256"
+                }
+              ],
+              "internalType": "struct VectorAddress",
+              "name": "vector",
+              "type": "tuple"
+            },
+            {
+              "internalType": "address",
+              "name": "company",
+              "type": "address"
+            },
+            {
+              "internalType": "bytes",
+              "name": "initData",
+              "type": "bytes"
+            },
+            {
+              "internalType": "string",
+              "name": "name",
+              "type": "string"
+            }
+          ],
+          "internalType": "struct RegisterExperienceRequest",
+          "name": "req",
+          "type": "tuple"
+        }
+      ],
+      "name": "registerExperience",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "experience",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "portalId",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "company",
+          "type": "address"
+        }
+      ],
+      "name": "removeCompany",
+      "outputs": [],
+      "stateMutability": "nonpayable",
       "type": "function"
     },
     {
