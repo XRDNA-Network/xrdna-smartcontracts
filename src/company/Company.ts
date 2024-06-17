@@ -74,6 +74,10 @@ export class Company implements ISupportsFunds,
         return await RPCRetryHandler.withRetry(() => this.con.owner());
     }
 
+    async isActivated(): Promise<boolean> {
+        return await RPCRetryHandler.withRetry(() => this.con.isActivated());
+    }
+
     async name(): Promise<string> {
         return await RPCRetryHandler.withRetry(() => this.con.name());
     }
@@ -219,6 +223,10 @@ export class Company implements ISupportsFunds,
         return await RPCRetryHandler.withRetry(() => p.getBalance(this.address));
     }
 
+    async tokenBalance(): Promise<bigint> {
+        return await RPCRetryHandler.withRetry(() => this.admin.provider!.getBalance(this.address));
+    }
+
 
     ////////////////////////////////////////////////////////////////////////
     // ISupportsHooks interface
@@ -279,6 +287,8 @@ export class Company implements ISupportsFunds,
     async changeExperiencePortalFee(exp: string, fee: string): Promise<TransactionResponse> {
         return await RPCRetryHandler.withRetry(() => this.con.changeExperiencePortalFee(exp, fee));
     }
+
+
 
 
     ////////////////////////////////////////////////////////////////////////
