@@ -302,6 +302,8 @@ describe('Company', () => {
         expect(vector.p_sub).to.be.greaterThan(0);
     })
 
+   
+
     it('should add experience condition to a company', async () => {
         
         const condition = ethers.hexlify(ethers.randomBytes(20));
@@ -335,6 +337,18 @@ describe('Company', () => {
         const portalRegistry = prStack.getPortalRegistry();
         const portalInfo = await portalRegistry.getPortalInfoById(experience.portalId);
         expect(portalInfo.fee.toString()).to.equal(fee);
+    })
+    it('should not allow duplicate experience registration', async () => {
+
+        try {
+            await company.addExperience({
+                name: await experience.name(),
+                connectionDetails: await experience.connectionDetails(),
+                entryFee: await experience.entryFee()
+            });
+        } catch (e) {
+            expect(e.message).to.contain('experience name already exists')
+        }
     })
     // --------------------Asset Hook tests --------------------
     it('should add an asset hook to a company', async () => {
@@ -417,6 +431,10 @@ describe('Company', () => {
         expect(r?.status).to.equal(1);
     })
         */
+
+    // -------------------- Company Scenario --------------------
+    
     
 });
+
 
