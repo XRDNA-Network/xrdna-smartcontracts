@@ -308,6 +308,11 @@
               "internalType": "uint256",
               "name": "fee",
               "type": "uint256"
+            },
+            {
+              "internalType": "bool",
+              "name": "active",
+              "type": "bool"
             }
           ],
           "internalType": "struct PortalInfo",
@@ -344,6 +349,11 @@
               "internalType": "uint256",
               "name": "fee",
               "type": "uint256"
+            },
+            {
+              "internalType": "bool",
+              "name": "active",
+              "type": "bool"
             }
           ],
           "internalType": "struct PortalInfo",
@@ -412,6 +422,11 @@
               "internalType": "uint256",
               "name": "fee",
               "type": "uint256"
+            },
+            {
+              "internalType": "bool",
+              "name": "active",
+              "type": "bool"
             }
           ],
           "internalType": "struct PortalInfo",
