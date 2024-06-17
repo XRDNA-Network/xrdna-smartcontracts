@@ -150,7 +150,7 @@ contract CompanyRegistry is ICompanyRegistry, ReentrancyGuard, AccessControl {
     /**
      * @inheritdoc ICompanyRegistry
      */
-    function removeCompany(address company) external onlyWorld nonReentrant {
+    function deactivateCompany(address company) external onlyWorld nonReentrant {
         ICompany c = ICompany(company);
         require(c.world() == msg.sender, "CompanyRegistry: caller is not the parent world for company");
         require(_companies[company], "CompanyRegistry: company not registered");
@@ -160,7 +160,23 @@ contract CompanyRegistry is ICompanyRegistry, ReentrancyGuard, AccessControl {
         delete _companies[company];
         delete _companiesByName[ICompany(company).name().lower()];
         delete _companiesByVector[keccak256(bytes(vector.asLookupKey()))];
-        emit CompanyRemoved(company);
+        emit CompanyDeactivated(company);
+    }
+
+    /**
+     * @inheritdoc ICompanyRegistry
+     */
+    function reactivateCompany(address company) external onlyWorld nonReentrant {
+        ICompany c = ICompany(company);
+        require(c.world() == msg.sender, "CompanyRegistry: caller is not the parent world for company");
+        require(!_companies[company], "CompanyRegistry: company already active");
+        VectorAddress memory vector = c.vectorAddress();
+
+        _companies[company] = true;
+        _companiesByName[ICompany(company).name().lower()] = company;
+        _companiesByVector[keccak256(bytes(vector.asLookupKey()))] = company;
+        ICompany(company).reactivate();
+        emit CompanyReactivated(company);
     }
 
     /**

@@ -33,13 +33,14 @@ struct CompanyRegistrationArgs {
  */
 interface IWorldV2 is IBaseAccess {
 
-    event CompanyRegistered(address indexed company, VectorAddress vector, string name);
-    event CompanyRemoved(address indexed company);
-    event AvatarRegistered(address indexed avatar, address indexed experience);
+    event WorldRegisteredCompany(address indexed company, VectorAddress vector, string name);
+    event WorldDeactivatedCompany(address indexed company);
+    event WorldReactivatedCompany(address indexed company);
+    event WorldRegisteredAvatar(address indexed avatar, address indexed experience);
     event WorldUpgraded(address indexed oldWorld, address indexed newWorld);
     event WorldHookSet(address indexed hook);
     event WorldHookRemoved();
-    event ExperienceAdded(address indexed experience, address indexed company, uint256 indexed portalId);
+    event WorldAddedExperience(address indexed experience, address indexed company, uint256 indexed portalId);
 
     /**
      * @dev Returns the owner of the world contract.
@@ -68,9 +69,14 @@ interface IWorldV2 is IBaseAccess {
     function registerCompany(CompanyRegistrationArgs memory args) external payable returns (address company);
     
     /**
-     * @dev Removes a company from company registry. This can only be called by a world admin.
+     * @dev Deactivates a company from company registry. This can only be called by a world admin.
      */
-    function removeCompany(address company) external;
+    function deactivateCompany(address company) external;
+
+    /**
+     * @dev Reactivates a company. This can only be called by a world admin.
+     */
+    function reactivateCompany(address company) external;
 
     /**
      * @dev Registers an avatar to operate within the world. This can only be called by 

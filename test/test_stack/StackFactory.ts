@@ -8,7 +8,7 @@ import { WorldStackImpl } from "./world/WorldStackImpl";
 import { CompanyStackImpl } from "./company/CompanyStackImpl";
 import { RegistrarStackImpl} from "./registrar/RegistrarStackImpl";
 import { ethers, network } from "hardhat";
-import { CreateERC20AssetResult, CreateERC721AssetResult, ERC20InitData, IWorldRegistration, VectorAddress, World, signVectorAddress } from "../../src";
+import { AllLogParser, CreateERC20AssetResult, CreateERC721AssetResult, DeploymentAddressConfig, ERC20InitData, IWorldRegistration, VectorAddress, World, mapJsonToDeploymentAddressConfig, signVectorAddress } from "../../src";
 import { Company } from "../../src/company/Company";
 import { Experience } from "../../src/experience";
 import { Avatar } from "../../src/avatar/Avatar";
@@ -17,6 +17,7 @@ import { IERC20AssetStack } from "./asset/erc20/IERC20AssetStack";
 import { IERC721AssetStack } from "./asset/erc721/IERC721AssetStack";
 import { MultiAssetRegistryStackImpl } from "./asset/MultiAssetRegistryStackImpl";
 import { XRDNASigners } from "../../src";
+import HardhatDeployment from '../../ignition/deployments/chain-55555/deployed_addresses.json';
 
 export interface IEcosystem {
         world: World,
@@ -70,6 +71,7 @@ export class StackFactory {
     registrarId?: bigint;
     world?: World;
     readonly admins: IStackAdmins;
+    readonly logParser: AllLogParser;
     constructor(readonly owners: IEntityOwners) {
         const xrdna = new XRDNASigners(ethers.provider);
         const config = xrdna.testingConfig;
@@ -84,7 +86,8 @@ export class StackFactory {
             worldRegistryAdmin: config.worldRegistryAdmin,
             vectorAuthority: config.vectorAddressAuthority
         }
-       
+        const depConfig: DeploymentAddressConfig = mapJsonToDeploymentAddressConfig(HardhatDeployment);
+        this.logParser = new AllLogParser(depConfig);
     }
 
 
@@ -180,7 +183,8 @@ export class StackFactory {
         }
         this.world = new World({
             address: wRes.worldAddress,
-            admin: this.owners.worldOwner
+            admin: this.owners.worldOwner,
+            logParser: this.logParser
         });
         return {
             world: this.world,
@@ -235,7 +239,8 @@ export class StackFactory {
         }
         const world2 = new World({
             address: wRes.worldAddress,
-            admin: this.owners.worldOwner
+            admin: this.owners.worldOwner,
+            logParser: this.logParser
         });
 
         const companyRegistration = await this.world.registerCompany({
@@ -250,11 +255,13 @@ export class StackFactory {
         }, ethers.parseEther("1.0"));
         const company = new Company({
             address: await companyRegistration.companyAddress.toString(),
-            admin: this.admins.companyRegistryAdmin
+            admin: this.admins.companyRegistryAdmin,
+            logParser: this.logParser
         });
         const company2 = new Company({
             address: await company2Registration.companyAddress.toString(),
-            admin: this.admins.companyRegistryAdmin
+            admin: this.admins.companyRegistryAdmin,
+            logParser: this.logParser
         });
         const erc20InitData: ERC20InitData = {
             originChainAddress:  USDC,
@@ -293,12 +300,14 @@ export class StackFactory {
         const experience = new Experience({
             address: expRes.experienceAddress.toString(),
             portalId: expRes.portalId,
-            provider: ethers.provider
+            provider: ethers.provider,
+            logParser: this.logParser
         });
         const experience2 = new Experience({
             address: expRes2.experienceAddress.toString(),
             portalId: expRes2.portalId,
-            provider: ethers.provider
+            provider: ethers.provider,
+            logParser: this.logParser
         });
         
         const avatarRegistration = await this.world.registerAvatar({
@@ -312,7 +321,8 @@ export class StackFactory {
 
         const avatar = new Avatar({
             address: avatarRegistration.avatarAddress.toString(),
-            admin: this.owners.avatarOwner
+            admin: this.owners.avatarOwner,
+            logParser: this.logParser
         });
 
         const pr = this.getStack<PortalStackImpl>(StackType.PORTAL).getPortalRegistry();

@@ -105,8 +105,8 @@ contract NTERC20Asset is BaseAsset, IMintableAsset, IERC20, IERC20Metadata, IERC
      * @dev Upgrades the asset to a new version. Only the issuing company
      * can opt to upgrade to the latest asset ERC20 implementation.
      */
-    function upgrade(bytes calldata initData) public onlyIssuer {
-        IAssetRegistry(assetRegistry).upgradeAsset(initData);
+    function upgrade(bytes calldata initData) public onlyIssuer returns (address) {
+        return IAssetRegistry(assetRegistry).upgradeAsset(initData);
     }
 
     /**
@@ -233,8 +233,22 @@ contract NTERC20Asset is BaseAsset, IMintableAsset, IERC20, IERC20Metadata, IERC
     function canMint(address to, bytes calldata data) public override view returns (bool) {
         require(to != address(0), "NTERC20Asset: cannot mint to zero address");
         ERC20V1Storage storage s = LibAssetV1Storage.loadERC20Storage();
+        
         uint256 amt = abi.decode(data, (uint256));
         require(s.totalSupply + amt <= s.maxSupply, "NTERC20Asset: max supply exceeded");
+        //if the asset is going to an avatar
+        if(avatarRegistry.isAvatar(to)) {
+            IAvatar avatar = IAvatar(to);
+            //If the avatar opts to restrict token minting to only experiences/company
+            //they are visiting
+            if(!avatar.canReceiveTokensOutsideOfExperience()) {
+                //check that the issuer is the same as the avatar's current experience owner
+                _verifyAvatarLocationMatchesIssuer(IAvatar(to));
+            }
+        }
+        if(address(s.attributes.hook) != address(0)) {
+            return IAssetHook(s.attributes.hook).canMint(address(this), to, amt);
+        }
         return true;
     }
 
@@ -255,16 +269,7 @@ contract NTERC20Asset is BaseAsset, IMintableAsset, IERC20, IERC20Metadata, IERC
                 revert("NTERC20Asset: beforeMint hook rejected request");
             }
         }
-        //if the asset is going to an avatar
-        if(avatarRegistry.isAvatar(to)) {
-            IAvatar avatar = IAvatar(to);
-            //If the avatar opts to restrict token minting to only experiences/company
-            //they are visiting
-            if(!avatar.canReceiveTokensOutsideOfExperience()) {
-                //check that the issuer is the same as the avatar's current experience owner
-                _verifyAvatarLocationMatchesIssuer(IAvatar(to));
-            }
-        }
+        
 
         //if all good, mint tokens
         _mint(to, amt);

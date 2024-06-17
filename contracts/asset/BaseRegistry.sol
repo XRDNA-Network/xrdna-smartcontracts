@@ -88,8 +88,8 @@ abstract contract BaseRegistry is IAssetRegistry, AccessControl {
      * @dev Called by an asset to upgrade itself. This relies on the factory
      * to assign and initialize a new implementation for the asset's proxy address.
      */
-    function upgradeAsset(bytes calldata initData) external onlyAsset {
-        assetFactory.upgradeAsset(msg.sender, initData);
+    function upgradeAsset(bytes calldata initData) external onlyAsset returns (address) {
+        return assetFactory.upgradeAsset(msg.sender, initData);
     }
 
     /** 

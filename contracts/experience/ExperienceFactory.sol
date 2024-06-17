@@ -28,13 +28,14 @@ contract ExperienceFactory is BaseFactory, IExperienceFactory {
     /**
      * @inheritdoc IExperienceFactory
      */
-    function upgradeExperience(address exp, bytes calldata initData) external onlyAuthorizedRegistry {
+    function upgradeExperience(address exp, bytes calldata initData) external onlyAuthorizedRegistry returns (address) {
         //to upgrade, we just need to change its underlying implementation. 
         //so first, make sure it doesn't already have the latest implementation
         address impl = IBaseProxy(exp).getImplementation();
         require(impl != implementation, "Already on the latest version");
         IExperience(exp).upgradeComplete(implementation);
         INextExperienceVersion(exp).init(initData);
+        return implementation;
     }
 
     /**

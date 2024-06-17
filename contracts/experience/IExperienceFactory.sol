@@ -14,7 +14,7 @@ interface IExperienceFactory is IBaseFactory {
      * @dev Upgrades an experience to a new version. This can only be called by the registry
      * to initiate the upgrade.
      */
-    function upgradeExperience(address experience, bytes calldata data) external;
+    function upgradeExperience(address experience, bytes calldata data) external returns (address);
 
     /**
      * @dev Creates a new experience with the given parameters. This can only be called by the registry.

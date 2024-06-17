@@ -128,8 +128,8 @@ contract AvatarRegistry is IAvatarRegistry, ReentrancyGuard, AccessControl {
         emit AvatarCreated(proxy, registration.avatarOwner, registration.defaultExperience);
     }
 
-    function upgradeAvatar(bytes calldata initData) public onlyAvatar {
-        avatarFactory.upgradeAvatar(msg.sender, initData);
+    function upgradeAvatar(bytes calldata initData) public onlyAvatar returns (address) {
+        return avatarFactory.upgradeAvatar(msg.sender, initData);
     }
 
     function currentAvatarVersion() external view returns (uint256) {

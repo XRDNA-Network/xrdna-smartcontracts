@@ -31,7 +31,7 @@ interface IBasicAsset {
      * @dev Called by the asset issuer to upgrade the asset to the latest version.
      * Init data will depend on upgrade implementation.
      */
-    function upgrade(bytes calldata data) external;
+    function upgrade(bytes calldata data) external returns (address);
 
     /**
      * @dev Get the address of the original asset that this synthetic asset represents

@@ -328,7 +328,13 @@
         }
       ],
       "name": "upgrade",
-      "outputs": [],
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "nextVersion",
+          "type": "address"
+        }
+      ],
       "stateMutability": "nonpayable",
       "type": "function"
     },

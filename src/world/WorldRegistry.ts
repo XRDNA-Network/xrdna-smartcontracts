@@ -1,16 +1,17 @@
 import { AddressLike, Provider, Signer, TransactionResponse, ethers } from "ethers";
 import {abi as WorldRegistryABI} from "../../artifacts/contracts/world/v0.2/WorldRegistryV2.sol/WorldRegistryV2.json";
-import {abi as WorldABI} from "../../artifacts/contracts/world/v0.2/WorldV2.sol/WorldV2.json";
 import { LogParser } from "../LogParser";
 import { LogNames } from "../LogNames";
 import { RPCRetryHandler } from "../RPCRetryHandler";
 import { VectorAddress } from "../VectorAddress";
+import { AllLogParser } from "../AllLogParser";
 /**
  * Typescript proxy for WorldRegistry deployed contract.
  */
 export interface IWorldRegistryOpts {
     address: string;
     admin: Provider | Signer;
+    logParser: AllLogParser;
 }
 
 export interface IWorldRegistration {
@@ -30,16 +31,21 @@ export interface IWorldRegistrationResult {
 }
 
 export class WorldRegistry {
+    static get abi() {
+        return WorldRegistryABI;
+    }
+    
     readonly address: string;
+    readonly logParser: AllLogParser;
     private admin: Provider | Signer;
     private registry: ethers.Contract;
-    private worldIfc: ethers.Interface;
 
     constructor(opts: IWorldRegistryOpts) {
         this.address = opts.address;
         this.admin = opts.admin;
         this.registry = new ethers.Contract(this.address, WorldRegistryABI, this.admin);
-        this.worldIfc = new ethers.Interface(WorldABI);
+        this.logParser = opts.logParser;
+        this.logParser.addAbi(this.address, WorldRegistryABI);
     }
 
     async createWorld(props: {

@@ -21,7 +21,7 @@ contract ERC20AssetFactory is BaseFactory, IAssetFactory {
      * @param asset Address of the asset to upgrade
      * @param initData Data to initialize the new version of the asset
      */
-    function upgradeAsset(address asset, bytes calldata initData) external override {
+    function upgradeAsset(address asset, bytes calldata initData) external override returns (address) {
         //to upgrade an asset, we just need to change its underlying implementation. 
         //so first, make sure the asset doesn't already have the latest implementation
         address impl = IBaseProxy(asset).getImplementation();
@@ -33,6 +33,7 @@ contract ERC20AssetFactory is BaseFactory, IAssetFactory {
 
         //initialize the new implementation with the provided data
         IMintableAsset(asset).init(initData);
+        return implementation;
     }
 
     /**

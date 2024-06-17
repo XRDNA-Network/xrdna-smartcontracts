@@ -1,14 +1,17 @@
-import { AddressLike, Contract, Provider, Signer, TransactionResponse, ethers } from "ethers";
+import { AddressLike, Contract, Provider, Signer, TransactionReceipt, TransactionResponse, ethers } from "ethers";
 import {abi} from "../../artifacts/contracts/avatar/Avatar.sol/Avatar.json";
 import { RPCRetryHandler } from "../RPCRetryHandler";
 import { VectorAddress } from "../VectorAddress";
 import { LogParser } from "../LogParser";
 import { LogNames } from "../LogNames";
+import { AllLogParser } from "../AllLogParser";
+import { ISupportsFunds, ISupportsHooks, IUpgradeResult, IUpgradeable } from "../interfaces";
 
 
 export interface IAvatarOpts {
     address: string;
     admin: Provider | Signer;
+    logParser: AllLogParser;
 }
 
 export interface IAvatarJumpRequest {
@@ -18,7 +21,7 @@ export interface IAvatarJumpRequest {
 }
 
 export interface IAvatarJumpResult {
-    receipt: TransactionResponse;
+    receipt: TransactionReceipt;
     destination: AddressLike;
     connectionDetails: string;
     fee: bigint;
@@ -34,17 +37,23 @@ export interface IAvatarInitData {
     appearanceDetails: string;
 }
 
-export class Avatar {
+export class Avatar implements ISupportsFunds, ISupportsHooks, IUpgradeable {
+
+    static get abi() {
+        return abi;
+    }
+    
     private con: Contract;
     readonly address: string;
     private admin: Provider | Signer;
-    readonly logParser: LogParser;
+    readonly logParser: AllLogParser;
 
     constructor(opts: IAvatarOpts) {
         this.address = opts.address;
         this.admin = opts.admin;
         this.con = new Contract(this.address, abi, this.admin);
-        this.logParser = new LogParser(abi, this.address);
+        this.logParser = opts.logParser;
+        this.logParser.addAbi(this.address, abi);
     }
 
     static encodeInitData(data: IAvatarInitData): string {
@@ -56,6 +65,17 @@ export class Avatar {
         return await RPCRetryHandler.withRetry(() => this.con.location());
     }
 
+    async setCanReceiveTokensOutsideOfExperience(canReceive: boolean): Promise<TransactionResponse> {
+        return await RPCRetryHandler.withRetry(() => this.con.setCanReceiveTokensOutsideOfExperience(canReceive));
+    }
+
+    async setAppearanceDetails(bytes: string) : Promise<TransactionResponse> {
+        return await RPCRetryHandler.withRetry(() => this.con.setAppearanceDetails(bytes));
+    }
+
+    ////////////////////////////////////////////////////////////////////////
+    // Wearables related methods
+    ////////////////////////////////////////////////////////////////////////
     async getWearables(): Promise<IWearable[]> {
         const r = await RPCRetryHandler.withRetry(() => this.con.getWearables());
         return r.map((w: any) => {
@@ -64,40 +84,6 @@ export class Avatar {
                 tokenId: w[1]
             } as IWearable;
         });
-    }
-
-    async setCanReceiveTokensOutsideOfExperience(canReceive: boolean): Promise<TransactionResponse> {
-        return await RPCRetryHandler.withRetry(() => this.con.setCanReceiveTokensOutsideOfExperience(canReceive));
-    }
-
-    async setLocation(location: VectorAddress): Promise<TransactionResponse> {
-        return await RPCRetryHandler.withRetry(() => this.con.setLocation(location));
-    }
-
-    async setAppearanceDetails(bytes: string) : Promise<TransactionResponse> {
-        return await RPCRetryHandler.withRetry(() => this.con.setAppearanceDetails(bytes));
-    }
-
-    async jump(req: IAvatarJumpRequest, tokens?: bigint): Promise<IAvatarJumpResult> {
-        const t =  await RPCRetryHandler.withRetry(() => this.con.jump(req, {
-            value: tokens
-        }));
-        const r = await t.wait();
-        if(!r.status) {
-            throw new Error("Jump transaction failed with status 0");
-        }
-        const logs = this.logParser.parseLogs(r);
-        const jump = logs.get(LogNames.JumpSuccess);
-        if(!jump) {
-            throw new Error("Jump failed");
-        }
-        return {
-            connectionDetails: jump[2],
-            fee: jump[1],
-            destination: jump[0],
-            receipt: r
-        } as IAvatarJumpResult;
-
     }
 
     async addWearable(wearable: IWearable): Promise<TransactionResponse> {
@@ -112,14 +98,11 @@ export class Avatar {
         return await RPCRetryHandler.withRetry(() => this.con.isWearing(wearable));
     }
 
-    async addSigner(signer: string): Promise<TransactionResponse> {
-        return await RPCRetryHandler.withRetry(() => this.con.addSigner(signer));
-    }
 
-    async removeSigner(signer: string): Promise<TransactionResponse> {
-        return await RPCRetryHandler.withRetry(() => this.con.removeSigner(signer));
-    }
 
+    ////////////////////////////////////////////////////////////////////////
+    // ISupportsHooks interface
+    ////////////////////////////////////////////////////////////////////////
     async setHook(hook: string): Promise<TransactionResponse> {
         return await RPCRetryHandler.withRetry(() => this.con.setHook(hook));
     }
@@ -128,24 +111,77 @@ export class Avatar {
         return await RPCRetryHandler.withRetry(() => this.con.removeHook());
     }
 
-    async withdraw(amount: string): Promise<TransactionResponse> {
+    async getHook(): Promise<string> {
+        return await RPCRetryHandler.withRetry(() => this.con.hook());
+    }
+
+
+    ////////////////////////////////////////////////////////////////////////
+    // ISupportsFunds interface
+    ////////////////////////////////////////////////////////////////////////
+    async withdraw(amount: bigint): Promise<TransactionResponse> {
         return await RPCRetryHandler.withRetry(() => this.con.withdraw(amount));
     }
 
-    async upgrade(newVersion: string): Promise<TransactionResponse> {
-        return await RPCRetryHandler.withRetry(() => this.con.upgrade(newVersion));
+    async addFunds(amount: bigint): Promise<TransactionResponse> {
+        if(!this.admin.sendTransaction) {
+            throw new Error("Admin must be a signer");
+        }
+        return await RPCRetryHandler.withRetry(() => this.admin.sendTransaction!({
+            to: this.address,
+            value: amount
+        }));
     }
 
+    async getBalance(): Promise<bigint> {
+        const p = this.admin.provider || this.admin as Provider;
+        if(!p) {
+            throw new Error("No provider set");
+        }
+        return await RPCRetryHandler.withRetry(() => p.getBalance(this.address));
+    }
+
+
+
+    ////////////////////////////////////////////////////////////////////////
+    // IUpgradeable interface
+    ////////////////////////////////////////////////////////////////////////
+    async upgrade(initData: string): Promise<IUpgradeResult> {
+        const t = await RPCRetryHandler.withRetry(() => this.con.upgrade(initData));
+        const r = await t.wait();
+        if(!r.status) {
+            throw new Error("Transaction failed with status 0");
+        }
+        const logs = this.logParser.parseLogs(r);
+        const upgrades = logs.get(LogNames.CompanyUpgraded);
+        if(!upgrades || upgrades.length === 0) {
+            throw new Error("CompanyUpgraded log not found");
+        }
+        return {
+            receipt: r,
+            newImplementationAddress: upgrades[0].args[1]
+        };
+    }
+
+    async version(): Promise<bigint> {
+        return await RPCRetryHandler.withRetry(() => this.con.version());
+    }
+
+    async getImplementation(): Promise<string> {
+        return await RPCRetryHandler.withRetry(() => this.con.getImplementation());
+    }
+
+    
+
+    ////////////////////////////////////////////////////////////////////////
+    // Jump related methods
+    ////////////////////////////////////////////////////////////////////////
     async getCompanySigningNonce(company: string): Promise<bigint> {
         return await RPCRetryHandler.withRetry(() => this.con.companySigningNonce(company));
     }
 
     async getAvatarSigningNonce(): Promise<bigint> {
         return await RPCRetryHandler.withRetry(() => this.con.avatarOwnerSigningNonce());
-    }
-
-    async tokenBalance(): Promise<bigint> {
-        return await RPCRetryHandler.withRetry(() => this.admin.provider!.getBalance(this.address));
     }
 
     async signJumpRequest(props: {
@@ -158,7 +194,26 @@ export class Avatar {
         return await RPCRetryHandler.withRetry(() => (this.admin as Signer).signMessage(ethers.getBytes(hashed)));
     }
 
-    getDelegateContract(props: {signer: Signer}): Contract {
-        return new Contract(this.address, abi, props.signer);
+    async jump(req: IAvatarJumpRequest, tokens?: bigint): Promise<IAvatarJumpResult> {
+        const t =  await RPCRetryHandler.withRetry(() => this.con.jump(req, {
+            value: tokens
+        }));
+        const r = await t.wait();
+        if(!r.status) {
+            throw new Error("Jump transaction failed with status 0");
+        }
+        const logs = this.logParser.parseLogs(r);
+        const jump = logs.get(LogNames.JumpSuccess);
+        if(!jump || jump.length === 0) {
+            throw new Error("Jump failed");
+        }
+        return {
+            connectionDetails: jump[0].args[2],
+            fee: jump[0].args[1],
+            destination: jump[0].args[0],
+            receipt: r
+        } as IAvatarJumpResult;
+
     }
+
 }

@@ -11,6 +11,32 @@
           "internalType": "address",
           "name": "company",
           "type": "address"
+        }
+      ],
+      "name": "CompanyDeactivated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "company",
+          "type": "address"
+        }
+      ],
+      "name": "CompanyReactivated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "company",
+          "type": "address"
         },
         {
           "components": [
@@ -55,19 +81,6 @@
       "type": "event"
     },
     {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
-          "internalType": "address",
-          "name": "company",
-          "type": "address"
-        }
-      ],
-      "name": "CompanyRemoved",
-      "type": "event"
-    },
-    {
       "inputs": [],
       "name": "currentCompanyVersion",
       "outputs": [
@@ -88,6 +101,19 @@
           "type": "address"
         }
       ],
+      "name": "deactivateCompany",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "company",
+          "type": "address"
+        }
+      ],
       "name": "isRegisteredCompany",
       "outputs": [
         {
@@ -97,6 +123,19 @@
         }
       ],
       "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "company",
+          "type": "address"
+        }
+      ],
+      "name": "reactivateCompany",
+      "outputs": [],
+      "stateMutability": "nonpayable",
       "type": "function"
     },
     {
@@ -175,19 +214,6 @@
         }
       ],
       "stateMutability": "payable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "company",
-          "type": "address"
-        }
-      ],
-      "name": "removeCompany",
-      "outputs": [],
-      "stateMutability": "nonpayable",
       "type": "function"
     },
     {

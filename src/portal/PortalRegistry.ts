@@ -2,11 +2,13 @@ import { AddressLike, Contract, Provider, Signer, TransactionResponse } from "et
 import {abi} from "../../artifacts/contracts/portal/PortalRegistry.sol/PortalRegistry.json";
 import { RPCRetryHandler } from "../RPCRetryHandler";
 import { VectorAddress } from "../VectorAddress";
+import { AllLogParser } from "../AllLogParser";
 
 
 export interface IPortalRegistryOpts {
     address: string;
     admin: Provider | Signer;
+    logParser: AllLogParser;
 }
 
 export interface IAddPortalRequest {
@@ -21,14 +23,21 @@ export interface IPortalInfo {
 }
 
 export class PortalRegistry {
+    static get abi() {
+        return abi;
+    }
+    
     private con: Contract;
     readonly address: string;
     private admin: Provider | Signer;
+    readonly logParser: AllLogParser;
 
     constructor(opts: IPortalRegistryOpts) {
         this.address = opts.address;
         this.admin = opts.admin;
         this.con = new Contract(this.address, abi, this.admin);
+        this.logParser = opts.logParser;
+        this.logParser.addAbi(this.address, abi);
     }
 
 

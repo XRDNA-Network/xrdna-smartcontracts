@@ -63,8 +63,21 @@ struct CompanyInitArgs {
  */
 interface ICompany is IBaseAccess {
 
-    event ExperienceAdded(address indexed experience, uint256 portalId);
-    event ExperienceRemoved(address indexed experience, uint256 portalId);
+    event CompanyAddedExperience(address indexed experience, uint256 portalId);
+    event CompanyRemovedExperience(address indexed experience, uint256 portalId);
+    event CompanyAddedExperienceCondition(address indexed experience, address indexed condition);
+    event CompanyRemovedExperienceCondition(address indexed experience);
+    event CompanyChangedExperiencePortalFee(address indexed experience, uint256 fee);
+    event CompanyAddedAssetCondition(address indexed asset, address indexed condition);
+    event CompanyRemovedAssetCondition(address indexed asset);
+    event CompanyAddedAssetHook(address indexed asset, address indexed hook);
+    event CompanyRemovedAssetHook(address indexed asset);
+    event CompanyAddedExperienceHook(address indexed experience, address indexed hook);
+    event CompanyRemovedExperienceHook(address indexed experience);
+    event CompanyJumpedForAvatar(address indexed avatar, uint256 portalId, uint256 fee);
+    event CompanyUpgradedExperience(address indexed experience, address indexed nextVersion);
+    event CompanyUpgradedAsset(address indexed asset, address indexed nextVersion);
+
     event CompanyUpgraded(address indexed oldVersion, address indexed nextVersion);
     event CompanyHookSet(address indexed hook);
     event CompanyHookRemoved();
@@ -127,6 +140,13 @@ interface ICompany is IBaseAccess {
      * by company admin
      */
     function removeExperience(address experience) external;
+
+
+    /**
+     * @dev Check whether this company owns the experience attached to the given portal id
+     */
+    function companyOwnsDestinationPortal(uint256 portalId) external view returns (bool);
+
     /**
      * @dev Mints the given amount of the given asset to the given address. The data
      * parameter is dependent on the type of asset.
@@ -245,4 +265,10 @@ interface ICompany is IBaseAccess {
      * company registry and is initiated from the operating world contract.
      */
     function reactivate() external payable;
+
+    /**
+     * @dev Returns whether the company is active. An inactive company cannot mint assets
+     * or add experiences.
+     */
+    function isActive() external view returns (bool);
 }

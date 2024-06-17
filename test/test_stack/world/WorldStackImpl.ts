@@ -63,63 +63,78 @@ export class WorldStackImpl implements IWorldStack, IDeployable {
             const r = {
                 erc20AssetFactory: new ERC20AssetFactory({
                     address: await mod.erc20Factory.getAddress(),
-                    admin: this.factory.admins.assetRegistryAdmin
+                    admin: this.factory.admins.assetRegistryAdmin,
+                    logParser: this.factory.logParser
                 }),
                 erc20AssetRegistry: new ERC20AssetRegistry({
                     address: await mod.erc20Registry.getAddress(),
-                    admin: this.factory.admins.assetRegistryAdmin
+                    admin: this.factory.admins.assetRegistryAdmin,
+                    logParser: this.factory.logParser
                 }),
                 erc721AssetFactory: new ERC721AssetFactory({
                     address: await mod.erc721Factory.getAddress(),
-                    admin: this.factory.admins.assetRegistryAdmin
+                    admin: this.factory.admins.assetRegistryAdmin,
+                    logParser: this.factory.logParser
                 }),
                 erc721AssetRegistry: new ERC721AssetRegistry({
                     address: await mod.erc721Registry.getAddress(),
-                    admin: this.factory.admins.assetRegistryAdmin
+                    admin: this.factory.admins.assetRegistryAdmin,
+                    logParser: this.factory.logParser
                 }),
                 multiAssetRegistry: new MultiAssetRegistry({
                     address: await mod.multiAssetRegistry.getAddress(),
-                    admin: this.factory.admins.assetRegistryAdmin
+                    admin: this.factory.admins.assetRegistryAdmin,
+                    logParser: this.factory.logParser
                 }),
                 avatarFactory: new AvatarFactory({
                     address: await mod.avatarFactory.getAddress(),
-                    admin: this.factory.admins.avatarRegistryAdmin
+                    admin: this.factory.admins.avatarRegistryAdmin,
+                    logParser: this.factory.logParser
                 }),
                 avatarRegistry: new AvatarRegistry({
                     address: await mod.avatarRegistry.getAddress(),
-                    admin: this.factory.admins.avatarRegistryAdmin
+                    admin: this.factory.admins.avatarRegistryAdmin,
+                    logParser: this.factory.logParser
                 }),
                 companyFactory: new CompanyFactory({
                     address: await mod.companyFactory.getAddress(),
-                    admin: this.factory.admins.companyRegistryAdmin
+                    admin: this.factory.admins.companyRegistryAdmin,
+                    logParser: this.factory.logParser
                 }),
                 companyRegistry: new CompanyRegistry({
                     address: await mod.companyRegistry.getAddress(),
-                    admin: this.factory.admins.companyRegistryAdmin
+                    admin: this.factory.admins.companyRegistryAdmin,
+                    logParser: this.factory.logParser
                 }),
                 experienceFactory: new ExperienceFactory({
                     address: await mod.experienceFactory.getAddress(),
-                    admin: this.factory.admins.experienceRegistryAdmin
+                    admin: this.factory.admins.experienceRegistryAdmin,
+                    logParser: this.factory.logParser
                 }),
                 experienceRegistry: new ExperienceRegistry({
                     address: await mod.experienceRegistry.getAddress(),
-                    admin: this.factory.admins.experienceRegistryAdmin
+                    admin: this.factory.admins.experienceRegistryAdmin,
+                    logParser: this.factory.logParser
                 }),
                 portalRegistry: new PortalRegistry({
                     address: await mod.portalRegistry.getAddress(),
-                    admin: this.factory.admins.portalRegistryAdmin
+                    admin: this.factory.admins.portalRegistryAdmin,
+                    logParser: this.factory.logParser
                 }),
                 registrarRegistry: new RegistrarRegistry({
                     address: await mod.registrarRegistry.getAddress(),
-                    admin: this.factory.admins.registrarAdmin
+                    admin: this.factory.admins.registrarAdmin,
+                    logParser: this.factory.logParser
                 }),
                 worldFactory: new WorldFactory({
                     address: await mod.worldFactory.getAddress(),
-                    admin: this.factory.admins.worldRegistryAdmin
+                    admin: this.factory.admins.worldRegistryAdmin,
+                    logParser: this.factory.logParser
                 }),
                 worldRegistry: new WorldRegistry({
                     address: await mod.worldRegistry.getAddress(),
-                    admin: this.factory.admins.worldRegistryAdmin
+                    admin: this.factory.admins.worldRegistryAdmin,
+                    logParser: this.factory.logParser
                 })
             } as IWorldStackDeployment;
             this.worldFactory = r.worldFactory;

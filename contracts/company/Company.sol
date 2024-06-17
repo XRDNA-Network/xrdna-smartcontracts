@@ -21,7 +21,7 @@ import {BaseAccess} from '../BaseAccess.sol';
 import {IMintableAsset} from '../asset/IMintableAsset.sol';
 import {IAssetCondition} from '../asset/IAssetCondition.sol';
 import {IWorldV2} from '../world/v0.2/IWorldV2.sol';
-import "hardhat/console.sol";
+import {IPortalRegistry, PortalInfo} from '../portal/IPortalRegistry.sol';
 
 //constructor arguments for master copy of Company
 struct CompanyConstructorArgs {
@@ -85,6 +85,34 @@ contract Company is ICompany, BaseAccess, ReentrancyGuard {
     //Funds are transferred to company contract so must be able to receive
     receive() external payable {}
 
+
+    /**
+     * @inheritdoc ICompany
+     */
+    function init(CompanyInitArgs memory request) public onlyFactory {
+        CompanyV1Storage storage s = LibCompanyV1Storage.load();
+        require(s.owner == address(0), "Company: already initialized");
+        require(request.owner != address(0), "Company: owner cannot be 0x0");
+
+        /**
+        * WARN: there is an issue with unicode or whitespace characters present in names. 
+        * Off-chain verification should ensure that names are properly trimmed and
+        * filtered with hidden characters if we truly want visually-unique names.
+        */
+        require(bytes(request.name).length > 0, "Company: name cannot be empty");
+        require(request.world != address(0), "Company: world cannot be 0x0");
+        s.owner = request.owner;
+        s.world = request.world;
+        s.vectorAddress = request.vector;
+        s.name = request.name;
+        s.active = true;
+
+        BaseProxyStorage storage ps = LibBaseProxy.load();
+        ps.grantRole(LibProxyAccess.ADMIN_ROLE, request.owner);
+        ps.grantRole(LibProxyAccess.SIGNER_ROLE, request.owner);
+    }
+
+
     /**
      * @inheritdoc ICompany
      */
@@ -107,29 +135,12 @@ contract Company is ICompany, BaseAccess, ReentrancyGuard {
     }
 
     /**
-     * @inheritdoc ICompany
+        * @inheritdoc ICompany
      */
-    function init(CompanyInitArgs memory request) public onlyFactory {
-        CompanyV1Storage storage s = LibCompanyV1Storage.load();
-        require(s.owner == address(0), "Company: already initialized");
-        require(request.owner != address(0), "Company: owner cannot be 0x0");
-
-        /**
-        * WARN: there is an issue with unicode or whitespace characters present in names. 
-        * Off-chain verification should ensure that names are properly trimmed and
-        * filtered with hidden characters if we truly want visually-unique names.
-        */
-        require(bytes(request.name).length > 0, "Company: name cannot be empty");
-        require(request.world != address(0), "Company: world cannot be 0x0");
-        s.owner = request.owner;
-        s.world = request.world;
-        s.vectorAddress = request.vector;
-        s.name = request.name;
-
-        BaseProxyStorage storage ps = LibBaseProxy.load();
-        ps.grantRole(LibProxyAccess.ADMIN_ROLE, request.owner);
-        ps.grantRole(LibProxyAccess.SIGNER_ROLE, request.owner);
-    }
+     function isActive() external view override returns (bool) {
+         CompanyV1Storage storage s = LibCompanyV1Storage.load();
+         return s.active;
+     }
 
     /**
         * @inheritdoc ICompany
@@ -225,9 +236,8 @@ contract Company is ICompany, BaseAccess, ReentrancyGuard {
             vector: expVector,
             initData: args.initData
         });
-        console.log("REgistering experienc with world", s.world);
         (address exp, uint256 portalId) = IWorldV2(s.world).registerExperience(req);
-        emit ExperienceAdded(exp, portalId);
+        emit CompanyAddedExperience(exp, portalId);
     }
 
     /**
@@ -236,7 +246,7 @@ contract Company is ICompany, BaseAccess, ReentrancyGuard {
     function removeExperience(address experience) public onlyAdmin onlyActive nonReentrant {
         CompanyV1Storage storage s = LibCompanyV1Storage.load();
         uint256 portalId = IWorldV2(s.world).deactivateExperience(experience);
-        emit ExperienceRemoved(experience, portalId);
+        emit CompanyRemovedExperience(experience, portalId);
     }
 
     /**
@@ -307,6 +317,7 @@ contract Company is ICompany, BaseAccess, ReentrancyGuard {
     function addExperienceCondition(address experience, address condition) public onlyAdmin onlyActive {
         IExperience exp = IExperience(experience);
         exp.addPortalCondition(IPortalCondition(condition));
+        emit CompanyAddedExperienceCondition(experience, condition);
     }
 
     /**
@@ -315,6 +326,7 @@ contract Company is ICompany, BaseAccess, ReentrancyGuard {
     function removeExperienceCondition(address experience) public onlyAdmin onlyActive {
         IExperience exp = IExperience(experience);
         exp.removePortalCondition();
+        emit CompanyRemovedExperienceCondition(experience);
     }
 
     /**
@@ -323,6 +335,7 @@ contract Company is ICompany, BaseAccess, ReentrancyGuard {
     function changeExperiencePortalFee(address experience, uint256 fee) public onlyAdmin onlyActive {
         IExperience exp = IExperience(experience);
         exp.changePortalFee(fee);
+        emit CompanyChangedExperiencePortalFee(experience, fee);
     }
 
     /**
@@ -330,6 +343,7 @@ contract Company is ICompany, BaseAccess, ReentrancyGuard {
      */
     function addAssetHook(address asset, IAssetHook aHook) public onlyAdmin onlyActive {
         IBasicAsset(asset).addHook(aHook);
+        emit CompanyAddedAssetHook(asset, address(aHook));
     }
 
     /**
@@ -337,6 +351,7 @@ contract Company is ICompany, BaseAccess, ReentrancyGuard {
      */
     function removeAssetHook(address asset) public onlyAdmin onlyActive {
         IBasicAsset(asset).removeHook();
+        emit CompanyRemovedAssetHook(asset);
     }
 
     /**
@@ -344,6 +359,7 @@ contract Company is ICompany, BaseAccess, ReentrancyGuard {
      */
     function addAssetCondition(address asset, address condition) public onlyAdmin onlyActive {
         IBasicAsset(asset).addCondition(IAssetCondition(condition));
+        emit CompanyAddedAssetCondition(asset, condition);
     }
 
     /**
@@ -351,6 +367,7 @@ contract Company is ICompany, BaseAccess, ReentrancyGuard {
      */
     function removeAssetCondition(address asset) public onlyAdmin onlyActive {
         IBasicAsset(asset).removeCondition();
+        emit CompanyRemovedAssetCondition(asset);
     }
 
     /**
@@ -364,6 +381,7 @@ contract Company is ICompany, BaseAccess, ReentrancyGuard {
             agreedFee: request.agreedFee,
             avatarOwnerSignature: request.avatarOwnerSignature
         }));
+        emit CompanyJumpedForAvatar(request.avatar, request.portalId, request.agreedFee);
     }
 
     /**
@@ -371,13 +389,22 @@ contract Company is ICompany, BaseAccess, ReentrancyGuard {
      */
     function upgradeExperience(address experience, bytes memory initData) public onlyAdmin onlyActive {
         IExperience exp = IExperience(experience);
-        exp.upgrade(initData);
+        address next = exp.upgrade(initData);
+        emit CompanyUpgradedExperience(experience, next);
     }
 
     /**
         * @inheritdoc ICompany
      */
     function upgradeAsset(address asset, bytes memory initData) public onlyAdmin onlyActive {
-        IMintableAsset(asset).upgrade(initData);
+        address next = IMintableAsset(asset).upgrade(initData);
+        emit CompanyUpgradedAsset(asset, next);
+    }
+
+    function companyOwnsDestinationPortal(uint256 portalId) public view returns (bool) {
+        IPortalRegistry reg = experienceRegistry.portalRegistry();
+        PortalInfo memory info = reg.getPortalInfoById(portalId);
+        require(address(info.destination) != address(0), "Company: portal does not exist");
+        return info.destination.company() == address(this);
     }
 }

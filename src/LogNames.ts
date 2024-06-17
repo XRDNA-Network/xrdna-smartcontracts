@@ -6,8 +6,9 @@ export const LogNames = {
     WorldRegistered: "WorldRegistered",
     SignerAdded: "SignerAdded",
     SignerRemoved: "SignerRemoved",
-    CompanyRegistered: "CompanyRegistered",
-    AvatarRegistered: "AvatarRegistered",
+    WorldRegisteredCompany: "WorldRegisteredCompany",
+    WorldRegisteredAvatar: "WorldRegisteredAvatar",
+    WorldAddedExperience: "WorldAddedExperience",
     WorldHookSet: "WorldHookSet",
     WorldHookRemoved: "WorldHookRemoved",
     WorldUpgraded: "WorldUpgraded",
@@ -19,10 +20,9 @@ export const LogNames = {
     ERC721Upgraded: "ERC721Upgraded",
     ERC20AssetCreated: "ERC20AssetCreated",
     ERC721AssetCreated: "ERC721AssetCreated",
-    Transfer: "Transfer",
 
     //company 
-    ExperienceAdded: "ExperienceAdded",
+    CompanyAddedExperience: "CompanyAddedExperience",
     CompanyUpgraded: "CompanyUpgraded",
 
     //avatar

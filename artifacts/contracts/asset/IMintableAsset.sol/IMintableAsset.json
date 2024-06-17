@@ -269,7 +269,13 @@
         }
       ],
       "name": "upgrade",
-      "outputs": [],
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
       "stateMutability": "nonpayable",
       "type": "function"
     },
