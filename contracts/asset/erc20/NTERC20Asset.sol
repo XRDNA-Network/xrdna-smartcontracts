@@ -295,8 +295,7 @@ contract NTERC20Asset is BaseAsset, IMintableAsset, IERC20, IERC20Metadata, IERC
                 revert("NTERC20Asset: beforeRevoke hook rejected request");
             }
         }
-        uint256 bal = balanceOf(tgt);
-        _burn(tgt, amt < bal ? amt : bal);
+        _burn(tgt, amt);
     }
 
     /**

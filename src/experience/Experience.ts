@@ -50,6 +50,17 @@ export class Experience {
         return `0x${ifc.encodeFunctionData("encodeInitData", [data]).substring(10)}`;
     }
 
+    async name(): Promise<string> {
+        return await RPCRetryHandler.withRetry(() => this.con.name());
+    }
+
+    async entryFee(): Promise<bigint> {
+        return await RPCRetryHandler.withRetry(() => this.con.entryFee());
+    }
+
+    async connectionDetails(): Promise<string> {
+        return await RPCRetryHandler.withRetry(() => this.con.connectionDetails());
+    }
 
     async company(): Promise<AddressLike> {
         return await RPCRetryHandler.withRetry(() => this.con.company());
