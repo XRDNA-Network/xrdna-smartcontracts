@@ -1,8 +1,12 @@
 import { expect } from "chai";
 import { World } from "../typechain-types";
 import { IEcosystem, IStackAdmins, StackFactory } from "./test_stack/StackFactory"
-import {ethers} from "hardhat";
+import {ethers} from "hardhat" 
+// import {ethers } from "ethers"
+
 import { ERC721Asset } from "../src";
+import exp from "constants";
+import { hexlify } from "ethers";
 
 describe('Avatar', () => {
     let sf: StackFactory;
@@ -111,6 +115,21 @@ describe('Avatar', () => {
         expect(wearables.length).to.equal(2);
     });
 
+    it("should not allow adding a wearable that is already added", async () => {
+        const {avatar, testERC721} = ecosystem;
+        const wearables = await avatar.getWearables();
+        const wearable = wearables[0];
+        const t = avatar.addWearable({
+            asset: testERC721.assetAddress,
+            tokenId: wearable.tokenId
+        });
+        const message = await t.catch((reason) => {
+            return reason.message
+        });
+        expect(message).to.contain('Wearable already in list')
+    
+    });
+
     it("should remove wearable when multiple wearables configured for an avatar", async () => {
         const {avatar} = ecosystem;
         const wearables = await avatar.getWearables();
@@ -127,5 +146,7 @@ describe('Avatar', () => {
         expect(wearables2.length).to.equal(1);
         expect(wearables2[0].tokenId).to.equal(remainingToken);
     });
+
+    
 
 })
