@@ -58,6 +58,11 @@ abstract contract BaseAsset is IBasicAsset, ReentrancyGuard {
         _;
     }
 
+    modifier onlyIssuer() {
+        require(msg.sender == _loadCommonAttributes().issuer, "BaseAsset: only issuer allowed");
+       _;
+    }
+
     /**
      * Called once at deploy time. All cloned instances of this asset will retain immutable
      * references to the registries and factories required for asset management.
@@ -72,13 +77,6 @@ abstract contract BaseAsset is IBasicAsset, ReentrancyGuard {
         avatarRegistry = IAvatarRegistry(args.avatarRegistry);
         companyRegistry = ICompanyRegistry(args.companyRegistry);
     }
-
-
-    modifier onlyIssuer() {
-        require(msg.sender == _loadCommonAttributes().issuer, "BaseAsset: only issuer allowed");
-       _;
-    }
-    
 
     /**
      * @inheritdoc IBasicAsset

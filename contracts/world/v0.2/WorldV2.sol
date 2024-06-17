@@ -162,11 +162,21 @@ contract WorldV2 is IWorldV2, BaseAccess, ReentrancyGuard {
     /**
         * @inheritdoc IWorldV2
      */
-    function removeCompany(address company) public onlyAdmin nonReentrant {
+    function deactivateCompany(address company) public onlyAdmin nonReentrant {
         ICompany c = ICompany(company);
         require(c.world() == address(this), "World0_2: company world does not match this world contract");
-        companyRegistry.removeCompany(company);
-        emit WorldRemovedCompany(company);
+        companyRegistry.deactivateCompany(company);
+        emit WorldDeactivatedCompany(company);
+    }
+
+    /**
+        * @inheritdoc IWorldV2
+     */
+    function reactivateCompany(address company) public onlyAdmin nonReentrant {
+        ICompany c = ICompany(company);
+        require(c.world() == address(this), "World0_2: company world does not match this world contract");
+        companyRegistry.reactivateCompany(company);
+        emit WorldReactivatedCompany(company);
     }
 
     /**

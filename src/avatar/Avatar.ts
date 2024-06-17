@@ -1,10 +1,11 @@
-import { AddressLike, Contract, Provider, Signer, TransactionResponse, ethers } from "ethers";
+import { AddressLike, Contract, Provider, Signer, TransactionReceipt, TransactionResponse, ethers } from "ethers";
 import {abi} from "../../artifacts/contracts/avatar/Avatar.sol/Avatar.json";
 import { RPCRetryHandler } from "../RPCRetryHandler";
 import { VectorAddress } from "../VectorAddress";
 import { LogParser } from "../LogParser";
 import { LogNames } from "../LogNames";
 import { AllLogParser } from "../AllLogParser";
+import { ISupportsFunds, ISupportsHooks, IUpgradeResult, IUpgradeable } from "../interfaces";
 
 
 export interface IAvatarOpts {
@@ -20,7 +21,7 @@ export interface IAvatarJumpRequest {
 }
 
 export interface IAvatarJumpResult {
-    receipt: TransactionResponse;
+    receipt: TransactionReceipt;
     destination: AddressLike;
     connectionDetails: string;
     fee: bigint;
@@ -36,7 +37,8 @@ export interface IAvatarInitData {
     appearanceDetails: string;
 }
 
-export class Avatar {
+export class Avatar implements ISupportsFunds, ISupportsHooks, IUpgradeable {
+
     static get abi() {
         return abi;
     }
@@ -63,6 +65,17 @@ export class Avatar {
         return await RPCRetryHandler.withRetry(() => this.con.location());
     }
 
+    async setCanReceiveTokensOutsideOfExperience(canReceive: boolean): Promise<TransactionResponse> {
+        return await RPCRetryHandler.withRetry(() => this.con.setCanReceiveTokensOutsideOfExperience(canReceive));
+    }
+
+    async setAppearanceDetails(bytes: string) : Promise<TransactionResponse> {
+        return await RPCRetryHandler.withRetry(() => this.con.setAppearanceDetails(bytes));
+    }
+
+    ////////////////////////////////////////////////////////////////////////
+    // Wearables related methods
+    ////////////////////////////////////////////////////////////////////////
     async getWearables(): Promise<IWearable[]> {
         const r = await RPCRetryHandler.withRetry(() => this.con.getWearables());
         return r.map((w: any) => {
@@ -73,16 +86,112 @@ export class Avatar {
         });
     }
 
-    async setCanReceiveTokensOutsideOfExperience(canReceive: boolean): Promise<TransactionResponse> {
-        return await RPCRetryHandler.withRetry(() => this.con.setCanReceiveTokensOutsideOfExperience(canReceive));
+    async addWearable(wearable: IWearable): Promise<TransactionResponse> {
+        return await RPCRetryHandler.withRetry(() => this.con.addWearable(wearable));
     }
 
-    async setLocation(location: VectorAddress): Promise<TransactionResponse> {
-        return await RPCRetryHandler.withRetry(() => this.con.setLocation(location));
+    async removeWearable(wearable: IWearable): Promise<TransactionResponse> {
+        return await RPCRetryHandler.withRetry(() => this.con.removeWearable(wearable));
     }
 
-    async setAppearanceDetails(bytes: string) : Promise<TransactionResponse> {
-        return await RPCRetryHandler.withRetry(() => this.con.setAppearanceDetails(bytes));
+    async isWearing(wearable: IWearable): Promise<boolean> {
+        return await RPCRetryHandler.withRetry(() => this.con.isWearing(wearable));
+    }
+
+
+
+    ////////////////////////////////////////////////////////////////////////
+    // ISupportsHooks interface
+    ////////////////////////////////////////////////////////////////////////
+    async setHook(hook: string): Promise<TransactionResponse> {
+        return await RPCRetryHandler.withRetry(() => this.con.setHook(hook));
+    }
+
+    async removeHook(): Promise<TransactionResponse> {
+        return await RPCRetryHandler.withRetry(() => this.con.removeHook());
+    }
+
+    async getHook(): Promise<string> {
+        return await RPCRetryHandler.withRetry(() => this.con.hook());
+    }
+
+
+    ////////////////////////////////////////////////////////////////////////
+    // ISupportsFunds interface
+    ////////////////////////////////////////////////////////////////////////
+    async withdraw(amount: bigint): Promise<TransactionResponse> {
+        return await RPCRetryHandler.withRetry(() => this.con.withdraw(amount));
+    }
+
+    async addFunds(amount: bigint): Promise<TransactionResponse> {
+        if(!this.admin.sendTransaction) {
+            throw new Error("Admin must be a signer");
+        }
+        return await RPCRetryHandler.withRetry(() => this.admin.sendTransaction!({
+            to: this.address,
+            value: amount
+        }));
+    }
+
+    async getBalance(): Promise<bigint> {
+        const p = this.admin.provider || this.admin as Provider;
+        if(!p) {
+            throw new Error("No provider set");
+        }
+        return await RPCRetryHandler.withRetry(() => p.getBalance(this.address));
+    }
+
+
+
+    ////////////////////////////////////////////////////////////////////////
+    // IUpgradeable interface
+    ////////////////////////////////////////////////////////////////////////
+    async upgrade(initData: string): Promise<IUpgradeResult> {
+        const t = await RPCRetryHandler.withRetry(() => this.con.upgrade(initData));
+        const r = await t.wait();
+        if(!r.status) {
+            throw new Error("Transaction failed with status 0");
+        }
+        const logs = this.logParser.parseLogs(r);
+        const upgrades = logs.get(LogNames.CompanyUpgraded);
+        if(!upgrades || upgrades.length === 0) {
+            throw new Error("CompanyUpgraded log not found");
+        }
+        return {
+            receipt: r,
+            newImplementationAddress: upgrades[0].args[1]
+        };
+    }
+
+    async version(): Promise<bigint> {
+        return await RPCRetryHandler.withRetry(() => this.con.version());
+    }
+
+    async getImplementation(): Promise<string> {
+        return await RPCRetryHandler.withRetry(() => this.con.getImplementation());
+    }
+
+    
+
+    ////////////////////////////////////////////////////////////////////////
+    // Jump related methods
+    ////////////////////////////////////////////////////////////////////////
+    async getCompanySigningNonce(company: string): Promise<bigint> {
+        return await RPCRetryHandler.withRetry(() => this.con.companySigningNonce(company));
+    }
+
+    async getAvatarSigningNonce(): Promise<bigint> {
+        return await RPCRetryHandler.withRetry(() => this.con.avatarOwnerSigningNonce());
+    }
+
+    async signJumpRequest(props: {
+        nonce: bigint;
+        portalId: bigint;
+        fee: bigint;
+    }): Promise<string> {
+        const enc = ethers.AbiCoder.defaultAbiCoder().encode(["uint256", "uint256", "uint256"], [props.portalId, props.fee, props.nonce]);
+        const hashed = ethers.keccak256(enc);
+        return await RPCRetryHandler.withRetry(() => (this.admin as Signer).signMessage(ethers.getBytes(hashed)));
     }
 
     async jump(req: IAvatarJumpRequest, tokens?: bigint): Promise<IAvatarJumpResult> {
@@ -107,65 +216,4 @@ export class Avatar {
 
     }
 
-    async addWearable(wearable: IWearable): Promise<TransactionResponse> {
-        return await RPCRetryHandler.withRetry(() => this.con.addWearable(wearable));
-    }
-
-    async removeWearable(wearable: IWearable): Promise<TransactionResponse> {
-        return await RPCRetryHandler.withRetry(() => this.con.removeWearable(wearable));
-    }
-
-    async isWearing(wearable: IWearable): Promise<boolean> {
-        return await RPCRetryHandler.withRetry(() => this.con.isWearing(wearable));
-    }
-
-    async addSigner(signer: string): Promise<TransactionResponse> {
-        return await RPCRetryHandler.withRetry(() => this.con.addSigner(signer));
-    }
-
-    async removeSigner(signer: string): Promise<TransactionResponse> {
-        return await RPCRetryHandler.withRetry(() => this.con.removeSigner(signer));
-    }
-
-    async setHook(hook: string): Promise<TransactionResponse> {
-        return await RPCRetryHandler.withRetry(() => this.con.setHook(hook));
-    }
-
-    async removeHook(): Promise<TransactionResponse> {
-        return await RPCRetryHandler.withRetry(() => this.con.removeHook());
-    }
-
-    async withdraw(amount: string): Promise<TransactionResponse> {
-        return await RPCRetryHandler.withRetry(() => this.con.withdraw(amount));
-    }
-
-    async upgrade(newVersion: string): Promise<TransactionResponse> {
-        return await RPCRetryHandler.withRetry(() => this.con.upgrade(newVersion));
-    }
-
-    async getCompanySigningNonce(company: string): Promise<bigint> {
-        return await RPCRetryHandler.withRetry(() => this.con.companySigningNonce(company));
-    }
-
-    async getAvatarSigningNonce(): Promise<bigint> {
-        return await RPCRetryHandler.withRetry(() => this.con.avatarOwnerSigningNonce());
-    }
-
-    async tokenBalance(): Promise<bigint> {
-        return await RPCRetryHandler.withRetry(() => this.admin.provider!.getBalance(this.address));
-    }
-
-    async signJumpRequest(props: {
-        nonce: bigint;
-        portalId: bigint;
-        fee: bigint;
-    }): Promise<string> {
-        const enc = ethers.AbiCoder.defaultAbiCoder().encode(["uint256", "uint256", "uint256"], [props.portalId, props.fee, props.nonce]);
-        const hashed = ethers.keccak256(enc);
-        return await RPCRetryHandler.withRetry(() => (this.admin as Signer).signMessage(ethers.getBytes(hashed)));
-    }
-
-    getDelegateContract(props: {signer: Signer}): Contract {
-        return new Contract(this.address, abi, props.signer);
-    }
 }

@@ -121,7 +121,7 @@ export class Company implements ISupportsFunds,
 
     
     ////////////////////////////////////////////////////////////////////////
-    // ISupportsFunds interface
+    // Minting interface
     ////////////////////////////////////////////////////////////////////////
     async canMint(asset: string, to: string, amount: bigint): Promise<boolean> {
         const data = ethers.AbiCoder.defaultAbiCoder().encode(["uint256"], [amount]);

@@ -215,8 +215,12 @@ export class World implements ISupportsSigners,
         return await RPCRetryHandler.withRetry(() => this.world.hook());
     }
 
-    async removeCompany(address: string): Promise<TransactionResponse> {
-        return await RPCRetryHandler.withRetry(() => this.world.removeCompany(address));
+    async deactivateCompany(address: string): Promise<TransactionResponse> {
+        return await RPCRetryHandler.withRetry(() => this.world.deactivateCompany(address));
+    }
+
+    async reactivateCompany(address: string): Promise<TransactionResponse> {
+        return await RPCRetryHandler.withRetry(() => this.world.reactivateCompany(address));
     }
 
     

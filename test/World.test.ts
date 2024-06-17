@@ -8,6 +8,7 @@ import { Signer } from "ethers";
 import { Company } from "../src/company/Company";
 import { Experience } from "../src/experience";
 import { IAvatarStack } from "./test_stack/avatar/IAvatarStack";
+import { ICompanyStack } from "./test_stack/company/ICompanyStack";
 
 describe("World Registration", () => {
 
@@ -288,12 +289,33 @@ describe("World Registration", () => {
     });
 
     it("Should deactivate a company", async () => {
-        const t = await world.removeCompany(company.address);
+        const t = await world.deactivateCompany(company.address);
         const r = await t.wait();
         expect(r).to.not.be.undefined;
         expect(r!.status).to.equal(1);
         const a = await company.isActive();
         expect(a).to.equal(false);
+
+        const cReg = stack.getStack<ICompanyStack>(StackType.COMPANY);
+        const c = cReg.getCompanyRegistry();
+        const registered = await c.isRegisteredCompany(company.address);
+        expect(registered).to.equal(false);
+    });
+
+
+    it("Should reactivate a company", async () => {
+        const t = await world.reactivateCompany(company.address);
+        const r = await t.wait();
+        expect(r).to.not.be.undefined;
+        expect(r!.status).to.equal(1);
+        const a = await company.isActive();
+        expect(a).to.equal(true);
+
+        const cReg = stack.getStack<ICompanyStack>(StackType.COMPANY);
+        const c = cReg.getCompanyRegistry();
+        const registered = await c.isRegisteredCompany(company.address);
+        expect(registered).to.equal(true);
+
     });
     
 });
