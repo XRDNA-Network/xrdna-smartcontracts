@@ -141,7 +141,9 @@ export class Avatar implements ISupportsFunds, ISupportsHooks, IUpgradeable {
         return await RPCRetryHandler.withRetry(() => p.getBalance(this.address));
     }
 
-
+    async tokenBalance(): Promise<bigint> {
+        return await RPCRetryHandler.withRetry(() => this.admin.provider!.getBalance(this.address));
+    }
 
     ////////////////////////////////////////////////////////////////////////
     // IUpgradeable interface
