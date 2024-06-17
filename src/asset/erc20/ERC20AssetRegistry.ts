@@ -1,4 +1,4 @@
-import { AddressLike, Contract, Provider, Signer, TransactionResponse } from "ethers";
+import { AddressLike, Contract, Provider, Signer, TransactionReceipt, TransactionResponse } from "ethers";
 import {abi} from "../../../artifacts/contracts/asset/erc20/ERC20AssetRegistry.sol/ERC20AssetRegistry.json";
 import { ERC20Asset, ERC20InitData } from "./ERC20Asset";
 import { LogNames } from "../../LogNames";
@@ -13,9 +13,8 @@ export interface IERC20AssetRegistryOpts {
 }
 
 export type CreateERC20AssetResult = {
-    receipt: TransactionResponse;
+    receipt: TransactionReceipt;
     assetAddress: AddressLike;
-
 }
 
 export class ERC20AssetRegistry {

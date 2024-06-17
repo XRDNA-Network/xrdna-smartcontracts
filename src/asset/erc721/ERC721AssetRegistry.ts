@@ -1,4 +1,4 @@
-import { AddressLike, Contract, Provider, Signer, TransactionResponse } from "ethers";
+import { AddressLike, Contract, Provider, Signer, TransactionReceipt, TransactionResponse } from "ethers";
 import {abi} from "../../../artifacts/contracts/asset/erc721/ERC721AssetRegistry.sol/ERC721AssetRegistry.json";
 import { ERC721Asset, ERC721InitData } from "./ERC721Asset";
 import { LogParser } from "../../LogParser";
@@ -14,7 +14,7 @@ export interface IERC721AssetRegistryOpts {
 }
 
 export type CreateERC721AssetResult = {
-    receipt: TransactionResponse;
+    receipt: TransactionReceipt;
     assetAddress: AddressLike;
 }
 
