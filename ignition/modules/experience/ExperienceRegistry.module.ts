@@ -16,7 +16,6 @@ export default buildModule("ExperienceRegistry", (m) => {
     
     const fac = m.useModule(ExperienceFactoryModule);
     const pReg = m.useModule(PortalRegistryModule);
-    const cReg = m.useModule(CompanyRegistryModule);
     const wReg = m.useModule(WorldRegistryModule);
 
     const args = {
@@ -33,5 +32,6 @@ export default buildModule("ExperienceRegistry", (m) => {
             pReg.portalRegistry]
     });
     m.call(fac.experienceFactory, "setAuthorizedRegistry", [Registry]);
+    m.call(pReg.portalRegistry, "setExperienceRegistry", [Registry]);
     return {experienceRegistry: Registry};
 });
