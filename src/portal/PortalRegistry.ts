@@ -20,6 +20,7 @@ export interface IPortalInfo {
     destination: AddressLike
     condition: AddressLike
     fee: bigint
+    active: boolean
 }
 
 export class PortalRegistry {
