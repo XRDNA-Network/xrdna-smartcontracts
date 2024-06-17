@@ -302,6 +302,7 @@ contract Avatar is IAvatar, ReentrancyGuard {
     function addWearable(Wearable calldata wearable) public onlyOwner override  {
         require(wearable.asset != address(0), "Avatar: wearable asset cannot be zero address");
         require(wearable.tokenId > 0, "Avatar: wearable tokenId cannot be zero");
+        require(assetRegistry.isRegisteredAsset(wearable.asset), "Avatar: wearable asset not registered");
         IERC721 wAsset = IERC721(wearable.asset);
         IExperience loc = location();
         require(IBasicAsset(wearable.asset).canUseAsset(AssetCheckArgs({

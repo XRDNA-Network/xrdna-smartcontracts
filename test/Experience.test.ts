@@ -54,7 +54,7 @@ describe('Experience', () => {
         company = new Company({
             address: await companyInfo.companyAddress.toString(),
             admin: companyOwner,
-            
+            logParser: stack.logParser
         });
         
         // encode the experience init data struct as bytes
@@ -83,7 +83,8 @@ describe('Experience', () => {
         experience = new Experience({
             address: expRes.experienceAddress.toString(),
             portalId: expRes.portalId,
-            provider: ethers.provider
+            provider: ethers.provider,
+            logParser: stack.logParser
         });
 
         avatar = await world.registerAvatar({

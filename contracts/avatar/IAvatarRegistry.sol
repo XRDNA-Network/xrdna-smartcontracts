@@ -62,7 +62,7 @@ interface IAvatarRegistry {
      * avatar contract itself. 
      * @param initData The initialization data to pass to the new avatar contract
      */
-    function upgradeAvatar(bytes calldata initData) external;
+    function upgradeAvatar(bytes calldata initData) external returns (address);
 
     /**
      * @dev Get the current avatar version supported by the registry's underlying factory

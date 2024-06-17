@@ -16,7 +16,7 @@ interface IAssetFactory is IBaseFactory {
      * @dev Upgrades an existing asset to a new version. Only callable by the asset itself
      * when its issuer decides to upgrade its logic to the latest version.
      */
-    function upgradeAsset(address asset, bytes calldata initData) external;
+    function upgradeAsset(address asset, bytes calldata initData) external returns (address);
 
     /**
      * @dev Creates a new asset instance. Only callable by administrator of the asset registry

@@ -12,7 +12,7 @@ import { Experience } from "../src/experience";
 import { ExperienceStackImpl } from "./test_stack/experience/ExperienceStackImpl";
 import {abi as BaseAssetABI} from "../artifacts/contracts/asset/BaseAsset.sol/BaseAsset.json"
 import { IERC20AssetStack } from "./test_stack/asset/erc20/IERC20AssetStack";
-import { CreateERC20AssetResult, CreateERC721AssetResult, ERC20Asset, ERC20AssetRegistry, ERC20InitData, ERC721Asset, ERC721AssetRegistry, MultiAssetRegistry } from "../src";
+import { AllLogParser, ChainIds, CreateERC20AssetResult, CreateERC721AssetResult, ERC20Asset, ERC20AssetRegistry, ERC20InitData, ERC721Asset, ERC721AssetRegistry, MultiAssetRegistry } from "../src";
 import { IERC721AssetStack } from "./test_stack/asset/erc721/IERC721AssetStack";
 import { IMultiAssetRegistryStack } from "./test_stack/asset/IMultiAssetRegistryStack";
 import exp from "constants";
@@ -83,7 +83,7 @@ describe('Company', () => {
         company = new Company({
             address: await companyInfo.companyAddress.toString(),
             admin: companyOwner,
-            
+            logParser: stack.logParser
         })
         const erc20InitData: ERC20InitData = {
             originChainAddress: await testERC20Asset.getAddress(),
@@ -139,7 +139,8 @@ describe('Company', () => {
         experience = new Experience({
             address: expRes.experienceAddress.toString(),
             portalId: expRes.portalId,
-            provider: ethers.provider
+            provider: ethers.provider,
+            logParser: stack.logParser
         });
         
         avatar = await world.registerAvatar({
@@ -219,7 +220,7 @@ describe('Company', () => {
         const r = await company.mintERC20(asset, to, amount);
         expect(r.receipt.status).to.equal(1);
         expect(r.amount).to.be.greaterThan(0);
-        const erc20 = new ERC20Asset({address: asset, provider: ethers.provider})
+        const erc20 = new ERC20Asset({address: asset, provider: ethers.provider, logParser: stack.logParser})
         const balance = await erc20.balanceOf(to);
         expect(balance).to.equal(amount);
     })
@@ -231,7 +232,7 @@ describe('Company', () => {
         expect(r.receipt.status).to.equal(1);
         expect(r.tokenId).to.be.greaterThan(0);
         mintedERC721TokenId = r.tokenId;
-        const assetCon = new ERC721Asset({address: asset, provider: ethers.provider})
+        const assetCon = new ERC721Asset({address: asset, provider: ethers.provider, logParser: stack.logParser})
         const owner = await assetCon.ownerOf(r.tokenId);
         const balance = await assetCon.balanceOf(to);
         expect(owner).to.equal(to);
@@ -245,7 +246,7 @@ describe('Company', () => {
         const result = await company.revoke(asset, to, amount);
         const r = await result.wait();
         expect(r?.status).to.equal(1);
-        const assetCon = new ERC20Asset({address: asset, provider: ethers.provider})
+        const assetCon = new ERC20Asset({address: asset, provider: ethers.provider, logParser: stack.logParser})
         const balance = await assetCon.balanceOf(to);
         expect(balance).to.equal(0);
     })
@@ -256,7 +257,7 @@ describe('Company', () => {
         const result = await company.revoke(asset, to, tokenId);
         const r = await result.wait();
         expect(r?.status).to.equal(1);
-        const assetCon = new ERC721Asset({address: asset, provider: ethers.provider})
+        const assetCon = new ERC721Asset({address: asset, provider: ethers.provider, logParser: stack.logParser})
         const balance = await assetCon.balanceOf(to);
         expect(balance).to.equal(0);
     })
@@ -288,10 +289,13 @@ describe('Company', () => {
         const isExp = await experienceRegistry.isExperience(expAddress);
         const {portalId} = await experienceRegistry.getExperienceInfo(expAddress);
         expect(isExp).to.be.true;
+        const owns = await company.companyOwnsDestinationPortal(portalId);
+        expect(owns).to.be.true;
         const expInstance = new Experience({
             address: expAddress,
             portalId: portalId,
-            provider: ethers.provider
+            provider: ethers.provider,
+            logParser: stack.logParser
         });
         const vector = await expInstance.vectorAddress();
         expect(vector.p).to.be.greaterThan(0);
@@ -340,7 +344,7 @@ describe('Company', () => {
         expect(erc20Result).to.not.be.undefined;
         expect(erc20R?.status).to.equal(1);
 
-        const erc20 = new ERC20Asset({address: testERC20.assetAddress.toString(), provider: ethers.provider})
+        const erc20 = new ERC20Asset({address: testERC20.assetAddress.toString(), provider: ethers.provider, logParser: stack.logParser})
         const hookAddr = await erc20.hook();
         expect(hookAddr.toLowerCase()).to.equal(hook.toLowerCase());
 
@@ -350,7 +354,7 @@ describe('Company', () => {
         expect(erc721R?.status).to.equal(1);
 
 
-        const erc721 = new ERC721Asset({address: testERC721.assetAddress.toString(), provider: ethers.provider})
+        const erc721 = new ERC721Asset({address: testERC721.assetAddress.toString(), provider: ethers.provider, logParser: stack.logParser})
         const hookAddr2 = await erc721.hook();
         expect(hookAddr2.toLowerCase()).to.equal(hook.toLowerCase());
     })
@@ -359,7 +363,7 @@ describe('Company', () => {
         const r = await result.wait();
         expect(result).to.not.be.undefined;
         expect(r?.status).to.equal(1);
-        const erc20 = new ERC20Asset({address: testERC20.assetAddress.toString(), provider: ethers.provider})
+        const erc20 = new ERC20Asset({address: testERC20.assetAddress.toString(), provider: ethers.provider, logParser: stack.logParser})
         const hookAddr = await erc20.hook();
         const ZeroAddress = '0x' + '0'.repeat(40);
         expect(hookAddr).to.equal(ZeroAddress);
@@ -368,7 +372,7 @@ describe('Company', () => {
         const r2 = await result2.wait();
         expect(result2).to.not.be.undefined;
         expect(r2?.status).to.equal(1);
-        const erc721 = new ERC721Asset({address: testERC721.assetAddress.toString(), provider: ethers.provider})
+        const erc721 = new ERC721Asset({address: testERC721.assetAddress.toString(), provider: ethers.provider, logParser: stack.logParser})
         const hookAddr2 = await erc721.hook();
         expect(hookAddr2).to.equal(ZeroAddress);
     })
@@ -385,6 +389,24 @@ describe('Company', () => {
         const bal = await ethers.provider.getBalance(company.address);
         expect(bal).to.equal(0);
     })
+
+    it("Should remove experience from a company", async () => {
+        const result = await company.removeExperience(experience.address);
+        const r = await result.wait();
+        expect(r).to.not.be.undefined;
+        expect(r!.status).to.equal(1);
+        const expRegistry = await experienceStack.getExperienceRegistry();
+        const isExp = await expRegistry.isExperience(experience.address);
+        expect(isExp).to.be.false;
+        expect(await experience.isActive()).to.be.false;
+        const logParser = stack.logParser
+        const logs = await logParser.parseLogs(r!);
+        const expRemoved = logs.get("PortalRemoved");
+        expect(expRemoved).to.not.be.undefined;
+        expect(expRemoved!.length).to.equal(1);
+        const expLog = expRemoved![0];
+        expect(expLog.args[1]).to.equal(experience.address);
+    });
 
     // -------------------- upgrade tests --------------------
     /*it('should upgrade a company', async () => {

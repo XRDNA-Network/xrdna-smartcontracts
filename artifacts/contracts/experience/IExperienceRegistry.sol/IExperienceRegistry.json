@@ -31,7 +31,7 @@
           "type": "string"
         }
       ],
-      "name": "ExperienceRegistered",
+      "name": "RegistryExperienceRegistered",
       "type": "event"
     },
     {
@@ -50,7 +50,7 @@
           "type": "uint256"
         }
       ],
-      "name": "ExperienceRemoved",
+      "name": "RegistryExperienceRemoved",
       "type": "event"
     },
     {
@@ -241,6 +241,19 @@
       "type": "function"
     },
     {
+      "inputs": [],
+      "name": "portalRegistry",
+      "outputs": [
+        {
+          "internalType": "contract IPortalRegistry",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
       "inputs": [
         {
           "components": [
@@ -390,8 +403,27 @@
         }
       ],
       "name": "upgradeExperience",
-      "outputs": [],
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
       "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "worldRegistry",
+      "outputs": [
+        {
+          "internalType": "contract IWorldRegistryV2",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
       "type": "function"
     }
   ],

@@ -2,7 +2,6 @@ import { AddressLike, Provider, Signer, TransactionReceipt, TransactionResponse,
 import {abi as WorldABI} from "../../artifacts/contracts/world/v0.2/WorldV2.sol/WorldV2.json";
 import { RPCRetryHandler } from "../RPCRetryHandler";
 import { VectorAddress } from "../VectorAddress";
-import { LogParser } from "../LogParser";
 import { LogNames } from "../LogNames";
 import { Avatar } from "../avatar/Avatar";
 import { ISupportsSigners } from "../interfaces/ISupportsSigners";
@@ -10,6 +9,7 @@ import { ISupportsVector } from "../interfaces";
 import { IUpgradeResult, IUpgradeable } from "../interfaces/IUpgradeable";
 import { ISupportsHooks } from "../interfaces/ISupportsHooks";
 import { ISupportsFunds } from "../interfaces/ISupportsFunds";
+import { AllLogParser } from "../AllLogParser";
 
 /**
  * Typescript proxy for World instance
@@ -17,6 +17,7 @@ import { ISupportsFunds } from "../interfaces/ISupportsFunds";
 export interface IWorldOpts {
     address: string;
     admin: Signer | Provider;
+    logParser: AllLogParser;
 }
 
 export interface ICompanyRegistrationRequest {
@@ -31,7 +32,7 @@ export interface ICompanyRegistrationResult {
     receipt: TransactionReceipt;
 }
 
-export interface IAvatarRegistrationRequest {
+export interface IWorldAvatarRegistrationRequest {
     //whether to send tokens to the avatar owner account or contract address
     sendTokensToAvatarOwner: boolean;
 
@@ -61,16 +62,22 @@ export class World implements ISupportsSigners,
                               IUpgradeable,
                               ISupportsHooks,
                               ISupportsFunds {
+
+    static get abi() {
+        return WorldABI;
+    }
+    
     readonly address: string;
     readonly admin: Provider | Signer;
     private world: ethers.Contract;
-    private parser: LogParser;
+    readonly logParser: AllLogParser;
 
     constructor(opts: IWorldOpts) {
         this.address = opts.address;
         this.admin = opts.admin;
         this.world = new ethers.Contract(this.address, WorldABI, this.admin);
-        this.parser = new LogParser(WorldABI, this.address);
+        this.logParser = opts.logParser;
+        this.logParser.addAbi(this.address, WorldABI);
     }
 
     async addSigners(signers: string[]): Promise<TransactionResponse> {
@@ -133,19 +140,20 @@ export class World implements ISupportsSigners,
         if(!receipt.status) {
             throw new Error(`Transaction failed: ${receipt.transactionHash}`);
         }
-        const logs = this.parser.parseLogs(receipt);
-        const args = logs.get(LogNames.CompanyRegistered);
-        if (!args) {
+        const logs = this.logParser.parseLogs(receipt);
+        const regs = logs.get(LogNames.WorldRegisteredCompany);
+        if (!regs || regs.length === 0) {
             throw new Error("CompanyRegistered event not found in logs");
         }
+        const reg = regs[0];
         return {
-            companyAddress: args[0],
-            vectorAddress: args[1],
+            companyAddress: reg.args[0],
+            vectorAddress: reg.args[1],
             receipt
         };
     }
 
-    async registerAvatar(request: IAvatarRegistrationRequest, tokens?: bigint): Promise<IAvatarRegistrationResult> {
+    async registerAvatar(request: IWorldAvatarRegistrationRequest, tokens?: bigint): Promise<IAvatarRegistrationResult> {
         const enc = Avatar.encodeInitData({
             appearanceDetails: request.appearanceDetails,
             canReceiveTokensOutsideOfExperience: request.canReceiveTokensOutsideOfExperience
@@ -161,13 +169,14 @@ export class World implements ISupportsSigners,
         if(!receipt.status) {
             throw new Error(`Transaction failed: ${receipt.transactionHash}`);
         }
-        const logs = this.parser.parseLogs(receipt);
-        const args = logs.get(LogNames.AvatarRegistered);
-        if (!args) {
-            throw new Error("AvatarRegistered event not found in logs");
+        const logs = this.logParser.parseLogs(receipt);
+        const regs = logs.get(LogNames.WorldRegisteredAvatar);
+        if (!regs || regs.length === 0) {
+            throw new Error("WorldRegisteredAvatar event not found in logs");
         }
+        const reg = regs[0];
         return {
-            avatarAddress: args[0],
+            avatarAddress: reg.args[0],
             receipt
         };
     }
@@ -179,14 +188,14 @@ export class World implements ISupportsSigners,
         if(!receipt.status) {
             throw new Error(`Transaction failed: ${receipt.transactionHash}`);
         }
-        const logs = this.parser.parseLogs(receipt);
-        const args = logs.get(LogNames.WorldUpgraded);
-        if (!args) {
+        const logs = this.logParser.parseLogs(receipt);
+        const ups = logs.get(LogNames.WorldUpgraded);
+        if (!ups || ups.length === 0) {
             throw new Error("WorldUpgraded event not found in logs");
         }
         return {
             receipt,
-            newImplementationAddress: args[1]
+            newImplementationAddress: ups[0].args[1]
         };
     }
 
@@ -205,4 +214,10 @@ export class World implements ISupportsSigners,
     async getHook(): Promise<string> {
         return await RPCRetryHandler.withRetry(() => this.world.hook());
     }
+
+    async removeCompany(address: string): Promise<TransactionResponse> {
+        return await RPCRetryHandler.withRetry(() => this.world.removeCompany(address));
+    }
+
+    
 }

@@ -121,7 +121,7 @@ interface IExperience {
      * @dev Upgrades the experience to a new version. This must be initiated by the parent
      * company contract.
      */
-    function upgrade(bytes memory initData) external;
+    function upgrade(bytes memory initData) external returns (address nextVersion);
 
     /**
      * @dev Called by the experience factory to assign new implementation address

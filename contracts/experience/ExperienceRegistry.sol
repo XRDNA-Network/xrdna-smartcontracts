@@ -34,9 +34,9 @@ contract ExperienceRegistry is IExperienceRegistry, ReentrancyGuard, AccessContr
 
     bytes32 constant public ADMIN_ROLE = keccak256("ADMIN_ROLE");
 
-    IWorldRegistryV2 worldRegistry;
-    IPortalRegistry portalRegistry;
-    IExperienceFactory experienceFactory;
+    IWorldRegistryV2 public worldRegistry;
+    IPortalRegistry public portalRegistry;
+    IExperienceFactory public experienceFactory;
     
     // Mapping from vector address hash to experience details
     mapping(bytes32 => ExperienceInfo) _experiencesByVectorHash;
@@ -162,7 +162,7 @@ contract ExperienceRegistry is IExperienceRegistry, ReentrancyGuard, AccessContr
         _experiencesByVectorHash[hash] = info;
         experiencesByAddress[address(exp)] = info;
         experiencesByName[lowerName] = info;
-        emit ExperienceRegistered(company.world(), msg.sender, address(exp), exp.name());
+        emit RegistryExperienceRegistered(company.world(), msg.sender, address(exp), exp.name());
         return (address(exp), portalId);
     }
 
@@ -183,13 +183,13 @@ contract ExperienceRegistry is IExperienceRegistry, ReentrancyGuard, AccessContr
         delete experiencesByName[expContract.name().lower()];
         delete _experiencesByVectorHash[keccak256(abi.encode(vector.asLookupKey()))];
         expContract.deactive();
-        emit ExperienceRemoved(exp, portalId);
+        emit RegistryExperienceRemoved(exp, portalId);
     }
 
     /**
      * @inheritdoc IExperienceRegistry
      */
-    function upgradeExperience(bytes calldata initData) public onlyExperience nonReentrant {
-        experienceFactory.upgradeExperience(msg.sender, initData);
+    function upgradeExperience(bytes calldata initData) public onlyExperience nonReentrant returns (address) {
+        return experienceFactory.upgradeExperience(msg.sender, initData);
     }
 }

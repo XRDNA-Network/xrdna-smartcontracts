@@ -49,7 +49,8 @@ describe("RegistrarRegistry", () => {
             registrar = new Registrar({
                 registrarRegistryAddress: registry.address,
                 admin: registrarSigner,
-                registrarId: r.registrarId
+                registrarId: r.registrarId,
+                logParser: stack.logParser
             });
             
             const afterBal = await ethers.provider.getBalance(registrarSigner.address);

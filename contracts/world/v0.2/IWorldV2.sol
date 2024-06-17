@@ -33,13 +33,13 @@ struct CompanyRegistrationArgs {
  */
 interface IWorldV2 is IBaseAccess {
 
-    event CompanyRegistered(address indexed company, VectorAddress vector, string name);
-    event CompanyRemoved(address indexed company);
-    event AvatarRegistered(address indexed avatar, address indexed experience);
+    event WorldRegisteredCompany(address indexed company, VectorAddress vector, string name);
+    event WorldRemovedCompany(address indexed company);
+    event WorldRegisteredAvatar(address indexed avatar, address indexed experience);
     event WorldUpgraded(address indexed oldWorld, address indexed newWorld);
     event WorldHookSet(address indexed hook);
     event WorldHookRemoved();
-    event ExperienceAdded(address indexed experience, address indexed company, uint256 indexed portalId);
+    event WorldAddedExperience(address indexed experience, address indexed company, uint256 indexed portalId);
 
     /**
      * @dev Returns the owner of the world contract.

@@ -4,11 +4,13 @@ import { RPCRetryHandler } from "../RPCRetryHandler";
 import { VectorAddress } from "../VectorAddress";
 import { LogParser } from "../LogParser";
 import { LogNames } from "../LogNames";
+import { AllLogParser } from "../AllLogParser";
 
 
 export interface IAvatarOpts {
     address: string;
     admin: Provider | Signer;
+    logParser: AllLogParser;
 }
 
 export interface IAvatarJumpRequest {
@@ -35,16 +37,21 @@ export interface IAvatarInitData {
 }
 
 export class Avatar {
+    static get abi() {
+        return abi;
+    }
+    
     private con: Contract;
     readonly address: string;
     private admin: Provider | Signer;
-    readonly logParser: LogParser;
+    readonly logParser: AllLogParser;
 
     constructor(opts: IAvatarOpts) {
         this.address = opts.address;
         this.admin = opts.admin;
         this.con = new Contract(this.address, abi, this.admin);
-        this.logParser = new LogParser(abi, this.address);
+        this.logParser = opts.logParser;
+        this.logParser.addAbi(this.address, abi);
     }
 
     static encodeInitData(data: IAvatarInitData): string {
@@ -88,13 +95,13 @@ export class Avatar {
         }
         const logs = this.logParser.parseLogs(r);
         const jump = logs.get(LogNames.JumpSuccess);
-        if(!jump) {
+        if(!jump || jump.length === 0) {
             throw new Error("Jump failed");
         }
         return {
-            connectionDetails: jump[2],
-            fee: jump[1],
-            destination: jump[0],
+            connectionDetails: jump[0].args[2],
+            fee: jump[0].args[1],
+            destination: jump[0].args[0],
             receipt: r
         } as IAvatarJumpResult;
 

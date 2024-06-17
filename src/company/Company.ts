@@ -1,4 +1,4 @@
-import { AddressLike, Contract, Provider, Signer, TransactionReceipt, TransactionResponse, ethers } from "ethers";
+import { AddressLike, Contract, LogDescription, Provider, Signer, TransactionReceipt, TransactionResponse, ethers } from "ethers";
 import {abi} from "../../artifacts/contracts/company/Company.sol/Company.json";
 import { RPCRetryHandler } from "../RPCRetryHandler";
 import { VectorAddress } from "../VectorAddress";
@@ -8,10 +8,13 @@ import { Experience } from "../experience";
 import { Avatar } from "../avatar/Avatar";
 import { ERC20Asset, ERC721Asset } from "../asset";
 import { ISupportsFunds, ISupportsHooks, ISupportsSigners, ISupportsVector, IUpgradeResult, IUpgradeable } from "../interfaces";
+import { AllLogParser } from "../AllLogParser";
+import { ISupportsActive } from "../interfaces/ISupportsActive";
 
 export interface ICompanyOpts {
     address: string;
     admin: Provider | Signer;
+    logParser: AllLogParser;
 }
 
 export interface IAddExperienceArgs {
@@ -54,17 +57,23 @@ export class Company implements ISupportsFunds,
                                 ISupportsHooks,
                                 ISupportsSigners,
                                 ISupportsVector,
-                                IUpgradeable {
+                                IUpgradeable, 
+                                ISupportsActive {
+    static get abi() {
+        return abi;
+    }
+    
     private con: Contract;
     readonly address: string;
     private admin: Provider | Signer;
-    private parser: LogParser;
+    readonly logParser: AllLogParser;
 
     constructor(opts: ICompanyOpts) {
         this.address = opts.address;
         this.admin = opts.admin;
         this.con = new Contract(this.address, abi, this.admin);
-        this.parser = new LogParser(abi, this.address);
+        this.logParser = opts.logParser;
+        this.logParser.addAbi(this.address, abi);
     }
     
     ////////////////////////////////////////////////////////////////////////
@@ -126,16 +135,16 @@ export class Company implements ISupportsFunds,
         if(!r.status) {
             throw new Error("Transaction failed with status 0");
         }
+        const erc20 = new ERC20Asset({address: asset, provider: this.admin as Provider, logParser: this.logParser});
 
-        const erc20 = new ERC20Asset({address: asset, provider: this.admin as Provider});
         const logs = erc20.logParser.parseLogs(r);
-        const args = logs.get(LogNames.Transfer);
-        if(!args) {
-            throw new Error("Transfer log not found");
+        const xfers = logs.get(LogNames.ERC20Minted);
+        if(!xfers || xfers.length === 0) {
+            throw new Error("ERC20Minted log not found");
         }
         return {
             receipt: r,
-            amount: args[2]
+            amount: xfers[0].args[1]
         };
     }
 
@@ -147,16 +156,16 @@ export class Company implements ISupportsFunds,
             throw new Error("Transaction failed with status 0");
         }
 
-        const erc721 = new ERC721Asset({address: await asset.valueOf().toString(), provider: this.admin as Provider});
+        const erc721 = new ERC721Asset({address: asset.toString(), provider: this.admin as Provider, logParser: this.logParser});
 
         const logs = erc721.logParser.parseLogs(r);
-        const args = logs.get(LogNames.Transfer);
-        if(!args) {
-            throw new Error("Transfer log not found");
+        const xfers = logs.get(LogNames.ERC721Minted);
+        if(!xfers || xfers.length === 0) {
+            throw new Error("ERC20Minted log not found for company:"+this.address);
         }
         return {
             receipt: r,
-            tokenId: args[2]
+            tokenId: xfers[0].args[1]
         };
     }
 
@@ -175,14 +184,14 @@ export class Company implements ISupportsFunds,
         if(!r.status) {
             throw new Error("Transaction failed with status 0");
         }
-        const logs = this.parser.parseLogs(r);
-        const args = logs.get(LogNames.CompanyUpgraded);
-        if(!args) {
+        const logs = this.logParser.parseLogs(r);
+        const upgrades = logs.get(LogNames.CompanyUpgraded);
+        if(!upgrades || upgrades.length === 0) {
             throw new Error("CompanyUpgraded log not found");
         }
         return {
             receipt: r,
-            newImplementationAddress: args[1]
+            newImplementationAddress: upgrades[0].args[1]
         };
     }
 
@@ -252,16 +261,20 @@ export class Company implements ISupportsFunds,
         if(!r.status) {
             throw new Error("Transaction failed with status 0");
         }
-        const logs = this.parser.parseLogs(r);
-        const args = logs.get(LogNames.ExperienceAdded);
-        if(!args) {
-            throw new Error("ExperienceAdded log not found");
+        const logs = this.logParser.parseLogs(r);
+        const adds = logs.get(LogNames.CompanyAddedExperience);
+        if(!adds || adds.length === 0) {
+            throw new Error("ExperienceAdded log not found for company: " + this.address);
         }
         return {
             receipt: r,
-            experienceAddress: args[0],
-            portalId: args[1]
+            experienceAddress: adds[0].args[0],
+            portalId: adds[0].args[1]
         };
+    }
+
+    async removeExperience(address: string): Promise<TransactionResponse> {
+        return await RPCRetryHandler.withRetry(() => this.con.removeExperience(address));
     }
     
     async upgradeExperience(address: string, initData: string): Promise<TransactionResponse> {
@@ -276,8 +289,20 @@ export class Company implements ISupportsFunds,
         return await RPCRetryHandler.withRetry(() => this.con.removeExperienceCondition(exp));
     }
 
-    async changeExperiencePortalFee(exp: string, fee: string): Promise<TransactionResponse> {
+    async addExperienceHook(exp: string, hook: string): Promise<TransactionResponse> {  
+        return await RPCRetryHandler.withRetry(() => this.con.addExperienceHook(exp, hook));
+    }
+
+    async removeExperienceHook(exp: string): Promise<TransactionResponse> {
+        return await RPCRetryHandler.withRetry(() => this.con.removeExperienceHook(exp));
+    }
+
+    async changeExperiencePortalFee(exp: string, fee: bigint): Promise<TransactionResponse> {
         return await RPCRetryHandler.withRetry(() => this.con.changeExperiencePortalFee(exp, fee));
+    }
+
+    async companyOwnsDestinationPortal(portalId: bigint): Promise<boolean> {
+        return await RPCRetryHandler.withRetry(() => this.con.companyOwnsDestinationPortal(portalId));
     }
 
 
@@ -324,16 +349,23 @@ export class Company implements ISupportsFunds,
         }
         const parser = req.avatar.logParser;
         const logs = parser.parseLogs(r);
-        const args = logs.get(LogNames.JumpSuccess);
-        if(!args) {
+        const jumps = logs.get(LogNames.JumpSuccess);
+        if(!jumps || jumps.length === 0) {
             throw new Error("JumpSuccess log not found");
         }
+        const jump = jumps[0];
         return {
             receipt: r,
-            destination: args[0],
-            fee: args[1],
-            connectionDetails: args[2]
+            destination: jump.args[0],
+            fee: jump.args[1],
+            connectionDetails: jump.args[2]
         } as IDelegatedAvatarJumpResult;
 
+    }
+
+   
+
+    async isActive(): Promise<boolean> {
+        return await RPCRetryHandler.withRetry(() => this.con.isActive());
     }
 }

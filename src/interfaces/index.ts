@@ -1,3 +1,4 @@
+export * from './ISupportsActive';
 export * from './ISupportsFunds';
 export * from './ISupportsHooks';
 export * from './ISupportsSigners';

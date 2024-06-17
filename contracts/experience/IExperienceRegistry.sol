@@ -35,9 +35,19 @@ struct ExperienceInfo {
  */
 interface IExperienceRegistry {
     
-    event ExperienceRegistered(address indexed world, address indexed company, address indexed experience, string name);
-    event ExperienceRemoved(address indexed experience, uint256 indexed portalId);
+    event RegistryExperienceRegistered(address indexed world, address indexed company, address indexed experience, string name);
+    event RegistryExperienceRemoved(address indexed experience, uint256 indexed portalId);
     
+    /**
+        * @dev Returns the portal registry that is used to manage portals.
+     */
+    function portalRegistry() external view returns (IPortalRegistry);
+
+    /**
+     * @dev Returns the world registry that is used to validate world addresses.
+     */
+    function worldRegistry() external view returns (IWorldRegistryV2);
+
     /**
      * @dev Returns experience info for the given vector address.
      */
@@ -89,7 +99,7 @@ interface IExperienceRegistry {
      * @dev Upgrades an experience to a new version. This can only be called by the experience itself,
      * which is initiated from a company contract
      */
-    function upgradeExperience(bytes calldata initData) external;
+    function upgradeExperience(bytes calldata initData) external returns (address);
 
     /**
      * @dev Returns the current version of the experience contract implementation. This

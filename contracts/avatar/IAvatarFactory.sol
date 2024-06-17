@@ -10,7 +10,7 @@ interface IAvatarFactory is IBaseFactory {
      * @dev Upgrades an existing avatar to the latest version. Called by the registry
      * to carry out the upgrade.
      */
-    function upgradeAvatar(address avatar, bytes calldata initData) external;
+    function upgradeAvatar(address avatar, bytes calldata initData) external returns (address);
 
     /**
      * @dev Creates a new avatar contract and initializes it with the given data. Called by the registry

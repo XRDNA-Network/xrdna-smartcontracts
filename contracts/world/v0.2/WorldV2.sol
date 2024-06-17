@@ -156,7 +156,7 @@ contract WorldV2 is IWorldV2, BaseAccess, ReentrancyGuard {
             sendTokensToCompanyOwner: args.sendTokensToCompanyOwner
         }));
         
-        emit CompanyRegistered(company, vector, args.name);
+        emit WorldRegisteredCompany(company, vector, args.name);
     }
 
     /**
@@ -166,7 +166,7 @@ contract WorldV2 is IWorldV2, BaseAccess, ReentrancyGuard {
         ICompany c = ICompany(company);
         require(c.world() == address(this), "World0_2: company world does not match this world contract");
         companyRegistry.removeCompany(company);
-        emit CompanyRemoved(company);
+        emit WorldRemovedCompany(company);
     }
 
     /**
@@ -177,7 +177,7 @@ contract WorldV2 is IWorldV2, BaseAccess, ReentrancyGuard {
         require(ICompany(msg.sender).world() == address(this), "World0_2: company world does not match this world contract");
         require(req.vector.p_sub > 0, "World0_2: p_sub must not be zero for experience registration");
         (address exp, uint256 portalId) = experienceRegistry.registerExperience(req);
-        emit ExperienceAdded(exp, req.company, portalId);
+        emit WorldAddedExperience(exp, req.company, portalId);
         return (exp, portalId);
     }
     
@@ -208,7 +208,7 @@ contract WorldV2 is IWorldV2, BaseAccess, ReentrancyGuard {
             initData: args.initData,
             sendTokensToAvatarOwner: args.sendTokensToAvatarOwner
         }));
-        emit AvatarRegistered(avatar, args.defaultExperience);
+        emit WorldRegisteredAvatar(avatar, args.defaultExperience);
     }
 
     /**

@@ -98,7 +98,8 @@ describe("World Registration", () => {
         try {
             const fakeWorld = new World({
                 address: world.address,
-                admin: signers[0]
+                admin: signers[0],
+                logParser: stack.logParser
             });
             const r = await fakeWorld.addSigners([signers[9].address]);
             if(r) {
@@ -129,7 +130,8 @@ describe("World Registration", () => {
         try {
             const fakeWorld = new World({
                 address: world.address,
-                admin: signers[9]
+                admin: signers[9],
+                logParser: stack.logParser
             });
             const r = await fakeWorld.withdraw(BigInt("1000000000000000000"));
             if(r) {
@@ -193,7 +195,8 @@ describe("World Registration", () => {
         expect(res.vectorAddress).to.not.be.undefined;
         company = new Company({
             address: res.companyAddress.toString(),
-            admin: companyOwner
+            admin: companyOwner,
+            logParser: stack.logParser
         });
         const r = await company.addExperience({
             name: "My Experience",
@@ -207,9 +210,29 @@ describe("World Registration", () => {
         experience = new Experience({
             address: r.experienceAddress.toString(),
             portalId: r.portalId,
-            provider: ethers.provider
+            provider: ethers.provider,
+            logParser: stack.logParser
         });
 
+    });
+
+    it("Should register a company and send tokens to owner", async () => {
+        const b4 = await ethers.provider.getBalance(companyOwner.address);
+        const res = await world.registerCompany({
+            name: "Another Company",
+            owner: companyOwner.address,
+            sendTokensToCompanyOwner: true
+        }, ethers.parseEther("1.0"));
+        expect(res).to.not.be.undefined;
+        expect(res.receipt.status).to.equal(1);
+        expect(res.companyAddress).to.not.be.undefined;
+        const c = new Company({
+            address: res.companyAddress.toString(),
+            admin: companyOwner,
+            logParser: stack.logParser
+        });
+        const b = await ethers.provider.getBalance(companyOwner.address);
+        expect(b).to.be.greaterThan(b4);
     });
 
     it("Should not allow  a duplicate company", async () => {
@@ -262,6 +285,15 @@ describe("World Registration", () => {
                 throw e;
             }
         }
+    });
+
+    it("Should deactivate a company", async () => {
+        const t = await world.removeCompany(company.address);
+        const r = await t.wait();
+        expect(r).to.not.be.undefined;
+        expect(r!.status).to.equal(1);
+        const a = await company.isActive();
+        expect(a).to.equal(false);
     });
     
 });

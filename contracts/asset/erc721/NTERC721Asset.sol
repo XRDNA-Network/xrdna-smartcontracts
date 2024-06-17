@@ -109,8 +109,8 @@ contract NTERC721Asset is BaseAsset, IMintableAsset, IERC721, IERC721Metadata, I
      * @dev Upgrades the asset to a new version. Only the issuing company
      * can opt to upgrade to the latest asset ERC721 implementation.
      */
-    function upgrade(bytes calldata data) public onlyIssuer {
-        IAssetRegistry(assetRegistry).upgradeAsset(data);
+    function upgrade(bytes calldata data) public onlyIssuer returns (address) {
+        return IAssetRegistry(assetRegistry).upgradeAsset(data);
     }
 
     /**
@@ -240,8 +240,18 @@ contract NTERC721Asset is BaseAsset, IMintableAsset, IERC721, IERC721Metadata, I
      * @param to the address to mint to
      * data is not used in minting so it is ignored
      */
-    function canMint(address to, bytes calldata) public pure override returns (bool) {
+    function canMint(address to, bytes calldata) public view override returns (bool) {
         require(to != address(0), "NTERC721Asset: mint to the zero address");
+        if(avatarRegistry.isAvatar(to)) {
+            IAvatar avatar = IAvatar(to);
+            if(!avatar.canReceiveTokensOutsideOfExperience()) {
+                _verifyAvatarLocationMatchesIssuer(IAvatar(to));
+            }
+        }
+        ERC721V1Storage storage s = LibAssetV1Storage.loadERC721Storage();
+        if(address(s.attributes.hook) != address(0)) {
+            return s.attributes.hook.canMint(address(this), to, s.tokenIdCounter+1);
+        }
         return true;
     }
 
@@ -259,13 +269,7 @@ contract NTERC721Asset is BaseAsset, IMintableAsset, IERC721, IERC721Metadata, I
                 revert("NTERC721Asset: beforeMint hook rejected request");
             }
         }
-        if(avatarRegistry.isAvatar(to)) {
-            IAvatar avatar = IAvatar(to);
-            if(!avatar.canReceiveTokensOutsideOfExperience()) {
-                _verifyAvatarLocationMatchesIssuer(IAvatar(to));
-            }
-        }
-
+    
         ++s.tokenIdCounter;
         uint256 id = s.tokenIdCounter;
         _safeMint(to, id);

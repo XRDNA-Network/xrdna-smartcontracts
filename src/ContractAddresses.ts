@@ -53,7 +53,7 @@ export class DeploymentAddressConfig extends Map {
 
 }
 
-function mapJsonToDeploymentAddressConfig(json: any): DeploymentAddressConfig {
+export function mapJsonToDeploymentAddressConfig(json: any): DeploymentAddressConfig {
     return Object.values(ContractNames)
         .reduce((acc, jsonProp) => {
             acc.set(jsonProp, (json as any)[jsonProp]);

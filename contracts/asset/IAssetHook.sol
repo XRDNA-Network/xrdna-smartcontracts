@@ -9,6 +9,12 @@ pragma solidity ^0.8.24;
 interface IAssetHook {
 
     /**
+     * Called to check with hook that minting the agiven asset to the given address is ok
+     * @return false means the minting process should NOT proceed.
+     */
+    function canMint(address asset, address to, uint256 amtOrTokenId) external view returns (bool);
+
+    /**
      * Called before minting assets to the given 'to' address. 
      * @return false means the minting process should NOT proceed.
      */

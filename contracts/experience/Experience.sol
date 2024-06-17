@@ -104,6 +104,7 @@ contract Experience is ReentrancyGuard, IExperience {
         s.name = _name;
         s.entryFee = data.entryFee;
         s.connectionDetails = data.connectionDetails;
+        s.active = true;
     }
 
     /**
@@ -246,8 +247,8 @@ contract Experience is ReentrancyGuard, IExperience {
     /**
      * @inheritdoc IExperience
      */
-    function upgrade(bytes memory initData) external override onlyCompany onlyActive {
-        experienceRegistry.upgradeExperience(initData);
+    function upgrade(bytes memory initData) external override onlyCompany onlyActive returns (address) {
+        return experienceRegistry.upgradeExperience(initData);
     }
 
     /**

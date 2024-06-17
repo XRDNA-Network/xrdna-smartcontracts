@@ -42,7 +42,7 @@ describe('Avatar', () => {
         
         const tokenId = await company.mintERC721(testERC721.assetAddress, avatar.address);
 
-        const erc721 = new ERC721Asset({address: testERC721.assetAddress.toString(), provider: ethers.provider});
+        const erc721 = new ERC721Asset({address: testERC721.assetAddress.toString(), provider: ethers.provider, logParser: sf.logParser});
 
         const owner = await erc721.asset.ownerOf(tokenId.tokenId);
 

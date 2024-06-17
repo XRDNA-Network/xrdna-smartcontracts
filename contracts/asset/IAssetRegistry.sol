@@ -42,7 +42,7 @@ interface IAssetRegistry {
     /**
      * @dev Upgrades an existing asset to a new version. Only callable by the asset itself
      */
-    function upgradeAsset(bytes calldata initData) external;
+    function upgradeAsset(bytes calldata initData) external returns (address);
 
     /**
      * @dev Removes an asset from the registry. Only callable by the registry admin

@@ -2,10 +2,12 @@ import { AddressLike, Provider,ethers } from "ethers";
 import {abi} from "../../../artifacts/contracts/asset/erc20/NTERC20Asset.sol/NTERC20Asset.json";
 import { RPCRetryHandler } from "../../RPCRetryHandler";
 import { LogParser } from "../../LogParser";
+import { AllLogParser } from "../../AllLogParser";
 
 export interface IERC20Opts {
     address: string;
     provider: Provider;
+    logParser: AllLogParser;
 }
 
 export type ERC20InitData = {
@@ -20,22 +22,29 @@ export type ERC20InitData = {
 
 export class ERC20Asset {
 
-    readonly address: string;
-    readonly provider: Provider;
-    readonly asset: ethers.Contract;
-    readonly logParser: LogParser;
-
     static encodeInitData(data: ERC20InitData): string {
         const ifc = new ethers.Interface(abi);
         const s = ifc.encodeFunctionData("encodeInitData", [data]);
         return `0x${s.substring(10)}`;
     }
 
+    static get abi() {
+        return abi;
+    }
+
+    readonly address: string;
+    readonly provider: Provider;
+    readonly asset: ethers.Contract;
+    readonly logParser: AllLogParser;
+
+    
+
     constructor(opts: IERC20Opts) {
         this.address = opts.address;
         this.provider = opts.provider;
         this.asset = new ethers.Contract(this.address, abi, this.provider);
-        this.logParser = new LogParser(abi, this.address);
+        this.logParser = opts.logParser;
+        this.logParser.addAbi(this.address, abi);
     }
 
     async name(): Promise<string> {
