@@ -165,4 +165,9 @@ interface IAvatar is IERC721Receiver {
      * or funds from old version.
      */
     function upgradeComplete(address nextVersion) external;
+    
+    /**
+     * @dev called when IERC721 asset is revoked.
+     */
+     function onERC721Revoked(uint tokenId) external;
 }

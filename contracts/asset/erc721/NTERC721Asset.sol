@@ -296,6 +296,8 @@ contract NTERC721Asset is BaseAsset, IMintableAsset, IERC721, IERC721Metadata, I
             }
         }
         _burn(tokenId);
+        // Notify the avatar that the token has been revoked and remove it from wearables
+        IAvatar(holder).onERC721Revoked(tokenId);
     }
 
 

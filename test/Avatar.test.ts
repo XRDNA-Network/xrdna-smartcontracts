@@ -147,6 +147,59 @@ describe('Avatar', () => {
         expect(wearables2[0].tokenId).to.equal(remainingToken);
     });
 
+    it('should not allow adding non registered wearables', async () => {
+        const {avatar} = ecosystem;
+        const TestERC721Factory = await ethers.getContractFactory("TestERC721");
+        const deploy = await TestERC721Factory.deploy('Test2', 'T2');
+        const testERC721 = await deploy.waitForDeployment();
+        const txn = await testERC721.mint(avatar.address, 2);
+        const r = await txn.wait();
+        if (!r) {
+            throw new Error("Transaction failed");
+        }
+        expect(r.status).to.equal(1);
+        
+        
+        const t = avatar.addWearable({
+            asset: await testERC721.getAddress(),
+            tokenId: 2n
+        });
+        const message = await t.catch((reason) => {
+            return reason.message
+        });
+        expect(message).to.contain('wearable asset not registered');
+    });
+
+    it('revoked wearables should not be returned in getWearables', async () => {
+        const {avatar, testERC721, company} = ecosystem;
+
+        const tokenId = await company.mintERC721(testERC721.assetAddress, avatar.address);
+        
+        const wearable = await avatar.addWearable({
+            asset: testERC721.assetAddress,
+            tokenId: tokenId.tokenId
+        });
+        const r = await wearable.wait();
+        if (!r) {
+            throw new Error("Transaction failed");
+        }
+        expect(r.status).to.equal(1);
+        const wearables = await avatar.getWearables();
+        const isWearing = wearables.find(w => w.tokenId == tokenId.tokenId);
+        expect(isWearing).to.not.be.undefined;
+
+        const revoke = await company.revoke(testERC721.assetAddress.toString(), avatar.address, tokenId.tokenId);
+        const r2 = await revoke.wait();
+        if (!r2) {
+            throw new Error("Transaction failed");
+        }
+
+        expect(r2.status).to.equal(1);
+        const wearables2 = await avatar.getWearables();
+        const isWearing2 = wearables2.find(w => w.tokenId == tokenId.tokenId);
+        expect(isWearing2).to.be.undefined;
+    })
+
     
 
 })
