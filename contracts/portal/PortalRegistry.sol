@@ -147,7 +147,8 @@ contract PortalRegistry is IPortalRegistry, AccessControl {
         portals[portalId] = PortalInfo({
             destination: req.destination,
             condition: IPortalCondition(address(0)),
-            fee: req.fee
+            fee: req.fee,
+            active: true
         });
         emit PortalAdded(portalId, address(req.destination));
         return portalId;
@@ -161,9 +162,7 @@ contract PortalRegistry is IPortalRegistry, AccessControl {
         require(address(portal.destination) != address(0), "PortalRegistry: portal not found");
 
         address dest = address(portal.destination);
-        delete portalIdsByExperience[address(portal.destination)];
-        delete portalIdsByVectorHash[keccak256(abi.encode(portal.destination.vectorAddress().asLookupKey()))];
-        delete portals[portalId];
+        portals[portalId].active = false;
         emit PortalRemoved(portalId, dest);
     }
 
@@ -179,6 +178,7 @@ contract PortalRegistry is IPortalRegistry, AccessControl {
          * work out the details of payment and authorization.
          */
         PortalJumpMetadata memory meta = _getExperienceDetails(portalId);
+
         if(address(meta.destPortal.condition) != address(0)) {
             require(meta.destPortal.condition.canJump(address(meta.destinationExperience), meta.sourceWorld, meta.sourceCompany, address(meta.sourceExperience), msg.sender), "PortalRegistry: portal jump conditions not met");
         }
@@ -268,6 +268,7 @@ contract PortalRegistry is IPortalRegistry, AccessControl {
         
         //get the destination experience
         PortalInfo storage destPortal = portals[destPortalId];
+        require(destPortal.active, "PortalRegistry: destination portal is not active");
         require(address(destPortal.destination) != address(0), "PortalRegistry: invalid destination portal id");
         return PortalJumpMetadata({
             sourcePortal: sourcePortal,

@@ -6,7 +6,7 @@ import {AccessControl} from '@openzeppelin/contracts/access/AccessControl.sol';
 import {IExperienceFactory} from './IExperienceFactory.sol';
 import {IExperience} from './IExperience.sol';
 import {VectorAddress, LibVectorAddress} from '../VectorAddress.sol';
-import {IPortalRegistry, AddPortalRequest} from '../portal/IPortalRegistry.sol';
+import {IPortalRegistry, AddPortalRequest, PortalInfo} from '../portal/IPortalRegistry.sol';
 import {IWorldRegistryV2} from '../world/v0.2/IWorldRegistryV2.sol';
 import {IWorldV2} from '../world/v0.2/IWorldV2.sol';
 import {ICompany} from '../company/ICompany.sol';
@@ -109,7 +109,9 @@ contract ExperienceRegistry is IExperienceRegistry, ReentrancyGuard, AccessContr
      * @inheritdoc IExperienceRegistry
      */
     function isExperience(address exp) public view returns (bool) {
-        return experiencesByAddress[exp].company != address(0);
+        ExperienceInfo memory expInfo = experiencesByAddress[exp];
+        PortalInfo memory portalInfo = portalRegistry.getPortalInfoById(expInfo.portalId);
+        return expInfo.company != address(0) && portalInfo.active;
     }
 
     /**

@@ -10,6 +10,7 @@ struct PortalInfo {
     IExperience destination;
     IPortalCondition condition;
     uint256 fee;
+    bool active;
 }
 
 struct AddPortalRequest {
