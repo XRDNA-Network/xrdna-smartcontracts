@@ -268,6 +268,9 @@ contract Avatar is IAvatar, ReentrancyGuard {
     function jump(AvatarJumpRequest memory request) public override payable onlyOwner {
         
         PortalInfo memory portal = _verifyCompanySignature(request);
+
+        require(request.agreedFee == portal.fee, "Avatar: agreed fee does not match portal fee");
+        
         if(portal.fee > 0) {
             uint256 bal = address(this).balance + msg.value;
             require(bal >= portal.fee, "Avatar: insufficient funds for jump fee");
@@ -294,6 +297,8 @@ contract Avatar is IAvatar, ReentrancyGuard {
         //must be called from a valid company contract so company signer is authorized
         PortalInfo memory portal = portalRegistry.getPortalInfoById(request.portalId);
         
+        require(request.agreedFee == portal.fee, "Avatar: agreed fee does not match portal fee");
+
         if(portal.fee > 0) {
             uint256 bal = address(this).balance + msg.value;
             require(bal >= portal.fee, "Avatar: insufficient funds for jump fee");
@@ -399,7 +404,7 @@ contract Avatar is IAvatar, ReentrancyGuard {
         AvatarV1Storage storage s = LibAvatarV1Storage.load();
         require(assetRegistry.isRegisteredAsset(msg.sender), "Avatar: only registered assets can call this function");
         IERC721 asset = IERC721(msg.sender);
-        try asset.ownerOf(tokenId) returns (address owner) {
+        try asset.ownerOf(tokenId) returns (address tokenOwner) {
             revert('Avatar: ERC721 token still owned by avatar');
         } catch {
             s.list.remove(Wearable(address(asset), tokenId));       
@@ -483,4 +488,5 @@ contract Avatar is IAvatar, ReentrancyGuard {
        ps.implementation = nextVersion;
        emit AvatarUpgraded(old, nextVersion);
     }
+    
 }
