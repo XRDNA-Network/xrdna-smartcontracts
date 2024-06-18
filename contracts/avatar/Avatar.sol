@@ -219,6 +219,17 @@ contract Avatar is IAvatar, ReentrancyGuard {
      */
     function getWearables() public view override returns (Wearable[] memory) {
         AvatarV1Storage storage s = LibAvatarV1Storage.load();
+        // Wearable[] memory wearables = s.list.getAllItems();
+        // bool removedAssets;
+        // uint i;
+        // for (i; i < wearables.length; i++) {
+        //     IERC721 wAsset = IERC721(wearables[i].asset);
+        //     if (wAsset.ownerOf(wearables[i].tokenId) != address(this)) {
+        //         s.list.remove(wearables[i]);
+        //         removedAssets = true;
+        //     }
+        // }
+        // return removedAssets? s.list.getAllItems(): wearables;
         return s.list.getAllItems();
     }
 
@@ -382,6 +393,18 @@ contract Avatar is IAvatar, ReentrancyGuard {
             require(s.hook.onReceiveERC721(address(this), msg.sender, tokenId), "Avatar: hook rejected ERC721 token");
         }
         return this.onERC721Received.selector;
+    }
+
+    function onERC721Revoked(uint256 tokenId) public override nonReentrant {
+        AvatarV1Storage storage s = LibAvatarV1Storage.load();
+        require(assetRegistry.isRegisteredAsset(msg.sender), "Avatar: only registered assets can call this function");
+        IERC721 asset = IERC721(msg.sender);
+        try asset.ownerOf(tokenId) returns (address owner) {
+            revert('Avatar: ERC721 token still owned by avatar');
+        } catch {
+            s.list.remove(Wearable(address(asset), tokenId));       
+        }
+    
     }
 
     //verify the company signature for a jump request

@@ -8,4 +8,8 @@ contract TestERC721 is ERC721 {
     constructor(string memory name, string memory symbol) ERC721(name, symbol) {
         _mint(msg.sender, 1);
     }
+
+    function mint(address to, uint256 tokenId) public {
+        _mint(to, tokenId);
+    }
 }

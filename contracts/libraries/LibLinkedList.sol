@@ -4,6 +4,7 @@ pragma solidity ^0.8.24;
 import {IExperience} from '../experience/IExperience.sol';
 import {IAvatarHook} from '../avatar/IAvatarHook.sol';
 import {Wearable} from './LibAvatarV1Storage.sol';
+import {IMintableAsset} from '../asset/IMintableAsset.sol';
 
 /**
  * @dev node within a linked list structure where next/prev values are hashes of 
