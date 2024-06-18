@@ -3,6 +3,7 @@ import {abi} from "../../../artifacts/contracts/asset/erc20/NTERC20Asset.sol/NTE
 import { RPCRetryHandler } from "../../RPCRetryHandler";
 import { LogParser } from "../../LogParser";
 import { AllLogParser } from "../../AllLogParser";
+import { BaseAsset } from "../BaseAsset";
 
 export interface IERC20Opts {
     address: string;
@@ -20,7 +21,7 @@ export type ERC20InitData = {
     maxSupply: bigint;
 }
 
-export class ERC20Asset {
+export class ERC20Asset extends BaseAsset {
 
     static encodeInitData(data: ERC20InitData): string {
         const ifc = new ethers.Interface(abi);
@@ -40,6 +41,7 @@ export class ERC20Asset {
     
 
     constructor(opts: IERC20Opts) {
+        super();
         this.address = opts.address;
         this.provider = opts.provider;
         this.asset = new ethers.Contract(this.address, abi, this.provider);

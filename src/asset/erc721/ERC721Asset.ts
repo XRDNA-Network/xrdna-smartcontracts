@@ -3,6 +3,7 @@ import {abi} from "../../../artifacts/contracts/asset/erc721/NTERC721Asset.sol/N
 import { LogParser } from "../../LogParser";
 import { RPCRetryHandler } from "../../RPCRetryHandler";
 import { AllLogParser } from "../../AllLogParser";
+import { BaseAsset } from "../BaseAsset";
 
 export interface IERC721Opts {
     address: string;
@@ -24,7 +25,7 @@ export type ERC721MintResult = {
     receipt: ethers.TransactionReceipt;
 }
 
-export class ERC721Asset {
+export class ERC721Asset extends BaseAsset {
 
     static get abi() {
         return abi;
@@ -42,6 +43,7 @@ export class ERC721Asset {
     readonly logParser: AllLogParser;
     
     constructor(opts: IERC721Opts) {
+        super();
         this.address = opts.address;
         this.provider = opts.provider;
         this.asset = new ethers.Contract(this.address, abi, this.provider);
