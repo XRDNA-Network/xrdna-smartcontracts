@@ -200,6 +200,13 @@ describe('Avatar', () => {
         expect(isWearing2).to.be.undefined;
     })
 
+    // flashbacks to vyper compiler bug leading to nonfunctioning reentrancy guards
+    it('should not allow reentrancy', async () => {
+        const {testERC721, company, experience, world } = ecosystem;
+        
+        
+    })
+
     
 
 })
