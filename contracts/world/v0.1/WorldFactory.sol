@@ -7,7 +7,6 @@ import "@openzeppelin/contracts/access/AccessControl.sol";
 import {VectorAddress} from '../../VectorAddress.sol';
 import {IWorldFactory} from './IWorldFactory.sol';
 import {IBasicWorld} from './IWorld.sol';
-//import "hardhat/console.sol";
 
 contract WorldFactory is IWorldFactory, AccessControl {
     

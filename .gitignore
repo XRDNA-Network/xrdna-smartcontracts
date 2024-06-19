@@ -134,3 +134,6 @@ dist
 
 
 cache/*
+
+artifacts/contracts
+artifacts/contracts/*
