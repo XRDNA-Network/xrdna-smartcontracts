@@ -13,6 +13,8 @@
     "generate-verify-input": "cat $1 | jq -r '.input' > $1.input.json",
     "build": "yarn clean ; yarn compile && tsc",
     "compile": "hardhat compile --force",
+    "node:start:clean": "./scripts/wipeLocalDeploymentHistory.sh ; yarn build && yarn hardhat node",
+    "node:deploy:all": "./scripts/deployAll.sh localhost",
     "test": "hardhat test"
   },
   "devDependencies": {
