@@ -73,6 +73,11 @@ interface IAvatar is IERC721Receiver {
     function avatarOwnerSigningNonce() external view returns (uint256);
 
     /**
+     * @dev Checks whether the given wearable asset can be added to the avatar.
+     */
+    function canAddWearable(Wearable calldata wearable) external view returns (bool);
+
+    /**
      * @dev Add a wearable asset to the avatar. This must be called by the avatar owner. 
      * This will revert if there are already 200 wearables configured.
      */
