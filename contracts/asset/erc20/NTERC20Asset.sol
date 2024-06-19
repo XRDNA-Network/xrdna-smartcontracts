@@ -62,8 +62,8 @@ contract NTERC20Asset is BaseAsset, IMintableAsset, IERC20, IERC20Metadata, IERC
     //available by comparing this version to the asset factory's current supported version.
     uint256 public override version = 1;
 
-    event ERC20Minted(address indexed to, uint256 amt);
-    event ERC20Upgraded(address indexed oldAsset, address newAsset);
+    event ERC20Minted(address indexed to, uint256 indexed amt);
+    event ERC20Upgraded(address indexed oldAsset, address indexed newAsset);
 
     //called once at master-copy deployment
     constructor(BaseAssetArgs memory args) BaseAsset(args) {  }

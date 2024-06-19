@@ -69,8 +69,16 @@ export class Avatar implements ISupportsFunds, ISupportsHooks, IUpgradeable {
         return await RPCRetryHandler.withRetry(() => this.con.setCanReceiveTokensOutsideOfExperience(canReceive));
     }
 
+    async canReceiveTokensOutsideOfExperience(): Promise<boolean> {
+        return await RPCRetryHandler.withRetry(() => this.con.canReceiveTokensOutsideOfExperience());
+    }
+
     async setAppearanceDetails(bytes: string) : Promise<TransactionResponse> {
         return await RPCRetryHandler.withRetry(() => this.con.setAppearanceDetails(bytes));
+    }
+
+    async appearanceDetails(): Promise<string> {
+        return await RPCRetryHandler.withRetry(() => this.con.appearanceDetails());
     }
 
     ////////////////////////////////////////////////////////////////////////
@@ -209,8 +217,9 @@ export class Avatar implements ISupportsFunds, ISupportsHooks, IUpgradeable {
         if(!jump || jump.length === 0) {
             throw new Error("Jump failed");
         }
+
         return {
-            connectionDetails: jump[0].args[2],
+            connectionDetails: jump[0].args[2].toString(),
             fee: jump[0].args[1],
             destination: jump[0].args[0],
             receipt: r
