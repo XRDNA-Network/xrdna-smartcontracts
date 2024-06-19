@@ -25,9 +25,9 @@ interface IPortalRegistry {
     event PortalRemoved(uint256 indexed portalId, address indexed experience);
     event PortalConditionAdded(uint256 indexed portalId, address indexed condition);
     event PortalConditionRemoved(uint256 indexed portalId);
-    event PortalRegistryUpgraded(address newRegistry);
-    event PortalFeeChanged(uint256 portalId, uint256 newFee);
-    event PortalDestinationUpgraded(uint256 portalId, address oldExperience, address newExperience);
+    event PortalRegistryUpgraded(address indexed newRegistry);
+    event PortalFeeChanged(uint256 indexed portalId, uint256 indexed newFee);
+    event PortalDestinationUpgraded(uint256 indexed portalId, address indexed oldExperience, address indexed newExperience);
 
     /**
      * @dev Returns the portal info for the given portal ID

@@ -6,6 +6,7 @@ import { LogParser } from "../LogParser";
 import { LogNames } from "../LogNames";
 import { AllLogParser } from "../AllLogParser";
 import { ISupportsFunds, ISupportsHooks, IUpgradeResult, IUpgradeable } from "../interfaces";
+import { ERC721Asset } from "../asset";
 
 
 export interface IAvatarOpts {
@@ -69,8 +70,16 @@ export class Avatar implements ISupportsFunds, ISupportsHooks, IUpgradeable {
         return await RPCRetryHandler.withRetry(() => this.con.setCanReceiveTokensOutsideOfExperience(canReceive));
     }
 
+    async canReceiveTokensOutsideOfExperience(): Promise<boolean> {
+        return await RPCRetryHandler.withRetry(() => this.con.canReceiveTokensOutsideOfExperience());
+    }
+
     async setAppearanceDetails(bytes: string) : Promise<TransactionResponse> {
         return await RPCRetryHandler.withRetry(() => this.con.setAppearanceDetails(bytes));
+    }
+
+    async appearanceDetails(): Promise<string> {
+        return await RPCRetryHandler.withRetry(() => this.con.appearanceDetails());
     }
 
     ////////////////////////////////////////////////////////////////////////
@@ -86,6 +95,10 @@ export class Avatar implements ISupportsFunds, ISupportsHooks, IUpgradeable {
         });
     }
 
+    async canAddWearable(wearable: IWearable): Promise<boolean> {
+        return await RPCRetryHandler.withRetry(() => this.con.canAddWearable(wearable));
+    }
+
     async addWearable(wearable: IWearable): Promise<TransactionResponse> {
         return await RPCRetryHandler.withRetry(() => this.con.addWearable(wearable));
     }
@@ -98,6 +111,19 @@ export class Avatar implements ISupportsFunds, ISupportsHooks, IUpgradeable {
         return await RPCRetryHandler.withRetry(() => this.con.isWearing(wearable));
     }
 
+    async getWearableURI(wearable: IWearable): Promise<string> {
+        const p = this.admin.provider || this.admin as Provider;
+        if(!p) {
+            throw new Error("No provider available to get URI with");
+        }
+
+        const erc721 = new ERC721Asset({
+            address: wearable.asset.toString(),
+            provider: p,
+            logParser: this.logParser
+        });
+        return await erc721.tokenURI(wearable.tokenId);
+    }
 
 
     ////////////////////////////////////////////////////////////////////////
@@ -209,8 +235,9 @@ export class Avatar implements ISupportsFunds, ISupportsHooks, IUpgradeable {
         if(!jump || jump.length === 0) {
             throw new Error("Jump failed");
         }
+
         return {
-            connectionDetails: jump[0].args[2],
+            connectionDetails: jump[0].args[2].toString(),
             fee: jump[0].args[1],
             destination: jump[0].args[0],
             receipt: r

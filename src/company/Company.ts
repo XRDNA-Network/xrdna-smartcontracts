@@ -330,6 +330,14 @@ export class Company implements ISupportsFunds,
         return await RPCRetryHandler.withRetry(() => this.con.removeAssetHook(asset));
     }
 
+    async addAssetCondition(asset: AddressLike, condition: AddressLike): Promise<TransactionResponse> {
+        return await RPCRetryHandler.withRetry(() => this.con.addAssetCondition(asset, condition));
+    }
+
+    async removeAssetCondition(asset: AddressLike): Promise<TransactionResponse> {
+        return await RPCRetryHandler.withRetry(() => this.con.removeAssetCondition(asset));
+    }
+
 
     ////////////////////////////////////////////////////////////////////////
     // Avatar related functions

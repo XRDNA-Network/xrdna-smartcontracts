@@ -63,26 +63,26 @@ struct CompanyInitArgs {
  */
 interface ICompany is IBaseAccess {
 
-    event CompanyAddedExperience(address indexed experience, uint256 portalId);
-    event CompanyRemovedExperience(address indexed experience, uint256 portalId);
+    event CompanyAddedExperience(address indexed experience, uint256 indexed portalId);
+    event CompanyRemovedExperience(address indexed experience, uint256 indexed portalId);
     event CompanyAddedExperienceCondition(address indexed experience, address indexed condition);
     event CompanyRemovedExperienceCondition(address indexed experience);
-    event CompanyChangedExperiencePortalFee(address indexed experience, uint256 fee);
+    event CompanyChangedExperiencePortalFee(address indexed experience, uint256 indexed fee);
     event CompanyAddedAssetCondition(address indexed asset, address indexed condition);
     event CompanyRemovedAssetCondition(address indexed asset);
     event CompanyAddedAssetHook(address indexed asset, address indexed hook);
     event CompanyRemovedAssetHook(address indexed asset);
     event CompanyAddedExperienceHook(address indexed experience, address indexed hook);
     event CompanyRemovedExperienceHook(address indexed experience);
-    event CompanyJumpedForAvatar(address indexed avatar, uint256 portalId, uint256 fee);
+    event CompanyJumpedForAvatar(address indexed avatar, uint256 indexed portalId, uint256 indexed fee);
     event CompanyUpgradedExperience(address indexed experience, address indexed nextVersion);
     event CompanyUpgradedAsset(address indexed asset, address indexed nextVersion);
 
     event CompanyUpgraded(address indexed oldVersion, address indexed nextVersion);
     event CompanyHookSet(address indexed hook);
     event CompanyHookRemoved();
-    event AssetMinted(address indexed asset, address indexed to, uint256 amountOrTokenId);
-    event AssetRevoked(address indexed asset, address indexed holder, uint256 amountOrTokenId);
+    event AssetMinted(address indexed asset, address indexed to, uint256 indexed amountOrTokenId);
+    event AssetRevoked(address indexed asset, address indexed holder, uint256 indexed amountOrTokenId);
     event CompanyDeactivated();
     event CompanyReactivated();
 

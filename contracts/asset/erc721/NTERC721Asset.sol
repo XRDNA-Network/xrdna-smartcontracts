@@ -62,7 +62,7 @@ contract NTERC721Asset is BaseAsset, IMintableAsset, IERC721, IERC721Metadata, I
     //available by comparing this version to the asset factory's current supported version.
     uint256 public constant override version = 1;
 
-    event ERC721Minted(address indexed to, uint256 tokenId);
+    event ERC721Minted(address indexed to, uint256 indexed tokenId);
     event ERC721Upgraded(address indexed oldAsset, address indexed newAsset);
 
     //called once when master-copy deployed

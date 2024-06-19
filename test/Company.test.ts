@@ -3,7 +3,7 @@ import { ethers } from "hardhat";
 import { Company } from "../src/company/Company";
 import { IAvatarRegistrationResult, ICompanyRegistrationResult, World } from "../src/world";
 import { HardhatTestKeys } from "./HardhatTestKeys";
-import { StackFactory, StackType } from "./test_stack/StackFactory"
+import { IEcosystem, StackFactory, StackType } from "./test_stack/StackFactory"
 import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
 import { expect } from "chai";
 import { ERC20, TestERC20, TestERC721 } from "../typechain-types";
@@ -21,161 +21,51 @@ import { PortalStackImpl } from "./test_stack/portal/PortalStackImpl";
 
 describe('Company', () => {
     let stack: StackFactory;
-    let company: Company;
-    let world: World;
-    let signers: HardhatEthersSigner[];
-    let avatarOwner: HardhatEthersSigner;
-    let companyOwner: HardhatEthersSigner;
-    let worldOwner: HardhatEthersSigner;
-    let companyInfo: ICompanyRegistrationResult
-    let erc20Stack: IERC20AssetStack;
-    let erc20Registry: ERC20AssetRegistry;
-    let erc721Stack: IERC721AssetStack;
-    let erc721Registry: ERC721AssetRegistry;
-    let multiAssetRegistry: MultiAssetRegistry;
-    let testERC20Asset: TestERC20;
-    let testERC721Asset: TestERC721;
-    let testERC20: CreateERC20AssetResult;
-    let testERC721: CreateERC721AssetResult;
-    let avatarStack: AvatarStackImpl
-    let experience: Experience
-    let experienceStack: ExperienceStackImpl
-    let avatar: IAvatarRegistrationResult
+    
     let mintedERC721TokenId: bigint;
+    let ecosystem: IEcosystem
     before(async () => {
-        signers = await ethers.getSigners();
-        avatarOwner = signers[2];
-        companyOwner = signers[3];
-        worldOwner = signers[4];
+        const signers = await ethers.getSigners();
+       
 
         stack = new StackFactory({
-            worldOwner: worldOwner,
-            companyOwner: companyOwner,
-            avatarOwner: avatarOwner
+            worldOwner: signers[0],
+            companyOwner: signers[1],
+            avatarOwner: signers[2],
         });
-        const {world:w, worldRegistration: wr} = await stack.init();
-        world = w;
-        erc20Stack = stack.getStack(StackType.ERC20);
-        erc721Stack = stack.getStack(StackType.ERC721);
-        experienceStack = stack.getStack(StackType.EXPERIENCE);
-        // register an avatar
-        avatarStack = stack.getStack(StackType.AVATAR);
-        const avatarRegistry = await avatarStack.getAvatarRegistry();
-        const TestERC20Asset = await ethers.getContractFactory("TestERC20", companyOwner)
-        const TestERC721Asset = await ethers.getContractFactory("TestERC721", companyOwner)
-        const dep2 = await TestERC721Asset.deploy("Test ERC721 Asset", "TEST721")
-        const dep = await TestERC20Asset.deploy("Test ERC20 Asset", "TEST20")
-        testERC20Asset = await dep.waitForDeployment() as TestERC20;
-        testERC721Asset = await dep2.waitForDeployment() as TestERC721;
-        
-        
-        erc20Registry = await erc20Stack.getERC20Registry();
-        erc721Registry = await erc721Stack.getERC721Registry();
-        multiAssetRegistry = await stack.getStack<IMultiAssetRegistryStack>(StackType.MULTI_ASSET).getMultiAssetRegistry();
-        
-        companyInfo = await world.registerCompany({
-            sendTokensToCompanyOwner: false,
-            owner: companyOwner.address,
-            name: "Test Company"
-        })
-        
-        
-        company = new Company({
-            address: await companyInfo.companyAddress.toString(),
-            admin: companyOwner,
-            logParser: stack.logParser
-        })
-        const erc20InitData: ERC20InitData = {
-            originChainAddress: await testERC20Asset.getAddress(),
-            issuer: company.address,
-            originChainId: 1n,
-            decimals: 18,
-            maxSupply: ethers.MaxUint256,
-            name: "Test ERC20 Asset",
-            symbol: "TEST20"
-        }
-        const erc721InitData = {
-            issuer: company.address,
-            originChainAddress: await testERC721Asset.getAddress(),
-            name: "Test ERC721 Asset",
-            symbol: "TEST721",
-            baseURI: "https://test.com/",
-            originChainId: 1n
-        }
 
-        testERC20 = await erc20Registry.registerAsset(erc20InitData)
-        const isERC20Registered = await multiAssetRegistry.isRegisteredAsset(testERC20.assetAddress.toString())
-        if (!isERC20Registered) {
-            throw new Error("ERC20 asset not registered")
-        }
-
-        testERC721 = await erc721Registry.registerAsset(erc721InitData)
-        const isERC721Registered = await multiAssetRegistry.isRegisteredAsset(testERC721.assetAddress.toString())
-        if (!isERC721Registered) {
-            throw new Error("ERC721 asset not registered")
-        }
-
-        const erc20Contract = new ethers.Contract(testERC20.assetAddress.toString(), BaseAssetABI, companyOwner)
-        const erc20issuer = await erc20Contract.issuer()
-        const erc721Contract = new ethers.Contract(testERC721.assetAddress.toString(), BaseAssetABI, companyOwner)
-        const erc721issuer = await erc721Contract.issuer()
-        if (erc20issuer !== company.address) {
-            throw new Error("ERC20 issuer not correct")
-        }
-        if (erc721issuer !== company.address) {
-            throw new Error("ERC721 issuer not correct")
-        }
-        
-        const expRes = await company.addExperience({
-            name: "Test Experience",
-            connectionDetails: "0x",
-            entryFee: 0n,
-        });
-        expect(expRes).to.not.be.undefined;
-        expect(expRes.experienceAddress).to.not.be.undefined;
-        expect(expRes.portalId).to.not.be.undefined;
-        
-
-        experience = new Experience({
-            address: expRes.experienceAddress.toString(),
-            portalId: expRes.portalId,
-            provider: ethers.provider,
-            logParser: stack.logParser
-        });
-        
-        avatar = await world.registerAvatar({
-            sendTokensToAvatarOwner: false,
-            avatarOwner: avatarOwner.address,
-            defaultExperience: experience.address,
-            username: "Test Avatar",
-            appearanceDetails: "0x",
-            canReceiveTokensOutsideOfExperience: false,
-        });
+        const {world, worldRegistration} = await stack.init();
+        ecosystem = await stack.getEcosystem();
         
     });
 
     it('should register a company', async () => {
+        const {company} = ecosystem
         expect(company).to.not.be.undefined;
         const name = await company.name()
         expect(name).to.equal("Test Company".toLowerCase());
     });
 
     it('should retrieve the owner of a company', async () => {
+        const {company} = ecosystem
+        const companyOwner = stack.admins.companyRegistryAdmin
         const owner = await company.owner();
-        expect(owner).to.equal(companyOwner.address);
+        expect(owner).to.equal(await companyOwner.getAddress());
     })
     it('should retrieve the world of a company', async () => {
+        const {company, world} = ecosystem
         const w = await company.world();
         expect(w).to.equal(world.address);
     })
     it('should retrieve vector of a company', async () => {
+        const {company} = ecosystem
         const v = await company.getVectorAddress();
         expect(v).to.not.be.undefined;
-
         expect(v.p).to.be.greaterThan(0);
     })
 
     it('should add a signer to a company', async () => {
+        const {company} = ecosystem
         const signer = HardhatTestKeys[4];
         const result = await company.addSigners([signer.address]);
         const r = await result.wait();
@@ -183,12 +73,14 @@ describe('Company', () => {
         expect(r?.status).to.equal(1);
     })
     it('should check if a signer is in a company', async () => {
+        const {company} = ecosystem
         const signer = HardhatTestKeys[4];
         const isSigner = await company.isSigner(signer.address);
         expect(isSigner).to.be.true;
     })
 
     it('should remove a signer from a company', async () => {
+        const {company} = ecosystem
         const signer = HardhatTestKeys[4];
         const result = await company.removeSigners([signer.address]);
         const r = await result.wait();
@@ -199,23 +91,26 @@ describe('Company', () => {
     })
     // ------------------- Asset tests -------------------
     it('should be able to mint an ERC20 asset', async () => {
+        const {company, testERC20, testERC721, avatar} = ecosystem
         const asset = testERC20.assetAddress.toString();
-        const to = avatar.avatarAddress.toString();
+        const to = avatar.address.toString();
         const amount = ethers.parseEther("10.0").toString();
         const result = await company.canMint(asset, to, amount);
         expect(result).to.be.true;
     })
     it('should be able to mint an ERC721 asset', async () => {
+        const {company, testERC20, testERC721, avatar} = ecosystem
         const asset = testERC721.assetAddress.toString();
-        const to = avatar.avatarAddress.toString();
+        const to = avatar.address.toString();
         const tokenId = 1n;
         const result = await company.canMint(asset, to, tokenId);
         expect(result).to.be.true;
     })
     
     it('should mint an erc20 asset', async () => {
+        const {company, testERC20, avatar} = ecosystem
         const asset = testERC20.assetAddress.toString();
-        const to = avatar.avatarAddress.toString();
+        const to = avatar.address.toString();
         const amount = ethers.parseEther("10.0");
         const r = await company.mintERC20(asset, to, amount);
         expect(r.receipt.status).to.equal(1);
@@ -226,8 +121,9 @@ describe('Company', () => {
     })
     
     it('should mint an erc721 asset', async () => {
+        const {company, testERC721, avatar} = ecosystem
         const asset = testERC721.assetAddress.toString();
-        const to = avatar.avatarAddress.toString();
+        const to = avatar.address.toString();
         const r = await company.mintERC721(asset, to);
         expect(r.receipt.status).to.equal(1);
         expect(r.tokenId).to.be.greaterThan(0);
@@ -240,8 +136,9 @@ describe('Company', () => {
 
     })
     it('should revoke an erc20 asset', async () => {
+        const {company, testERC20, avatar} = ecosystem
         const asset = testERC20.assetAddress.toString();
-        const to = avatar.avatarAddress.toString();
+        const to = avatar.address.toString();
         const amount = ethers.parseEther("10.0");
         const result = await company.revoke(asset, to, amount);
         const r = await result.wait();
@@ -251,8 +148,9 @@ describe('Company', () => {
         expect(balance).to.equal(0);
     })
     it('should revoke an erc721 asset', async () => {
+        const {company, testERC721, avatar} = ecosystem
         const asset = testERC721.assetAddress.toString();
-        const to = avatar.avatarAddress.toString();
+        const to = avatar.address.toString();
         const tokenId = mintedERC721TokenId;
         const result = await company.revoke(asset, to, tokenId);
         const r = await result.wait();
@@ -263,6 +161,7 @@ describe('Company', () => {
     })
     // ------------------- Hook tests -------------------
     it('should add a hook tocompany', async () => {
+        const {company} = ecosystem
         //declare hook as a variable that equals a random 20 byte evm address
         const hook = ethers.hexlify(ethers.randomBytes(20));
         const result = await company.setHook(hook);
@@ -274,6 +173,7 @@ describe('Company', () => {
        
     })
     it('should remove a hook from company', async () => {
+        const {company} = ecosystem
         const result = await company.removeHook();
         const r = await result.wait();
         expect(result).to.not.be.undefined;
@@ -284,8 +184,9 @@ describe('Company', () => {
     })
     // ------------------- Experience tests -------------------
     it('should add experience to a company', async () => {
+        const {company, experience} = ecosystem
         const expAddress = experience.address;
-        const experienceRegistry = await experienceStack.getExperienceRegistry();
+        const experienceRegistry = await stack.getStack<ExperienceStackImpl>(StackType.EXPERIENCE).getExperienceRegistry();
         const isExp = await experienceRegistry.isExperience(expAddress);
         const {portalId} = await experienceRegistry.getExperienceInfo(expAddress);
         expect(isExp).to.be.true;
@@ -305,6 +206,7 @@ describe('Company', () => {
    
 
     it('should add experience condition to a company', async () => {
+        const {company, experience} = ecosystem
         
         const condition = ethers.hexlify(ethers.randomBytes(20));
         const result = await company.addExperienceCondition(experience.address, condition);
@@ -317,6 +219,7 @@ describe('Company', () => {
         expect(portalInfo.condition.toString().toLowerCase()).to.equal(condition.toLowerCase());
     })
     it('should remove experience condition from a company', async () => {
+        const {company, experience} = ecosystem
         const result = await company.removeExperienceCondition(experience.address);
         const r = await result.wait();
         expect(result).to.not.be.undefined;
@@ -328,6 +231,7 @@ describe('Company', () => {
         expect(portalInfo.condition).to.equal(ZeroAddress);
     })
     it('should change portal fee for a company', async () => {
+        const {company, experience} = ecosystem
         const fee = ethers.parseEther("0.1").toString();
         const result = await company.changeExperiencePortalFee(experience.address, fee);
         const r = await result.wait();
@@ -339,6 +243,7 @@ describe('Company', () => {
         expect(portalInfo.fee.toString()).to.equal(fee);
     })
     it('should not allow duplicate experience registration', async () => {
+        const {company, experience} = ecosystem
 
         try {
             await company.addExperience({
@@ -352,6 +257,7 @@ describe('Company', () => {
     })
     // --------------------Asset Hook tests --------------------
     it('should add an asset hook to a company', async () => {
+        const {company, testERC20, testERC721} = ecosystem
         const hook = ethers.hexlify(ethers.randomBytes(20));
         const erc20Result = await company.addAssetHook(testERC20.assetAddress.toString(), hook);
         const erc20R = await erc20Result.wait();
@@ -373,6 +279,7 @@ describe('Company', () => {
         expect(hookAddr2.toLowerCase()).to.equal(hook.toLowerCase());
     })
     it('should remove an asset hook from an asset', async () => {
+        const {company, testERC20, testERC721} = ecosystem
         const result = await company.removeAssetHook(testERC20.assetAddress.toString());
         const r = await result.wait();
         expect(result).to.not.be.undefined;
@@ -392,24 +299,27 @@ describe('Company', () => {
     })
     // -------------------- withdraw tests --------------------
     it('should withdraw tokens from a company', async () => {
+        const {company} = ecosystem
         await stack.admins.registrarAdmin.sendTransaction({
             to: company.address,
             value: ethers.parseEther("1.0")
         });
-        const result = await company.withdraw(ethers.parseEther("1.0").toString());
+        const balBefore = await company.tokenBalance();
+        const result = await company.withdraw(balBefore);
         const r = await result.wait();
         expect(result).to.not.be.undefined;
         expect(r?.status).to.equal(1);
-        const bal = await ethers.provider.getBalance(company.address);
-        expect(bal).to.equal(0);
+        const balAfter = await ethers.provider.getBalance(company.address);
+        expect(balAfter).to.equal(0);
     })
 
     it("Should remove experience from a company", async () => {
+        const {company, experience} = ecosystem
         const result = await company.removeExperience(experience.address);
         const r = await result.wait();
         expect(r).to.not.be.undefined;
         expect(r!.status).to.equal(1);
-        const expRegistry = await experienceStack.getExperienceRegistry();
+        const expRegistry = await stack.getStack<ExperienceStackImpl>(StackType.EXPERIENCE).getExperienceRegistry();
         const isExp = await expRegistry.isExperience(experience.address);
         expect(isExp).to.be.false;
         expect(await experience.isActive()).to.be.false;
@@ -421,6 +331,35 @@ describe('Company', () => {
         const expLog = expRemoved![0];
         expect(expLog.args[1]).to.equal(experience.address);
     });
+
+    it('should reregister an experience', async () => {
+        const {company, experience} = ecosystem
+        const expReg = await stack.getStack<ExperienceStackImpl>(StackType.EXPERIENCE).getExperienceRegistry();
+        let isExp = await expReg.isExperience(experience.address);
+        expect(isExp).to.be.false;
+        const expRes = await company.addExperience({
+            name: await experience.name(),
+            connectionDetails: await experience.connectionDetails(),
+            entryFee: await experience.entryFee(),
+        });
+        expect(expRes).to.not.be.undefined;
+        expect(expRes.experienceAddress).to.not.be.undefined;
+        expect(expRes.portalId).to.not.be.undefined;
+        
+        const expInstance = new Experience({
+            address: expRes.experienceAddress.toString(),
+            portalId: expRes.portalId,
+            provider: ethers.provider,
+            logParser: stack.logParser
+        });
+        const vector = await expInstance.vectorAddress();
+        expect(vector.p).to.be.greaterThan(0);
+        expect(vector.p_sub).to.be.greaterThan(0);
+        isExp = await expReg.isExperience(expInstance.address);
+        expect(isExp).to.be.true;
+    })
+
+    
 
     // -------------------- upgrade tests --------------------
     /*it('should upgrade a company', async () => {

@@ -268,6 +268,9 @@ contract Avatar is IAvatar, ReentrancyGuard {
     function jump(AvatarJumpRequest memory request) public override payable onlyOwner {
         
         PortalInfo memory portal = _verifyCompanySignature(request);
+
+        require(request.agreedFee == portal.fee, "Avatar: agreed fee does not match portal fee");
+        
         if(portal.fee > 0) {
             uint256 bal = address(this).balance + msg.value;
             require(bal >= portal.fee, "Avatar: insufficient funds for jump fee");
@@ -294,6 +297,8 @@ contract Avatar is IAvatar, ReentrancyGuard {
         //must be called from a valid company contract so company signer is authorized
         PortalInfo memory portal = portalRegistry.getPortalInfoById(request.portalId);
         
+        require(request.agreedFee == portal.fee, "Avatar: agreed fee does not match portal fee");
+
         if(portal.fee > 0) {
             uint256 bal = address(this).balance + msg.value;
             require(bal >= portal.fee, "Avatar: insufficient funds for jump fee");
@@ -307,14 +312,13 @@ contract Avatar is IAvatar, ReentrancyGuard {
     }
 
     /**
-     * @dev Add a wearable asset to the avatar. This must be called by the avatar owner. 
-     * This will revert if there are already 200 wearables configured.
+     * @dev Check if the avatar can wear the given asset 
      */
-    function addWearable(Wearable calldata wearable) public onlyOwner override  {
+    function canAddWearable(Wearable calldata wearable) public view override returns (bool) {
         require(wearable.asset != address(0), "Avatar: wearable asset cannot be zero address");
         require(wearable.tokenId > 0, "Avatar: wearable tokenId cannot be zero");
         require(assetRegistry.isRegisteredAsset(wearable.asset), "Avatar: wearable asset not registered");
-        IERC721 wAsset = IERC721(wearable.asset);
+        
         IExperience loc = location();
         require(IBasicAsset(wearable.asset).canUseAsset(AssetCheckArgs({
             asset: wearable.asset, 
@@ -322,9 +326,19 @@ contract Avatar is IAvatar, ReentrancyGuard {
             company: loc.company(), 
             experience: address(loc),
             avatar: address(this)
-        })), "Avatar: wearable asset cannot be used by avatar");
-
+        })),"Avatar: wearable asset cannot be used by avatar");
+        IERC721 wAsset = IERC721(wearable.asset);
         require(wAsset.ownerOf(wearable.tokenId) == address(this), "Avatar: wearable token not owned by avatar");
+        return true;
+    }
+
+    /**
+     * @dev Add a wearable asset to the avatar. This must be called by the avatar owner. 
+     * This will revert if there are already 200 wearables configured.
+     */
+    function addWearable(Wearable calldata wearable) public onlyOwner override  {
+        canAddWearable(wearable);
+
         AvatarV1Storage storage s = LibAvatarV1Storage.load();
         s.list.insert(wearable);
         emit WearableAdded(wearable.asset, wearable.tokenId);
@@ -399,7 +413,7 @@ contract Avatar is IAvatar, ReentrancyGuard {
         AvatarV1Storage storage s = LibAvatarV1Storage.load();
         require(assetRegistry.isRegisteredAsset(msg.sender), "Avatar: only registered assets can call this function");
         IERC721 asset = IERC721(msg.sender);
-        try asset.ownerOf(tokenId) returns (address owner) {
+        try asset.ownerOf(tokenId) returns (address) {
             revert('Avatar: ERC721 token still owned by avatar');
         } catch {
             s.list.remove(Wearable(address(asset), tokenId));       
@@ -483,4 +497,5 @@ contract Avatar is IAvatar, ReentrancyGuard {
        ps.implementation = nextVersion;
        emit AvatarUpgraded(old, nextVersion);
     }
+    
 }

@@ -28,7 +28,7 @@ interface IAvatar is IERC721Receiver {
     event WearableRemoved(address indexed wearable, uint256 tokenId);
     event LocationChanged(address indexed location);
     event AppearanceChanged(bytes indexed appearanceDetails);
-    event JumpSuccess(address indexed experience, uint256 indexed fee, bytes indexed connectionDetails);
+    event JumpSuccess(address indexed experience, uint256 indexed fee, bytes connectionDetails);
     event AvatarUpgraded(address indexed oldVersion, address indexed nextVersion);
     event HookSet(address indexed hook);
     event HookRemoved();
@@ -71,6 +71,11 @@ interface IAvatar is IERC721Receiver {
      * @dev Get the next signing nonce for an avatar owner signature.
      */
     function avatarOwnerSigningNonce() external view returns (uint256);
+
+    /**
+     * @dev Checks whether the given wearable asset can be added to the avatar.
+     */
+    function canAddWearable(Wearable calldata wearable) external view returns (bool);
 
     /**
      * @dev Add a wearable asset to the avatar. This must be called by the avatar owner. 

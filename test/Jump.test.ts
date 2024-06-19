@@ -254,6 +254,103 @@ describe('JumpTest', () => {
        
     });
 
+    it('should not allow jump with unpaid portal fee', async () => {
+        const {experience, experience2, portalForExperience, company2, company, avatar} = ecosystem;
+        const fee = await experience.entryFee();
+        const nonce = await avatar.getCompanySigningNonce(company.address);
+        const current = await avatar.location();
+        expect(current).to.be.not.null;
+        expect(current.toString().toLowerCase()).to.be.equal(experience2.address.toLowerCase());
+    
+        const b4Bal = await avatar.tokenBalance();
+        expect(b4Bal).to.be.not.null;
+        expect(b4Bal.toString()).to.be.not.equal("0");
+        expect(b4Bal).to.be.lessThan(ethers.parseEther('100'));
+        const sig = await company.signJumpRequest({
+            fee: portalForExperience.fee,
+            nonce,
+            portalId: experience.portalId
+        })
+        const changeFeeTxn = await company.changeExperiencePortalFee(experience.address, ethers.parseEther('100'));
+        const changeFeeR = await changeFeeTxn.wait();
+        if (!changeFeeR) {
+            throw new Error("Transaction failed with status 0");
+        }
+        expect(changeFeeR.status).to.be.equal(1);
+        try {
+            const res = await avatar.jump({
+                agreedFee: portalForExperience.fee,
+                destinationCompanySignature: sig,
+                portalId: experience.portalId
+            });
+        } catch (e) {
+            expect(e.message).to.contain('Avatar: agreed fee does not match portal fee')
+        }
+            
+        const loc = await avatar.location();
+        expect(loc).to.be.not.null;
+        expect(loc.toString().toLowerCase()).to.be.equal(experience2.address.toLowerCase());
+        const changeFeeBackTxn = await company.changeExperiencePortalFee(experience.address, fee);
+        const changeFeeBackR = await changeFeeBackTxn.wait();
+        if (!changeFeeBackR) {
+            throw new Error("Transaction failed with status 0");
+        }
+        expect(changeFeeBackR.status).to.be.equal(1);
+        
+    })
+
+    it('should not charge avatar more than agreed fee', async () => {
+        const {experience, experience2, portalForExperience2, company2, company, avatar} = ecosystem;
+        const startingFee = await experience.entryFee()
+        // change fee to zero, sign jump request, change fee to high number, try to jump
+        const changeFeeTxn = await company.changeExperiencePortalFee(experience.address, 0n);
+        const nonce = await avatar.getCompanySigningNonce(company.address);
+        const current = await avatar.location();
+        expect(current).to.be.not.null;
+        expect(current.toString().toLowerCase()).to.be.equal(experience2.address.toLowerCase());
+        const b4Bal = await avatar.tokenBalance();
+    
+        expect(b4Bal).to.be.not.null;
+        expect(b4Bal.toString()).to.be.not.equal("0");
+        const sig = await company.signJumpRequest({
+            fee: 0n,
+            nonce,
+            portalId: experience.portalId
+        })
+        // charge high fee after signing
+        const chargeHighFeeTxn = await company.changeExperiencePortalFee(experience.address, b4Bal);
+        const chargeHighFeeR = await chargeHighFeeTxn.wait();
+        if (!chargeHighFeeR) {
+            throw new Error("Transaction failed with status 0");
+        }
+        expect(chargeHighFeeR.status).to.be.equal(1);
+        try {
+            await avatar.jump({
+                agreedFee: 0n,
+                destinationCompanySignature: sig,
+                portalId: experience.portalId
+            })
+            
+        } catch (e) {
+            expect(e.message).to.contain('Avatar: agreed fee does not match portal fee')
+        }
+        
+        
+        const loc = await avatar.location();
+        expect(loc).to.be.not.null;
+        expect(loc.toString().toLowerCase()).to.be.equal(experience2.address.toLowerCase());
+        const afterBal = await avatar.tokenBalance();
+        expect(afterBal).to.equal(b4Bal);
+        const chargeBackTxn = await company.changeExperiencePortalFee(experience.address, startingFee);
+        const chargeBackR = await chargeBackTxn.wait();
+        if (!chargeBackR) {
+            throw new Error("Transaction failed with status 0");
+        }
+        expect(chargeBackR.status).to.be.equal(1);
+
+
+    })
+
     it('should allow jump to new experience if current experience is deactivated', async () => {
         const {experience, experience2, portalForExperience, company, company2, avatar} = ecosystem;
         const nonce = await avatar.getCompanySigningNonce(company.address);
@@ -361,6 +458,8 @@ describe('JumpTest', () => {
         expect(afterCompanyBal).to.be.not.null;
         expect(afterCompanyBal.toString()).to.be.equal( (companyBal).toString());
     })
+
+    
 
 
 })
