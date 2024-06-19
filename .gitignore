@@ -137,3 +137,5 @@ cache/*
 
 artifacts/contracts
 artifacts/contracts/*
+artifacts/build-info
+artifacts/build-info/*
