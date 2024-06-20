@@ -4,6 +4,7 @@ import ExperienceRegistryModule from "../experience/ExperienceRegistry.module";
 import PortalRegistryModule from "../portal/PortalRegistry.module";
 import AvatarProxyModule from './AvatarProxy.module';
 import NTAssetMasterModule from "../asset/MultiAssetRegistry.module";
+import LibrariesModule from "../libraries/Libraries.module";
 
 
 const VERSION = 1;
@@ -14,7 +15,7 @@ export default buildModule("Avatar", (m) => {
     const expReg = m.useModule(ExperienceRegistryModule);
     const portalReg = m.useModule(PortalRegistryModule);
     const assets = m.useModule(NTAssetMasterModule);
-    const libLinkedList = m.library("LibLinkedList");
+    const libs = m.useModule(LibrariesModule);
 
     const args = {
         avatarFactory: proxy.avatarFactory,
@@ -26,7 +27,8 @@ export default buildModule("Avatar", (m) => {
     }
     const master = m.contract("Avatar", [args], {
         libraries: {
-            LibLinkedList: libLinkedList
+            LibLinkedList: libs.LibLinkedList,
+            LibHooks: libs.LibHooks
         },
         after: [proxy.avatarFactory, 
                 proxy.avatarRegistry, 

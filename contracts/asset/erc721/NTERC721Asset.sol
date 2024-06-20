@@ -15,6 +15,8 @@ import {CommonAssetV1Storage, ERC721V1Storage, LibAssetV1Storage} from '../../li
 import {IAssetRegistry} from '../IAssetRegistry.sol';
 import {BaseProxyStorage, LibBaseProxy} from '../../libraries/LibBaseProxy.sol';
 import {IAvatar} from '../../avatar/IAvatar.sol';
+import {HookStorage, LibHooks} from '../../libraries/LibHooks.sol';
+import {IAssetHook} from '../IAssetHook.sol';
 
 
 /**
@@ -57,6 +59,7 @@ struct ERC721InitData {
  */
 contract NTERC721Asset is BaseAsset, IMintableAsset, IERC721, IERC721Metadata, IERC721Errors {
     using Strings for uint256;
+    using LibHooks for HookStorage;
 
     //current version of this asset. This can be used to detect whether upgrades are
     //available by comparing this version to the asset factory's current supported version.
@@ -249,8 +252,9 @@ contract NTERC721Asset is BaseAsset, IMintableAsset, IERC721, IERC721Metadata, I
             }
         }
         ERC721V1Storage storage s = LibAssetV1Storage.loadERC721Storage();
-        if(address(s.attributes.hook) != address(0)) {
-            return s.attributes.hook.canMint(address(this), to, s.tokenIdCounter+1);
+        address hook = LibHooks.load().getHook();
+        if(hook != address(0)) {
+            return IAssetHook(hook).canMint(address(this), to, s.tokenIdCounter+1);
         }
         return true;
     }
@@ -263,8 +267,9 @@ contract NTERC721Asset is BaseAsset, IMintableAsset, IERC721, IERC721Metadata, I
     function mint(address to, bytes calldata data) public nonReentrant onlyIssuer {
         require(canMint(to, data), "NTERC721Asset: cannot mint to address");
         ERC721V1Storage storage s = LibAssetV1Storage.loadERC721Storage();
-        if(address(s.attributes.hook) != address(0)) {
-            bool ok = s.attributes.hook.beforeMint(address(this), to, s.tokenIdCounter+1);
+        address hook = LibHooks.load().getHook();
+        if(hook != address(0)) {
+            bool ok = IAssetHook(hook).beforeMint(address(this), to, s.tokenIdCounter+1);
             if(!ok) {
                 revert("NTERC721Asset: beforeMint hook rejected request");
             }
@@ -288,9 +293,9 @@ contract NTERC721Asset is BaseAsset, IMintableAsset, IERC721, IERC721Metadata, I
         require(holder != address(0), "NTERC721Asset: token does not exist");
         require(_ownerOf(tokenId) == holder, "NTERC721Asset: not the owner of token id provided");
         
-        ERC721V1Storage storage s = LibAssetV1Storage.loadERC721Storage();
-        if(address(s.attributes.hook) != address(0)) {
-            bool ok = s.attributes.hook.beforeRevoke(address(this), holder, tokenId);
+        address hook = LibHooks.load().getHook();
+        if(hook != address(0)) {
+            bool ok = IAssetHook(hook).beforeRevoke(address(this), holder, tokenId);
             if(!ok) {
                 revert("NTERC721Asset: beforeMint hook rejected request");
             }

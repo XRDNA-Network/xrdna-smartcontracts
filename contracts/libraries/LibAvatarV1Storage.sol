@@ -2,7 +2,6 @@
 // Compatible with OpenZeppelin Contracts ^5.0.0
 pragma solidity ^0.8.24;
 import {IExperience} from '../experience/IExperience.sol';
-import {IAvatarHook} from '../avatar/IAvatarHook.sol';
 import {LinkedList} from './LibLinkedList.sol';
 
 /**
@@ -25,9 +24,6 @@ struct AvatarV1Storage {
 
     //current experience the avatar is in
     IExperience location;
-
-    //customization hook installed by owner
-    IAvatarHook hook;
 
     //avatar's globally unique username
     string username;

@@ -3,12 +3,13 @@
 pragma solidity ^0.8.24;
 import {IAssetHook} from './IAssetHook.sol';
 import {IAssetCondition, AssetCheckArgs} from './IAssetCondition.sol';
+import {ISupportsHook} from '../ISupportsHook.sol';
 
 /**
  * @title IBasicAsset
  * @dev This interface should be implemented by all assets to provide basic asset functionality
  */
-interface IBasicAsset {
+interface IBasicAsset is ISupportsHook {
 
     /**
      * @dev Initializes the asset with the given data. This function should only be called once 
@@ -42,23 +43,6 @@ interface IBasicAsset {
      * @dev Get the chain id of the original asset that this synthetic asset represents
      */
     function originChainId() external view returns(uint256);
-
-    /**
-     * @dev Get the address of any installed hook on the asset
-     */
-    function hook() external view returns (IAssetHook);
-    
-    /**
-     * @dev Add a custom hook to the asset to be called during asset operations. This 
-     * can only be called by the asset issuer (company contract)
-     */
-    function addHook(IAssetHook hook) external;
-
-    /**
-     * @dev Remove the custom hook from the asset. Can only be called by the asset
-     * issuer (company contract)
-     */
-    function removeHook() external;
 
     /**
      * @dev Add a condition to the asset to restrict its use or viewing. This can only be

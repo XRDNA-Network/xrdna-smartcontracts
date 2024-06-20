@@ -4,8 +4,6 @@ pragma solidity ^0.8.24;
 
 
 struct AvatarRegistrationRequest {
-    //whether to send tokens to the avatar owner account or contract address
-    bool sendTokensToAvatarOwner;
 
     //the addres sof the avatar owner
     address avatarOwner;
@@ -50,12 +48,10 @@ interface IAvatarRegistry {
     function setAvatarFactory(address factory) external;
 
     /**
-     * @dev Register a new avatar. This must be called by a registered World contract. Funds
-     * can be attached to the txn and will be distributed to avatar contract or owner depending
-     * on the registration request.
+     * @dev Register a new avatar. This must be called by a registered World contract.
      * @param registration The registration request
      */
-    function registerAvatar(AvatarRegistrationRequest memory registration) external payable returns (address);
+    function registerAvatar(AvatarRegistrationRequest memory registration) external returns (address);
 
     /**
      * @dev Upgrade an avatar contract to a new version. This must be called by the 

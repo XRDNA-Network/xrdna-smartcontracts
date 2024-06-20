@@ -1,6 +1,6 @@
 export const LogNames = {
     //registrar
-    RegistrarAdded: "RegistrarAdded",
+    RegistryAddedRegistrar: "RegistryAddedRegistrar",
 
     //world logs
     WorldRegistered: "WorldRegistered",

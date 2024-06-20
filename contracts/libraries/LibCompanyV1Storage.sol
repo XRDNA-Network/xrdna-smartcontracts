@@ -2,7 +2,6 @@
 // Compatible with OpenZeppelin Contracts ^5.0.0
 pragma solidity ^0.8.24;
 import {VectorAddress} from '../VectorAddress.sol';
-import {ICompanyHook} from '../company/ICompanyHook.sol';
 
 /**
  * Storage data for CompanyV1
@@ -18,9 +17,6 @@ struct CompanyV1Storage {
 
     //operating world
     address world;
-
-    //custom hook installed by owner
-    ICompanyHook hook;
 
     //company's spatial vector address assigned by operating world
     VectorAddress vectorAddress;

@@ -8,7 +8,7 @@ import { WorldStackImpl } from "./world/WorldStackImpl";
 import { CompanyStackImpl } from "./company/CompanyStackImpl";
 import { RegistrarStackImpl} from "./registrar/RegistrarStackImpl";
 import { ethers, network } from "hardhat";
-import { AllLogParser, CreateERC20AssetResult, CreateERC721AssetResult, DeploymentAddressConfig, ERC20InitData, IWorldRegistration, VectorAddress, World, mapJsonToDeploymentAddressConfig, signVectorAddress } from "../../src";
+import { AllLogParser, CreateERC20AssetResult, CreateERC721AssetResult, DeploymentAddressConfig, ERC20InitData, IWorldRegistration, Registrar, VectorAddress, World, mapJsonToDeploymentAddressConfig, signVectorAddress } from "../../src";
 import { Company } from "../../src/company/Company";
 import { Experience } from "../../src/experience";
 import { Avatar } from "../../src/avatar/Avatar";
@@ -18,8 +18,10 @@ import { IERC721AssetStack } from "./asset/erc721/IERC721AssetStack";
 import { MultiAssetRegistryStackImpl } from "./asset/MultiAssetRegistryStackImpl";
 import { XRDNASigners } from "../../src";
 import HardhatDeployment from '../../ignition/deployments/chain-55555/deployed_addresses.json';
+import { RegistrationTerms } from "../../src/RegistrationTerms";
 
 export interface IEcosystem {
+        registrar: Registrar,
         world: World,
         world2: World,
         company: Company,
@@ -61,6 +63,7 @@ export interface IStackAdmins {
 }
 
 export interface IEntityOwners {
+    registrarOwner: Signer;
     avatarOwner: Signer;
     companyOwner: Signer;
     worldOwner: Signer;
@@ -68,8 +71,8 @@ export interface IEntityOwners {
 
 export class StackFactory {
     stacksByType: Map<string, any> = new Map();
-    registrarId?: bigint;
     world?: World;
+    registrar?: Registrar;
     readonly admins: IStackAdmins;
     readonly logParser: AllLogParser;
     constructor(readonly owners: IEntityOwners) {
@@ -91,8 +94,9 @@ export class StackFactory {
     }
 
 
-    async init(): Promise<{world: World, worldRegistration: IWorldRegistration}> {
+    async init(): Promise<{world: World, registrar: Registrar, worldRegistration: IWorldRegistration}> {
 
+        
         const world = new WorldStackImpl(this);
         const worldDeployment = await world.deploy();
         this.stacksByType.set(StackType.WORLD, world);
@@ -141,15 +145,25 @@ export class StackFactory {
 
         const reg = registrarStack.getRegistrarRegistry();
         const res = await reg.registerRegistrar({
-            defaultSigner: await this.admins.registrarSigner.getAddress(),
+            worldRegistrationTerms: {
+                fee: 0n,
+                coveragePeriod: 0,
+                gracePeriod: 0
+            } as RegistrationTerms,
+            name: "Test Registrar",
+            sendTokensToRegistrarOwner: true,
+            owner: await this.owners.registrarOwner.getAddress(),
             tokens: BigInt("1000000000000000000")
         });
-        const regId = res?.registrarId;
-        if(!regId) {
+        const regAddr = res?.registrarAddress;
+        if(!regAddr) {
             throw new Error("Registrar not registered");
         }
-        this.registrarId = regId;
-
+        this.registrar = new Registrar({
+            registrarAddress: regAddr,
+            admin: this.owners.registrarOwner,
+            logParser: this.logParser
+        });
         const baseVector = {
             x: "1",
             y: "1",
@@ -159,19 +173,27 @@ export class StackFactory {
             p_sub: 0n
         } as VectorAddress;
 
-        const sig = await signVectorAddress(baseVector, this.registrarId, this.admins.worldRegistryAdmin);
+        const sig = await signVectorAddress(baseVector, regAddr, this.admins.worldRegistryAdmin);
         const worldRegistration = {
             baseVector,
             name: "Test World",
             initData: "0x",
             vectorAuthoritySignature: sig,
-            oldWorld: ZeroAddress,
             owner: await this.owners.worldOwner.getAddress(),
-            registrarId: this.registrarId,
-            sendTokensToWorldOwner: false
+            registrar: regAddr,
+            sendTokensToWorldOwner: false,
+            companyTerms: {
+                fee: 0n,
+                coveragePeriod: 0,
+                gracePeriod: 0
+            } as RegistrationTerms,
+            avatarTerms: {
+                fee: 0n,
+                coveragePeriod: 0,
+                gracePeriod: 0
+            } as RegistrationTerms
         };
-        const wRes = await wr.createWorld({
-            registrarSigner: this.admins.registrarSigner,
+        const wRes = await this.registrar.registerWorld({
             details: worldRegistration,
             tokens: ethers.parseEther("1.0")
         });
@@ -187,6 +209,7 @@ export class StackFactory {
             logParser: this.logParser
         });
         return {
+            registrar: this.registrar,
             world: this.world,
             worldRegistration
         }
@@ -214,20 +237,28 @@ export class StackFactory {
             p_sub: 0n
         } as VectorAddress;
 
-        const sig = await signVectorAddress(baseVector, this.registrarId!, this.admins.worldRegistryAdmin);
+        const sig = await signVectorAddress(baseVector, this.registrar!.address, this.admins.worldRegistryAdmin);
         const worldRegistration = {
             baseVector,
             name: "Test World 2",
             initData: "0x",
             vectorAuthoritySignature: sig,
-            oldWorld: ZeroAddress,
             owner: await this.owners.worldOwner.getAddress(),
-            registrarId: this.registrarId!,
-            sendTokensToWorldOwner: false
+            registrar: this.registrar!.address,
+            sendTokensToWorldOwner: false,
+            companyTerms: {
+                fee: 0n,
+                coveragePeriod: 0,
+                gracePeriod: 0
+            } as RegistrationTerms,
+            avatarTerms: {
+                fee: 0n,
+                coveragePeriod: 0,
+                gracePeriod: 0
+            } as RegistrationTerms
         };
         const wr = this.getStack<WorldStackImpl>(StackType.WORLD).getWorldRegistry();
-        const wRes = await wr.createWorld({
-            registrarSigner: this.admins.registrarSigner,
+        const wRes = await this.registrar!.registerWorld({
             details: worldRegistration,
             tokens: ethers.parseEther("1.0")
         });
@@ -330,6 +361,7 @@ export class StackFactory {
         const portalForExperience2 = await pr.getPortalInfoById(expRes2.portalId);
 
         return {
+            registrar: this.registrar!,
             world: this.world,
             world2,
             company,

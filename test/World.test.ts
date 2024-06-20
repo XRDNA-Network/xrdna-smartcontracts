@@ -1,6 +1,6 @@
 import { ethers } from "hardhat";
 import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
-import { IWorldRegistration, World } from "../src";
+import { IWorldRegistration, Registrar, World } from "../src";
 import { expect } from "chai";
 import { IWorldStack } from "./test_stack/world/IWorldStack";
 import { StackFactory, StackType } from "./test_stack/StackFactory";
@@ -16,12 +16,14 @@ describe("World Registration", () => {
     let worldStack: IWorldStack;
     let registrarAdmin: Signer;
     let registrarSigner: Signer;
+    let registrarOwner: Signer;
     let worldRegistryAdmin: HardhatEthersSigner;
     let worldOwner: HardhatEthersSigner;
     let worldRegistration: IWorldRegistration;
     let companyOwner: HardhatEthersSigner;
     let avatarOwner: HardhatEthersSigner;
     let stack: StackFactory;
+    let registrar: Registrar;
     let world: World;
     let company: Company;
     let experience: Experience;
@@ -33,17 +35,20 @@ describe("World Registration", () => {
         registrarAdmin = signers[0];
         registrarSigner = signers[0];
         worldRegistryAdmin = signers[0];
+        registrarOwner = signers[1];
         worldOwner = signers[1];
         companyOwner = signers[2];
         avatarOwner = signers[3];
         stack = new StackFactory({
+            registrarOwner,
             companyOwner,
             worldOwner,
             avatarOwner
         });
-        const {world: w, worldRegistration: wr} = await stack.init();
+        const {world: w, registrar: reg, worldRegistration: wr} = await stack.init();
         world = w;
         worldRegistration = wr;
+        registrar = reg;
         //reset the registrar admins since those are linked to XRDNA signer
         registrarAdmin = stack.admins.registrarAdmin;
         registrarSigner = stack.admins.registrarSigner;
@@ -62,9 +67,8 @@ describe("World Registration", () => {
         let fail = false;
         try {
         
-            const worldReg = worldStack.getWorldRegistry();
-            const r = await worldReg.createWorld({
-                registrarSigner,
+            const reg = registrar;
+            const r = await reg.registerWorld({
                 details: worldRegistration,
             });
             if(r) {
@@ -140,7 +144,7 @@ describe("World Registration", () => {
             }
         } catch(e:any) {
             expect(e.message).to.not.be.undefined;
-            if(e.message.indexOf("caller does not have admin role") < 0) {
+            if(e.message.indexOf("caller is not admin") < 0) {
                 throw e;
             }
         }
@@ -295,11 +299,6 @@ describe("World Registration", () => {
         expect(r!.status).to.equal(1);
         const a = await company.isActive();
         expect(a).to.equal(false);
-
-        const cReg = stack.getStack<ICompanyStack>(StackType.COMPANY);
-        const c = cReg.getCompanyRegistry();
-        const registered = await c.isRegisteredCompany(company.address);
-        expect(registered).to.equal(false);
     });
 
 
@@ -310,11 +309,27 @@ describe("World Registration", () => {
         expect(r!.status).to.equal(1);
         const a = await company.isActive();
         expect(a).to.equal(true);
+    });
 
-        const cReg = stack.getStack<ICompanyStack>(StackType.COMPANY);
-        const c = cReg.getCompanyRegistry();
-        const registered = await c.isRegisteredCompany(company.address);
-        expect(registered).to.equal(true);
+    it("Should remove a company", async () => {
+        //first deactivate
+        const t = await world.deactivateCompany(company.address);
+        const r = await t.wait();
+        expect(r).to.not.be.undefined;
+        expect(r!.status).to.equal(1);
+        const a = await company.isActive();
+        expect(a).to.equal(false);
+
+        //now remove
+        const t2 = await world.removeCompany(company.address);
+        const r2 = await t2.wait();
+        expect(r2).to.not.be.undefined;
+        expect(r2!.status).to.equal(1);
+
+        const cStack = stack.getStack<ICompanyStack>(StackType.COMPANY);
+        const reg = cStack.getCompanyRegistry();
+        const isReg = await reg.isRegisteredCompany(company.address);
+        expect(isReg).to.equal(false);
 
     });
     

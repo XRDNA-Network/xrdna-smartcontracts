@@ -20,8 +20,10 @@ import {IBasicAsset} from '../asset/IBasicAsset.sol';
 import {BaseAccess} from '../BaseAccess.sol';
 import {IMintableAsset} from '../asset/IMintableAsset.sol';
 import {IAssetCondition} from '../asset/IAssetCondition.sol';
-import {IWorldV2} from '../world/v0.2/IWorldV2.sol';
+import {IWorld} from '../world/IWorld.sol';
 import {IPortalRegistry, PortalInfo} from '../portal/IPortalRegistry.sol';
+import {HookStorage, LibHooks} from '../libraries/LibHooks.sol';
+import {BaseHookSupport} from '../BaseHookSupport.sol';
 
 //constructor arguments for master copy of Company
 struct CompanyConstructorArgs {
@@ -32,13 +34,13 @@ struct CompanyConstructorArgs {
     IAvatarRegistry avatarRegistry;
 }
 
-
 /**
  * @title Company
  * @dev A company that can add experiences to a world and mint assets.
  */
-contract Company is ICompany, BaseAccess, ReentrancyGuard {
+contract Company is ICompany, BaseAccess, BaseHookSupport, ReentrancyGuard {
     using LibProxyAccess for BaseProxyStorage;
+    using LibHooks for HookStorage;
 
     //Fields initialized for master copy of company
     address public immutable companyFactory;
@@ -112,6 +114,10 @@ contract Company is ICompany, BaseAccess, ReentrancyGuard {
         ps.grantRole(LibProxyAccess.SIGNER_ROLE, request.owner);
     }
 
+    function isAdmin(address account) internal override view returns (bool) {
+        CompanyV1Storage storage s = LibCompanyV1Storage.load();
+        return account == s.owner;
+    }
 
     /**
      * @inheritdoc ICompany
@@ -173,14 +179,6 @@ contract Company is ICompany, BaseAccess, ReentrancyGuard {
         CompanyV1Storage storage s = LibCompanyV1Storage.load();
         return s.vectorAddress;
     }
-
-    /**
-        * @inheritdoc ICompany
-     */
-    function hook() external view returns (ICompanyHook) {
-        CompanyV1Storage storage s = LibCompanyV1Storage.load();
-        return s.hook;
-    }
     
     /**
      * @inheritdoc ICompany
@@ -236,7 +234,11 @@ contract Company is ICompany, BaseAccess, ReentrancyGuard {
             vector: expVector,
             initData: args.initData
         });
-        (address exp, uint256 portalId) = IWorldV2(s.world).registerExperience(req);
+        (address exp, uint256 portalId) = IWorld(s.world).registerExperience(req);
+        ICompanyHook hook = _getHook();
+        if(address(hook) != address(0)) {
+            require(hook.beforeAddExperience(args), "Company: beforeAddExperience hook failed");
+        }
         emit CompanyAddedExperience(exp, portalId);
     }
 
@@ -245,7 +247,11 @@ contract Company is ICompany, BaseAccess, ReentrancyGuard {
      */
     function removeExperience(address experience) public onlyAdmin onlyActive nonReentrant {
         CompanyV1Storage storage s = LibCompanyV1Storage.load();
-        uint256 portalId = IWorldV2(s.world).deactivateExperience(experience);
+        uint256 portalId = IWorld(s.world).deactivateExperience(experience);
+        ICompanyHook hook = _getHook();
+        if(address(hook) != address(0)) {
+            require(hook.beforeRemoveExperience(experience), "Company: beforeRemoveExperience hook failed");
+        }
         emit CompanyRemovedExperience(experience, portalId);
     }
 
@@ -254,7 +260,11 @@ contract Company is ICompany, BaseAccess, ReentrancyGuard {
      */
     function mint(address asset, address to, bytes calldata data) public onlySigner onlyActive nonReentrant {
         require(canMint(asset, to, data), "Company: cannot mint asset");
-        
+        ICompanyHook hook = _getHook();
+        if(address(hook) != address(0)) {
+            require(hook.beforeMint(asset, to, data), "Company: beforeMint hook failed");
+        }
+
         IMintableAsset(asset).mint(to, data);
     }
 
@@ -265,6 +275,10 @@ contract Company is ICompany, BaseAccess, ReentrancyGuard {
         require(assetRegistry.isRegisteredAsset(asset), "Company: asset not registered");
         IMintableAsset mintable = IMintableAsset(asset);
         require(mintable.issuer() == address(this), "Company: not issuer of asset");
+        ICompanyHook hook = _getHook();
+        if(address(hook) != address(0)) {
+            require(hook.beforeRevoke(asset, holder, data), "Company: beforeRevoke hook failed");
+        }
         mintable.revoke(holder, data);
     }
 
@@ -272,6 +286,10 @@ contract Company is ICompany, BaseAccess, ReentrancyGuard {
         * @inheritdoc ICompany
      */
     function upgrade(bytes memory initData) public onlyAdmin onlyActive {
+        ICompanyHook hook = _getHook();
+        if(address(hook) != address(0)) {
+            require(hook.beforeUpgrade(initData), "Company: beforeUpgrade hook failed");
+        }
         companyRegistry.upgradeCompany(initData);
     }
 
@@ -297,24 +315,11 @@ contract Company is ICompany, BaseAccess, ReentrancyGuard {
     /**
         * @inheritdoc ICompany
      */
-    function setHook(ICompanyHook _hook) public onlyAdmin onlyActive {
-        require(address(_hook) != address(0), "Company: hook cannot be 0x0");
-        CompanyV1Storage storage s = LibCompanyV1Storage.load();
-        s.hook = _hook;
-    }
-    
-    /**
-        * @inheritdoc ICompany
-     */
-    function removeHook() public onlyAdmin onlyActive {
-        CompanyV1Storage storage s = LibCompanyV1Storage.load();
-        s.hook = ICompanyHook(address(0));
-    }
-
-    /**
-        * @inheritdoc ICompany
-     */
     function addExperienceCondition(address experience, address condition) public onlyAdmin onlyActive {
+        ICompanyHook hook = _getHook();
+        if(address(hook) != address(0)) {
+            require(hook.beforeAddPortalCondition(experience, condition), "Company: beforeAddPortalCondition hook failed");
+        }
         IExperience exp = IExperience(experience);
         exp.addPortalCondition(IPortalCondition(condition));
         emit CompanyAddedExperienceCondition(experience, condition);
@@ -324,6 +329,10 @@ contract Company is ICompany, BaseAccess, ReentrancyGuard {
         * @inheritdoc ICompany
      */
     function removeExperienceCondition(address experience) public onlyAdmin onlyActive {
+        ICompanyHook hook = _getHook();
+        if(address(hook) != address(0)) {
+            require(hook.beforeRemovePortalCondition(experience), "Company: beforeRemovePortalCondition hook failed");
+        }
         IExperience exp = IExperience(experience);
         exp.removePortalCondition();
         emit CompanyRemovedExperienceCondition(experience);
@@ -333,6 +342,10 @@ contract Company is ICompany, BaseAccess, ReentrancyGuard {
         * @inheritdoc ICompany
      */
     function changeExperiencePortalFee(address experience, uint256 fee) public onlyAdmin onlyActive {
+        ICompanyHook hook = _getHook();
+        if(address(hook) != address(0)) {
+            require(hook.beforeChangePortalFees(fee), "Company: beforeChangePortalFees hook failed");
+        }
         IExperience exp = IExperience(experience);
         exp.changePortalFee(fee);
         emit CompanyChangedExperiencePortalFee(experience, fee);
@@ -342,7 +355,11 @@ contract Company is ICompany, BaseAccess, ReentrancyGuard {
         * @inheritdoc ICompany
      */
     function addAssetHook(address asset, IAssetHook aHook) public onlyAdmin onlyActive {
-        IBasicAsset(asset).addHook(aHook);
+        ICompanyHook hook = _getHook();
+        if(address(hook) != address(0)) {
+            require(hook.beforeAddAssetHook(asset, address(aHook)), "Company: beforeAddAssetHook hook failed");
+        }
+        IBasicAsset(asset).setHook(address(aHook));
         emit CompanyAddedAssetHook(asset, address(aHook));
     }
 
@@ -350,6 +367,10 @@ contract Company is ICompany, BaseAccess, ReentrancyGuard {
         * @inheritdoc ICompany
      */
     function removeAssetHook(address asset) public onlyAdmin onlyActive {
+        ICompanyHook hook = _getHook();
+        if(address(hook) != address(0)) {
+            require(hook.beforeRemoveAssetHook(asset), "Company: beforeRemoveAssetHook hook failed");
+        }
         IBasicAsset(asset).removeHook();
         emit CompanyRemovedAssetHook(asset);
     }
@@ -358,6 +379,10 @@ contract Company is ICompany, BaseAccess, ReentrancyGuard {
         * @inheritdoc ICompany
      */
     function addAssetCondition(address asset, address condition) public onlyAdmin onlyActive {
+        ICompanyHook hook = _getHook();
+        if(address(hook) != address(0)) {
+            require(hook.beforeAddAssetCondition(asset, condition), "Company: beforeAddAssetCondition hook failed");
+        }
         IBasicAsset(asset).addCondition(IAssetCondition(condition));
         emit CompanyAddedAssetCondition(asset, condition);
     }
@@ -366,6 +391,10 @@ contract Company is ICompany, BaseAccess, ReentrancyGuard {
         * @inheritdoc ICompany
      */
     function removeAssetCondition(address asset) public onlyAdmin onlyActive {
+        ICompanyHook hook = _getHook();
+        if(address(hook) != address(0)) {
+            require(hook.beforeRemoveAssetCondition(asset), "Company: beforeRemoveAssetCondition hook failed");
+        }
         IBasicAsset(asset).removeCondition();
         emit CompanyRemovedAssetCondition(asset);
     }
@@ -374,6 +403,10 @@ contract Company is ICompany, BaseAccess, ReentrancyGuard {
         * @inheritdoc ICompany
      */
     function delegateJumpForAvatar(DelegatedAvatarJumpRequest calldata request) public override onlySigner onlyActive {
+        ICompanyHook hook = _getHook();
+        if(address(hook) != address(0)) {
+            require(hook.beforeDelegatedJump(request.avatar, request.portalId, request.agreedFee), "Company: beforeDelegatedJump hook failed");
+        }
         IAvatar avatar = IAvatar(request.avatar);
         //go through avatar contract to make the jump so that it pays the fee
         avatar.delegateJump(DelegatedJumpRequest({
@@ -388,6 +421,10 @@ contract Company is ICompany, BaseAccess, ReentrancyGuard {
         * @inheritdoc ICompany
      */
     function upgradeExperience(address experience, bytes memory initData) public onlyAdmin onlyActive {
+        ICompanyHook hook = _getHook();
+        if(address(hook) != address(0)) {
+            require(hook.beforeUpgradeExperience(experience, initData), "Company: beforeUpgradeExperience hook failed");
+        }
         IExperience exp = IExperience(experience);
         address next = exp.upgrade(initData);
         emit CompanyUpgradedExperience(experience, next);
@@ -397,6 +434,10 @@ contract Company is ICompany, BaseAccess, ReentrancyGuard {
         * @inheritdoc ICompany
      */
     function upgradeAsset(address asset, bytes memory initData) public onlyAdmin onlyActive {
+        ICompanyHook hook = _getHook();
+        if(address(hook) != address(0)) {
+            require(hook.beforeUpgradeAsset(asset, initData), "Company: beforeUpgradeAsset hook failed");
+        }
         address next = IMintableAsset(asset).upgrade(initData);
         emit CompanyUpgradedAsset(asset, next);
     }
@@ -406,5 +447,9 @@ contract Company is ICompany, BaseAccess, ReentrancyGuard {
         PortalInfo memory info = reg.getPortalInfoById(portalId);
         require(address(info.destination) != address(0), "Company: portal does not exist");
         return info.destination.company() == address(this);
+    }
+
+    function _getHook() internal view returns (ICompanyHook) {
+        return ICompanyHook(LibHooks.load().getHook());
     }
 }

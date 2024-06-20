@@ -12,6 +12,8 @@ import {IPortalCondition} from '../portal/IPortalCondition.sol';
 import {ExperienceV1Storage, LibExperienceV1Storage} from '../libraries/LibExperienceV1Storage.sol';    
 import {BaseProxyStorage, LibBaseProxy, LibProxyAccess} from '../libraries/LibBaseProxy.sol';
 import {ICompany} from '../company/ICompany.sol';
+import {HookStorage, LibHooks} from '../libraries/LibHooks.sol';
+import {BaseHookSupport} from '../BaseHookSupport.sol';
 
 /**
  * @dev Arguments for initializing an experience.
@@ -34,9 +36,10 @@ struct ExperienceConstructorArgs {
  * @title Experience
  * @dev implementation of the IExperience interface.
  */
-contract Experience is ReentrancyGuard, IExperience {
+contract Experience is BaseHookSupport, ReentrancyGuard, IExperience {
 
     using LibProxyAccess for BaseProxyStorage;
+    using LibHooks for HookStorage;
 
     //initialized when deploying master copy
     address public immutable experienceFactory;
@@ -105,6 +108,11 @@ contract Experience is ReentrancyGuard, IExperience {
         s.entryFee = data.entryFee;
         s.connectionDetails = data.connectionDetails;
         s.active = true;
+    }
+
+    function isAdmin(address a) internal override view returns (bool) {
+        ExperienceV1Storage storage s = LibExperienceV1Storage.load();
+        return a == address(s.company);
     }
 
     /**
@@ -182,26 +190,7 @@ contract Experience is ReentrancyGuard, IExperience {
         return s.connectionDetails;
     }
 
-    /**
-     * @inheritdoc IExperience
-     */
-    function addHook(IExperienceHook _hook) external override onlyCompany onlyActive {
-        require(address(_hook) != address(0), "Experience: hook zero address");
-        ExperienceV1Storage storage s = LibExperienceV1Storage.load();
-        s.hook = _hook;
-        emit HookAdded(address(_hook));
-    }
-
-    /**
-     * @inheritdoc IExperience
-     */
-    function removeHook() external override onlyCompany onlyActive {
-        ExperienceV1Storage storage s = LibExperienceV1Storage.load();
-        require(address(s.hook) != address(0), "Experience: hook not set");
-        address a = address(s.hook);
-        emit HookRemoved(a);
-        delete s.hook;
-    }
+    
 
     /**
      * @inheritdoc IExperience
@@ -232,8 +221,9 @@ contract Experience is ReentrancyGuard, IExperience {
      */
     function entering(JumpEntryRequest memory request) external payable override nonReentrant onlyPortalRegistry onlyActive returns (bytes memory)  {
         ExperienceV1Storage storage s = LibExperienceV1Storage.load();
-        if(address(s.hook) != address(0)) {
-            bool ok = s.hook.beforeJumpEntry(address(this), request.sourceWorld, request.sourceCompany, request.avatar);
+        address hook = LibHooks.load().getHook();
+        if(hook != address(0)) {
+            bool ok = IExperienceHook(hook).beforeJumpEntry(address(this), request.sourceWorld, request.sourceCompany, request.avatar);
             require(ok, "Experience: hook disallowed entry");
         }
         
@@ -248,6 +238,10 @@ contract Experience is ReentrancyGuard, IExperience {
      * @inheritdoc IExperience
      */
     function upgrade(bytes memory initData) external override onlyCompany onlyActive returns (address) {
+        address hook = LibHooks.load().getHook();
+        if(hook != address(0)) {
+            require(IExperienceHook(hook).beforeUpgrade(initData),"Experience: hook disallowed upgrade");
+        }
         return experienceRegistry.upgradeExperience(initData);
     }
 

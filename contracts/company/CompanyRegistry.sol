@@ -6,7 +6,7 @@ import {ICompanyRegistry, CompanyRegistrationRequest} from './ICompanyRegistry.s
 import {AccessControl} from '@openzeppelin/contracts/access/AccessControl.sol';
 import {ReentrancyGuard} from '@openzeppelin/contracts/utils/ReentrancyGuard.sol';
 import {ICompanyFactory} from './ICompanyFactory.sol';
-import {IWorldRegistryV2} from '../world/v0.2/IWorldRegistryV2.sol';
+import {IWorldRegistry} from '../world/IWorldRegistry.sol';
 import {LibStringCase} from '../LibStringCase.sol';
 import {CompanyInitArgs} from './ICompany.sol';
 import {VectorAddress, LibVectorAddress} from '../VectorAddress.sol';
@@ -36,7 +36,7 @@ contract CompanyRegistry is ICompanyRegistry, ReentrancyGuard, AccessControl {
     bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
 
     ICompanyFactory public companyFactory;
-    IWorldRegistryV2 public worldRegistry;
+    IWorldRegistry public worldRegistry;
 
     mapping(string => address) _companiesByName;
     mapping(address => bool) _companies;
@@ -69,7 +69,7 @@ contract CompanyRegistry is ICompanyRegistry, ReentrancyGuard, AccessControl {
         require(args.companyFactory != address(0), "CompanyRegistry: factory address cannot be 0");
         require(args.worldRegistry != address(0), "CompanyRegistry: world registry address cannot be 0");
         companyFactory = ICompanyFactory(args.companyFactory);
-        worldRegistry = IWorldRegistryV2(args.worldRegistry);
+        worldRegistry = IWorldRegistry(args.worldRegistry);
         for (uint256 i = 0; i < args.admins.length; i++) {
             require(args.admins[i] != address(0), "CompanyRegistry: admin address cannot be 0");
             _grantRole(ADMIN_ROLE, args.admins[i]);
@@ -105,13 +105,13 @@ contract CompanyRegistry is ICompanyRegistry, ReentrancyGuard, AccessControl {
      */
     function setWorldRegistry(address registry) public onlyAdmin {
         require(registry != address(0), "CompanyRegistry: world registry address cannot be 0");
-        worldRegistry = IWorldRegistryV2(registry);
+        worldRegistry = IWorldRegistry(registry);
     }
 
     /**
      * @inheritdoc ICompanyRegistry
      */
-    function registerCompany(CompanyRegistrationRequest memory request) external payable onlyWorld nonReentrant returns (address) {
+    function registerCompany(CompanyRegistrationRequest memory request) external onlyWorld nonReentrant returns (address) {
         string memory nm = request.name.lower();
         /**
         * WARN: there is an issue with unicode or whitespace characters present in names. 
@@ -135,14 +135,7 @@ contract CompanyRegistry is ICompanyRegistry, ReentrancyGuard, AccessControl {
         _companiesByName[nm] = company;
         _companies[company] = true;
         _companiesByVector[keccak256(bytes(request.vector.asLookupKey()))] = company;
-        if(msg.value > 0) {
-            //transfer funds according to request
-            if(request.sendTokensToCompanyOwner) {
-                payable(request.owner).transfer(msg.value);
-            } else {
-                payable(company).transfer(msg.value);
-            }
-        }
+        
         emit CompanyRegistered(company, request.vector);
         return company;
     }
@@ -154,13 +147,8 @@ contract CompanyRegistry is ICompanyRegistry, ReentrancyGuard, AccessControl {
         ICompany c = ICompany(company);
         require(c.world() == msg.sender, "CompanyRegistry: caller is not the parent world for company");
         require(_companies[company], "CompanyRegistry: company not registered");
-        VectorAddress memory vector = c.vectorAddress();
-
         ICompany(company).deactivate();
-        delete _companies[company];
-        delete _companiesByName[ICompany(company).name().lower()];
-        delete _companiesByVector[keccak256(bytes(vector.asLookupKey()))];
-        emit CompanyDeactivated(company);
+        emit RegistryDeactivatedCompany(company);
     }
 
     /**
@@ -169,15 +157,28 @@ contract CompanyRegistry is ICompanyRegistry, ReentrancyGuard, AccessControl {
     function reactivateCompany(address company) external onlyWorld nonReentrant {
         ICompany c = ICompany(company);
         require(c.world() == msg.sender, "CompanyRegistry: caller is not the parent world for company");
-        require(!_companies[company], "CompanyRegistry: company already active");
+        require(!c.isActive(), "CompanyRegistry: company already active");
+        require(_companies[company], "CompanyRegistry: company not registered");
+        ICompany(company).reactivate();
+        emit RegistryReactivatedCompany(company);
+    }
+
+    /**
+     * @inheritdoc ICompanyRegistry
+     */
+     function removeCompany(address company) external onlyWorld nonReentrant {
+        ICompany c = ICompany(company);
+        require(c.world() == msg.sender, "CompanyRegistry: caller is not the parent world for company");
+        require(!c.isActive(), "CompanyRegistry: company is active");
+        require(_companies[company], "CompanyRegistry: company not registered");
         VectorAddress memory vector = c.vectorAddress();
 
-        _companies[company] = true;
-        _companiesByName[ICompany(company).name().lower()] = company;
-        _companiesByVector[keccak256(bytes(vector.asLookupKey()))] = company;
-        ICompany(company).reactivate();
-        emit CompanyReactivated(company);
-    }
+        ICompany(company).deactivate();
+        delete _companies[company];
+        delete _companiesByName[ICompany(company).name().lower()];
+        delete _companiesByVector[keccak256(bytes(vector.asLookupKey()))];
+        emit RegistryRemovedCompany(company);
+     }
 
     /**
      * @inheritdoc ICompanyRegistry

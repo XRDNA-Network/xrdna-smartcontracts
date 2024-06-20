@@ -57,12 +57,12 @@ library LibVectorAddress {
      * @dev Returns the address of the signer of the vector address. The signer is the 
      * registrar that assigned the vector address to the world.
      */
-    function getSigner(VectorAddress memory self, uint256 registrarId, bytes memory signature) internal pure returns (address) {
+    function getSigner(VectorAddress memory self, address registrar, bytes memory signature) internal pure returns (address) {
         string memory asKey = asLookupKey(self);
 
-        //it's important to include the registrar id in the signature. Otherwise, 
+        //it's important to include the registrar in the signature. Otherwise, 
         //a malicious actor could attempt to use a vector address not assigned to them
-        bytes memory merged = abi.encode(asKey, registrarId);
+        bytes memory merged = abi.encode(asKey, registrar);
 
         
         //NOTE: have to convert the bytes32 to bytes in order for message hash 

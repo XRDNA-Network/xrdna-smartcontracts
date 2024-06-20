@@ -4,9 +4,9 @@ import AvatarModule from "../avatar/Avatar.module";
 import MultiAssetModule from "../asset/MultiAssetRegistry.module";
 import PortalRegistryModule from "../portal/PortalRegistry.module";
 import { NamedArtifactContractDeploymentFuture } from "@nomicfoundation/ignition-core";
-import RegistrarRegistryModule from "../RegistrarRegistry.module";
+import RegistrarModule from "../registrar/Registrar.module";
 import WorldProxyModule from './WorldProxy.module';
-import { experience } from "../../../typechain-types/contracts";
+import LibModule from '../libraries/Libraries.module';
 
 export interface IWorldDeploymentResult {
     erc20AssetRegistry: NamedArtifactContractDeploymentFuture<"ERC20AssetRegistry">;
@@ -26,13 +26,15 @@ export interface IWorldDeploymentResult {
     experienceFactory: NamedArtifactContractDeploymentFuture<"ExperienceFactory">;
     portalRegistry: NamedArtifactContractDeploymentFuture<"PortalRegistry">;
     registrarRegistry: NamedArtifactContractDeploymentFuture<"RegistrarRegistry">;
-    worldMasterCopy: NamedArtifactContractDeploymentFuture<"WorldV2">;
-    worldRegistry: NamedArtifactContractDeploymentFuture<"WorldRegistryV2">;
-    worldFactory: NamedArtifactContractDeploymentFuture<"WorldFactoryV2">;
+    registrarFactory: NamedArtifactContractDeploymentFuture<"RegistrarFactory">;
+    registrarMasterCopy: NamedArtifactContractDeploymentFuture<"Registrar">;
+    worldMasterCopy: NamedArtifactContractDeploymentFuture<"World">;
+    worldRegistry: NamedArtifactContractDeploymentFuture<"WorldRegistry">;
+    worldFactory: NamedArtifactContractDeploymentFuture<"WorldFactory">;
 }
 
-const VERSION = 2;
-export default buildModule("WorldV2", (m) => {
+const VERSION = 1;
+export default buildModule("World", (m) => {
     
     const proxy = m.useModule(WorldProxyModule);
     
@@ -40,7 +42,9 @@ export default buildModule("WorldV2", (m) => {
     const avatar = m.useModule(AvatarModule);
     const assets = m.useModule(MultiAssetModule);
     const portal = m.useModule(PortalRegistryModule);
-    const registrar = m.useModule(RegistrarRegistryModule);
+    const registrar = m.useModule(RegistrarModule);
+
+    const libs = m.useModule(LibModule);
     
     const args = {
         worldFactory: proxy.worldFactory,
@@ -48,10 +52,17 @@ export default buildModule("WorldV2", (m) => {
         companyRegistry: comp.companyRegistry,
         avatarRegistry: avatar.avatarRegistry,
         experienceRegistry: comp.experienceRegistry,
+        registrarRegistry: registrar.registrarRegistry,
     }
     
-    const master = m.contract("WorldV2", [args], {
+    const master = m.contract("World", [args], {
+        libraries: {
+            LibHooks: libs.LibHooks,
+            LibRegistration: libs.LibRegistration,
+            LibWorld: libs.LibWorld
+        },
         after: [
+            registrar.registrarRegistry,
             proxy.worldFactory, 
             proxy.worldRegistry, 
             avatar.avatarRegistry, 
@@ -77,7 +88,9 @@ export default buildModule("WorldV2", (m) => {
         experienceRegistry: comp.experienceRegistry,
         experienceFactory: comp.experienceFactory,
         portalRegistry: portal.portalRegistry,
-        registrarRegistry: registrar.registry,
+        registrarRegistry: registrar.registrarRegistry,
+        registrarFactory: registrar.registrarFactory,
+        registrarMasterCopy: registrar.registrarMasterCopy,
         worldMasterCopy: master,
         worldRegistry: proxy.worldRegistry,
         worldFactory: proxy.worldFactory

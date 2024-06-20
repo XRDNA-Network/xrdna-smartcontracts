@@ -6,6 +6,7 @@ import {IAvatarHook} from './IAvatarHook.sol';
 import {IERC721Receiver} from "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
 import {IExperience} from '../experience/IExperience.sol';
 import {Wearable} from './WearableLinkedList.sol';
+import {ISupportsHook} from '../ISupportsHook.sol';
 
 struct AvatarJumpRequest {
     uint256 portalId;
@@ -19,7 +20,7 @@ struct DelegatedJumpRequest {
     bytes avatarOwnerSignature;
 }
 
-interface IAvatar is IERC721Receiver {
+interface IAvatar is IERC721Receiver, ISupportsHook {
 
 
     event SignerAdded(address indexed signer);
@@ -30,8 +31,6 @@ interface IAvatar is IERC721Receiver {
     event AppearanceChanged(bytes indexed appearanceDetails);
     event JumpSuccess(address indexed experience, uint256 indexed fee, bytes connectionDetails);
     event AvatarUpgraded(address indexed oldVersion, address indexed nextVersion);
-    event HookSet(address indexed hook);
-    event HookRemoved();
 
     function version() external pure returns (uint256);
     
@@ -119,22 +118,6 @@ interface IAvatar is IERC721Receiver {
      * @dev Set the appearance details of the avatar. This must be called by the avatar owner.
      */
     function setAppearanceDetails(bytes memory) external;
-
-
-    /**
-     * @dev Get the address of any custom installed hook for the avatar
-     */
-    function hook() external view returns (IAvatarHook);
-    
-    /**
-     * @dev Set a hook contract for the avatar. This must be called by the avatar owner.
-     */
-    function setHook(IAvatarHook hook) external;
-
-    /**
-     * @dev Remove the hook contract for the avatar. This must be called by the avatar owner.
-     */
-    function removeHook() external;
 
     /**
      * @dev Move the avatar to a new experience. This must be called by the avatar owner.

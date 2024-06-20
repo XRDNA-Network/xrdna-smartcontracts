@@ -10,7 +10,7 @@ import {VectorAddress} from '../VectorAddress.sol';
 import {IAvatar} from './IAvatar.sol';
 import {IExperience} from '../experience/IExperience.sol';
 import {ReentrancyGuard} from '@openzeppelin/contracts/utils/ReentrancyGuard.sol';
-import {IWorldRegistryV2} from '../world/v0.2/IWorldRegistryV2.sol';
+import {IWorldRegistry} from '../world/IWorldRegistry.sol';
 
 /**
  * Constructor arguments for AvatarRegistry
@@ -32,7 +32,7 @@ contract AvatarRegistry is IAvatarRegistry, ReentrancyGuard, AccessControl {
     bytes32 public constant ADMIN_ROLE = keccak256('ADMIN_ROLE');
 
     IAvatarFactory public avatarFactory;
-    IWorldRegistryV2 public worldRegistry;
+    IWorldRegistry public worldRegistry;
     mapping(string => address) private _avatarsByName;
     mapping(address => bool) private _avatarsByAddress;
 
@@ -58,7 +58,7 @@ contract AvatarRegistry is IAvatarRegistry, ReentrancyGuard, AccessControl {
         require(args.avatarFactory != address(0), 'AvatarRegistry: factory address cannot be 0');
         require(args.worldRegistry != address(0), 'AvatarRegistry: world registry address cannot be 0');
         avatarFactory = IAvatarFactory(args.avatarFactory);
-        worldRegistry = IWorldRegistryV2(args.worldRegistry);
+        worldRegistry = IWorldRegistry(args.worldRegistry);
         for (uint256 i = 0; i < args.admins.length; i++) {
             require(args.admins[i] != address(0), 'AvatarRegistry: admin address cannot be 0');
             _grantRole(ADMIN_ROLE, args.admins[i]);
@@ -104,7 +104,7 @@ contract AvatarRegistry is IAvatarRegistry, ReentrancyGuard, AccessControl {
      * on the registration request.
      * @param registration The registration request
      */
-    function registerAvatar(AvatarRegistrationRequest memory registration) external payable onlyWorld nonReentrant returns (address proxy) {
+    function registerAvatar(AvatarRegistrationRequest memory registration) external onlyWorld nonReentrant returns (address proxy) {
         //call must come from world contract to verify that a world signer authorizes the 
         //creation of the avatar.
         string memory lowerName = registration.username.lower();
@@ -116,13 +116,7 @@ contract AvatarRegistry is IAvatarRegistry, ReentrancyGuard, AccessControl {
         
         require(_avatarsByName[lowerName] == address(0), 'AvatarRegistry: username already exists');
         proxy = avatarFactory.createAvatar(registration.avatarOwner, registration.defaultExperience, registration.username, registration.initData);
-        if(msg.value > 0) {
-            if (registration.sendTokensToAvatarOwner) {
-                payable(registration.avatarOwner).transfer(msg.value);
-            } else {
-                payable(proxy).transfer(msg.value);
-            }
-        }
+        
         _avatarsByName[lowerName] = proxy;
         _avatarsByAddress[proxy] = true;
         emit AvatarCreated(proxy, registration.avatarOwner, registration.defaultExperience);

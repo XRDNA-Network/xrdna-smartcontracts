@@ -5,6 +5,7 @@ pragma solidity ^0.8.24;
 import {VectorAddress} from '../VectorAddress.sol';
 import {IExperienceHook} from './IExperienceHook.sol';
 import {IPortalCondition} from '../portal/IPortalCondition.sol';
+import {ISupportsHook} from '../ISupportsHook.sol';
 
 /**
  * @dev Entry request when an avatar jumps into an experience
@@ -21,7 +22,7 @@ struct JumpEntryRequest {
  * may incur a fee paid by the Avatar. An Experience may have hooks that are called when an
  * Avatar enters the experience that can further evaluate the request outside of Portal conditions.
  */
-interface IExperience {
+interface IExperience is ISupportsHook {
     event JumpEntry(address indexed sourceWorld, address indexed sourceCompany, address indexed avatar, uint256 attachedFees);
     event HookAdded(address indexed hook);
     event HookRemoved(address indexed hook);
@@ -72,16 +73,6 @@ interface IExperience {
      */
     function entryFee() external view returns (uint256);
 
-    /**
-     * @dev Returns the hooks that are called when an avatar enters this experience. This
-     * can only be called by the parent company contract
-     */
-    function addHook(IExperienceHook hook) external;
-
-    /**
-     * @dev Removes a hook from the experience. This can only be called by the parent company contract
-     */
-    function removeHook() external;
 
     /**
      * @dev Adds a portal condition to the experience. This can only be called by the parent company contract

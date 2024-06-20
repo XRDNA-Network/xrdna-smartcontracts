@@ -13,6 +13,7 @@ import {BaseProxyStorage, LibBaseProxy} from '../../libraries/LibBaseProxy.sol';
 import {IAvatar} from '../../avatar/IAvatar.sol';
 import {IAssetHook} from '../IAssetHook.sol';
 import {IAssetRegistry} from '../IAssetRegistry.sol';
+import {HookStorage, LibHooks} from '../../libraries/LibHooks.sol';
 
 /**
  * This struct represent the initialization data for the current version of the ERC20 asset
@@ -57,7 +58,8 @@ struct ERC20InitData {
  * whether they are the authority of the original token.
  */
 contract NTERC20Asset is BaseAsset, IMintableAsset, IERC20, IERC20Metadata, IERC20Errors {
-    
+    using LibHooks for HookStorage;
+
     //current version of this asset. This can be used to detect whether upgrades are
     //available by comparing this version to the asset factory's current supported version.
     uint256 public override version = 1;
@@ -246,8 +248,9 @@ contract NTERC20Asset is BaseAsset, IMintableAsset, IERC20, IERC20Metadata, IERC
                 _verifyAvatarLocationMatchesIssuer(IAvatar(to));
             }
         }
-        if(address(s.attributes.hook) != address(0)) {
-            return IAssetHook(s.attributes.hook).canMint(address(this), to, amt);
+        address hook = LibHooks.load().getHook();
+        if(hook != address(0)) {
+            return IAssetHook(hook).canMint(address(this), to, amt);
         }
         return true;
     }
@@ -260,11 +263,12 @@ contract NTERC20Asset is BaseAsset, IMintableAsset, IERC20, IERC20Metadata, IERC
     function mint(address to, bytes calldata data) public nonReentrant onlyIssuer  {
         require(canMint(to, data), "NTERC20Asset: cannot mint tokens");
         uint256 amt = abi.decode(data, (uint256));
-        CommonAssetV1Storage storage s = _loadCommonAttributes();
         //check with customization hook installed by company to make further checks before
         //minting
-        if(address(s.hook) != address(0)) {
-            bool ok = s.hook.beforeMint(address(this), to, amt);
+        address hook = LibHooks.load().getHook();
+
+        if(hook != address(0)) {
+            bool ok = IAssetHook(hook).beforeMint(address(this), to, amt);
             if(!ok) {
                 revert("NTERC20Asset: beforeMint hook rejected request");
             }
@@ -285,7 +289,7 @@ contract NTERC20Asset is BaseAsset, IMintableAsset, IERC20, IERC20Metadata, IERC
      */
     function revoke(address tgt, bytes calldata data) public nonReentrant onlyIssuer {
         require(tgt != address(0), "NTERC20Asset: cannot revoke from zero address");
-        IAssetHook hook = _loadCommonAttributes().hook;
+        IAssetHook hook = IAssetHook(LibHooks.load().getHook());
         uint256 amt = abi.decode(data, (uint256));
         require(amt > 0, "NTERC20Asset: revoke amount must be greater than zero");
         require(balanceOf(tgt) >= amt, "NTERC20Asset: insufficient balance to revoke");

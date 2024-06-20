@@ -27,13 +27,16 @@ describe('Experience', () => {
     let experienceRegistry: ExperienceRegistry
     let avatar: IAvatarRegistrationResult
     let avatarOwner: HardhatEthersSigner
+    let registrarOwner: HardhatEthersSigner;
     before(async () => {
         signers = await ethers.getSigners();
         
         worldOwner = signers[1];
         companyOwner = signers[2];
         avatarOwner = signers[3];
+        registrarOwner = signers[4];
         stack = new StackFactory({
+            registrarOwner: registrarOwner,
             worldOwner: worldOwner,
             companyOwner: companyOwner,
             avatarOwner: avatarOwner,

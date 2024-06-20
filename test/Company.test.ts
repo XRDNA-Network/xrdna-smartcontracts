@@ -17,6 +17,7 @@ import { IERC721AssetStack } from "./test_stack/asset/erc721/IERC721AssetStack";
 import { IMultiAssetRegistryStack } from "./test_stack/asset/IMultiAssetRegistryStack";
 import exp from "constants";
 import { PortalStackImpl } from "./test_stack/portal/PortalStackImpl";
+import { IWorldStack } from "./test_stack/world/IWorldStack";
 
 
 describe('Company', () => {
@@ -29,6 +30,7 @@ describe('Company', () => {
        
 
         stack = new StackFactory({
+            registrarOwner: signers[1],
             worldOwner: signers[0],
             companyOwner: signers[1],
             avatarOwner: signers[2],
@@ -162,8 +164,10 @@ describe('Company', () => {
     // ------------------- Hook tests -------------------
     it('should add a hook tocompany', async () => {
         const {company} = ecosystem
-        //declare hook as a variable that equals a random 20 byte evm address
-        const hook = ethers.hexlify(ethers.randomBytes(20));
+        //use another contract as hook since on chain checks that it's a contract
+        const wStack = stack.getStack<IWorldStack>(StackType.WORLD);
+        const wReg = wStack.getWorldRegistry();
+        const hook = wReg.address;
         const result = await company.setHook(hook);
         const r = await result.wait();
         expect(result).to.not.be.undefined;
@@ -258,7 +262,10 @@ describe('Company', () => {
     // --------------------Asset Hook tests --------------------
     it('should add an asset hook to a company', async () => {
         const {company, testERC20, testERC721} = ecosystem
-        const hook = ethers.hexlify(ethers.randomBytes(20));
+        //simulate hook with another contract
+        const wStack = stack.getStack<IWorldStack>(StackType.WORLD);
+        const wReg = wStack.getWorldRegistry();
+        const hook = wReg.address;
         const erc20Result = await company.addAssetHook(testERC20.assetAddress.toString(), hook);
         const erc20R = await erc20Result.wait();
         expect(erc20Result).to.not.be.undefined;

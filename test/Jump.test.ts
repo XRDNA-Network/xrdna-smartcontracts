@@ -1,7 +1,7 @@
 import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
 import { IEcosystem, StackFactory, StackType } from "./test_stack/StackFactory";
 import { Company } from "../src/company/Company";
-import { World } from "../src";
+import { Registrar, World } from "../src";
 import { ethers } from "hardhat";
 // import {ethers } from "ethers"
 import { expect } from "chai";
@@ -19,8 +19,10 @@ describe('JumpTest', () => {
     let worldOwner:HardhatEthersSigner
     let companyOwner:HardhatEthersSigner
     let avatarOwner:HardhatEthersSigner
+    let registrarOwner: HardhatEthersSigner;
     let stack: StackFactory;
     let world: World;
+    let registrar: Registrar;
     let ecosystem: IEcosystem;
     before(async () => {
         signers = await ethers.getSigners();
@@ -28,10 +30,12 @@ describe('JumpTest', () => {
         registrarAdmin = signers[0];
         registrarSigner = signers[0];
         worldRegistryAdmin = signers[0];
+        registrarOwner = signers[1];
         worldOwner = signers[1];
         companyOwner = signers[2];
         avatarOwner = signers[3];
         stack = new StackFactory({
+            registrarOwner,
             avatarOwner,
             worldOwner,
             companyOwner

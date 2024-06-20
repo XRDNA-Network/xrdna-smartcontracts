@@ -2,7 +2,6 @@
 // Compatible with OpenZeppelin Contracts ^5.0.0
 pragma solidity ^0.8.24;
 
-import {IAssetHook} from '../asset/IAssetHook.sol';
 import {IAssetCondition} from '../asset/IAssetCondition.sol';
 
 /**
@@ -21,9 +20,6 @@ struct CommonAssetV1Storage {
 
     //the address allowed to mint new tokens
     address issuer;
-
-    //custom mint/transfer behavior
-    IAssetHook hook;
 
     //custom view/use conditions
     IAssetCondition condition;

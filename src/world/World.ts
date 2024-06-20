@@ -1,5 +1,5 @@
 import { AddressLike, Provider, Signer, TransactionReceipt, TransactionResponse, ethers } from "ethers";
-import {abi as WorldABI} from "../../artifacts/contracts/world/v0.2/WorldV2.sol/WorldV2.json";
+import {abi as WorldABI} from "../../artifacts/contracts/world/World.sol/World.json";
 import { RPCRetryHandler } from "../RPCRetryHandler";
 import { VectorAddress } from "../VectorAddress";
 import { LogNames } from "../LogNames";
@@ -223,5 +223,8 @@ export class World implements ISupportsSigners,
         return await RPCRetryHandler.withRetry(() => this.world.reactivateCompany(address));
     }
 
+    async removeCompany(address: string): Promise<TransactionResponse> {
+        return await RPCRetryHandler.withRetry(() => this.world.removeCompany(address));
+    }
     
 }

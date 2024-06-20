@@ -3,7 +3,6 @@
 pragma solidity ^0.8.24;
 
 import {VectorAddress} from '../VectorAddress.sol';
-import {IExperienceHook} from '../experience/IExperienceHook.sol';
 import {ICompany} from '../company/ICompany.sol';
 
 /**
@@ -19,9 +18,6 @@ struct ExperienceV1Storage {
 
     //operating world
     address world;
-
-    //custom hook installed by company
-    IExperienceHook hook;
 
     //experience's spatial vector address assigned by company
     VectorAddress vectorAddress;

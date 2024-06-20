@@ -7,8 +7,8 @@ import {IExperienceFactory} from './IExperienceFactory.sol';
 import {IExperience} from './IExperience.sol';
 import {VectorAddress, LibVectorAddress} from '../VectorAddress.sol';
 import {IPortalRegistry, AddPortalRequest, PortalInfo} from '../portal/IPortalRegistry.sol';
-import {IWorldRegistryV2} from '../world/v0.2/IWorldRegistryV2.sol';
-import {IWorldV2} from '../world/v0.2/IWorldV2.sol';
+import {IWorldRegistry} from '../world/IWorldRegistry.sol';
+import {IWorld} from '../world/IWorld.sol';
 import {ICompany} from '../company/ICompany.sol';
 import {LibStringCase} from '../LibStringCase.sol';
 import {IExperienceRegistry, ExperienceInfo, RegisterExperienceRequest} from './IExperienceRegistry.sol';
@@ -34,7 +34,7 @@ contract ExperienceRegistry is IExperienceRegistry, ReentrancyGuard, AccessContr
 
     bytes32 constant public ADMIN_ROLE = keccak256("ADMIN_ROLE");
 
-    IWorldRegistryV2 public worldRegistry;
+    IWorldRegistry public worldRegistry;
     IPortalRegistry public portalRegistry;
     IExperienceFactory public experienceFactory;
     
@@ -63,7 +63,7 @@ contract ExperienceRegistry is IExperienceRegistry, ReentrancyGuard, AccessContr
         require(args.portRegistry != address(0), "ExperienceRegistry: portal registry address cannot be 0");
         require(args.experienceFactory != address(0), "ExperienceRegistry: experience factory address cannot be 0");
        
-        worldRegistry = IWorldRegistryV2(args.worldRegistry);
+        worldRegistry = IWorldRegistry(args.worldRegistry);
         portalRegistry = IPortalRegistry(args.portRegistry);
         experienceFactory = IExperienceFactory(args.experienceFactory);
         _grantRole(DEFAULT_ADMIN_ROLE, args.mainAdmin);
@@ -84,7 +84,7 @@ contract ExperienceRegistry is IExperienceRegistry, ReentrancyGuard, AccessContr
     /**
         * @inheritdoc IExperienceRegistry
      */
-    function setWorldRegistry(IWorldRegistryV2 reg) public onlyRole(ADMIN_ROLE) {
+    function setWorldRegistry(IWorldRegistry reg) public onlyRole(ADMIN_ROLE) {
         require(address(reg) != address(0), "ExperienceRegistry: zero address not valid");
         worldRegistry = reg;
     }

@@ -1,5 +1,5 @@
 import { AddressLike, Provider, Signer, TransactionResponse, ethers } from "ethers";
-import {abi as WorldRegistryABI} from "../../artifacts/contracts/world/v0.2/WorldRegistryV2.sol/WorldRegistryV2.json";
+import {abi as WorldRegistryABI} from "../../artifacts/contracts/world/WorldRegistry.sol/WorldRegistry.json";
 import { LogParser } from "../LogParser";
 import { LogNames } from "../LogNames";
 import { RPCRetryHandler } from "../RPCRetryHandler";
@@ -14,21 +14,6 @@ export interface IWorldRegistryOpts {
     logParser: AllLogParser;
 }
 
-export interface IWorldRegistration {
-    sendTokensToWorldOwner: boolean;
-    oldWorld: AddressLike;
-    owner: AddressLike;
-    baseVector: VectorAddress;
-    name: string;
-    registrarId: bigint;
-    initData: string;
-    vectorAuthoritySignature: string;
-}
-
-export interface IWorldRegistrationResult {
-    receipt: ethers.TransactionReceipt;
-    worldAddress: string;
-}
 
 export class WorldRegistry {
     static get abi() {
@@ -48,30 +33,6 @@ export class WorldRegistry {
         this.logParser.addAbi(this.address, WorldRegistryABI);
     }
 
-    async createWorld(props: {
-        registrarSigner: Signer,
-        details: IWorldRegistration,
-        tokens?: bigint
-    }): Promise<IWorldRegistrationResult> {
-        
-
-        const {registrarSigner, details} = props;
-        
-        
-        const t = await RPCRetryHandler.withRetry(() => (this.registry.connect(registrarSigner) as any).register(details, {
-            value: props.tokens
-        }));
-
-        const r = await t.wait();
-        const parse = new LogParser(WorldRegistryABI, this.address);
-        const logs = parse.parseLogs(r);
-        const args = logs.get(LogNames.WorldRegistered);
-        if(!args) {
-            throw new Error("World not created");
-        }
-        const addr = args[0];
-        return {receipt: r, worldAddress: addr};
-    }
 
     async lookupWorldAddress(name: string): Promise<string> {
         const addr = await RPCRetryHandler.withRetry(() => this.registry.getWorldByName(name.toLowerCase()));

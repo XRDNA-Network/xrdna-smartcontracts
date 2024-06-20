@@ -6,6 +6,7 @@ import {VectorAddress} from '../VectorAddress.sol';
 import {ICompanyHook} from './ICompanyHook.sol';
 import {IAssetHook} from '../asset/IAssetHook.sol';
 import {IBaseAccess} from '../IBaseAccess.sol';
+import {ISupportsHook} from '../ISupportsHook.sol';
 
 /**
  * @dev Arguments for companies to add an experience to a world.
@@ -61,7 +62,7 @@ struct CompanyInitArgs {
  * Companies register through Worlds in order to offer experiences to avatars and 
  * create assets within worlds.
  */
-interface ICompany is IBaseAccess {
+interface ICompany is IBaseAccess, ISupportsHook {
 
     event CompanyAddedExperience(address indexed experience, uint256 indexed portalId);
     event CompanyRemovedExperience(address indexed experience, uint256 indexed portalId);
@@ -177,21 +178,6 @@ interface ICompany is IBaseAccess {
      * @dev Withdraws the given amount of funds from the company. Only the owner can withdraw funds.
      */
     function withdraw(uint256 amount) external;
-
-    /**
-     * @dev Sets the company hook. The hook is used to extend the behavior of the company
-     */
-    function setHook(ICompanyHook hook) external;
-
-    /**
-     * @dev Removes the company hook.
-     */
-    function removeHook() external;
-
-    /**
-     * @dev Returns the company hook. The hook is used to extend the behavior of the company
-     */
-    function hook() external view returns (ICompanyHook);
 
     /**
      * @dev Adds an experience condition to an experience. Going through the company

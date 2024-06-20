@@ -12,6 +12,7 @@ import {CommonAssetV1Storage} from '../libraries/LibAssetV1Storage.sol';
 import {IBasicAsset} from './IBasicAsset.sol';
 import {IAssetCondition, AssetCheckArgs} from './IAssetCondition.sol';
 import {ICompanyRegistry} from '../company/ICompanyRegistry.sol';
+import {BaseHookSupport} from '../BaseHookSupport.sol';
 
 /**
  * Constructor arguments that immutably reference registries and factories required
@@ -31,7 +32,7 @@ struct BaseAssetArgs {
  * hooks and conditions, as well as the ability to verify that an asset can be
  * viewed or used by a given avatar.
  */
-abstract contract BaseAsset is IBasicAsset, ReentrancyGuard {
+abstract contract BaseAsset is IBasicAsset, BaseHookSupport, ReentrancyGuard {
 
 
     event AssetHookAdded(address indexed hook);
@@ -78,49 +79,29 @@ abstract contract BaseAsset is IBasicAsset, ReentrancyGuard {
         companyRegistry = ICompanyRegistry(args.companyRegistry);
     }
 
+    function isAdmin(address a) internal view override returns (bool) {
+        return a == issuer();
+    }
+
     /**
      * @inheritdoc IBasicAsset
      */
-    function issuer() external view override returns (address) {
+    function issuer() public view override returns (address) {
         return _loadCommonAttributes().issuer;
     }
 
     /**
      * @inheritdoc IBasicAsset
      */
-    function originAddress() external view override returns(address) {
+    function originAddress() public view override returns(address) {
         return _loadCommonAttributes().originAddress;
     }
 
     /**
      * @inheritdoc IBasicAsset
      */
-    function originChainId() external view override returns(uint256) {
+    function originChainId() public view override returns(uint256) {
         return _loadCommonAttributes().originChainId;
-    }
-
-    /**
-     * @inheritdoc IBasicAsset
-     */
-    function hook() external view returns (IAssetHook) {
-        return _loadCommonAttributes().hook;
-    }
-
-    function addHook(IAssetHook _hook) public override onlyIssuer {
-        CommonAssetV1Storage storage s = _loadCommonAttributes();
-        require(address(_hook) != address(0), "BaseAsset: hook cannot be zero address");
-        s.hook = _hook;
-        emit AssetHookAdded(address(_hook));
-    }
-
-    /**
-     * @inheritdoc IBasicAsset
-     */
-    function removeHook() public override onlyIssuer {
-        CommonAssetV1Storage storage s = _loadCommonAttributes();
-        address h = address(s.hook);
-        emit AssetHookRemoved(h);
-        delete s.hook;
     }
 
     /**

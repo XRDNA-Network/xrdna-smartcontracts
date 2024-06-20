@@ -15,6 +15,7 @@ describe('Avatar', () => {
     let worldOwner: ethers.Signer;
     let avatarOwner: ethers.Signer;
     let companyOwner: ethers.Signer;
+    let registrarOwner: ethers.Signer;
     let ecosystem: IEcosystem
 
     before(async () => {
@@ -22,8 +23,10 @@ describe('Avatar', () => {
         worldOwner = signers[1];
         companyOwner = signers[2];
         avatarOwner = signers[3];
+        registrarOwner = signers[4];
         
         sf = new StackFactory({
+            registrarOwner: registrarOwner,
             worldOwner: worldOwner,
             companyOwner: companyOwner,
             avatarOwner: avatarOwner

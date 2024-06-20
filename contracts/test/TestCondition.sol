@@ -6,7 +6,7 @@ contract TestCondition is IPortalCondition {
 
     mapping(address => bool) public allowed;
 
-    function canJump(address experience, address sourceWorld, address sourceCompany, address sourceExperience, address avatar) external returns (bool) {
+    function canJump(address, address, address, address, address avatar) external view returns (bool) {
         return allowed[avatar];
     }
 

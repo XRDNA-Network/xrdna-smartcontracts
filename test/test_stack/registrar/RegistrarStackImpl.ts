@@ -1,8 +1,6 @@
-import { ignition } from "hardhat";
 import { RegistrarRegistry, Registrar } from "../../../src";
 import { IBasicDeployArgs, IDeployable } from "../IDeployable";
 import { IRegistrarStack } from "./IRegistrarStack";
-import RegistrarRegistryModule from "../../../ignition/modules/RegistrarRegistry.module";
 import { StackFactory } from "../StackFactory";
 import { Signer } from "ethers";
 import { IWorldStackDeployment } from "../world/WorldStackImpl";

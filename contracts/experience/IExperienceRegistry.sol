@@ -4,7 +4,7 @@ pragma solidity ^0.8.24;
 
 import {VectorAddress} from '../VectorAddress.sol';
 import {IExperience} from './IExperience.sol';
-import {IWorldRegistryV2} from '../world/v0.2/IWorldRegistryV2.sol';
+import {IWorldRegistry} from '../world/IWorldRegistry.sol';
 import {IPortalRegistry} from '../portal/IPortalRegistry.sol';
 
 /**
@@ -46,7 +46,7 @@ interface IExperienceRegistry {
     /**
      * @dev Returns the world registry that is used to validate world addresses.
      */
-    function worldRegistry() external view returns (IWorldRegistryV2);
+    function worldRegistry() external view returns (IWorldRegistry);
 
     /**
      * @dev Returns experience info for the given vector address.
@@ -71,7 +71,7 @@ interface IExperienceRegistry {
     /**
      * @dev Sets the world registry that is used to validate world addresses. Only admin can do this
      */
-    function setWorldRegistry(IWorldRegistryV2 reg) external;
+    function setWorldRegistry(IWorldRegistry reg) external;
 
     /**
      * @dev Sets the portal registry that is used to manage portals. Only admin can do this

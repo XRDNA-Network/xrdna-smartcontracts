@@ -38,7 +38,7 @@ abstract contract BaseAccess is IBaseAccess {
     }
 
     //internally used to add signers to the contract when admin not yet assigned
-    function _addSigners(address[] calldata signers) internal {
+    function _addSigners(address[] memory signers) internal {
         BaseProxyStorage storage bs = LibBaseProxy.load();
         for (uint256 i = 0; i < signers.length; i++) {
             require(signers[i] != address(0), "BaseProxy: signer is zero address");

@@ -1,8 +1,6 @@
 import { AddressLike, Contract, Provider, Signer, TransactionReceipt, TransactionResponse, ethers } from "ethers";
 import {abi} from "../../artifacts/contracts/avatar/Avatar.sol/Avatar.json";
 import { RPCRetryHandler } from "../RPCRetryHandler";
-import { VectorAddress } from "../VectorAddress";
-import { LogParser } from "../LogParser";
 import { LogNames } from "../LogNames";
 import { AllLogParser } from "../AllLogParser";
 import { ISupportsFunds, ISupportsHooks, IUpgradeResult, IUpgradeable } from "../interfaces";

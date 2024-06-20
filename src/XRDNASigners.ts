@@ -31,6 +31,8 @@ export interface IDeploymentEntry {
     portalRegistryOtherAdmins: string[];
     registrarRegistryAdmin: string;
     registrarRegistryOtherAdmins: string[];
+    registrarFactoryAdmin: string;
+    registrarFactoryOtherAdmins: string[];
     worldRegistryAdmin: string;
     worldRegistryOtherAdmins: string[];
     worldFactoryAdmin: string;
@@ -119,6 +121,8 @@ export class XRDNASigners {
             portalRegistryOtherAdmins: [],
             registrarRegistryAdmin: admin,
             registrarRegistryOtherAdmins: [],
+            registrarFactoryAdmin: admin,
+            registrarFactoryOtherAdmins: [],
             worldRegistryAdmin: admin,
             worldRegistryOtherAdmins: [],
             worldFactoryAdmin: admin,
@@ -151,6 +155,8 @@ export class XRDNASigners {
             portalRegistryOtherAdmins: [TDG, POWERS],
             registrarRegistryAdmin: XRDNA,
             registrarRegistryOtherAdmins: [TDG, POWERS],
+            registrarFactoryAdmin: XRDNA,
+            registrarFactoryOtherAdmins: [TDG, POWERS],
             worldRegistryAdmin: XRDNA,
             worldRegistryOtherAdmins: [TDG, POWERS],
             worldFactoryAdmin: XRDNA,
@@ -183,6 +189,8 @@ export class XRDNASigners {
             portalRegistryOtherAdmins: [TDG],
             registrarRegistryAdmin: XRDNA,
             registrarRegistryOtherAdmins: [TDG],
+            registrarFactoryAdmin: XRDNA,
+            registrarFactoryOtherAdmins: [TDG],
             worldRegistryAdmin: XRDNA,
             worldRegistryOtherAdmins: [TDG],
             worldFactoryAdmin: XRDNA,

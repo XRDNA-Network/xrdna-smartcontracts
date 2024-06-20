@@ -1,9 +1,10 @@
 import { Provider, Signer, TransactionResponse, ethers } from "ethers";
-import {abi as RegistrarRegistryABI} from "../../artifacts/contracts/RegistrarRegistry.sol/RegistrarRegistry.json";
+import {abi as RegistrarRegistryABI} from "../../artifacts/contracts/registrar/RegistrarRegistry.sol/RegistrarRegistry.json";
 import { LogParser } from "../LogParser";
 import { LogNames } from "../LogNames";
 import { RPCRetryHandler } from "../RPCRetryHandler";
 import { AllLogParser } from "../AllLogParser";
+import { RegistrationTerms } from "../RegistrationTerms";
 
 /**
  * Typescript proxy for RegistrarRegistry deployed contract.
@@ -15,13 +16,16 @@ export interface IRegistrarRegistryOpts {
 }
 
 export interface IRegisterProps {
-    defaultSigner: string;
+    owner: string;
+    name: string;
+    sendTokensToRegistrarOwner: boolean;
+    worldRegistrationTerms: RegistrationTerms;
     tokens?: bigint;
 }
 
 export interface IRegistrationResult {
     receipt: ethers.TransactionReceipt;
-    registrarId: bigint;
+    registrarAddress: string;
 }
 
 export class RegistrarRegistry {
@@ -46,40 +50,27 @@ export class RegistrarRegistry {
         if(!this.registry) {
             throw new Error("Registry not deployed");
         }
-        const {defaultSigner, tokens} = props;
-
-        const t = await RPCRetryHandler.withRetry(() =>this.registry.register(defaultSigner, {
+        const {tokens} = props;
+        const args = {
+            owner: props.owner,
+            name: props.name,
+            sendTokensToOwner: props.sendTokensToRegistrarOwner,
+            worldRegistrationTerms: props.worldRegistrationTerms
+        };
+        const t = await RPCRetryHandler.withRetry(() =>this.registry.register(args, {
             value: tokens
         }));
         const r = await t.wait();
+        
         const logMap = this.logParser.parseLogs(r);
-        const adds = logMap.get(LogNames.RegistrarAdded);
+        
+        const adds = logMap.get(LogNames.RegistryAddedRegistrar);
         if(!adds || adds.length === 0) {
             throw new Error("Registrar not added");
         }
-        const id = adds[0].args[0];
-        return {receipt: r, registrarId: id};
+        const addr = adds[0].args[0];
+        return {receipt: r, registrarAddress: addr};
     }
-
-    async addSigner(id: bigint, address: string): Promise<TransactionResponse> {
-        if(!this.registry) {
-            throw new Error("Registry not deployed");
-        }
-        const t = await RPCRetryHandler.withRetry(()=>this.registry.addSigner(id, address));
-        return t;
-    }
-
-    async isSignerForRegistrar(props: {
-        registrarId: bigint, signer: string
-    }): Promise<boolean> {
-        if(!this.registry) {
-            throw new Error("Registry not deployed");
-        }
-        const {registrarId, signer} = props;
-        const r = await RPCRetryHandler.withRetry(()=>this.registry.isRegistrar(registrarId, signer));
-        return r;
-    }
-
     
 }
 

@@ -24,6 +24,8 @@ import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
 import {IBasicAsset} from '../asset/IBasicAsset.sol';
 import {IExperienceRegistry} from '../experience/IExperienceRegistry.sol';
 import {LibLinkedList, LinkedList} from '../libraries/LibLinkedList.sol';
+import {BaseHookSupport} from '../BaseHookSupport.sol';
+import {HookStorage, LibHooks} from '../libraries/LibHooks.sol';
 
 /**
  * @dev Data structure for initializing an avatar contract
@@ -57,11 +59,12 @@ struct BaseContructorArgs {
  * add or remove wearables. The avatar can also receive ERC721 tokens from registered 
  * assets and companies.
  */
-contract Avatar is IAvatar, ReentrancyGuard {
+contract Avatar is IAvatar, BaseHookSupport, ReentrancyGuard {
     using LibStringCase for string;
     using LibVectorAddress for VectorAddress;
     using MessageHashUtils for bytes;
     using LibLinkedList for LinkedList;
+    using LibHooks for HookStorage;
 
     //set on constructor of master copy of avatar
     address public immutable avatarFactory;
@@ -140,6 +143,11 @@ contract Avatar is IAvatar, ReentrancyGuard {
         s.list.maxSize = 200;
     }
 
+    function isAdmin(address a) internal view override returns (bool) {
+        AvatarV1Storage storage s = LibAvatarV1Storage.load();
+        return a == s.owner;
+    }
+
     /**
      * @inheritdoc IAvatar
      */
@@ -154,14 +162,6 @@ contract Avatar is IAvatar, ReentrancyGuard {
     function owner() public view override returns (address) {
         AvatarV1Storage storage s = LibAvatarV1Storage.load();
         return s.owner;
-    }
-
-    /**
-     * @inheritdoc IAvatar
-     */
-    function hook() public view returns (IAvatarHook) {
-        AvatarV1Storage storage s = LibAvatarV1Storage.load();
-        return s.hook;
     }
 
     /**
@@ -355,24 +355,7 @@ contract Avatar is IAvatar, ReentrancyGuard {
         emit WearableRemoved(wearable.asset, wearable.tokenId);
     }
 
-    /**
-     * @inheritdoc IAvatar
-     */
-    function setHook(IAvatarHook _hook) public override onlyOwner {
-        require(address(_hook) != address(0), "Avatar: hook cannot be zero address");
-        AvatarV1Storage storage s = LibAvatarV1Storage.load();
-        s.hook = IAvatarHook(_hook);
-        emit HookSet(address(_hook));
-    }
 
-    /**
-     * @inheritdoc IAvatar
-     */
-    function removeHook() public override onlyOwner {
-        AvatarV1Storage storage s = LibAvatarV1Storage.load();
-        delete s.hook;
-        emit HookRemoved();
-    }
 
     /**
      * @dev Whenever an {IERC721} `tokenId` token is transferred to this contract via {IERC721-safeTransferFrom}
@@ -402,9 +385,10 @@ contract Avatar is IAvatar, ReentrancyGuard {
         }
         //make sure avatar owns the token before accepting it
         require(asset.ownerOf(tokenId) == address(this), "Avatar: ERC721 token not owned by avatar");
-        if(address(s.hook) != address(0)) {
+        address hook = LibHooks.load().getHook();
+        if(hook != address(0)) {
             //give hook the final say
-            require(s.hook.onReceiveERC721(address(this), msg.sender, tokenId), "Avatar: hook rejected ERC721 token");
+            require(IAvatarHook(hook).onReceiveERC721(address(this), msg.sender, tokenId), "Avatar: hook rejected ERC721 token");
         }
         return this.onERC721Received.selector;
     }

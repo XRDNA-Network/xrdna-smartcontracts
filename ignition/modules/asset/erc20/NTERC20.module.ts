@@ -2,6 +2,7 @@ import { buildModule } from "@nomicfoundation/hardhat-ignition/modules";
 import AvatarRegistryModule from "../../avatar/AvatarRegistry.module";
 import NTAssetProxyModule from "./NTERC20Proxy.module";
 import CompanyRegistryModule from "../../company/CompanyRegistry.module";
+import LibrariesModule from "../../libraries/Libraries.module";
 
 const VERSION = 1;
 export default buildModule("NTERC20Asset", (m) => {
@@ -9,6 +10,7 @@ export default buildModule("NTERC20Asset", (m) => {
     const proxy = m.useModule(NTAssetProxyModule);
     const avatarRegistry = m.useModule(AvatarRegistryModule);
     const companyRegistry = m.useModule(CompanyRegistryModule);
+    const libs = m.useModule(LibrariesModule);
 
     const args = {
         assetFactory: proxy.erc20Factory,
@@ -24,6 +26,9 @@ export default buildModule("NTERC20Asset", (m) => {
         companyRegistry.companyRegistry
     ]
     const masterERC20 = m.contract("NTERC20Asset", [args], {
+        libraries: {
+            LibHooks: libs.LibHooks
+        },
         after: afterSet
     });
     m.call(proxy.erc20Factory, "setImplementation", [masterERC20, VERSION]);

@@ -16,4 +16,10 @@ interface IExperienceHook {
      * @return bool True if the jump entry is allowed, false otherwise.
      */
     function beforeJumpEntry(address destExperience, address sourceWorld, address sourceCompany, address avatar) external returns (bool);
+
+    /**
+     * @dev This function is called before an experience is upgraded.
+     * @return bool True if the upgrade is allowed, false otherwise.
+     */
+    function beforeUpgrade(bytes calldata data) external returns (bool);
 }

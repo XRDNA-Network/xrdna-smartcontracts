@@ -3,6 +3,7 @@ import AssetRegistryModule from "../asset/MultiAssetRegistry.module";
 import AvatarRegistryModule from "../avatar/AvatarRegistry.module";
 import ExperienceModule from "../experience/Experience.module";
 import CompanyProxyModule from './CompanyProxy.module';
+import LibHooksModule from '../libraries/Libraries.module';
 
 
 const VERSION = 1;
@@ -12,6 +13,7 @@ export default buildModule("Company", (m) => {
     const assetReg = m.useModule(AssetRegistryModule);
     const avatarReg = m.useModule(AvatarRegistryModule);
     const exp = m.useModule(ExperienceModule);
+    const libs = m.useModule(LibHooksModule);
 
     const args = {
         companyFactory: proxy.companyFactory,
@@ -21,6 +23,9 @@ export default buildModule("Company", (m) => {
         avatarRegistry: avatarReg.avatarRegistry
     }
     const master = m.contract("Company", [args], {
+        libraries: {
+            LibHooks: libs.LibHooks
+        },
         after: [proxy.companyFactory, 
                 proxy.companyRegistry, 
                 exp.experienceRegistry,

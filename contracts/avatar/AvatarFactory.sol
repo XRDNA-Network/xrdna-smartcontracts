@@ -32,7 +32,10 @@ contract AvatarFactory is BaseFactory, IAvatarFactory {
         address impl = IBaseProxy(avatar).getImplementation();
         require(impl != implementation, "Already on the latest version");
 
+        //this sets the delegate implementation on the proxy
         IAvatar(avatar).upgradeComplete(implementation);
+
+        //then we add any new init state to the proxy storage using new impl
         INextAvatarVersion(avatar).init(initData);
         return implementation;
     }
