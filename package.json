@@ -3,6 +3,9 @@
   "version": "0.0.0",
   "description": "Smart contracts for XRDNA's L3 blockchain",
   "main": "dist/src/index.js",
+  "files": [
+    "dist"
+  ],
   "repository": "https://github.com/thorium-dev-group/xrdna-smartcontracts",
   "author": "XRDNA.io",
   "license": "",
@@ -19,6 +22,7 @@
     "generate-verify-input": "cat $1 | jq -r '.input' > $1.input.json",
     "node:start:clean": "./scripts/wipeLocalDeploymentHistory.sh ; yarn build && yarn hardhat node",
     "node:deploy:all": "./scripts/deployAll.sh localhost",
+    "pack:preview": "npm pack && tar -xvzf *.tgz && rm -rf package *.tgz",
     "release": "beachball publish",
     "test": "hardhat test"
   },
