@@ -1,20 +1,25 @@
 {
   "name": "@xrdna/smart-contracts",
-  "version": "1.0.0",
+  "version": "0.0.0",
   "description": "Smart contracts for XRDNA's L3 blockchain",
   "main": "dist/src/index.js",
   "repository": "https://github.com/thorium-dev-group/xrdna-smartcontracts",
-  "author": "mdcoon <mdcoon1@yahoo.com>",
-  "license": "MIT",
+  "author": "XRDNA.io",
+  "license": "",
+  "beachball": {
+    "access": "public"
+  },
   "scripts": {
-    "clean": "rimraf --glob artifacts/build-info dist *.tsbuildinfo",
-    "deploy": "npx hardhat ignition deploy",
-    "clear-deployment": "npx hardhat ignition wipe",
-    "generate-verify-input": "cat $1 | jq -r '.input' > $1.input.json",
     "build": "yarn clean ; yarn compile && tsc",
+    "change": "beachball change",
+    "clean": "rimraf --glob artifacts/build-info dist *.tsbuildinfo",
+    "clear-deployment": "npx hardhat ignition wipe",
     "compile": "hardhat compile --force",
+    "deploy": "npx hardhat ignition deploy",
+    "generate-verify-input": "cat $1 | jq -r '.input' > $1.input.json",
     "node:start:clean": "./scripts/wipeLocalDeploymentHistory.sh ; yarn build && yarn hardhat node",
     "node:deploy:all": "./scripts/deployAll.sh localhost",
+    "release": "beachball publish",
     "test": "hardhat test"
   },
   "devDependencies": {
@@ -34,6 +39,7 @@
     "@types/chai": "4",
     "@types/mocha": "^10.0.6",
     "@types/node": "^20.12.12",
+    "beachball": "^2.43.1",
     "chai": "4",
     "dotenv": "^16.4.5",
     "hardhat": "^2.22.4",
