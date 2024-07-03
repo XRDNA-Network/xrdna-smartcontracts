@@ -1,0 +1,1 @@
+# Everything in core cannot be upgraded without a full app upgrade.

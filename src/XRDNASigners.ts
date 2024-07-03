@@ -11,6 +11,13 @@ import {ChainIds} from './ChainIds';
  */
 
 export interface IDeploymentEntry {
+
+    extensionRegistryAdmin: string;
+    extensionRegistryOtherAdmins: string[];
+    
+    registrarFactoryAdmin: string;
+    registrarFactoryOtherAdmins: string[];
+
     assetRegistryAdmin: string;
     assetRegistryOtherAdmins: string[];
     assetFactoryAdmin: string;
@@ -19,24 +26,33 @@ export interface IDeploymentEntry {
     avatarRegistryOtherAdmins: string[];
     avatarFactoryAdmin: string;
     avatarFactoryOtherAdmins: string[];
+    avatarExtResolverAdmin: string;
+    avatarExtResolverOtherAdmins: string[];
     companyRegistryAdmin: string;
     companyRegistryOtherAdmins: string[];
     companyFactoryAdmin: string;
     companyFactoryOtherAdmins: string[];
+    companyExtResolverAdmin: string;
+    companyExtResolverOtherAdmins: string[];
     experienceRegistryAdmin: string;
     experienceRegistryOtherAdmins: string[];
     experienceFactoryAdmin: string;
     experienceFactoryOtherAdmins: string[];
+    experienceExtResolverAdmin: string;
+    experienceExtResolverOtherAdmins: string[];
     portalRegistryAdmin: string;
     portalRegistryOtherAdmins: string[];
     registrarRegistryAdmin: string;
     registrarRegistryOtherAdmins: string[];
-    registrarFactoryAdmin: string;
-    registrarFactoryOtherAdmins: string[];
+    registrarExtResolverAdmin: string;
+    registrarExtResolverOtherAdmins: string[];
+    
     worldRegistryAdmin: string;
     worldRegistryOtherAdmins: string[];
     worldFactoryAdmin: string;
     worldFactoryOtherAdmins: string[];
+    worldExtResolverAdmin: string;
+    worldExtResolverOtherAdmins: string[];
     vectorAddressAuthority: string;
 }
 
@@ -109,24 +125,36 @@ export class XRDNASigners {
             avatarRegistryOtherAdmins: [],
             avatarFactoryAdmin: admin,
             avatarFactoryOtherAdmins: [],
+            avatarExtResolverAdmin: admin,
+            avatarExtResolverOtherAdmins: [],
             companyRegistryAdmin: admin,
             companyRegistryOtherAdmins: [],
             companyFactoryAdmin: admin,
             companyFactoryOtherAdmins: [],
+            companyExtResolverAdmin: admin,
+            companyExtResolverOtherAdmins: [],
             experienceRegistryAdmin: admin,
             experienceRegistryOtherAdmins: [],
             experienceFactoryAdmin: admin,
             experienceFactoryOtherAdmins: [],
+            experienceExtResolverAdmin: admin,
+            experienceExtResolverOtherAdmins: [],
+            extensionRegistryAdmin: admin,
+            extensionRegistryOtherAdmins: [],
             portalRegistryAdmin: admin,
             portalRegistryOtherAdmins: [],
             registrarRegistryAdmin: admin,
             registrarRegistryOtherAdmins: [],
             registrarFactoryAdmin: admin,
             registrarFactoryOtherAdmins: [],
+            registrarExtResolverAdmin: admin,
+            registrarExtResolverOtherAdmins: [],
             worldRegistryAdmin: admin,
             worldRegistryOtherAdmins: [],
             worldFactoryAdmin: admin,
             worldFactoryOtherAdmins: [],
+            worldExtResolverAdmin: admin,
+            worldExtResolverOtherAdmins: [],
             vectorAddressAuthority: vector
         }
     }
@@ -143,24 +171,36 @@ export class XRDNASigners {
             avatarRegistryOtherAdmins: [TDG, POWERS],
             avatarFactoryAdmin: XRDNA,
             avatarFactoryOtherAdmins: [TDG, POWERS],
+            avatarExtResolverAdmin: XRDNA,
+            avatarExtResolverOtherAdmins: [TDG, POWERS],
             companyRegistryAdmin: XRDNA,
             companyRegistryOtherAdmins: [TDG, POWERS],
             companyFactoryAdmin: XRDNA,
             companyFactoryOtherAdmins: [TDG, POWERS],
+            companyExtResolverAdmin: XRDNA,
+            companyExtResolverOtherAdmins: [TDG, POWERS],
             experienceRegistryAdmin: XRDNA,
             experienceRegistryOtherAdmins: [TDG, POWERS],
             experienceFactoryAdmin: XRDNA,
             experienceFactoryOtherAdmins: [TDG, POWERS],
+            experienceExtResolverAdmin: XRDNA,
+            experienceExtResolverOtherAdmins: [TDG, POWERS],
+            extensionRegistryAdmin: XRDNA,
+            extensionRegistryOtherAdmins: [TDG, POWERS],
             portalRegistryAdmin: XRDNA,
             portalRegistryOtherAdmins: [TDG, POWERS],
             registrarRegistryAdmin: XRDNA,
             registrarRegistryOtherAdmins: [TDG, POWERS],
             registrarFactoryAdmin: XRDNA,
             registrarFactoryOtherAdmins: [TDG, POWERS],
+            registrarExtResolverAdmin: XRDNA,
+            registrarExtResolverOtherAdmins: [TDG, POWERS],
             worldRegistryAdmin: XRDNA,
             worldRegistryOtherAdmins: [TDG, POWERS],
             worldFactoryAdmin: XRDNA,
             worldFactoryOtherAdmins: [TDG, POWERS],
+            worldExtResolverAdmin: XRDNA,
+            worldExtResolverOtherAdmins: [TDG, POWERS],
             vectorAddressAuthority: XRDNA
         }
     }
@@ -177,24 +217,36 @@ export class XRDNASigners {
             avatarRegistryOtherAdmins: [TDG],
             avatarFactoryAdmin: XRDNA,
             avatarFactoryOtherAdmins: [TDG],
+            avatarExtResolverAdmin: XRDNA,
+            avatarExtResolverOtherAdmins: [TDG],
             companyRegistryAdmin: XRDNA,
             companyRegistryOtherAdmins: [TDG],
             companyFactoryAdmin: XRDNA,
             companyFactoryOtherAdmins: [TDG],
+            companyExtResolverAdmin: XRDNA,
+            companyExtResolverOtherAdmins: [TDG],
             experienceRegistryAdmin: XRDNA,
             experienceRegistryOtherAdmins: [TDG],
             experienceFactoryAdmin: XRDNA,
             experienceFactoryOtherAdmins: [TDG],
+            experienceExtResolverAdmin: XRDNA,
+            experienceExtResolverOtherAdmins: [TDG],
+            extensionRegistryAdmin: XRDNA,
+            extensionRegistryOtherAdmins: [TDG],
             portalRegistryAdmin: XRDNA,
             portalRegistryOtherAdmins: [TDG],
             registrarRegistryAdmin: XRDNA,
             registrarRegistryOtherAdmins: [TDG],
             registrarFactoryAdmin: XRDNA,
             registrarFactoryOtherAdmins: [TDG],
+            registrarExtResolverAdmin: XRDNA,
+            registrarExtResolverOtherAdmins: [TDG],
             worldRegistryAdmin: XRDNA,
             worldRegistryOtherAdmins: [TDG],
             worldFactoryAdmin: XRDNA,
             worldFactoryOtherAdmins: [TDG],
+            worldExtResolverAdmin: XRDNA,
+            worldExtResolverOtherAdmins: [TDG],
             vectorAddressAuthority: XRDNA
         }
     }

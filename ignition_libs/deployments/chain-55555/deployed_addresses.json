@@ -1,0 +1,18 @@
+{
+  "Libraries#LibAccess": "0x38a024C0b412B9d1db8BC398140D00F5Af3093D4",
+  "Libraries#LibControlChange": "0x5fc748f1FEb28d7b76fa1c6B07D8ba2d5535177c",
+  "Libraries#LibEntityRemoval": "0xB82008565FdC7e44609fA118A4a681E92581e680",
+  "Libraries#LibRegistration": "0x8A93d247134d91e0de6f96547cB0204e5BE8e5D8",
+  "Libraries#LibRegistrar": "0xb9bEECD1A582768711dE1EE7B0A1d582D9d72a6C",
+  "Libraries#LibRegistry": "0xF32D39ff9f6Aa7a7A64d7a4F00a54826Ef791a55",
+  "RegistrarRegistryProxyModule#RegistrarRegistryProxy": "0xd6e1afe5cA8D00A2EFC01B89997abE2De47fdfAf",
+  "RegistrarRegistryModule#RegistrarRegistry": "0x6F6f570F45833E249e27022648a26F4076F48f78",
+  "RegistrarModule#Registrar": "0x976fcd02f7C4773dd89C309fBF55D5923B4c98a1",
+  "RegistrarProxyModule#RegistrarProxy": "0x19cEcCd6942ad38562Ee10bAfd44776ceB67e923",
+  "Libraries#LibVectorAddress": "0x2a810409872AfC346F9B5b26571Fd6eC42EA4849",
+  "WorldRegistryProxyModule#WorldRegistryProxy": "0x99dBE4AEa58E518C50a1c04aE9b48C9F6354612f",
+  "WorldRegistryModule#WorldRegistry": "0xCA8c8688914e0F7096c920146cd0Ad85cD7Ae8b9",
+  "Libraries#LibWorld": "0x40918Ba7f132E0aCba2CE4de4c4baF9BD2D7D849",
+  "WorldModule#World": "0xD42912755319665397FF090fBB63B1a31aE87Cee",
+  "WorldProxyModule#WorldProxy": "0xfcDB4564c18A9134002b9771816092C9693622e3"
+}

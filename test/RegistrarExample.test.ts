@@ -1,88 +1,107 @@
 import { Contract } from "ethers";
 import {ignition, ethers} from 'hardhat';
-import RegistrarExampleModule from '../ignition/RegistrarExample.module';
-import {abi as RegABI} from '../artifacts/contracts/registrar/RegistrarExample.sol/RegistrarExample.json'
-import {abi as SignersABI} from '../artifacts/contracts/interfaces/common/ISupportsSigners.sol/ISupportsSigners.json'
-import {abi as FundsABI} from '../artifacts/contracts/interfaces/common/ISupportsFunds.sol/ISupportsFunds.json'
-import {abi as OwnerABI} from '../artifacts/contracts/interfaces/common/ISupportsOwner.sol/ISupportsOwner.json'
-import {abi as RegistrarFactoryABI} from '../artifacts/contracts/registrar/RegistrarFactory.sol/RegistrarFactory.json'
-import {abi as RegInitABI} from '../artifacts/contracts/interfaces/registrar/IRegistrarInit.sol/IRegistrarInit.json';
-import { XRDNASigners } from "../src";
+import { AllLogParser, XRDNASigners, mapJsonToDeploymentAddressConfig, signTerms } from "../src";
 import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
 import { expect } from "chai";
 import { Signer } from "ethers";
+import DeployAllModule from "../ignition/modules/DeployAll.module";
+import {RegistrarRegistry, Registrar} from '../src';
+
+import HardhatDeployment from '../ignition/deployments/chain-55555/deployed_addresses.json';
 
 describe("RegistrarExample", () => {
 
-    let regContract: Contract;
-    let facContract: Contract;
     let signers: HardhatEthersSigner[];
     let registrarOwner: Signer;
+    let registrarRegistry: RegistrarRegistry;
+    let registrarRegistryOwner: Signer;
+    let logParser: AllLogParser;
     before(async () => {
         const xrdna = new XRDNASigners(ethers.provider);
-        const mod = await ignition.deploy(RegistrarExampleModule);
-        const addy = await mod.registrarExample.getAddress();
-        const facAddy = await mod.factory.getAddress();
+        const mod = await ignition.deploy(DeployAllModule);
+        const registryAddr = await mod.registrarRegistry.getAddress();
+        const worldAddr = await mod.world.getAddress();
+        const worldRegistryAddr = await mod.worldRegistry.getAddress();
+        const registrarAddr = await mod.registrar.getAddress();
+
+        console.log(`RegistrarRegistry: ${registryAddr}`);
+        console.log(`World: ${worldAddr}`);
+        console.log(`WorldRegistry: ${worldRegistryAddr}`);
+        console.log(`Registrar: ${registrarAddr}`);
+
         signers = await ethers.getSigners();
+        registrarRegistryOwner = xrdna.testingConfig.registrarRegistryAdmin;
+        registrarOwner = signers[3];
+        const depConfig = mapJsonToDeploymentAddressConfig(HardhatDeployment);
+        logParser =  new AllLogParser(depConfig);
 
-        registrarOwner = xrdna.testingConfig.registrarRegistryAdmin;
-
-        regContract = new Contract(addy, [
-            //...RegABI,
-            ...SignersABI,
-            ...FundsABI,
-            ...OwnerABI,
-            ...RegInitABI
-        ], xrdna.testingConfig.registrarRegistryAdmin);
-
-        facContract = new Contract(facAddy, [
-            ...RegistrarFactoryABI
-        ], xrdna.testingConfig.registrarRegistryAdmin);
-        
+        registrarRegistry = new RegistrarRegistry({
+            address: registryAddr,
+            admin: registrarRegistryOwner,
+            logParser
+        });
     });
 
-    /*
+    
     it("Should add signers", async () => {
-       const t = await  regContract.addSigners([signers[9].address]);
+       const t = await  registrarRegistry.addSigners([signers[9].address]);
        const r = await t.wait();
-       expect(r.status).to.be.equal(1);
-       //console.log(r);
+       expect(r).to.be.not.undefined;
+       expect(r!.status).to.be.equal(1);
 
-       const is = await regContract.isSigner(signers[9].address);
+       const is = await registrarRegistry.isSigner(signers[9].address);
        expect(is).to.be.true;
 
-       const owner = await regContract.owner(); 
-         expect(owner).to.be.equal(await registrarOwner.getAddress());
+       const owner = await registrarRegistry.owner(); 
+        expect(owner).to.be.equal(await registrarRegistryOwner.getAddress());
     });
-    */
 
-    it("Factory should initialize", async () => {
-        const args = {
-            sendTokensToOwner: true,
+    it("Should register registrar", async () => {
+        const regTerms = {
+            fee: 0n,
+            coveragePeriodDays: 0n,
+            gracePeriodDays: 30n
+        };
 
-            //globally unique name of the registrar
-            name: "Test Registrar",
+        const expiration = BigInt(Math.ceil(Date.now() / 1000) + 60);
 
-            //the owner to assign to the registrar contract and transfer
-            //any initial tokens to if required
+        const sig = await signTerms({
+            signer: registrarOwner,
+            terms: regTerms,
+            termsOwner: registrarRegistry.address,
+            expiration
+        });
+        
+        const t = await registrarRegistry.registerRemovableRegistrar({
             owner: await registrarOwner.getAddress(),
-
-            //the registration terms for the registrar
-            worldRegistrationTerms: {
-                fee: 0n,
-
-                coveragePeriod: 0,
-
-                gracePeriod: 0,
-            }
-        }
-        const ifc = regContract.interface;
-        const enc = ifc.encodeFunctionData("init", [args]);
-        console.log("Selector", enc.substring(0, 10));
-        const t = await regContract.init(args);
-        //const t = await facContract.simpleInitRegistrar(await registrarOwner.getAddress(), regContract.getAddress());
-        const r = await t.wait();
+            name: "TestRegistrar",
+            sendTokensToOwner: true,
+            tokens: ethers.parseEther("0.01"),
+            terms: regTerms,
+            expiration,
+            ownerTermsSignature: sig
+        });
+        const r = await t.receipt;
+        expect(r).to.be.not.undefined;
         expect(r.status).to.be.equal(1);
-        //console.log(r);
+        const logMap = logParser.parseLogs(r);
+        const adds = logMap.get("RegistryAddedEntity");
+        expect(adds).to.be.not.undefined;
+        expect(adds!.length).to.be.equal(1);
+        const addr = adds![0].args[0];
+        expect(addr).to.be.not.undefined;
+        
+        const registrar = new Registrar({
+            registrarAddress: addr,
+            admin: registrarOwner,
+            logParser
+        });
+        const owner = await registrar.owner();
+        expect(owner).to.be.equal(await registrarOwner.getAddress());
+        const isSigner = await registrar.isSigner(await registrarOwner.getAddress());
+        expect(isSigner).to.be.true
     });
+    
+   
+    
 });
