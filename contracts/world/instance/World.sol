@@ -20,6 +20,8 @@ struct WorldConstructorArgs {
     address owningRegistry;
     address registrarRegistry;
     address companyRegistry;
+    address avatarRegistry;
+    address experienceRegistry;
 }
 
 contract World  is EntityShell {
@@ -29,6 +31,8 @@ contract World  is EntityShell {
     IWorldRegistry public immutable worldRegistry;
     IRegistrarRegistry public immutable registrarRegistry;
     address public immutable companyRegistry;
+    address public immutable avatarRegistry;
+    address public immutable experienceRegistry;
 
     modifier onlyRegistry {
         require(msg.sender == address(worldRegistry), "World: only world registry");
@@ -40,9 +44,13 @@ contract World  is EntityShell {
         require(args.owningRegistry != address(0), "World: owningRegistry cannot be zero address");
         require(args.registrarRegistry != address(0), "World: registrarRegistry cannot be zero address");
         require(args.companyRegistry != address(0), "World: companyRegistry cannot be zero address");
+        require(args.avatarRegistry != address(0), "World: avatarRegistry cannot be zero address");
+        require(args.experienceRegistry != address(0), "World: experienceRegistry cannot be zero address");
         registrarRegistry = IRegistrarRegistry(args.registrarRegistry);
         worldRegistry = IWorldRegistry(args.owningRegistry);        
         companyRegistry = args.companyRegistry;
+        avatarRegistry = args.avatarRegistry;
+        experienceRegistry = args.experienceRegistry;
     }
 
     function version() external pure returns (Version memory) {

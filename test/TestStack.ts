@@ -1,4 +1,4 @@
-import { RegistrarRegistry, XRDNASigners, AllLogParser, mapJsonToDeploymentAddressConfig, Registrar, signTerms, World, DeploymentAddressConfig, signVectorAddress, VectorAddress } from "../src";
+import { RegistrarRegistry, XRDNASigners, AllLogParser, mapJsonToDeploymentAddressConfig, Registrar, signTerms, World, DeploymentAddressConfig, signVectorAddress, VectorAddress, Company, RegistrationTerms } from "../src";
 import {ethers, ignition} from 'hardhat';
 import DeployAllModule from "../ignition/modules/DeployAll.module";
 
@@ -78,7 +78,7 @@ export class TestStack {
         });
     }
 
-    async createWorld(owner: Signer,  tokens?: bigint, registrar?: Registrar): Promise<World> {
+    async createWorld(owner: Signer,  registrar?: Registrar, tokens?: bigint, ): Promise<World> {
         const admin = this.xrdnaSigners.testingConfig.registrarRegistryAdmin;
         if(!registrar) {
             registrar = await this.createRegistrar(admin);
@@ -132,5 +132,45 @@ export class TestStack {
             admin: owner,
             logParser: this.logParser!
         });
+    }
+
+    async createCompany(owner: Signer, world?: World, registrar?: Registrar, tokens?: bigint): Promise<Company> {
+        if(!world) {
+            world = await this.createWorld(owner, registrar, tokens);
+        }
+
+        const terms: RegistrationTerms = {
+            fee: 0n,
+            coveragePeriodDays: 0n,
+            gracePeriodDays: 30n
+        };
+        const expiration = BigInt(Math.ceil(Date.now() / 1000) + 60);
+        const termsSign = await signTerms({
+            terms,
+            signer: owner,
+            termsOwner: world!.address,
+            expiration
+        });
+        const req = {
+            sendTokensToCompanyOwner: false,
+            owner: await owner.getAddress(),
+            name: 'Test Company',
+            terms,
+            ownerTermsSignature: termsSign,
+            expiration
+        }
+
+                
+
+        const r = await world!.registerCompany(req);
+        if(!r || !r.receipt || !r.companyAddress) {
+            throw new Error('Company not created');
+        }
+        return new Company({
+            address: r.companyAddress.toString(),
+            admin: owner,
+            logParser: this.logParser!
+        });
+        
     }
 }

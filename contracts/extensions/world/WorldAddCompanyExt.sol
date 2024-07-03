@@ -19,7 +19,6 @@ import {IWorld} from '../../world/instance/IWorld.sol';
 import {ICompanyRegistry, CreateCompanyArgs} from '../../company/registry/ICompanyRegistry.sol';
 import {LibWorld, WorldStorage} from '../../world/instance/LibWorld.sol';
 import {VectorAddress} from '../../libraries/LibVectorAddress.sol';
-import "hardhat/console.sol";
 
 contract WorldAddCompanyExt is IExtension, IWorldAddCompany {
 
@@ -98,7 +97,6 @@ contract WorldAddCompanyExt is IExtension, IWorldAddCompany {
         WorldStorage storage ws = LibWorld.load();
         ++ws.nextPValue;
         base.p = ws.nextPValue;
-        console.log("P value", base.p);
 
         company = companyRegistry.createCompany(CreateCompanyArgs({
             sendTokensToOwner: args.sendTokensToOwner,

@@ -63,7 +63,9 @@ struct CompanyInitArgs {
 interface ICompany is IAccessControl, IRemovableEntity {
 
     event CompanyAddedExperience(address indexed experience, uint256 indexed portalId);
-    event CompanyRemovedExperience(address indexed experience, uint256 indexed portalId);
+    event CompanyDeactivatedExperience(address indexed experience, string reason);
+    event CompanyReactivatedExperience(address indexed experience);
+    event CompanyRemovedExperience(address indexed experience, string reason, uint256 indexed portalId);
     event CompanyAddedExperienceCondition(address indexed experience, address indexed condition);
     event CompanyRemovedExperienceCondition(address indexed experience);
     event CompanyChangedExperiencePortalFee(address indexed experience, uint256 indexed fee);

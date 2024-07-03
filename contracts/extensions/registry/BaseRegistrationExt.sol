@@ -9,7 +9,7 @@ import {LibFactory} from '../../libraries/LibFactory.sol';
 import {LibExtensions, AddSelectorArgs} from '../../libraries/LibExtensions.sol';
 import {IRegistration, CreateEntityArgs, ChangeEntityTermsArgs} from '../../interfaces/registry/IRegistration.sol';
 import {LibRegistration} from '../../libraries/LibRegistration.sol';
-
+import {VectorAddress} from '../../libraries/LibVectorAddress.sol';
 
 abstract contract BaseRegistrationExt is IExtension, IRegistration {
 
@@ -45,6 +45,10 @@ abstract contract BaseRegistrationExt is IExtension, IRegistration {
 
     function getEntityByName(string calldata name) public view returns (address) {
         return LibRegistration.getEntityByName(name);
+    }
+
+    function getEntityByVector(VectorAddress calldata vector) public view returns (address) {
+        return LibRegistration.getEntityByVector(vector);
     }
 
     function changeEntityTerms(ChangeEntityTermsArgs calldata args) public override {

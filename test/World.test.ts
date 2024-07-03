@@ -48,12 +48,30 @@ describe("World", () => {
             expiration
         }
 
-                
-
         const r = await world!.registerCompany(req);
         expect(r).to.not.be.null;
         expect(r.receipt.status).to.equal(1);
         expect(r.companyAddress).to.not.be.null;
+
+    });
+
+    it("Should register an avatar", async () => {
+        const owner = signers[5];
+        const req = {
+            sendTokensToOwner: false,
+            avatarOwner: await owner.getAddress(),
+            username: 'testMe',
+            defaultExperience: world!.address, //FIXME
+            canReceiveTokensOutsideOfExperience: false,
+            appearanceDetails: "https://myavatar.com/testMe"
+        }
+
+                
+
+        const r = await world!.registerAvatar(req);
+        expect(r).to.not.be.null;
+        expect(r.receipt.status).to.equal(1);
+        expect(r.avatarAddress).to.not.be.null;
 
     });
 });

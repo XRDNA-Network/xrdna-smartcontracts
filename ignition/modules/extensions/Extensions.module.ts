@@ -14,7 +14,12 @@ import AccessExtModule from "../extensions/AccessExt.module";
 import CompanyRegistrationExtModule from "./registry/company/CompanyRegistrationExt.module";
 import CompanyRemovalExtModule from "./registry/company/CompanyRemovalExt.module";
 import WorldAddCompanyExtModule from "./world/WorldAddCompanyExt.module";
+import WorldAddAvatarExtModule from "./world/WorldAddAvatarExt.module";
 import AvatarRegistrationExtModule from "./registry/avatar/AvatarRegistrationExt.module";
+import ExperienceRegistrationExtModule from "./registry/experience/ExperienceRegistrationExt.module";
+import ExperienceRemovalExtModule from "./registry/experience/ExperienceRemovalExt.module";
+import WorldAddExpForCompanyModule from "./world/WorldAddExpForCompany.module";
+import CompanyAddExperienceExtModule from "./company/CompanyAddExperienceExt.module";
 export interface ModOut {
     ignitionModule: ReturnType<typeof buildModule>,
 }
@@ -35,16 +40,21 @@ export default buildModule("Extensions", (m) => {
         const changeWorldRegExt = m.useModule(ChangeWorldRegExtModule);
         
         const worldRegExt = m.useModule(WorldRegistrationExtModule);
-        
         const worldRemovalExt = m.useModule(WorldRemovalExtModule);
+        const worldAddCompanyExt = m.useModule(WorldAddCompanyExtModule);
+        const worldAddAvatarExt = m.useModule(WorldAddAvatarExtModule);
+        const worldAddExpForCompanyExt = m.useModule(WorldAddExpForCompanyModule).worldAddExpForCompanyExtension;
 
         const companyRegistrationExt = m.useModule(CompanyRegistrationExtModule);
         const companyRemovalExt = m.useModule(CompanyRemovalExtModule);
+        const companyAddExperienceExt = m.useModule(CompanyAddExperienceExtModule).companyAddExperienceExtension;
 
-        const worldAddCompanyExt = m.useModule(WorldAddCompanyExtModule);
 
         const avatarRegistrationExtension = m.useModule(AvatarRegistrationExtModule).avatarRegistrationExtension;
         
+
+        const experienceRegistrationExtension = m.useModule(ExperienceRegistrationExtModule).experienceRegistrationExtension;
+        const experienceRemovalExtension = m.useModule(ExperienceRemovalExtModule).experienceRemovalExtension;
 
         const installation = m.call(coreReg, "addExtensions", [[
             accExt.accessExtension,
@@ -61,15 +71,19 @@ export default buildModule("Extensions", (m) => {
             changeWorldRegExt.changeWorldRegistrarExtention,
             
             worldRegExt.worldRegistrationExtension,
-            
             worldRemovalExt.worldRemovalExtension,
-
             worldAddCompanyExt.worldAddCompanyExtension,
+            worldAddAvatarExt.worldAddAvatarExtension,
+            worldAddExpForCompanyExt,
 
             companyRegistrationExt.companyRegistrationExtension,
             companyRemovalExt.companyRemovalExtension,
+            companyAddExperienceExt,
 
-            avatarRegistrationExtension
+            avatarRegistrationExtension,
+
+            experienceRegistrationExtension,
+            experienceRemovalExtension
 
             
         ]],{
@@ -95,11 +109,17 @@ export default buildModule("Extensions", (m) => {
             worldRegistrationExtension: worldRegExt.worldRegistrationExtension,
             worldRemovalExtension: worldRemovalExt.worldRemovalExtension,
             worldAddCompanyExtension: worldAddCompanyExt.worldAddCompanyExtension,
+            worldAddAvatarExtension: worldAddAvatarExt.worldAddAvatarExtension,
+            worldAddExpForCompanyExtension: worldAddExpForCompanyExt,
             
             companyRegistrationExtension: companyRegistrationExt.companyRegistrationExtension,
             companyRemovalExtension: companyRemovalExt.companyRemovalExtension,
+            companyAddExperienceExtension: companyAddExperienceExt,
 
             avatarRegistrationExtension: avatarRegistrationExtension,
+
+            experienceRegistrationExtension: experienceRegistrationExtension,
+            experienceRemovalExtension: experienceRemovalExtension,
             
         }
     });

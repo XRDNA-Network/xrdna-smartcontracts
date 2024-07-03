@@ -36,7 +36,6 @@ interface IRegistration {
     function isRegistered(address addr) external view returns (bool);
     function getEntityByName(string calldata name) external view returns (address);
 
-
      /**
      * @dev called by the entity's terms controller to change the terms of the entity. This requires a 
      * signature from an entity signer to authorize the change. The signature is a hash of the terms

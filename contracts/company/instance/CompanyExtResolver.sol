@@ -13,6 +13,7 @@ contract CompanyExtResolver is BaseExtResolver {
         extNames[0] = LibExtensionNames.ACCESS;
         extNames[1] = LibExtensionNames.REMOVABLE_ENTITY;
         extNames[2] = LibExtensionNames.TERMS_OWNER;
+        extNames[3] = LibExtensionNames.COMPANY_ADD_EXPERIENCE;
         //TODO: add experience extensions
         //TODO: add asset extensions
         

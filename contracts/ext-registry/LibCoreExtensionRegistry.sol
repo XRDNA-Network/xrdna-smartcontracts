@@ -50,7 +50,10 @@ library LibCoreExtensionRegistry {
             ExtensionMetadata memory metadata = _extensions[i].metadata();
             require(metadata.version.major != 0, "LibCoreExtension: invalid extension version. Must have major version >= 1");
             string memory name = metadata.name.lower();
-            require(ds.extensionsByName[name] == address(0), "LibCoreExtension: extension already registered");
+            if(ds.extensionsByName[name] != address(0)) {
+                string memory err = string(abi.encodePacked("LibCoreExtension: extension already registered: ", name));
+                revert(err);
+            }
             ds.extensionsByName[name] = address(_extensions[i]);
             ds.extensions[address(_extensions[i])] = metadata;
         }

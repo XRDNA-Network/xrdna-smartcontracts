@@ -33,10 +33,6 @@ struct NewCompanyArgs {
 
 interface IWorldAddCompany {
 
-    event WorldAddedCompany(address indexed company, address indexed owner);
-    event WorldDeactivatedCompany(address indexed company, string reason);
-    event WorldReactivatedCompany(address indexed company);
-    event WorldRemovedCompany(address indexed company, string reason);
 
     /**
      * @dev Registers a new company contract. Must be called by a world signer

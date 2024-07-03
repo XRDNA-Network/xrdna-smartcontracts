@@ -164,6 +164,39 @@ export class World {
         };
     }
 
+    async registerAvatar(request: IWorldAvatarRegistrationRequest, tokens?: bigint): Promise<IAvatarRegistrationResult> {
+
+        const initData = ethers.AbiCoder.defaultAbiCoder().encode([
+            'tuple(bool canReceiveTokensOutsideExperience, address defaultExperience, bytes appearanceDetails)',
+        ],[{
+            canReceiveTokensOutsideExperience: request.canReceiveTokensOutsideOfExperience,
+            defaultExperience: request.defaultExperience,
+            appearanceDetails: Buffer.from(request.appearanceDetails)
+        }]);
+        const t = await RPCRetryHandler.withRetry(() => this.world.registerAvatar({
+            owner: request.avatarOwner,
+            sendTokensToOwner: request.sendTokensToOwner,
+            name: request.username,
+            initData
+        }, {
+            value: tokens
+        }));
+        const receipt = await t.wait();
+        if(!receipt.status) {
+            throw new Error(`Transaction failed: ${receipt.transactionHash}`);
+        }
+        const logs = this.logParser.parseLogs(receipt);
+        const regs = logs.get(LogNames.WorldAddedAvatar);
+        if (!regs || regs.length === 0) {
+            throw new Error("WorldAddedAvatar event not found in logs");
+        }
+        const reg = regs[0];
+        return {
+            avatarAddress: reg.args[0],
+            receipt
+        };
+    }
+
     /*
     async setHook(hook: string): Promise<TransactionResponse> {
         return await RPCRetryHandler.withRetry(() => this.world.setHook(hook));

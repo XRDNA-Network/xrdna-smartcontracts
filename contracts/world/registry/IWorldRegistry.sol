@@ -22,7 +22,12 @@ struct CreateWorldArgs {
     uint256 expiration;
 }
 
-interface IWorldRegistry is IRegistration, IRegistryFactory, IAccessControl, IEntityRemoval, IControlChange {
+interface IWorldRegistry is IRegistration, 
+                            IRegistryFactory, 
+                            IAccessControl, 
+                            IEntityRemoval, 
+                            IControlChange {
+                                
     function registrarRegistry() external view returns (address);
     function createWorld(CreateWorldArgs calldata args) external payable returns (address);
     function isVectorAddressAuthority(address a) external view returns (bool);

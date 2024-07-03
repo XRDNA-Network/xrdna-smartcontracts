@@ -43,7 +43,7 @@ contract CompanyRegistrationExt is BaseRegistrationExt {
      * @dev Installs the extension.
      */
     function install(address myAddress) external {
-        SelectorInfo[] memory selectors = new SelectorInfo[](4);
+        SelectorInfo[] memory selectors = new SelectorInfo[](5);
 
         selectors[0] = SelectorInfo({
             selector: super.getEntityByName.selector,
@@ -60,6 +60,10 @@ contract CompanyRegistrationExt is BaseRegistrationExt {
         selectors[3] = SelectorInfo({
             selector: this.createCompany.selector,
             name: "createCompany(CreateCompanyArgs)"
+        });
+        selectors[4] = SelectorInfo({
+            selector: super.getEntityByVector.selector,
+            name: "getEntityByVector(VectorAddress)"
         });
        
         LibExtensions.addExtensionSelectors(AddSelectorArgs({

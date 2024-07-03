@@ -1,14 +1,12 @@
 import { buildModule } from "@nomicfoundation/hardhat-ignition/modules";
 import LibrariesModule from "../../Libraries.module";
-import { XRDNASigners } from "../../../../src";
-import { network } from "hardhat";
 import WorldRegistryModule from "../registry/WorldRegistry.module";
-import Extensions from "../../extensions/Extensions.module";
-import { Future } from "@nomicfoundation/ignition-core";
 import RegistrarRegistryModule from "../../registrar/registry/RegistrarRegistry.module";
 import FactoryExtModule from "../../extensions/registry/FactoryExt.module";
 import WorldExtResolverModule from "./WorldExtResolver.module";
 import CompanyRegistryModule from "../../company/registry/CompanyRegistry.module";
+import AvatarRegistryModule from "../../avatar/registry/AvatarRegistry.module";
+import ExpRegistryModule from "../../experience/registry/ExperienceRegistry.module";
 
 export default buildModule("WorldModule", (m) => {
 
@@ -18,6 +16,8 @@ export default buildModule("WorldModule", (m) => {
         const cReg = m.useModule(CompanyRegistryModule).companyRegistry;
         const regReg = m.useModule(RegistrarRegistryModule).registrarRegistry;
         const factoryExt = m.useModule(FactoryExtModule).factoryExtension;
+        const aReg = m.useModule(AvatarRegistryModule).avatarRegistry;
+        const expReg = m.useModule(ExpRegistryModule).experienceRegistry;
 
 
         //this registrar is cloned so any admin props will be replaced once cloned and initialized with new 
@@ -26,7 +26,9 @@ export default buildModule("WorldModule", (m) => {
             extensionResolver: wExtResolver,
             owningRegistry: worldReg,
             registrarRegistry: regReg,
-            companyRegistry: cReg
+            companyRegistry: cReg,
+            avatarRegistry: aReg,
+            experienceRegistry: expReg
         }
         
         const rr = m.contract("World", [args], {
@@ -40,6 +42,8 @@ export default buildModule("WorldModule", (m) => {
                 worldReg,
                 regReg,
                 cReg,
+                aReg,
+                expReg,
                 libs.LibExtensions,
                 libs.LibAccess
 

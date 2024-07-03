@@ -14,13 +14,19 @@ library LibExtensionNames {
     string public constant WORLD_REGISTRATION = "WorldRegistrationExt";
     string public constant WORLD_REMOVAL = "WorldRemovalExt";
     string public constant WORLD_ADD_COMPANY  = "WorldAddCompanyExt";
+    string public constant WORLD_ADD_AVATAR = "WorldAddAvatarExt";
+    string public constant WORLD_ADD_EXPERIENCE = "WorldAddExpForCompanyExt";
 
     string public constant CHANGE_REGISTRAR = "ChangeRegistrarExt";
     string public constant TERMS_OWNER = "TermsOwnerExt";
 
     string public constant COMPANY_REGISTRATION = "CompanyRegistrationExt";
     string public constant COMPANY_REMOVAL = "CompanyRemovalExt";
+    string public constant COMPANY_ADD_EXPERIENCE = "CompanyAddExperienceExt";
 
     string public constant AVATAR_REGISTRATION = "AvatarRegistrationExt";
+
+    string public constant EXPERIENCE_REGISTRATION = "ExperienceRegistrationExt";
+    string public constant EXPERIENCE_REMOVAL = "ExperienceRemovalExt";
     
 }

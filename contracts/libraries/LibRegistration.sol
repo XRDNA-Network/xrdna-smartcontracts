@@ -75,6 +75,12 @@ library LibRegistration {
         RegistrationStorage storage rs = load();
         return rs.registrationsByName[nm.lower()];
     }
+
+    function getEntityByVector(VectorAddress memory vector) public view returns (address) {
+        RegistrationStorage storage rs = load();
+        bytes32 hashed = keccak256(bytes(vector.asLookupKey()));
+        return rs.registrationsByVector[hashed];
+    }
     
     function registerEntityNoRemoval(RegistrationWithTermsAndVector memory args) public {
         address a = args.entity;

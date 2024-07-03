@@ -9,6 +9,8 @@ import CompanyRegistryModule from "./company/registry/CompanyRegistry.module";
 import CompanyModule from "./company/instance/Company.module";
 import AvatarRegistryModule from "./avatar/registry/AvatarRegistry.module";
 import AvatarModule from "./avatar/instance/Avatar.module";
+import ExperienceRegistryModule from "./experience/registry/ExperienceRegistry.module";
+import ExperienceModule from "./experience/instance/Experience.module";
 
 export default buildModule("DeployAllModule", (m) => {
 
@@ -24,6 +26,9 @@ export default buildModule("DeployAllModule", (m) => {
     const avatarReg = m.useModule(AvatarRegistryModule);
     const avatar = m.useModule(AvatarModule);
 
+    const expReg = m.useModule(ExperienceRegistryModule);
+    const exp = m.useModule(ExperienceModule);
+
     return {
         ...libs,
         ...eReg,
@@ -34,6 +39,8 @@ export default buildModule("DeployAllModule", (m) => {
         ...companyReg,
         ...company,
         ...avatarReg,
-        ...avatar
+        ...avatar,
+        ...expReg,
+        ...exp
     }
 });
