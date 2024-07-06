@@ -20,6 +20,17 @@ import ExperienceRegistrationExtModule from "./registry/experience/ExperienceReg
 import ExperienceRemovalExtModule from "./registry/experience/ExperienceRemovalExt.module";
 import WorldAddExpForCompanyModule from "./world/WorldAddExpForCompany.module";
 import CompanyAddExperienceExtModule from "./company/CompanyAddExperienceExt.module";
+
+import AssetConditionExtModule from "./asset/AssetConditionExt.module";
+
+import ERC20InfoExtModule from "./asset/erc20/ERC20InfoExt.module";
+import ERC20TransferExtModule from "./asset/erc20/ERC20TransferExt.module";
+import ERC20MintingExtModule from "./asset/erc20/ERC20MintingExt.module";
+
+import ERC721InfoExtModule from "./asset/erc721/ERC721InfoExt.module";
+import ERC721TransferExtModule from "./asset/erc721/ERC721TransferExt.module";
+import ERC721MintingExtModule from "./asset/erc721/ERC721MintingExt.module";
+
 export interface ModOut {
     ignitionModule: ReturnType<typeof buildModule>,
 }
@@ -56,7 +67,17 @@ export default buildModule("Extensions", (m) => {
         const experienceRegistrationExtension = m.useModule(ExperienceRegistrationExtModule).experienceRegistrationExtension;
         const experienceRemovalExtension = m.useModule(ExperienceRemovalExtModule).experienceRemovalExtension;
 
-        const installation = m.call(coreReg, "addExtensions", [[
+        const assetConditionExt = m.useModule(AssetConditionExtModule).assetConditionExtension;
+        const erc20InfoExt = m.useModule(ERC20InfoExtModule).ERC20InfoExtension;
+        const erc20TransferExt = m.useModule(ERC20TransferExtModule).ERC20TransferExtension;
+        const erc20MintingExt = m.useModule(ERC20MintingExtModule).ERC20MintingExtension;
+
+        const erc721InfoExt = m.useModule(ERC721InfoExtModule).ERC721InfoExtension;
+        const erc721TransferExt = m.useModule(ERC721TransferExtModule).ERC721TransferExtension;
+        const erc721MintingExt = m.useModule(ERC721MintingExtModule).ERC721MintingExtension;
+
+
+        const batch1 = m.call(coreReg, "addExtensions", [[
             accExt.accessExtension,
             
             remEntity.removableEntityExtension,
@@ -72,6 +93,15 @@ export default buildModule("Extensions", (m) => {
             
             worldRegExt.worldRegistrationExtension,
             worldRemovalExt.worldRemovalExtension,
+        ]], {
+            id: 'batch1',
+            after: [
+                coreReg
+            ]
+        })
+
+        const batch2 = m.call(coreReg, "addExtensions", [[
+
             worldAddCompanyExt.worldAddCompanyExtension,
             worldAddAvatarExt.worldAddAvatarExtension,
             worldAddExpForCompanyExt,
@@ -83,12 +113,29 @@ export default buildModule("Extensions", (m) => {
             avatarRegistrationExtension,
 
             experienceRegistrationExtension,
-            experienceRemovalExtension
+            experienceRemovalExtension,
 
+            assetConditionExt,
             
         ]],{
+            id: 'batch2',
             after: [
-                coreReg
+                batch1
+            ]
+        });
+
+        m.call(coreReg, "addExtensions", [[
+            erc20InfoExt,
+            erc20TransferExt,
+            erc20MintingExt,
+
+            erc721InfoExt,
+            erc721TransferExt,
+            erc721MintingExt,
+        ]], {
+            id: 'batch3',
+            after: [
+                batch2
             ]
         });
 
@@ -120,6 +167,14 @@ export default buildModule("Extensions", (m) => {
 
             experienceRegistrationExtension: experienceRegistrationExtension,
             experienceRemovalExtension: experienceRemovalExtension,
+
+            assetConditionExtension: assetConditionExt,
+            erc20InfoExtension: erc20InfoExt,
+            erc20TransferExtension: erc20TransferExt,
+            erc20MintingExtension: erc20MintingExt,
+            erc721InfoExtension: erc721InfoExt,
+            erc721TransferExtension: erc721TransferExt,
+            erc721MintingExtension: erc721MintingExt,
             
         }
     });

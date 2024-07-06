@@ -21,14 +21,12 @@ export default buildModule("RegistrarModule", (m) => {
         
         const fe = m.contract("Registrar", [args], {
             libraries: {
-                LibExtensions: libs.LibExtensions,
                 LibAccess: libs.LibAccess
             },
             after: [
                 regExtResolver,
                 regReg,
                 worldReg,
-                libs.LibExtensions,
                 libs.LibAccess
             ]
         });

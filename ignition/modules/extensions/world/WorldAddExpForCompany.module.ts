@@ -8,12 +8,9 @@ export default buildModule("WorldAddExpForCompanyExtModule", (m) => {
         const coreReg = m.useModule(CoreExtRegistryModule).extensionsRegistry;
         
         const wac = m.contract("WorldAddExpForCompanyExt", [], {
-            libraries: {
-                LibExtensions: libs.LibExtensions,
-            },
+            
             after: [
                 coreReg,
-                libs.LibExtensions,
                 libs.LibAccess
             ]
         });

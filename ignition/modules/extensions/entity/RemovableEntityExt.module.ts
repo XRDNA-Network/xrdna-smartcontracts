@@ -8,12 +8,9 @@ export default buildModule("RemovableEntityExtModule", (m) => {
         const coreReg = m.useModule(CoreExtRegistryModule).extensionsRegistry;
         
         const re = m.contract("RemovableEntityExt", [], {
-            libraries: {
-                LibExtensions: libs.LibExtensions,
-            },
+            
             after: [
-                coreReg,
-                libs.LibExtensions,
+                coreReg
             ]
         });
        // m.call(coreReg, "addExtension", [re])

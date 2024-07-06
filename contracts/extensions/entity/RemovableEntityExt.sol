@@ -76,24 +76,8 @@ contract RemovableEntityExt is IExtension, IRemovableEntity {
         //no-op
     }
 
-    /**
-     * Initialize any storage related to the extension
-     */
-    function initStorage(ExtensionInitArgs calldata args) external {
-        //will be handled in init
-    }
-
     function init(CommonInitArgs calldata args) external {
-        RemovableEntityStorage storage re = LibRemovableEntity.load();
-        require(re.termsOwner == address(0), "RemovableEntityExt: already initialized");
-        require(re.registry != address(0), "RemovableEntityExt: registry cannot be zero address");
-        require(args.termsOwner != address(0), "RemovableEntityExt: terms owner cannot be zero address");
-
-        re.name = args.name;
-        re.termsOwner = args.termsOwner;
-        re.active = true;
-        re.vector = args.vector;
-        re.registry = args.registry;
+       LibRemovableEntity.init(args);
     }
 
 

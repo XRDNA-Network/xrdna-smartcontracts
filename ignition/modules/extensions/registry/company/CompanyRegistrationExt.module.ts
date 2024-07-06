@@ -10,12 +10,10 @@ export default buildModule("CompanyRegistrationExtModule", (m) => {
         
         const rre = m.contract("CompanyRegistrationExt", [], {
             libraries: {
-                LibExtensions: libs.LibExtensions,
                 LibRegistration: libs.LibRegistration,
             },
             after: [
                 coreReg,
-                libs.LibExtensions,
                 libs.LibRegistration,
                 libs.LibAccess
             ]

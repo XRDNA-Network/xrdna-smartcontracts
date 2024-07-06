@@ -9,12 +9,10 @@ export default buildModule("FactoryExtModule", (m) => {
         
         const fe = m.contract("FactoryExt", [], {
             libraries: {
-                LibExtensions: libs.LibExtensions,
                 LibFactory: libs.LibFactory
             },
             after: [
                 coreReg,
-                libs.LibExtensions,
                 libs.LibFactory
             ]
         });

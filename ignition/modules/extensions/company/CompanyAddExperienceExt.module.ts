@@ -9,12 +9,10 @@ export default buildModule("CompanyAddExperienceExtModule", (m) => {
         
         const wac = m.contract("CompanyAddExperienceExt", [], {
             libraries: {
-                LibExtensions: libs.LibExtensions,
                 LibAccess: libs.LibAccess,
             },
             after: [
                 coreReg,
-                libs.LibExtensions,
                 libs.LibAccess
             ]
         });

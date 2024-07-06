@@ -57,7 +57,7 @@ library LibExtensions {
     /**
      * @dev Checks whether a selector can be called
      */
-     function checkCallable(bytes4 selector) external view returns (address) {
+     function checkCallable(bytes4 selector) internal view returns (address) {
         ExtensionStorage storage ds = load();
         Selector storage s = ds.targets[selector];
         require(s.target != address(0), "LibExtension: no extension supports fn selector");
@@ -70,7 +70,7 @@ library LibExtensions {
     /**
      * @dev Called by extension manager to install extensions into its storage at deployment time.
      */
-    function installExtension(IExtension impl) external {
+    function installExtension(IExtension impl) internal {
         //we have to delegate call the install function and pass the address of the extension to the call
         //so that it uses its implementation address but the storage of this contract
         ExtensionStorage storage ds = load();
@@ -95,7 +95,7 @@ library LibExtensions {
     /**
      * @dev Called by extension manager to upgrade an extension.
      */
-    function upgradeExtension(IExtension newImpl) external {
+    function upgradeExtension(IExtension newImpl) internal {
         ExtensionStorage storage ds = load();
         ExtensionMetadata memory meta = newImpl.metadata();
         string memory name = meta.name.lower();
@@ -125,7 +125,7 @@ library LibExtensions {
         emit ICoreApp.ExtensionUpgraded(name, ds.metadata[address(newImpl)].metadata.version);
     }
 
-    function rollbackExtension(IExtension prevVersion) external {
+    function rollbackExtension(IExtension prevVersion) internal {
         ExtensionStorage storage ds = load();
         ExtensionMetadata memory meta = prevVersion.metadata();
         string memory name = meta.name.lower();
@@ -157,7 +157,7 @@ library LibExtensions {
     /**
      * @dev Called by extension to add multiple selectors to its list of supported functions.
      */
-    function addExtensionSelectors(AddSelectorArgs calldata args) external {
+    function addExtensionSelectors(AddSelectorArgs memory args) internal {
         ExtensionStorage storage ds = load();
         ExtensionEntry storage e = ds.metadata[args.impl];
         for (uint256 i = 0; i < args.selectors.length; i++) {
@@ -253,7 +253,7 @@ library LibExtensions {
         return !e.enabled ? Version(0,0) : e.metadata.version;
     }
 
-    function callExtensionWithResolver(bytes4 sel, bytes calldata data, IExtensionResolver resolver) external returns (bytes memory) {
+    function callExtensionWithResolver(bytes4 sel, bytes calldata data, IExtensionResolver resolver) internal returns (bytes memory) {
         address target = resolver.lookup(sel);
         require(target != address(0), "LibExtension: no extension supports fn selector");
         return _doCall(target, data);
@@ -262,7 +262,7 @@ library LibExtensions {
     /**
      * @dev Called by core shell to execute a function call on an extension.
      */
-    function callExtension(bytes4 sel, bytes calldata data) external returns (bytes memory) {
+    function callExtension(bytes4 sel, bytes calldata data) internal returns (bytes memory) {
         ExtensionStorage storage ds = load();
         Selector storage s = ds.targets[sel];
         require(s.target != address(0), "LibExtension: no extension supports fn selector");
@@ -273,7 +273,7 @@ library LibExtensions {
         return _doCall(s.target, data);
     }
 
-    function lowLevelCallExtension(address target, bytes calldata data) external returns (bytes memory) {
+    function lowLevelCallExtension(address target, bytes calldata data) internal returns (bytes memory) {
         return _doCall(target, data);
     }
 

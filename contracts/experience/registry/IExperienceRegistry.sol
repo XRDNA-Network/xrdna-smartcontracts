@@ -7,6 +7,7 @@ import {IExperience} from '../instance/IExperience.sol';
 import {Version} from '../../libraries/LibTypes.sol';
 import {IRegistryFactory} from '../../interfaces/registry/IRegistryFactory.sol';
 import {IAccessControl} from '../../interfaces/IAccessControl.sol';
+import {IRegistration} from '../../interfaces/registry/IRegistration.sol';
 
 /**
  * @dev Arguments for registering an experience with the registry. The vector address 
@@ -29,7 +30,7 @@ struct ExperienceInitArgs {
  * @title IExperienceRegistry
     * @dev Interface for a registry that manages experiences.
  */
-interface IExperienceRegistry is IAccessControl, IRegistryFactory {
+interface IExperienceRegistry is IAccessControl, IRegistration, IRegistryFactory {
     
     event RegistryExperienceRegistered(address indexed world, address indexed company, address indexed experience, string name);
     event RegistryExperienceRemoved(address indexed experience, uint256 indexed portalId);

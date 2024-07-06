@@ -9,12 +9,10 @@ export default buildModule("RegistrarWorldRegExtModule", (m) => {
         
         const rwr = m.contract("RegistrarWorldRegistrationExt", [], {
             libraries: {
-                LibExtensions: libs.LibExtensions,
                 LibAccess: libs.LibAccess
             },
             after: [
                 coreReg,
-                libs.LibExtensions,
                 libs.LibAccess
             ]
         });

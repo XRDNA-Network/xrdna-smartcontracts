@@ -33,7 +33,6 @@ export default buildModule("WorldModule", (m) => {
         
         const rr = m.contract("World", [args], {
             libraries: {
-                LibExtensions: libs.LibExtensions,
                 LibAccess: libs.LibAccess,
                 LibVectorAddress: libs.LibVectorAddress
             },
@@ -44,7 +43,6 @@ export default buildModule("WorldModule", (m) => {
                 cReg,
                 aReg,
                 expReg,
-                libs.LibExtensions,
                 libs.LibAccess
 
             ]

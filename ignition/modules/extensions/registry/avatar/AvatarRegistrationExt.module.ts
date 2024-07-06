@@ -10,12 +10,10 @@ export default buildModule("AvatarRegistrationExtModule", (m) => {
         
         const rre = m.contract("AvatarRegistrationExt", [], {
             libraries: {
-                LibExtensions: libs.LibExtensions,
                 LibRegistration: libs.LibRegistration,
             },
             after: [
                 coreReg,
-                libs.LibExtensions,
                 libs.LibRegistration,
                 libs.LibAccess
             ]

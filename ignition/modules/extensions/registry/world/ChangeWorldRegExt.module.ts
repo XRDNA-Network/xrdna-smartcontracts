@@ -10,13 +10,11 @@ export default buildModule("ChangeWorldRegistrarExtModule", (m) => {
         
         const cwr = m.contract("ChangeWorldRegistrarExt", [], {
             libraries: {
-                LibExtensions: libs.LibExtensions,
                 LibControlChange: libs.LibControlChange
             },
             after: [
 
                 coreReg,
-                libs.LibExtensions,
                 libs.LibControlChange
             ]
         });

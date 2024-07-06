@@ -28,5 +28,17 @@ library LibExtensionNames {
 
     string public constant EXPERIENCE_REGISTRATION = "ExperienceRegistrationExt";
     string public constant EXPERIENCE_REMOVAL = "ExperienceRemovalExt";
+
+    string public constant ASSET_REGISTRATION = "AssetRegistrationExt";
+    string public constant ASSET_REMOVAL = "AssetRemovalExt";
+    string public constant ASSET_CONDITION = "AssetConditionExt";
+    
+    string public constant ERC20_MINTING = "ERC20MintingExt";
+    string public constant ERC20_INFO = "ERC20InfoExt";
+    string public constant ERC20_TRANSFER = "ERC20TransferExt";
+
+    string public constant ERC721_MINTING = "ERC721MintingExt";
+    string public constant ERC721_INFO = "ERC721InfoExt";
+    string public constant ERC721_TRANSFER = "ERC721TransferExt";
     
 }

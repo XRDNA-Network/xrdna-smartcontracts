@@ -9,12 +9,10 @@ export default buildModule("WorldAddAvatarExtModule", (m) => {
         
         const wac = m.contract("WorldAddAvatarExt", [], {
             libraries: {
-                LibExtensions: libs.LibExtensions,
                 LibAccess: libs.LibAccess,
             },
             after: [
                 coreReg,
-                libs.LibExtensions,
                 libs.LibAccess
             ]
         });

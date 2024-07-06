@@ -16,11 +16,14 @@ import {LibVectorAddress, VectorAddress} from '../../libraries/LibVectorAddress.
 import {LibAccess} from '../../libraries/LibAccess.sol';
 import {IAvatarRegistry, AvatarInitArgs} from '../../avatar/registry/IAvatarRegistry.sol';
 import {LibAvatar, AvatarStorage} from './LibAvatar.sol';
+import {IExperienceRegistry} from '../../experience/registry/IExperienceRegistry.sol';
+import {IExperience} from '../../experience/instance/IExperience.sol';
 
 struct AvatarConstructorArgs {
     address extensionResolver;
     address owningRegistry;
     address worldRegistry;
+    address experienceRegistry;
 }
 
 contract Avatar  is EntityShell {
@@ -34,6 +37,7 @@ contract Avatar  is EntityShell {
 
     IAvatarRegistry public immutable avatarRegistry;
     IWorldRegistry public immutable worldRegistry;
+    IExperienceRegistry public immutable experienceRegistry;
     //TODO: add experience registry
     
     modifier onlyRegistry {
@@ -45,8 +49,10 @@ contract Avatar  is EntityShell {
         
         require(args.owningRegistry != address(0), "Avatar: owningRegistry cannot be zero address");
         require(args.worldRegistry != address(0), "Avatar: worldRegistry cannot be zero address");
+        require(args.experienceRegistry != address(0), "Avatar: experienceRegistry cannot be zero address");
         worldRegistry = IWorldRegistry(args.owningRegistry);        
         avatarRegistry = IAvatarRegistry(args.owningRegistry);
+        experienceRegistry = IExperienceRegistry(args.experienceRegistry);
     }
 
     function version() external pure returns (Version memory) {
@@ -80,8 +86,8 @@ contract Avatar  is EntityShell {
         AvatarStorage storage avs = LibAvatar.load();
         AvatarInitArgs memory initData = abi.decode(args.initData, (AvatarInitArgs));
         require(initData.defaultExperience != address(0), "Avatar: default experience cannot be zero address");
-        //TODO: verify experience is in exp registry and active
-
+        require(experienceRegistry.isRegistered(initData.defaultExperience), "Avatar: default experience is not registered");
+        require(IExperience(initData.defaultExperience).isEntityActive(), "Avatar: default experience is not active");
         avs.canReceiveTokensOutsideExperience = initData.canReceiveTokensOutsideExperience;
         avs.appearanceDetails = initData.appearanceDetails;
         avs.currentExperience = initData.defaultExperience;

@@ -9,12 +9,10 @@ export default buildModule("TermsOwnerExtModule", (m) => {
         
         const te = m.contract("TermsOwnerExt", [], {
             libraries: {
-                LibExtensions: libs.LibExtensions,
                 LibAccess: libs.LibAccess
             },
             after: [
                 coreReg,
-                libs.LibExtensions,
                 libs.LibAccess
             ]
         });

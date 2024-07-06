@@ -10,13 +10,11 @@ export default buildModule("WorldRegistrationExtModule", (m) => {
         
         const wre = m.contract("WorldRegistrationExt", [], {
             libraries: {
-                LibExtensions: libs.LibExtensions,
                 LibRegistration: libs.LibRegistration,
                 LibVectorAddress: libs.LibVectorAddress
             },
             after: [
                 coreReg,
-                libs.LibExtensions,
                 libs.LibRegistration
             ]
         });

@@ -9,12 +9,10 @@ export default buildModule("WorldAddCompanyExtModule", (m) => {
         
         const wac = m.contract("WorldAddCompanyExt", [], {
             libraries: {
-                LibExtensions: libs.LibExtensions,
                 LibAccess: libs.LibAccess,
             },
             after: [
                 coreReg,
-                libs.LibExtensions,
                 libs.LibAccess
             ]
         });

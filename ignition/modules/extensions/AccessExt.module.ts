@@ -9,12 +9,10 @@ export default buildModule("AccessExtModule", (m) => {
         
         const ae = m.contract("AccessExt", [], {
             libraries: {
-                LibExtensions: libs.LibExtensions,
                 LibAccess: libs.LibAccess
             },
             after: [
                 coreReg,
-                libs.LibExtensions,
                 libs.LibAccess
             ]
         });

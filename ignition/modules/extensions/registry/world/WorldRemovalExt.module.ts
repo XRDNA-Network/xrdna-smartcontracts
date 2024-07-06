@@ -10,12 +10,10 @@ export default buildModule("WorldRemovalExtModule", (m) => {
         
         const wre = m.contract("WorldRemovalExt", [], {
             libraries: {
-                LibExtensions: libs.LibExtensions,
                 LibEntityRemoval: libs.LibEntityRemoval
             },
             after: [
                 coreReg,
-                libs.LibExtensions,
                 libs.LibEntityRemoval
                 
             ]

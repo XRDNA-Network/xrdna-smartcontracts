@@ -46,17 +46,17 @@ contract AvatarRegistrationExt is BaseRegistrationExt {
      * @dev Installs the extension.
      */
     function install(address myAddress) external {
-        SelectorInfo[] memory selectors = new SelectorInfo[](4);
+        SelectorInfo[] memory selectors = new SelectorInfo[](3);
 
         selectors[0] = SelectorInfo({
             selector: super.getEntityByName.selector,
             name: "getEntityByName(string)"
         });
-        selectors[2] = SelectorInfo({
+        selectors[1] = SelectorInfo({
             selector: super.isRegistered.selector,
             name: "isRegistered(address)"
         });
-        selectors[3] = SelectorInfo({
+        selectors[2] = SelectorInfo({
             selector: this.createAvatar.selector,
             name: "createAvatar(CreateAvatarArgs)"
         });

@@ -26,7 +26,6 @@ export default buildModule("ExperienceModule", (m) => {
         
         const rr = m.contract("Experience", [args], {
             libraries: {
-                LibExtensions: libs.LibExtensions,
                 LibAccess: libs.LibAccess,
                 LibVectorAddress: libs.LibVectorAddress
             },
@@ -36,7 +35,6 @@ export default buildModule("ExperienceModule", (m) => {
                 expReg,
                 regReg,
                 cReg,
-                libs.LibExtensions,
                 libs.LibAccess
 
             ]

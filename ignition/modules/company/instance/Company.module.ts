@@ -26,7 +26,6 @@ export default buildModule("CompanyModule", (m) => {
         
         const rr = m.contract("Company", [args], {
             libraries: {
-                LibExtensions: libs.LibExtensions,
                 LibAccess: libs.LibAccess,
                 LibVectorAddress: libs.LibVectorAddress
             },
@@ -35,7 +34,6 @@ export default buildModule("CompanyModule", (m) => {
                 worldReg,
                 regReg,
                 cReg,
-                libs.LibExtensions,
                 libs.LibAccess
 
             ]

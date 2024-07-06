@@ -10,12 +10,10 @@ export default buildModule("ExperienceRemovalExtModule", (m) => {
         
         const rre = m.contract("ExperienceRemovalExt", [], {
             libraries: {
-                LibExtensions: libs.LibExtensions,
                 LibEntityRemoval: libs.LibEntityRemoval
             },
             after: [
                 coreReg,
-                libs.LibExtensions,
                 libs.LibEntityRemoval,
                 libs.LibAccess
             ]

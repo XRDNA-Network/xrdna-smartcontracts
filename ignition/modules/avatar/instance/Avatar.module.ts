@@ -6,6 +6,7 @@ import CompanyRegistryModule from "../../company/registry/CompanyRegistry.module
 import AvatarExtResolverModule from "./AvatarExtResolver.module";
 import WorldRegistryModule from "../../world/registry/WorldRegistry.module";
 import AvatarRegistryModule from "../registry/AvatarRegistry.module";
+import ExperienceRegistryModule from "../../experience/registry/ExperienceRegistry.module";
 
 export default buildModule("AvatarModule", (m) => {
 
@@ -15,6 +16,7 @@ export default buildModule("AvatarModule", (m) => {
         const aReg = m.useModule(AvatarRegistryModule).avatarRegistry;
         const regReg = m.useModule(RegistrarRegistryModule).registrarRegistry;
         const factoryExt = m.useModule(FactoryExtModule).factoryExtension;
+        const expRegistry = m.useModule(ExperienceRegistryModule).experienceRegistry;
 
 
         //this registrar is cloned so any admin props will be replaced once cloned and initialized with new 
@@ -22,12 +24,12 @@ export default buildModule("AvatarModule", (m) => {
         const args = {
             extensionResolver: aExtResolver,
             owningRegistry: aReg,
-            worldRegistry: worldReg
+            worldRegistry: worldReg,
+            experienceRegistry: expRegistry
         }
         
         const rr = m.contract("Avatar", [args], {
             libraries: {
-                LibExtensions: libs.LibExtensions,
                 LibAccess: libs.LibAccess,
             },
             after: [
@@ -35,7 +37,6 @@ export default buildModule("AvatarModule", (m) => {
                 worldReg,
                 regReg,
                 aReg,
-                libs.LibExtensions,
                 libs.LibAccess
 
             ]
