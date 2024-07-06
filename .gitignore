@@ -139,3 +139,5 @@ artifacts/contracts
 artifacts/contracts/*
 artifacts/build-info
 artifacts/build-info/*
+
+ignition/deployments/*/build-info/*
