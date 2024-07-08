@@ -10,7 +10,7 @@ import {AssetStorage, LibAsset} from '../../../libraries/LibAsset.sol';
 import {ERC721Storage, LibERC721} from '../../../libraries/LibERC721.sol';
 import {IAvatar} from '../../../avatar/instance/IAvatar.sol';
 import {IERC721Asset} from './IERC721Asset.sol';
-import {LibRemovableEntity} from '../../../libraries/LibRemovableEntity.sol';
+import {LibRemovableEntity, RemovableEntityStorage} from '../../../libraries/LibRemovableEntity.sol';
 import {IERC721Errors} from "@openzeppelin/contracts/interfaces/draft-IERC6093.sol";
 import {IERC721} from "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import {IERC721Receiver} from "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
@@ -64,7 +64,6 @@ contract NTERC721Asset is BaseAsset {
         require(bytes(initData.symbol).length > 0, "NTERC721Asset: symbol cannot be empty");
         
         store.issuer = args.owner;
-        store.name = args.name;
         store.originAddress = initData.originChainAddress;
         store.originChainId = initData.originChainId;
         store.symbol = initData.symbol;
@@ -76,7 +75,9 @@ contract NTERC721Asset is BaseAsset {
             ercStore.baseURI = initData.baseURI;
         }
 
-        LibRemovableEntity.load().active = true;
+        RemovableEntityStorage storage rs = LibRemovableEntity.load();
+        rs.active = true;
+        rs.name = args.name;
     }
 
     //internal helper to verify that the string ends with a suffix value

@@ -1,4 +1,4 @@
-import { RegistrarRegistry, XRDNASigners, AllLogParser, mapJsonToDeploymentAddressConfig, Registrar, signTerms, World, DeploymentAddressConfig, signVectorAddress, VectorAddress, Company, RegistrationTerms } from "../src";
+import { RegistrarRegistry, XRDNASigners, AllLogParser, mapJsonToDeploymentAddressConfig, Registrar, signTerms, World, DeploymentAddressConfig, signVectorAddress, VectorAddress, Company, RegistrationTerms, Avatar, Experience, IWorldRegistration, WorldRegistry, CompanyRegistry, AvatarRegistry, ERC20AssetRegistry, ERC721AssetRegistry } from "../src";
 import {ethers, ignition} from 'hardhat';
 import DeployAllModule from "../ignition/modules/DeployAll.module";
 
@@ -8,8 +8,15 @@ import { Signer } from "ethers";
 export class TestStack {
 
     registrarRegistry?: RegistrarRegistry;
+    worldRegistry?: WorldRegistry;
+    companyRegistry?: CompanyRegistry;
+    avatarRegistry?: AvatarRegistry;
+    erc20Registry?: ERC20AssetRegistry;
+    erc721Registry?: ERC721AssetRegistry;
     xrdnaSigners: XRDNASigners;
     registrarRegistryOwner?: Signer;
+    registrar?: Registrar;
+    world?: World;
     logParser?: AllLogParser;
 
     async init() {
@@ -27,6 +34,41 @@ export class TestStack {
             admin: this.registrarRegistryOwner,
             logParser: this.logParser
         });
+
+        const worldAddr = await mod.worldRegistry.getAddress();
+        this.worldRegistry = new WorldRegistry({
+            address: worldAddr,
+            admin: this.registrarRegistryOwner,
+            logParser: this.logParser
+        });
+
+        const companyAddr = await mod.companyRegistry.getAddress();
+        this.companyRegistry = new CompanyRegistry({
+            address: companyAddr,
+            admin: this.registrarRegistryOwner,
+            logParser: this.logParser
+        });
+
+        const avatarAddr = await mod.avatarRegistry.getAddress();
+        this.avatarRegistry = new AvatarRegistry({
+            address: avatarAddr,
+            admin: this.registrarRegistryOwner,
+            logParser: this.logParser
+        });
+
+        const erc20Addr = await mod.erc20Registry.getAddress();
+        this.erc20Registry = new ERC20AssetRegistry({
+            address: erc20Addr,
+            admin: this.registrarRegistryOwner,
+            logParser: this.logParser
+        });
+
+        const erc721Addr = await mod.erc721Registry.getAddress();
+        this.erc721Registry = new ERC721AssetRegistry({
+            address: erc721Addr,
+            admin: this.registrarRegistryOwner,
+            logParser: this.logParser
+        });
     }
 
     async createRegistrar(owner: Signer): Promise<Registrar> {
@@ -40,7 +82,7 @@ export class TestStack {
             gracePeriodDays: 30n
         };
 
-        const expiration = BigInt(Math.ceil(Date.now() / 1000) + 60);
+        const expiration = BigInt(Math.ceil(Date.now() / 1000) + 300);
         const sig = await signTerms({
             signer: owner,
             terms: regTerms,
@@ -71,14 +113,17 @@ export class TestStack {
             throw new Error('No address');
         }
         
-        return new Registrar({
+        this.registrar = new Registrar({
             registrarAddress: addr,
             admin: owner,
             logParser: this.logParser!
         });
+        return this.registrar;
     }
 
-    async createWorld(owner: Signer,  registrar?: Registrar, tokens?: bigint, ): Promise<World> {
+    async createWorld(owner: Signer,  registrar?: Registrar, tokens?: bigint, ): Promise<{
+        world: World,
+        registration: IWorldRegistration}> {
         const admin = this.xrdnaSigners.testingConfig.registrarRegistryAdmin;
         if(!registrar) {
             registrar = await this.createRegistrar(admin);
@@ -92,7 +137,7 @@ export class TestStack {
             gracePeriodDays: 30n
         };
 
-        const expiration = BigInt(Math.ceil(Date.now() / 1000) + 60);
+        const expiration = BigInt(Math.ceil(Date.now() / 1000) + 300);
         const termsSig = await signTerms({
             signer: owner,
             terms: regTerms,
@@ -127,16 +172,21 @@ export class TestStack {
             throw new Error('World not created');
         }
         
-        return new World({
+        this.world = new World({
             address: r.worldAddress,
             admin: owner,
             logParser: this.logParser!
         });
+        return {
+            world: this.world,
+            registration: worldRegistration
+        }
     }
 
     async createCompany(owner: Signer, world?: World, registrar?: Registrar, tokens?: bigint): Promise<Company> {
         if(!world) {
-            world = await this.createWorld(owner, registrar, tokens);
+            const r  = await this.createWorld(owner, registrar, tokens);
+            world = r.world;
         }
 
         const terms: RegistrationTerms = {
@@ -144,7 +194,7 @@ export class TestStack {
             coveragePeriodDays: 0n,
             gracePeriodDays: 30n
         };
-        const expiration = BigInt(Math.ceil(Date.now() / 1000) + 60);
+        const expiration = BigInt(Math.ceil(Date.now() / 1000) + 300);
         const termsSign = await signTerms({
             terms,
             signer: owner,
@@ -158,9 +208,7 @@ export class TestStack {
             terms,
             ownerTermsSignature: termsSign,
             expiration
-        }
-
-                
+        }  
 
         const r = await world!.registerCompany(req);
         if(!r || !r.receipt || !r.companyAddress) {
@@ -172,5 +220,32 @@ export class TestStack {
             logParser: this.logParser!
         });
         
+    }
+
+    async createAvatar(owner: Signer, startingLocation: Experience, world?: World, registrar?: Registrar, tokens?: bigint): Promise<Avatar>  {
+        if(!world) {
+            const r = await this.createWorld(owner, registrar, tokens);
+            world = r.world;
+        }
+        const req = {
+            sendTokensToOwner: false,
+            avatarOwner: await owner.getAddress(),
+            username: 'testMe',
+            defaultExperience: startingLocation.address,
+            canReceiveTokensOutsideOfExperience: false,
+            appearanceDetails: "https://myavatar.com/testMe"
+        }
+
+        const r = await world!.registerAvatar(req);
+        if(!r || !r.receipt || !r.avatarAddress) {
+            throw new Error('Avatar not created');
+        }
+
+        return new Avatar({
+            address: r.avatarAddress.toString(),
+            admin: owner,
+            logParser: this.logParser!
+        });
+
     }
 }

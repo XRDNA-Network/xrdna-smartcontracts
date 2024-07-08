@@ -9,13 +9,13 @@ import {LibExtensionNames} from '../../libraries/LibExtensionNames.sol';
 contract CompanyExtResolver is BaseExtResolver {
 
     constructor(BaseExtResolverConstructorArgs memory args) BaseExtResolver(args) {
-        string[] memory extNames = new string[](4);
+        string[] memory extNames = new string[](6);
         extNames[0] = LibExtensionNames.ACCESS;
         extNames[1] = LibExtensionNames.REMOVABLE_ENTITY;
         extNames[2] = LibExtensionNames.TERMS_OWNER;
         extNames[3] = LibExtensionNames.COMPANY_ADD_EXPERIENCE;
-        //TODO: add experience extensions
-        //TODO: add asset extensions
+        extNames[4] = LibExtensionNames.COMPANY_JUMP;
+        extNames[5] = LibExtensionNames.COMPANY_MINTING;
         
 
         InstallExtensionArgs memory extArgs = InstallExtensionArgs({

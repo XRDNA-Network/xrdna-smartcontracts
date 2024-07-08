@@ -87,6 +87,11 @@ interface ICompany is IAccessControl, IRemovableEntity {
     event CompanyDeactivated();
     event CompanyReactivated();
 
+
+    function erc20Registry() external view returns (address);
+    function erc721Registry() external view returns (address);
+    function avatarRegistry() external view returns (address);
+
     /**
         * @dev Returns the address of the world in which the company operates.
      */
@@ -102,8 +107,10 @@ interface ICompany is IAccessControl, IRemovableEntity {
      * @dev Returns whether this company can mint the given asset to the given address.
      * The data parameter is dependent on the type of asset.
      */
-    function canMint(address asset, address to, bytes calldata data) external view returns (bool);
+    function canMintERC20(address asset, address to, bytes calldata data) external view returns (bool);
     
+    function canMintERC721(address asset, address to, bytes calldata data) external view returns (bool);
+
     /**
      * @dev Adds an experience to the world. This also creates a portal into the 
      * experience and registers it in the PortalRegistry. It is assumed that the 
@@ -129,7 +136,9 @@ interface ICompany is IAccessControl, IRemovableEntity {
      * @dev Mints the given amount of the given asset to the given address. The data
      * parameter is dependent on the type of asset.
      */
-    function mint(address asset, address to, bytes calldata data) external;
+    function mintERC20(address asset, address to, bytes calldata data) external;
+
+    function mintERC721(address asset, address to, bytes calldata data) external;
 
     /**
      * @dev Revokes the given amount of the given asset from the given address. The data
@@ -137,7 +146,9 @@ interface ICompany is IAccessControl, IRemovableEntity {
      * owner transfers the original asset on another chain (i.e. all assets in the 
      * interoperability layer are synthetic assets that represent assets on other chains).
      */
-    function revoke(address asset, address holder, bytes calldata data) external;
+    function revokeERC20(address asset, address holder, bytes calldata data) external;
+
+    function revokeERC721(address asset, address holder, bytes calldata data) external;
 
     /**
      * @dev Withdraws the given amount of funds from the company. Only the owner can withdraw funds.

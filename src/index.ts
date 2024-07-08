@@ -10,3 +10,7 @@ export * from './RegistrationTerms';
 export * from './Version';
 export * from './world';
 export * from './company';
+export * from './asset';
+export * from './avatar';
+export * from './experience';
+export * from './portal';

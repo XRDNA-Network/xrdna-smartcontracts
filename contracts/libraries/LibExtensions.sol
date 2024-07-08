@@ -169,8 +169,8 @@ library LibExtensions {
                 string memory err = string(abi.encodePacked("LibExtension: extension ", 
                                             e.metadata.name, " at address: ", 
                                             Strings.toHexString(args.impl), 
-                                            " attempting to reuse a selector", 
-                                            sel.name, " already registered by ", 
+                                            " attempting to reuse a selector: ", 
+                                            sel.name, ", which is already registered by ", 
                                             existing.metadata.name));
                 revert(err);
             }

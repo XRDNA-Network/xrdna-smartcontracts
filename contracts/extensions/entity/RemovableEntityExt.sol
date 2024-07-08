@@ -37,7 +37,7 @@ contract RemovableEntityExt is IExtension, IRemovableEntity {
      * @dev Installs the extension.
      */
     function install(address myAddress) external {
-        SelectorInfo[] memory sigs = new SelectorInfo[](6);
+        SelectorInfo[] memory sigs = new SelectorInfo[](7);
         sigs[0] = SelectorInfo({
             selector: this.deactivate.selector,
             name: "deactivate()"
@@ -61,6 +61,10 @@ contract RemovableEntityExt is IExtension, IRemovableEntity {
         sigs[5] = SelectorInfo({
             selector: this.name.selector,
             name: "name()"
+        });
+        sigs[6] = SelectorInfo({
+            selector: this.termsOwner.selector,
+            name: "termsOwner()"
         });
 
         LibExtensions.addExtensionSelectors(AddSelectorArgs({

@@ -21,8 +21,6 @@ struct AssetStorage {
 
     //original chain id
     uint256 originChainId;
-    
-    string name;
 
     string symbol;
 }

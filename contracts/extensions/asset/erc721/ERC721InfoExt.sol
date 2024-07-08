@@ -34,40 +34,37 @@ contract ERC721InfoExt is BaseInfoExt, IERC721Errors {
      * @dev Installs the extension.
      */
     function install(address myAddress) external {
-        SelectorInfo[] memory sigs = new SelectorInfo[](9);
+        SelectorInfo[] memory sigs = new SelectorInfo[](8);
+        
         sigs[0] = SelectorInfo({
-            selector: super.name.selector,
-            name: "name()"
-        });
-        sigs[1] = SelectorInfo({
             selector: super.symbol.selector,
             name: "symbol()"
         });
-        sigs[2] = SelectorInfo({
+        sigs[1] = SelectorInfo({
             selector: super.issuer.selector,
             name: "issuer()"
         });
-        sigs[3] = SelectorInfo({
+        sigs[2] = SelectorInfo({
             selector: super.originAddress.selector,
             name: "originAddress()"
         });
-        sigs[4] = SelectorInfo({
+        sigs[3] = SelectorInfo({
             selector: super.originChainId.selector,
             name: "originChainId()"
         });
-        sigs[5] = SelectorInfo({
+        sigs[4] = SelectorInfo({
             selector: this.supportsInterface.selector,
             name: "supportsInterface(bytes4)"
         });
-        sigs[6] = SelectorInfo({
+        sigs[5] = SelectorInfo({
             selector: this.balanceOf.selector,
             name: "balanceOf(address)"
         });
-        sigs[7] = SelectorInfo({
+        sigs[6] = SelectorInfo({
             selector: this.ownerOf.selector,
             name: "ownerOf(uint256)"
         });
-        sigs[8] = SelectorInfo({
+        sigs[7] = SelectorInfo({
             selector: this.tokenURI.selector,
             name: "tokenURI(uint256)"
         });

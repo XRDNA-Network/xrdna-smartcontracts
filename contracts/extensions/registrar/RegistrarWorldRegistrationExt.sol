@@ -89,7 +89,7 @@ contract RegistrarWorldRegistrationExt is IExtension, IRegistrarWorldRegistratio
      */
     function registerWorld(NewWorldArgs memory args) external payable onlySigner returns (address world) {
         IWorldRegistry worldRegistry = IWorldRegistry(IRegistrar(address(this)).worldRegistry());
-        return worldRegistry.createWorld(CreateWorldArgs({
+        return worldRegistry.createWorld{value: msg.value}(CreateWorldArgs({
             sendTokensToOwner: args.sendTokensToOwner,
             owner: args.owner,
             name: args.name,

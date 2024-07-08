@@ -1,5 +1,5 @@
 import { AddressLike, Contract, Provider, Signer, TransactionReceipt, TransactionResponse, ethers } from "ethers";
-import {abi} from "../../artifacts/contracts/avatar/Avatar.sol/Avatar.json";
+import {abi} from "../../artifacts/contracts/avatar/instance/IAvatar.sol/IAvatar.json";
 import { RPCRetryHandler } from "../RPCRetryHandler";
 import { LogNames } from "../LogNames";
 import { AllLogParser } from "../AllLogParser";

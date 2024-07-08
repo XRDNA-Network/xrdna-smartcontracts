@@ -108,31 +108,6 @@ export class Registrar {
         return {receipt: r, worldAddress: addr};
     }
 
-    /*
-    async registerWorld(props: {
-        details: IWorldRegistration,
-        tokens?: bigint
-    }): Promise<IWorldRegistrationResult> {
-        
-
-        const {details} = props;
-        
-        
-        const t = await RPCRetryHandler.withRetry(() => this.con.registerWorld(details, {
-            value: props.tokens
-        }));
-
-        const r = await t.wait();
-        const logs = this.logParser.parseLogs(r);
-        const adds = logs.get(LogNames.WorldRegistered);
-        if(!adds || adds.length === 0) {
-            throw new Error("World not created");
-        }
-        const addr = adds[0].args[0];
-        return {receipt: r, worldAddress: addr};
-    }
-        */
-
 }
 
     

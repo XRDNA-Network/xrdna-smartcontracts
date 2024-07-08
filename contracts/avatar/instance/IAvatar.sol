@@ -5,6 +5,7 @@ pragma solidity ^0.8.24;
 import {IERC721Receiver} from "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
 import {IAccessControl} from "../../interfaces/IAccessControl.sol";
 import {IRegisteredEntity} from "../../interfaces/entity/IRegisteredEntity.sol";
+import {Wearable} from '../../libraries/LibAvatar.sol';
 
 struct AvatarJumpRequest {
     uint256 portalId;
@@ -27,6 +28,10 @@ interface IAvatar is IERC721Receiver, IAccessControl, IRegisteredEntity {
     event AppearanceChanged(bytes indexed appearanceDetails);
     event JumpSuccess(address indexed experience, uint256 indexed fee, bytes connectionDetails);
 
+    function assetRegistry() external view returns (address);
+    function companyRegistry() external view returns (address); 
+    function portalRegistry() external view returns (address);
+    
     /**
      * @dev get the Avatar's unique username
      */
@@ -58,9 +63,7 @@ interface IAvatar is IERC721Receiver, IAccessControl, IRegisteredEntity {
      * @dev Get the next signing nonce for an avatar owner signature.
      */
     function avatarOwnerSigningNonce() external view returns (uint256);
-
     
-    /*
     function canAddWearable(Wearable calldata wearable) external view returns (bool);
 
    
@@ -73,7 +76,7 @@ interface IAvatar is IERC721Receiver, IAccessControl, IRegisteredEntity {
     function getWearables() external view returns (Wearable[] memory);
 
     function isWearing(Wearable calldata wearable) external view returns (bool);
-    */
+    
 
     /**
      * @dev Set whether the avatar can receive tokens when not in an experience that matches 

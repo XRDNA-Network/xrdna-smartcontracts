@@ -31,6 +31,10 @@ interface IExperience is IRemovableEntity {
     event ExperienceDeactivated();
     
 
+    function companyRegistry() external view returns (address);
+
+    function portalRegistry() external view returns (address);
+    
     /**
      * @dev Returns the company that controls this experience
      */

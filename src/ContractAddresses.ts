@@ -5,6 +5,10 @@ export enum ContractNames {
     WorldRegistry = "WorldRegistryModule#WorldRegistry",
     CompanyRegistry = "CompanyRegistryModule#CompanyRegistry",
     AvatarRegistry = "AvatarRegistryModule#AvatarRegistry",
+    ERC20AssetRegistry = "ERC20RegistryModule#ERC20Registry",
+    ERC721AssetRegistry = "ERC721RegistryModule#ERC721Registry",
+    MultiAssetRegistry = "MultiAssetRegistry#MultiAssetRegistry",
+    ExperienceRegistry = "ExperienceRegistryModule#ExperienceRegistry",
 
     /*
     AvatarFactory = "AvatarFactory#AvatarFactory",

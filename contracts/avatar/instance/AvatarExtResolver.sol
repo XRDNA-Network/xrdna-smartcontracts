@@ -9,10 +9,12 @@ import {LibExtensionNames} from '../../libraries/LibExtensionNames.sol';
 contract AvatarExtResolver is BaseExtResolver {
 
     constructor(BaseExtResolverConstructorArgs memory args) BaseExtResolver(args) {
-        string[] memory extNames = new string[](1);
+        string[] memory extNames = new string[](4);
         extNames[0] = LibExtensionNames.ACCESS;
-        //TODO: add wearables extensions
-        //TODO: add jump extensions
+        extNames[1] = LibExtensionNames.AVATAR_INFO;
+        extNames[2] = LibExtensionNames.AVATAR_WEARABLES;
+        extNames[3] = LibExtensionNames.AVATAR_JUMP;
+        
         
 
         InstallExtensionArgs memory extArgs = InstallExtensionArgs({

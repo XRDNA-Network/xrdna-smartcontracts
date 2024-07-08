@@ -14,6 +14,7 @@ export default buildModule("Libraries", (m) => {
         const libEntityRemoval = m.library("LibEntityRemoval");
         const libExtensions = m.library("LibExtensions");
         const libFactory = m.library("LibFactory");
+        const libLinkedList = m.library("LibLinkedList");
         
         const libRegistration = m.library("LibRegistration", {
             libraries: {
@@ -32,6 +33,7 @@ export default buildModule("Libraries", (m) => {
             LibExtensions: libExtensions,
             LibFactory: libFactory,
             LibRemovableEntity: libRemovableEntity,
-            libCoreExtensionRegistry: libCoreExtensionRegistry,
+            LibCoreExtensionRegistry: libCoreExtensionRegistry,
+            LibLinkedList: libLinkedList
         }
 });

@@ -29,4 +29,6 @@ library LibStorageSlots {
     bytes32 constant ASSET_STORAGE = keccak256(abi.encode(uint256(keccak256(bytes('xr.asset.storage.v1'))) - 1)) & bytes32(uint256(0xff));
     bytes32 constant ERC20_ASSET_STORAGE = keccak256(abi.encode(uint256(keccak256(bytes('xr.erc20.asset.storage.v1'))) - 1)) & bytes32(uint256(0xff));
     bytes32 constant ERC721_ASSET_STORAGE = keccak256(abi.encode(uint256(keccak256(bytes('xr.erc721.asset.storage.v1'))) - 1)) & bytes32(uint256(0xff));
+
+    bytes32 constant PORTAL_STORAGE = keccak256(abi.encode(uint256(keccak256(bytes('xr.portal.storage.v1'))) - 1)) & bytes32(uint256(0xff));
 }

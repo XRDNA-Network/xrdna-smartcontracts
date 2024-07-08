@@ -26,40 +26,37 @@ contract ERC20InfoExt is BaseInfoExt {
      * @dev Installs the extension.
      */
     function install(address myAddress) public {
-        SelectorInfo[] memory sigs = new SelectorInfo[](9);
+        SelectorInfo[] memory sigs = new SelectorInfo[](8);
+        
         sigs[0] = SelectorInfo({
-            selector: super.name.selector,
-            name: "name()"
-        });
-        sigs[1] = SelectorInfo({
             selector: super.symbol.selector,
             name: "symbol()"
         });
-        sigs[2] = SelectorInfo({
+        sigs[1] = SelectorInfo({
             selector: super.issuer.selector,
             name: "issuer()"
         });
-        sigs[3] = SelectorInfo({
+        sigs[2] = SelectorInfo({
             selector: super.originAddress.selector,
             name: "originAddress()"
         });
-        sigs[4] = SelectorInfo({
+        sigs[3] = SelectorInfo({
             selector: super.originChainId.selector,
             name: "originChainId()"
         });
-        sigs[5] = SelectorInfo({
+        sigs[4] = SelectorInfo({
             selector: this.decimals.selector,
             name: "decimals()"
         });
-        sigs[6] = SelectorInfo({
+        sigs[5] = SelectorInfo({
             selector: this.totalSupply.selector,
             name: "totalSupply()"
         });
-        sigs[7] = SelectorInfo({
+        sigs[6] = SelectorInfo({
             selector: this.balanceOf.selector,
             name: "balanceOf(address)"
         });
-        sigs[8] = SelectorInfo({
+        sigs[7] = SelectorInfo({
             selector: this.allowance.selector,
             name: "allowance(address,address)"
         });

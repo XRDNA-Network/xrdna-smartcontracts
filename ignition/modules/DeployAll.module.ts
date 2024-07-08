@@ -12,6 +12,11 @@ import AvatarModule from "./avatar/instance/Avatar.module";
 import ExperienceRegistryModule from "./experience/registry/ExperienceRegistry.module";
 import ExperienceModule from "./experience/instance/Experience.module";
 
+import ERC20Asset from "./asset/instance/erc20/NTERC20Asset.module";
+import ERC721Asset from "./asset/instance/erc721/NTERC721Asset.module";
+import MultiAssetRegistryModule from "./asset/registry/MultiAssetRegistry.module";
+import PortalRegistryModule from "./portal/PortalRegistry.module";
+
 export default buildModule("DeployAllModule", (m) => {
 
     const libs = m.useModule(LibrariesModule);
@@ -29,6 +34,12 @@ export default buildModule("DeployAllModule", (m) => {
     const expReg = m.useModule(ExperienceRegistryModule);
     const exp = m.useModule(ExperienceModule);
 
+    const erc20 = m.useModule(ERC20Asset);
+    const erc721 = m.useModule(ERC721Asset);
+    const multiAssetReg = m.useModule(MultiAssetRegistryModule);
+    const portal = m.useModule(PortalRegistryModule);
+
+
     return {
         ...libs,
         ...eReg,
@@ -41,6 +52,10 @@ export default buildModule("DeployAllModule", (m) => {
         ...avatarReg,
         ...avatar,
         ...expReg,
-        ...exp
+        ...exp,
+        ...erc20,
+        ...erc721,
+        ...multiAssetReg,
+        ...portal
     }
 });

@@ -16,7 +16,7 @@ import {LibVectorAddress, VectorAddress} from '../../libraries/LibVectorAddress.
 import {LibAccess} from '../../libraries/LibAccess.sol';
 import {ICompanyRegistry} from '../../company/registry/ICompanyRegistry.sol';
 import {ICompany} from '../../company/instance/ICompany.sol';
-import {ExperienceStorage, LibExperience} from './LibExperience.sol';
+import {ExperienceStorage, LibExperience} from '../../libraries/LibExperience.sol';
 import {ExperienceInitArgs} from '../registry/IExperienceRegistry.sol';
 import {IExperience} from './IExperience.sol';
 
@@ -24,6 +24,7 @@ struct ExperienceConstructorArgs {
     address extensionResolver;
     address owningRegistry;
     address companyRegistry; 
+    address portalRegistry;
 }
 
 contract Experience  is EntityShell {
@@ -32,25 +33,22 @@ contract Experience  is EntityShell {
 
     address public immutable experienceRegistry;
     ICompanyRegistry public immutable companyRegistry;
+    address public immutable portalRegistry;
     
     modifier onlyRegistry {
         require(msg.sender == address(experienceRegistry), "Company: only world registry");
         _;
     }
 
-    modifier onlyActiveOwningCompany {
-        require(companyRegistry.isRegistered(msg.sender), "Company: caller is not a registered company");
-        require(company() == msg.sender, "Company: caller is not the owning company");
-        require(ICompany(msg.sender).isEntityActive(), "Company: company is not active");
-        _;
-    }
 
     constructor(ExperienceConstructorArgs memory args) EntityShell(IExtensionResolver(args.extensionResolver)) {
         
         require(args.owningRegistry != address(0), "Company: owningRegistry cannot be zero address");
         require(args.companyRegistry != address(0), "Company: companyRegistry cannot be zero address");
+        require(args.portalRegistry != address(0), "Company: portalRegistry cannot be zero address");
         companyRegistry = ICompanyRegistry(args.companyRegistry);      
         experienceRegistry = args.owningRegistry;
+        portalRegistry = args.portalRegistry;
     }
 
     function version() external pure returns (Version memory) {
@@ -60,9 +58,7 @@ contract Experience  is EntityShell {
         });
     }   
 
-    function name() external view returns (string memory) {
-        return LibRemovableEntity.load().name;
-    }
+    
 
     function init(CommonInitArgs calldata args) external onlyRegistry {
         require(args.termsOwner != address(0), "Experience: terms owner is the zero address");
@@ -78,6 +74,7 @@ contract Experience  is EntityShell {
         rs.name = args.name;
         rs.vector = args.vector;
         rs.termsOwner = args.termsOwner;
+        rs.registry = experienceRegistry;
 
         ExperienceInitArgs memory expArgs = abi.decode(args.initData, (ExperienceInitArgs));
         ExperienceStorage storage es = LibExperience.load();
@@ -86,41 +83,6 @@ contract Experience  is EntityShell {
     }
 
 
-    /**
-     * @dev Returns the company that controls this experience
-     */
-    function company() public view returns (address) {
-        return LibRemovableEntity.load().termsOwner;
-    }
-
-    /**
-     * @dev Returns the world that this experience is in
-     */
-    function world() public view returns (address) {
-        return ICompany(LibRemovableEntity.load().termsOwner).world();
-    }
-
-    /**
-     * @dev Returns the spatial vector address for this experience, which is derived
-     * from its parent company and world.
-     */
-    function vectorAddress() public view returns (VectorAddress memory) {
-        return LibRemovableEntity.load().vector;
-    }
-
-    /**
-     * @dev Returns the entry fee for this experience
-     */
-    function entryFee() public view returns (uint256) {
-        return LibExperience.load().entryFee;
-    }
-
-    /**
-     * @dev Sets the connection details for the experience. This can only be called by the parent company contract
-     */
-    function setConnectionDetails(bytes memory details) external onlyActiveOwningCompany {
-        LibExperience.load().connectionDetails = details;
-        emit IExperience.ConnectionDetailsChanged(details);
-    }
+    
 
 }

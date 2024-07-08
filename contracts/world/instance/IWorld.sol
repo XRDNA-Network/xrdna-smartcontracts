@@ -34,4 +34,5 @@ interface IWorld is IAccessControl,
     function avatarRegistry() external view returns(address);
     function experienceRegistry() external view returns(address);
     function baseVector() external view returns (VectorAddress memory);
+    function withdraw(uint256 amount) external;
 }

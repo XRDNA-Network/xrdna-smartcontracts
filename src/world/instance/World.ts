@@ -78,6 +78,10 @@ export class World {
         this.logParser.addAbi(this.address, abi);
     }
 
+    async isActive(): Promise<boolean> {
+        return await RPCRetryHandler.withRetry(() => this.world.isEntityActive());
+    }
+
     async owner(): Promise<string> {
         return await RPCRetryHandler.withRetry(() => this.world.owner());
     }
@@ -197,30 +201,16 @@ export class World {
         };
     }
 
-    /*
-    async setHook(hook: string): Promise<TransactionResponse> {
-        return await RPCRetryHandler.withRetry(() => this.world.setHook(hook));
-    }
-
-    async removeHook(): Promise<TransactionResponse> {
-        return await RPCRetryHandler.withRetry(() => this.world.removeHook());
-    }
-
-    async getHook(): Promise<string> {
-        return await RPCRetryHandler.withRetry(() => this.world.hook());
-    }
-        */
-
-    async deactivateCompany(address: string): Promise<TransactionResponse> {
-        return await RPCRetryHandler.withRetry(() => this.world.deactivateCompany(address));
+    async deactivateCompany(address: string, reason: string): Promise<TransactionResponse> {
+        return await RPCRetryHandler.withRetry(() => this.world.deactivateCompany(address, reason));
     }
 
     async reactivateCompany(address: string): Promise<TransactionResponse> {
         return await RPCRetryHandler.withRetry(() => this.world.reactivateCompany(address));
     }
 
-    async removeCompany(address: string): Promise<TransactionResponse> {
-        return await RPCRetryHandler.withRetry(() => this.world.removeCompany(address));
+    async removeCompany(address: string, reason: string): Promise<TransactionResponse> {
+        return await RPCRetryHandler.withRetry(() => this.world.removeCompany(address, reason));
     }
     
 }

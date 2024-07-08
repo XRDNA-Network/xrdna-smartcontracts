@@ -23,7 +23,7 @@ export default buildModule("ExtensionRegistryModule", (m) => {
     const r = m.contract("CoreExtensionRegistry", [args], {
         libraries: {
             LibAccess: libs.LibAccess,
-            LibCoreExtensionRegistry: libs.libCoreExtensionRegistry
+            LibCoreExtensionRegistry: libs.LibCoreExtensionRegistry
         },
         after: [
             libs.LibAccess,

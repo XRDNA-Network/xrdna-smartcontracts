@@ -6,7 +6,7 @@ import {BaseAsset, BaseAssetConstructorArgs} from '../../BaseAsset.sol';
 import {Version} from '../../../libraries/LibTypes.sol';
 import {CommonInitArgs} from '../../../interfaces/entity/IRegisteredEntity.sol';
 import {IAvatar} from '../../../avatar/instance/IAvatar.sol';
-import {LibRemovableEntity} from '../../../libraries/LibRemovableEntity.sol';
+import {LibRemovableEntity, RemovableEntityStorage} from '../../../libraries/LibRemovableEntity.sol';
 import {LibAsset, AssetStorage} from '../../../libraries/LibAsset.sol';
 import {LibERC20, ERC20Storage} from '../../../libraries/LibERC20.sol';
 
@@ -57,14 +57,15 @@ contract NTERC20Asset is BaseAsset {
         require(bytes(initData.symbol).length > 0, "NTERC20Asset: symbol cannot be empty");
         
         store.issuer = args.owner;
-        store.name = args.name;
         store.originAddress = initData.originChainAddress;
         store.originChainId = initData.originChainId;
         store.symbol = initData.symbol;
         erc20Store.maxSupply = initData.maxSupply;
         erc20Store.decimals = initData.decimals;
 
-        LibRemovableEntity.load().active = true;
+        RemovableEntityStorage storage rs = LibRemovableEntity.load();
+        rs.active = true;
+        rs.name = args.name;
     }
 
     

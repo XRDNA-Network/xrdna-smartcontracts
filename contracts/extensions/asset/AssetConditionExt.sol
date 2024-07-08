@@ -37,7 +37,23 @@ contract AssetConditionExt is IExtension {
      * @dev Installs the extension.
      */
     function install(address myAddress) external {
-        SelectorInfo[] memory sigs = new SelectorInfo[](6);
+        SelectorInfo[] memory sigs = new SelectorInfo[](4);
+        sigs[0] = SelectorInfo({
+            selector: this.setCondition.selector,
+            name: "setCondition(address)"
+        });
+        sigs[1] = SelectorInfo({
+            selector: this.removeCondition.selector,
+            name: "removeCondition()"
+        });
+        sigs[2] = SelectorInfo({
+            selector: this.canViewAsset.selector,
+            name: "canViewAsset(AssetCheckArgs)"
+        });
+        sigs[3] = SelectorInfo({
+            selector: this.canUseAsset.selector,
+            name: "canUseAsset(AssetCheckArgs)"
+        });
         
         LibExtensions.addExtensionSelectors(AddSelectorArgs({
             impl: myAddress,

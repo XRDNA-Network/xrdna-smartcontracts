@@ -23,11 +23,18 @@ library LibExtensionNames {
     string public constant COMPANY_REGISTRATION = "CompanyRegistrationExt";
     string public constant COMPANY_REMOVAL = "CompanyRemovalExt";
     string public constant COMPANY_ADD_EXPERIENCE = "CompanyAddExperienceExt";
+    string public constant COMPANY_JUMP = "CompanyJumpExt";
+    string public constant COMPANY_MINTING = "CompanyMintingExt";
 
     string public constant AVATAR_REGISTRATION = "AvatarRegistrationExt";
+    string public constant AVATAR_INFO = "AvatarInfoExt";
+    string public constant AVATAR_WEARABLES = "AvatarWearablesExt";
+    string public constant AVATAR_JUMP = "AvatarJumpExt";
 
     string public constant EXPERIENCE_REGISTRATION = "ExperienceRegistrationExt";
     string public constant EXPERIENCE_REMOVAL = "ExperienceRemovalExt";
+    string public constant EXPERIENCE_INFO = "ExperienceInfoExt";
+    string public constant EXPERIENCE_JUMP = "ExperienceJumpExt";
 
     string public constant ASSET_REGISTRATION = "AssetRegistrationExt";
     string public constant ASSET_REMOVAL = "AssetRemovalExt";
@@ -40,5 +47,12 @@ library LibExtensionNames {
     string public constant ERC721_MINTING = "ERC721MintingExt";
     string public constant ERC721_INFO = "ERC721InfoExt";
     string public constant ERC721_TRANSFER = "ERC721TransferExt";
+
+    string public constant PORTAL_REGISTRATION = "PortalRegistrationExt";
+    string public constant PORTAL_REMOVAL = "PortalRemovalExt";
+    string public constant PORTAL_JUMP = "PortalJumpExt";
+    string public constant PORTAL_CONDITIONS = "PortalConditionsExt";
+
+    
     
 }

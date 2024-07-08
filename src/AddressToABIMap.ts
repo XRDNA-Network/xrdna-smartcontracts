@@ -4,6 +4,7 @@
  * This is used to parse any log related to this project from a generic transaction receipt.
  */
 import { DeploymentAddressConfig, ContractNames} from "./ContractAddresses";
+import { ERC20AssetRegistry, ERC721AssetRegistry, MultiAssetRegistry } from "./asset";
 import { AvatarRegistry } from "./avatar/registry/AvatarRegistry";
 import { CompanyRegistry } from "./company/registry/CompanyRegistry";
 import { RegistrarRegistry } from "./registrar";
@@ -36,10 +37,19 @@ const resolveABI = (name: string): ABI | undefined => {
             return WorldRegistry.abi;
         }
         case ContractNames.CompanyRegistry: {
-            return CompanyRegistry.abi
+            return CompanyRegistry.abi;
         }
         case ContractNames.AvatarRegistry: {
-            return AvatarRegistry.abi
+            return AvatarRegistry.abi;
+        }
+        case ContractNames.ERC20AssetRegistry: {
+            return ERC20AssetRegistry.abi;
+        }
+        case ContractNames.ERC721AssetRegistry: {
+            return ERC721AssetRegistry.abi;
+        }
+        case ContractNames.MultiAssetRegistry: {
+            return MultiAssetRegistry.abi
         }
         default: {
             return undefined;

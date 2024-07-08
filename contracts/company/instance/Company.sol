@@ -20,6 +20,9 @@ struct CompanyConstructorArgs {
     address extensionResolver;
     address owningRegistry;
     address worldRegistry;
+    address erc20Registry;
+    address erc721Registry;
+    address avatarRegistry;
 }
 
 contract Company  is EntityShell {
@@ -28,7 +31,9 @@ contract Company  is EntityShell {
 
     ICompanyRegistry public immutable companyRegistry;
     IWorldRegistry public immutable worldRegistry;
-    //TODO: add experience registry
+    address public immutable erc20Registry;
+    address public immutable erc721Registry;
+    address public immutable avatarRegistry;
     
     modifier onlyRegistry {
         require(msg.sender == address(worldRegistry), "Company: only world registry");
@@ -39,8 +44,15 @@ contract Company  is EntityShell {
         
         require(args.owningRegistry != address(0), "Company: owningRegistry cannot be zero address");
         require(args.worldRegistry != address(0), "Company: worldRegistry cannot be zero address");
+        require(args.erc20Registry != address(0), "Company: erc20Registry cannot be zero address");
+        require(args.erc721Registry != address(0), "Company: erc721Registry cannot be zero address");
+        require(args.avatarRegistry != address(0), "Company: avatarRegistry cannot be zero address");
+
         worldRegistry = IWorldRegistry(args.owningRegistry);        
         companyRegistry = ICompanyRegistry(args.owningRegistry);
+        erc20Registry = args.erc20Registry;
+        erc721Registry = args.erc721Registry;
+        avatarRegistry = args.avatarRegistry;
     }
 
     function version() external pure returns (Version memory) {
@@ -49,10 +61,6 @@ contract Company  is EntityShell {
             minor: 0
         });
     }   
-
-    function name() external view returns (string memory) {
-        return LibRemovableEntity.load().name;
-    }
 
     function init(CommonInitArgs calldata args) external onlyRegistry {
         require(args.termsOwner != address(0), "Company: terms owner is the zero address");
@@ -68,6 +76,7 @@ contract Company  is EntityShell {
         rs.name = args.name;
         rs.vector = args.vector;
         rs.termsOwner = args.termsOwner;
+        rs.registry = address(companyRegistry);
     }
 
     function vectorAddress() external view returns (VectorAddress memory) {

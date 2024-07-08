@@ -8,10 +8,6 @@ import {LibAsset} from '../../libraries/LibAsset.sol';
 
 abstract contract BaseInfoExt is IExtension {
 
-    function name() public view returns (string memory) {
-        return LibAsset.load().name;
-    }
-
     function symbol() public view returns (string memory) {
         return LibAsset.load().symbol;
     } 
