@@ -3,12 +3,6 @@
 pragma solidity ^0.8.24;
 
 
-
-import {
-    IRegistration,  
-    ChangeEntityTermsArgs,
-    RegistrationWithTermsAndVector
-} from "../interfaces/registry/IRegistration.sol";
 import {RegistrationTerms} from "../libraries/LibTypes.sol";
 import {LibStorageSlots} from '../libraries/LibStorageSlots.sol';
 import {IRegisteredEntity} from '../interfaces/entity/IRegisteredEntity.sol';
@@ -16,10 +10,18 @@ import {LibStringCase} from '../libraries/LibStringCase.sol';
 import {VectorAddress, LibVectorAddress} from '../libraries/LibVectorAddress.sol';
 import {ITermsOwner} from '../interfaces/registry/ITermsOwner.sol';
 import {IAccessControl} from '../interfaces/IAccessControl.sol';
+import {ChangeEntityTermsArgs} from '../interfaces/registry/IRemovableRegistry.sol';
 
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
 import "hardhat/console.sol";
+
+
+struct RegistrationWithTermsAndVector {
+    address entity;
+    RegistrationTerms terms;
+    VectorAddress vector;
+}
 
 struct TermsSignatureVerification {
     address owner;
@@ -81,52 +83,42 @@ library LibRegistration {
         bytes32 hashed = keccak256(bytes(vector.asLookupKey()));
         return rs.registrationsByVector[hashed];
     }
-    
-    function registerEntityNoRemoval(RegistrationWithTermsAndVector memory args) public {
-        address a = args.entity;
-        require(a != address(0), "LibRegistration: entity creation failed");
-        IRegisteredEntity entity = IRegisteredEntity(a);
-        RegistrationStorage storage rs = load();
-        require(rs.staticRegistrations[a] == false, "RegistrationExt: entity already registered");
-        string memory nm = entity.name().lower();
-        require(bytes(nm).length > 0, "RegistrationExt: entity name is empty");
-        require(rs.registrationsByName[nm] == address(0), "RegistrationExt: entity name already registered");
-        rs.registrationsByName[nm] = a;
-        rs.staticRegistrations[a] = true;
 
-        if(bytes(args.vector.x).length > 0) {
-            string memory asKey = args.vector.asLookupKey();
-            bytes32 hashed = keccak256(bytes(asKey));
-            require(rs.registrationsByVector[hashed] == address(0), "RegistrationExt: vector already in use");
-            rs.registrationsByVector[hashed] = a;
-        }
+    function registerNonRemovableEntity(address entity) public {
+        RegistrationStorage storage rs = load();
+        require(!rs.staticRegistrations[entity], "LibRegistration: entity already registered");
+        IRegisteredEntity e = IRegisteredEntity(entity);
+        string memory nm = e.name().lower();
+        require(bytes(nm).length > 0, "LibRegistration: entity name is empty");
+        require(rs.registrationsByName[nm] == address(0), "LibRegistration: entity name already registered");
+        rs.registrationsByName[nm] = entity;
+        rs.staticRegistrations[entity] = true;
     }
 
-    function registerEntityWithRemoval(RegistrationWithTermsAndVector memory args) public  {
-        address a = args.entity;
-        require(a != address(0), "RegistrationExt: entity creation failed");
-        require(args.terms.gracePeriodDays > 0, "RegistrationExt: grace period must be greater than 0");
-        IRegisteredEntity entity = IRegisteredEntity(a);
+    function registerRemovableEntity(address entity, RegistrationTerms memory terms) public {
         RegistrationStorage storage rs = load();
-        TermedRegistration storage reg = rs.removableRegistrations[address(entity)];
-        string memory nm = entity.name().lower();
-        require(bytes(nm).length > 0, "RegistrationExt: entity name is empty");
-        require(rs.registrationsByName[nm] == address(0), "RegistrationModule: entity name already registered");
-        require(address(reg.owner) == address(0), "RegistrationModule: entity already registered with different name??");
-        RegistrationTerms memory terms = RegistrationTerms({
-            coveragePeriodDays: args.terms.coveragePeriodDays,
-            gracePeriodDays: args.terms.gracePeriodDays,
-            fee: args.terms.fee
-        });
+        TermedRegistration storage reg = rs.removableRegistrations[entity];
+        require(address(reg.owner) == address(0), "LibRegistration: entity already registered");
+        require(terms.gracePeriodDays > 0, "LibRegistration: grace period must be greater than 0");
+        IRegisteredEntity e = IRegisteredEntity(entity);
+        string memory nm = e.name().lower();
+        require(bytes(nm).length > 0, "LibRegistration: entity name is empty");
+        require(rs.registrationsByName[nm] == address(0), "LibRegistration: entity name already registered");
+        rs.registrationsByName[nm] = entity;
+        
         reg.owner = msg.sender;
         reg.terms = terms;
         reg.lastRenewed = block.timestamp;
-        rs.registrationsByName[nm] = address(entity);
+    }
+
+    function registerRemovableVectoredEntity(RegistrationWithTermsAndVector memory args) public  {
+        registerRemovableEntity(args.entity, args.terms);
         if(bytes(args.vector.x).length > 0) {
+            RegistrationStorage storage rs = load();
             string memory asKey = args.vector.asLookupKey();
             bytes32 hashed = keccak256(bytes(asKey));
             require(rs.registrationsByVector[hashed] == address(0), "RegistrationModule: vector already in use");
-            rs.registrationsByVector[hashed] = a;
+            rs.registrationsByVector[hashed] = args.entity;
         }
     }
 

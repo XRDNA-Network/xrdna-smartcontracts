@@ -2,18 +2,28 @@
 // Compatible with OpenZeppelin Contracts ^5.0.0
 pragma solidity ^0.8.24;
 
-import {IRegistration, CreateEntityArgs} from '../../interfaces/registry/IRegistration.sol';
-import {IRegistryFactory} from '../../interfaces/registry/IRegistryFactory.sol';
-import {IAccessControl} from '../../interfaces/IAccessControl.sol';
-import {IEntityRemoval} from '../../interfaces/registry/IEntityRemoval.sol';
+import {RegistrationTerms} from '../../libraries/LibTypes.sol';
+import {IRemovableRegistry} from '../../interfaces/registry/IRemovableRegistry.sol';
 
-/**
- * @title IRegistrarRegistry
- * @dev IRegistrarRegistry interface that encapsulates all installed functionality for registrar registry. This is 
- * NOT extended on actual registry contract.
- */
-interface IRegistrarRegistry is IRegistration, IRegistryFactory, IAccessControl, IEntityRemoval {
+struct CreateNonRemovableRegistrarArgs {
+    bool sendTokensToOwner;
+    address owner;
+    string name;
+    bytes initData;
+}
 
-    function createRegistrarNoRemoval(CreateEntityArgs calldata args) external payable returns (address);
-    function createRemovableRegistrar(CreateEntityArgs calldata args) external payable returns (address);
+struct CreateRegistrarArgs {
+    bool sendTokensToOwner;
+    address owner;
+    uint256 expiration;
+    RegistrationTerms terms;
+    string name;
+    bytes initData;
+    bytes ownerTermsSignature;
+}
+
+interface IRegistrarRegistry is IRemovableRegistry {
+
+    function createNonRemovableRegistrar(CreateNonRemovableRegistrarArgs calldata args) external payable returns (address);
+    function createRemovableRegistrar(CreateRegistrarArgs calldata args) external payable returns (address);
 }

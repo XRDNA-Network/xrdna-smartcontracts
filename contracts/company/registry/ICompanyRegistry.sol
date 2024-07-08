@@ -2,12 +2,9 @@
 // Compatible with OpenZeppelin Contracts ^5.0.0
 pragma solidity ^0.8.24;
 
-
-import {IRegistration, CreateEntityArgs} from '../../interfaces/registry/IRegistration.sol';
-import {IRegistryFactory} from '../../interfaces/registry/IRegistryFactory.sol';
-import {IAccessControl} from '../../interfaces/IAccessControl.sol';
-import {IEntityRemoval} from '../../interfaces/registry/IEntityRemoval.sol';
 import {RegistrationTerms} from '../../libraries/LibTypes.sol';
+import {IRemovableRegistry} from '../../interfaces/registry/IRemovableRegistry.sol';
+import {IVectoredRegistry} from '../../interfaces/registry/IVectoredRegistry.sol';
 import {VectorAddress} from '../../libraries/LibVectorAddress.sol';
 
 struct CreateCompanyArgs {
@@ -21,7 +18,7 @@ struct CreateCompanyArgs {
     uint256 expiration;
 }
 
-interface ICompanyRegistry is IRegistration, IRegistryFactory, IAccessControl, IEntityRemoval {
-    function worldRegistry() external view returns (address);
+interface ICompanyRegistry is IRemovableRegistry, IVectoredRegistry {
+
     function createCompany(CreateCompanyArgs calldata args) external payable returns (address);
 }

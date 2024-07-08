@@ -28,16 +28,6 @@ library LibAccess {
         }
     }
 
-    modifier onlyAdmin {
-        require(load().roles[LibRoles.ROLE_ADMIN][msg.sender], "AccessModule: only admin allowed");
-        _;
-    }
-
-    modifier onlyOwner {
-        require(load().owner == msg.sender, "AccessModule: only owner allowed");
-        _;
-    }
-
     function initAccess(address _owner, address[] calldata admins) external {
         AccessStorage storage s = load();
         require(s.owner == address(0), "Already initialized");
@@ -58,7 +48,7 @@ library LibAccess {
         return s.owner;
     }
 
-    function setOwner(address o) external onlyOwner {
+    function setOwner(address o) external {
         require(o != address(0), "AccessControl: cannot set owner to zero address");
         AccessStorage storage s = load();
         s.owner = o;
@@ -66,7 +56,7 @@ library LibAccess {
         s.roles[LibRoles.ROLE_ADMIN][o] = true;
     }
 
-    function addSigners(address[] calldata signers) external onlyAdmin {
+    function addSigners(address[] calldata signers) external {
         AccessStorage storage s = load();
         for(uint256 i=0;i<signers.length;++i) {
             require(signers[i] != address(0), "SharedLibAccess: cannot add zero address signers");
@@ -74,7 +64,7 @@ library LibAccess {
         }
     }
 
-    function removeSigners(address[] calldata signers) external onlyAdmin {
+    function removeSigners(address[] calldata signers) external {
         AccessStorage storage s = load();
         for(uint256 i=0;i<signers.length;++i) {
             require(signers[i] != address(0), "SharedLibAccess: cannot remove zero address signers");
@@ -97,7 +87,7 @@ library LibAccess {
         return s.roles[role][account];
     }
 
-    function grantRole(bytes32 role, address account) external onlyAdmin {
+    function grantRole(bytes32 role, address account) external {
         require(account != address(0), "AccessControl: cannot grant role to zero address");
         AccessStorage storage s = load();
         s.roles[role][account] = true;
@@ -110,7 +100,7 @@ library LibAccess {
         s.roles[role][account] = true;
     }
 
-    function revokeRole(bytes32 role, address account) external onlyAdmin {
+    function revokeRole(bytes32 role, address account) external {
         require(account != address(0), "AccessControl: cannot revoke role from zero address");
         AccessStorage storage s = load();
         s.roles[role][account] = false;

@@ -3,11 +3,12 @@
 pragma solidity ^0.8.24;
 
 
-import {IMintableAsset} from '../../IMintableAsset.sol';
+import {IMintableAsset} from '../IMintableAsset.sol';
 
 interface IERC20Asset is IMintableAsset {
 
-
+    event ERC20Minted(address indexed to, uint256 indexed amt);
+    
     function decimals() external view returns (uint8);
     function totalSupply() external view returns (uint256);
     function allowance(address owner, address spender) external view returns (uint256);

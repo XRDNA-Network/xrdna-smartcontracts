@@ -2,56 +2,95 @@
 // Compatible with OpenZeppelin Contracts ^5.0.0
 pragma solidity ^0.8.24;
 
-import {BasicShell, InstallExtensionArgs} from '../../base-types/BasicShell.sol';
-import {ICoreExtensionRegistry} from '../../ext-registry/ICoreExtensionRegistry.sol';
-import {LibExtensionNames} from '../../libraries/LibExtensionNames.sol';
-import {ExtensionInitArgs} from '../../interfaces/IExtension.sol';
+import {BaseRemovableRegistry} from '../../base-types/registry/BaseRemovableRegistry.sol';
+import {BaseVectoredRegistry} from '../../base-types/registry/BaseVectoredRegistry.sol';
+import {IWorldRegistry, CreateWorldArgs} from './IWorldRegistry.sol';
 import {LibAccess} from '../../libraries/LibAccess.sol';
 import {LibRoles} from '../../libraries/LibRoles.sol';
+import {LibRegistration, TermsSignatureVerification} from '../../libraries/LibRegistration.sol';
+import {FactoryStorage, LibFactory} from '../../libraries/LibFactory.sol';
+import {LibClone} from '../../libraries/LibClone.sol';
+import {IWorld} from '../instance/IWorld.sol';
+import {VectorAddress, LibVectorAddress} from '../../libraries/LibVectorAddress.sol';
+import {IRegistrarRegistry} from '../../registrar/registry/IRegistrarRegistry.sol';
+import {IRegistrar} from '../../registrar/instance/IRegistrar.sol';
+import {LibRegistration, RegistrationWithTermsAndVector} from '../../libraries/LibRegistration.sol';
 
-struct WorldRegistryConstructorArgs {
-    address owner;
-    address vectorAuthority;
-    address extensionsRegistry;
-    address registrarRegistry;
-    address[] admins;
-}
+contract WorldRegistry is BaseRemovableRegistry, BaseVectoredRegistry, IWorldRegistry {
 
-contract WorldRegistry is BasicShell {
-    
-    address public immutable registrarRegistry;
+    using LibVectorAddress for VectorAddress;
 
-    constructor(WorldRegistryConstructorArgs memory args) BasicShell(ICoreExtensionRegistry(args.extensionsRegistry)) {
-        
-        require(args.registrarRegistry != address(0), "WorldRegistry: registrarRegistry cannot be zero address");
-        require(args.vectorAuthority != address(0), "WorldRegistry: vectorAuthority cannot be zero address");
-        registrarRegistry = args.registrarRegistry;
+    IRegistrarRegistry public immutable registrarRegistry;
 
-        string[] memory extNames = new string[](5);
-        extNames[0] = LibExtensionNames.ACCESS;
-        extNames[1] = LibExtensionNames.FACTORY;
-        extNames[2] = LibExtensionNames.WORLD_REGISTRATION;
-        extNames[3] = LibExtensionNames.WORLD_REMOVAL;
-        extNames[4] = LibExtensionNames.CHANGE_REGISTRAR;
-        InstallExtensionArgs memory extArgs = InstallExtensionArgs({
-            names: extNames,
-            owner: args.owner,
-            admins: args.admins
-        });
-        _installExtensions(extArgs);
-        LibAccess._grantRole(LibRoles.ROLE_VECTOR_AUTHORITY, args.vectorAuthority);
+    constructor(address _registrarRegistry) {
+        require(_registrarRegistry != address(0), "RegistrarRegistry: invalid registrar registry"); 
+        registrarRegistry = IRegistrarRegistry(_registrarRegistry);
     }
 
-    function isVectorAddressAuthority(address a) external view returns (bool) {
+    modifier onlySigner {
+        require(LibAccess.isSigner(msg.sender), "RegistrarRegistry: caller is not a signer");
+        _;
+    }
+
+    modifier onlyActiveRegistrar {
+        require(registrarRegistry.isRegistered(msg.sender), "RegistrarRegistry: registrar not registered");
+        require(IRegistrar(msg.sender).isEntityActive(), "RegistrarRegistry: registrar not active");
+        _;
+    }
+
+    function isVectorAddressAuthority(address a) public view returns (bool) {
         return LibAccess.hasRole(LibRoles.ROLE_VECTOR_AUTHORITY, a);
     }
 
-    function addVectorAddressAuthority(address a) external onlyAdmin {
-        LibAccess._grantRole(LibRoles.ROLE_VECTOR_AUTHORITY, a);
+    function addVectorAddressAuthority(address a) public onlyAdmin {
+        LibAccess.grantRole(LibRoles.ROLE_VECTOR_AUTHORITY, a);
     }
 
-    function removeVectorAddressAuthority(address a) external onlyAdmin {
+    function removeVectorAddressAuthority(address a) public onlyAdmin {
         LibAccess.revokeRole(LibRoles.ROLE_VECTOR_AUTHORITY, a);
     }
 
+    function createWorld(CreateWorldArgs calldata args) public payable override onlyActiveRegistrar returns (address) {
+        require(args.expiration > block.timestamp, "RegistrarRegistry: signature expired");
+        require(args.terms.gracePeriodDays > 0, "RegistrarRegistry: grace period must be greater than 0");
+        
+        FactoryStorage storage fs = LibFactory.load();
+        require(fs.entityImplementation != address(0), "RegistrarRegistry: entity implementation not set");
+        
+        //false,false means p and p_sub must be zero
+        args.vector.validate(false, false);
+
+        address signer = args.vector.getSigner(msg.sender, args.vectorAuthoritySignature);
+        require(isVectorAddressAuthority(signer), "WorldRegistry: vector signer is not a valid vector address authority");
+
+        TermsSignatureVerification memory verification = TermsSignatureVerification({
+            owner: args.owner,
+            termsOwner: address(this),
+            terms: args.terms,
+            expiration: args.expiration,
+            ownerTermsSignature: args.ownerTermsSignature
+        });
+        LibRegistration.verifyNewEntityTermsSignature(verification);
+
+        address entity = LibClone.clone(fs.entityImplementation);
+        require(entity != address(0), "RegistrarRegistration: entity cloning failed");
+        IWorld(entity).init(args.name, args.vector, args.initData);
+        RegistrationWithTermsAndVector memory regArgs = RegistrationWithTermsAndVector({
+            entity: entity,
+            terms: args.terms,
+            vector: args.vector
+        });
+        LibRegistration.registerRemovableVectoredEntity(regArgs);
+         if(msg.value > 0) {
+            if(args.sendTokensToOwner) {
+                payable(args.owner).transfer(msg.value);
+            } else {
+                payable(entity).transfer(msg.value);
+            }
+        }
+
+        emit RegistryAddedEntity(entity, args.owner);
+
+        return entity;
+    }
 }

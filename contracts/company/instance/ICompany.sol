@@ -34,25 +34,6 @@ struct DelegatedAvatarJumpRequest {
     bytes avatarOwnerSignature;
 }
 
-/**
- * @dev Arguments for initializing a company.
- */
-struct CompanyInitArgs {
-     //the address of the company owner
-    address owner;
-
-     //the world in which the company operates
-    address world;
-
-    //the vector address of the company
-    VectorAddress vector;
-
-    //initialization data to pass to the company contract
-    bytes initData;
-
-    //the name of the company, must be globally unique, case-insensitive
-    string name;
-}
 
 /**
  * @title ICompany
@@ -88,9 +69,7 @@ interface ICompany is IAccessControl, IRemovableEntity {
     event CompanyReactivated();
 
 
-    function erc20Registry() external view returns (address);
-    function erc721Registry() external view returns (address);
-    function avatarRegistry() external view returns (address);
+    function init(string calldata name, address world, VectorAddress calldata vector, bytes calldata initData) external;
 
     /**
         * @dev Returns the address of the world in which the company operates.
@@ -117,14 +96,19 @@ interface ICompany is IAccessControl, IRemovableEntity {
      * initialization data for the experience will include the expected fee
      * for the portal.
      */
-    function addExperience(AddExperienceArgs memory args) external;
+    function addExperience(AddExperienceArgs memory args) external returns (address, uint256);
+
+
+    function deactiveExperience(address experience, string calldata reason) external;
+
+    function reactivateExperience(address experience) external;
 
     /**
      * @dev Removes an experience from the world. This also removes the portal into the 
      * experience and unregisters it from the PortalRegistry. This can only be called
      * by company admin
      */
-    function removeExperience(address experience) external;
+    function removeExperience(address experience, string calldata reason) external;
 
 
     /**
@@ -193,13 +177,4 @@ interface ICompany is IAccessControl, IRemovableEntity {
      */
     function delegateJumpForAvatar(DelegatedAvatarJumpRequest calldata request) external;
     
-    /**
-     * @dev Upgrades the experience to the next version. Only the owner can upgrade the experience.
-     */
-    function upgradeExperience(address experience, bytes memory initData) external;
-
-    /**
-     * @dev Upgrades the asset to the next version. Only the owner can upgrade the asset.
-     */
-    function upgradeAsset(address asset, bytes memory initData) external;
 }

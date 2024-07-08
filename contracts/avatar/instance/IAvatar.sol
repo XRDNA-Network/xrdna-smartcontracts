@@ -28,9 +28,7 @@ interface IAvatar is IERC721Receiver, IAccessControl, IRegisteredEntity {
     event AppearanceChanged(bytes indexed appearanceDetails);
     event JumpSuccess(address indexed experience, uint256 indexed fee, bytes connectionDetails);
 
-    function assetRegistry() external view returns (address);
-    function companyRegistry() external view returns (address); 
-    function portalRegistry() external view returns (address);
+    function init(string calldata name, address owner, address startingExperience, bytes calldata initData) external;
     
     /**
      * @dev get the Avatar's unique username

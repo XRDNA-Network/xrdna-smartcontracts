@@ -10,7 +10,6 @@ import {RegistrationTerms} from '../libraries/LibTypes.sol';
 import {LibStringCase} from '../libraries/LibStringCase.sol';
 import {RegistrationStorage, TermedRegistration, LibRegistration} from './LibRegistration.sol';
 
-
 library LibEntityRemoval {
 
     using LibStringCase for string;

@@ -3,7 +3,7 @@
 pragma solidity ^0.8.24;
 
 import {LibStorageSlots} from '../libraries/LibStorageSlots.sol';
-import {IAssetCondition} from '../interfaces/asset/IAssetCondition.sol';
+import {IAssetCondition} from '../asset/IAssetCondition.sol';
 
 struct AssetStorage {
     bool active;

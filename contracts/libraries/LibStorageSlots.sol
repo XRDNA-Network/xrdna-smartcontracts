@@ -5,9 +5,7 @@ pragma solidity ^0.8.24;
 library LibStorageSlots {
 
     //see EIP-7201 for details on slot address algorithm
-    bytes32 constant EXTENSIONS_STORAGE = keccak256(abi.encode(uint256(keccak256(bytes('xr.extensions.storage.v1'))) - 1)) & bytes32(uint256(0xff));
-    bytes32 constant EXTENSION_REGISTRY_STORAGE = keccak256(abi.encode(uint256(keccak256(bytes('xr.core.extension.registry.storage.v1'))) - 1)) & bytes32(uint256(0xff));
-
+    
     bytes32 constant CORE_PROXY_STORAGE = keccak256(abi.encode(uint256(keccak256(bytes('xr.core.proxy.storage.v1'))) - 1)) & bytes32(uint256(0xff));
     bytes32 constant ENTITY_PROXY_STORAGE = keccak256(abi.encode(uint256(keccak256(bytes('xr.entity.proxy.storage.v1'))) - 1)) & bytes32(uint256(0xff));
     
@@ -27,6 +25,7 @@ library LibStorageSlots {
     bytes32 constant EXPERIENCE_STORAGE = keccak256(abi.encode(uint256(keccak256(bytes('xr.experience.storage.v1'))) - 1)) & bytes32(uint256(0xff));
 
     bytes32 constant ASSET_STORAGE = keccak256(abi.encode(uint256(keccak256(bytes('xr.asset.storage.v1'))) - 1)) & bytes32(uint256(0xff));
+    bytes32 constant ASSET_REGISTRY = keccak256(abi.encode(uint256(keccak256(bytes('xr.asset.registry.storage.v1'))) - 1)) & bytes32(uint256(0xff));
     bytes32 constant ERC20_ASSET_STORAGE = keccak256(abi.encode(uint256(keccak256(bytes('xr.erc20.asset.storage.v1'))) - 1)) & bytes32(uint256(0xff));
     bytes32 constant ERC721_ASSET_STORAGE = keccak256(abi.encode(uint256(keccak256(bytes('xr.erc721.asset.storage.v1'))) - 1)) & bytes32(uint256(0xff));
 

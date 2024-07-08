@@ -2,33 +2,26 @@
 // Compatible with OpenZeppelin Contracts ^5.0.0
 pragma solidity ^0.8.24;
 
-
-import {IRegistration, CreateEntityArgs} from '../../interfaces/registry/IRegistration.sol';
-import {IRegistryFactory} from '../../interfaces/registry/IRegistryFactory.sol';
-import {IAccessControl} from '../../interfaces/IAccessControl.sol';
-import {IEntityRemoval} from '../../interfaces/registry/IEntityRemoval.sol';
-import {IControlChange} from '../../interfaces/registry/IControlChange.sol';
 import {RegistrationTerms} from '../../libraries/LibTypes.sol';
+import {IRemovableRegistry} from '../../interfaces/registry/IRemovableRegistry.sol';
+import {IVectoredRegistry} from '../../interfaces/registry/IVectoredRegistry.sol';
 import {VectorAddress} from '../../libraries/LibVectorAddress.sol';
+
 
 struct CreateWorldArgs {
     bool sendTokensToOwner;
     address owner;
-    string name;
+    uint256 expiration;
     RegistrationTerms terms;
     VectorAddress vector;
+    string name;
     bytes initData;
     bytes ownerTermsSignature;
-    uint256 expiration;
+    bytes vectorAuthoritySignature;
 }
 
-interface IWorldRegistry is IRegistration, 
-                            IRegistryFactory, 
-                            IAccessControl, 
-                            IEntityRemoval, 
-                            IControlChange {
-                                
-    function registrarRegistry() external view returns (address);
+interface IWorldRegistry is IRemovableRegistry, IVectoredRegistry {
+
     function createWorld(CreateWorldArgs calldata args) external payable returns (address);
     function isVectorAddressAuthority(address a) external view returns (bool);
     function addVectorAddressAuthority(address a) external;

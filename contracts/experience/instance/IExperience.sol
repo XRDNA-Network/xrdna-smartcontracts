@@ -31,9 +31,8 @@ interface IExperience is IRemovableEntity {
     event ExperienceDeactivated();
     
 
-    function companyRegistry() external view returns (address);
+    function init(string calldata name, address company, VectorAddress calldata vector, bytes calldata initData) external;
 
-    function portalRegistry() external view returns (address);
     
     /**
      * @dev Returns the company that controls this experience
@@ -90,14 +89,4 @@ interface IExperience is IRemovableEntity {
      */
     function entering(JumpEntryRequest memory request) external payable returns (bytes memory);
     
-    /**
-     * @dev Upgrades the experience to a new version. This must be initiated by the parent
-     * company contract.
-     */
-    function upgrade(bytes memory initData) external returns (address nextVersion);
-
-    /**
-     * @dev Called by the experience factory to assign new implementation address
-     */
-    function upgradeComplete(address nextVersion) external;
 }

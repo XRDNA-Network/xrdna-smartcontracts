@@ -3,17 +3,18 @@
 pragma solidity ^0.8.24;
 
 
-import {IRegistration} from '../../interfaces/registry/IRegistration.sol';
-import {IRegistryFactory} from '../../interfaces/registry/IRegistryFactory.sol';
-import {IAccessControl} from '../../interfaces/IAccessControl.sol';
+import {IRemovableRegistry} from '../../interfaces/registry/IRemovableRegistry.sol';
 
 struct CreateAssetArgs {
-    address owner;
+    address issuer;
+    address originAddress;
+    uint256 originChainId;
     string name;
+    string symbol;
     bytes initData;
 }
 
-interface IAssetRegistry is IRegistration, IRegistryFactory, IAccessControl {
+interface IAssetRegistry is IRemovableRegistry {
     
    
     /**
@@ -26,7 +27,7 @@ interface IAssetRegistry is IRegistration, IRegistryFactory, IAccessControl {
      * @dev Registers a new asset with the registry. Only callable by the registry admin
      * after verifying ownership by the issuing company.
      */
-    function registerAsset(bytes calldata initData) external returns (address asset);
+    function registerAsset(CreateAssetArgs calldata args) external returns (address asset);
 
     function deactivateAsset(address asset, string calldata reason) external;
 

@@ -1,9 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Compatible with OpenZeppelin Contracts ^5.0.0
 pragma solidity ^0.8.24;
-import {IExperience} from '../experience/instance/IExperience.sol';
 import {Wearable} from './LibAvatar.sol';
-import {IMintableAsset} from '../asset/IMintableAsset.sol';
 
 /**
  * @dev node within a linked list structure where next/prev values are hashes of 

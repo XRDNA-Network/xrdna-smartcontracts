@@ -3,7 +3,7 @@
 pragma solidity ^0.8.24;
 
 
-import {IMintableAsset} from '../../IMintableAsset.sol';
+import {IMintableAsset} from '../IMintableAsset.sol';
 
 interface IERC721Asset is IMintableAsset {
 

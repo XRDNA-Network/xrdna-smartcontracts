@@ -2,43 +2,74 @@
 // Compatible with OpenZeppelin Contracts ^5.0.0
 pragma solidity ^0.8.24;
 
-import {BasicShell, InstallExtensionArgs} from '../../base-types/BasicShell.sol';
-import {ICoreExtensionRegistry} from '../../ext-registry/ICoreExtensionRegistry.sol';
-import {LibExtensionNames} from '../../libraries/LibExtensionNames.sol';
-import {ExtensionInitArgs} from '../../interfaces/IExtension.sol';
-import {ITermsOwner} from '../../interfaces/registry/ITermsOwner.sol';
-import {LibAccess} from '../../libraries/LibAccess.sol';
+import {BaseRemovableRegistry} from '../../base-types/registry/BaseRemovableRegistry.sol';
+import {LibAccess } from '../../libraries/LibAccess.sol';
+import {IRegistrarRegistry, CreateNonRemovableRegistrarArgs, CreateRegistrarArgs} from './IRegistrarRegistry.sol';
+import {VectorAddress, LibVectorAddress} from '../../libraries/LibVectorAddress.sol';
+import {FactoryStorage, LibFactory} from '../../libraries/LibFactory.sol';
+import {LibClone} from '../../libraries/LibClone.sol';
+import {IRegistrar, RegistrarInitArgs} from '../instance/IRegistrar.sol';
+import {LibRegistration, TermsSignatureVerification} from '../../libraries/LibRegistration.sol';
 
-struct RegistrarRegistryConstructorArgs {
-    address owner;
-    address extensionsRegistry;
-    address[] admins;
-}
+contract RegistrarRegistry is BaseRemovableRegistry {
 
-contract RegistrarRegistry is BasicShell, ITermsOwner {
-    
-    constructor(RegistrarRegistryConstructorArgs memory args) BasicShell(ICoreExtensionRegistry(args.extensionsRegistry)) {
-        string[] memory extNames = new string[](4);
-        extNames[0] = LibExtensionNames.ACCESS;
-        extNames[1] = LibExtensionNames.FACTORY;
-        extNames[2] = LibExtensionNames.REGISTRAR_REGISTRATION;
-        extNames[3] = LibExtensionNames.REGISTRAR_ENTITY_REMOVAL;
+    modifier onlySigner {
+        require(LibAccess.isSigner(msg.sender), "RegistrarRegistry: caller is not a signer");
+        _;
+    }
+
+    function createNonRemovableRegistrar(CreateNonRemovableRegistrarArgs calldata args) external payable onlySigner returns (address) {
+        FactoryStorage storage fs = LibFactory.load();
+        require(fs.entityImplementation != address(0), "RegistrarRegistry: entity implementation not set");
+        address entity = LibClone.clone(fs.entityImplementation);
+        require(entity != address(0), "RegistrarRegistration: entity cloning failed");
+
+        IRegistrar(entity).init(args.name, args.initData);
+        _registerNonRemovableEntity(entity);
+        if(msg.value > 0) {
+            if(args.sendTokensToOwner) {
+                payable(args.owner).transfer(msg.value);
+            } else {
+                payable(entity).transfer(msg.value);
+            }
+        }
+
+        emit RegistryAddedEntity(entity, args.owner);
+
+        return entity;
+    }
+
+    function createRemovableRegistrar(CreateRegistrarArgs calldata args) external payable onlySigner returns (address) {
+        require(args.expiration > block.timestamp, "RegistrarRegistry: signature expired");
+        require(args.terms.gracePeriodDays > 0, "RegistrarRegistry: grace period must be greater than 0");
+        FactoryStorage storage fs = LibFactory.load();
+        require(fs.entityImplementation != address(0), "RegistrarRegistry: entity implementation not set");
         
-        InstallExtensionArgs memory extArgs = InstallExtensionArgs({
-            names: extNames,
+        
+        TermsSignatureVerification memory verification = TermsSignatureVerification({
             owner: args.owner,
-            admins: args.admins
+            termsOwner: address(this),
+            terms: args.terms,
+            expiration: args.expiration,
+            ownerTermsSignature: args.ownerTermsSignature
         });
-        _installExtensions(extArgs);
-    }
+        LibRegistration.verifyNewEntityTermsSignature(verification);
 
-    function isStillActive() external pure override returns (bool) {
-        //registry is always active terms owner
-        return true;
-    }
+        address entity = LibClone.clone(fs.entityImplementation);
+        require(entity != address(0), "RegistrarRegistration: entity cloning failed");
+        IRegistrar(entity).init(args.name, args.initData);
+        _registerRemovableEntity(entity, args.terms);
+         if(msg.value > 0) {
+            if(args.sendTokensToOwner) {
+                payable(args.owner).transfer(msg.value);
+            } else {
+                payable(entity).transfer(msg.value);
+            }
+        }
 
-    function isTermsOwnerSigner(address a) external view override returns (bool) {
-        return LibAccess.isSigner(a);
-    }
+        emit RegistryAddedEntity(entity, args.owner);
 
+        return entity;
+    }
 }
+

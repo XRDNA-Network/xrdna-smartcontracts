@@ -2,64 +2,43 @@
 // Compatible with OpenZeppelin Contracts ^5.0.0
 pragma solidity ^0.8.24;
 
-import {CoreShell, CoreShellConstructorArgs} from "../../core/CoreShell.sol";
-import {IRegistrarRegistry} from "../interfaces/IRegistrarRegistry.sol";
-import {IEntityFactory} from "../../registry/factory/interfaces/IEntityFactory.sol";
-import {LibAccess} from "../../core/LibAccess.sol";
-import {LibRoles} from "../../core/LibRoles.sol";
-import {RegistrationTerms} from "../../registry/extensions/registration/interfaces/IRegistration.sol";
-import {LibExtensions} from "../../core/LibExtensions.sol";
-import {LibTermsOwner} from '../../entity/libraries/LibTermsOwner.sol';
-import {IExtension} from '../../core/extensions/IExtension.sol';
+import {BasicShell, InstallExtensionArgs} from '../../base-types/BasicShell.sol';
+import {ICoreExtensionRegistry} from '../../ext-registry/ICoreExtensionRegistry.sol';
+import {LibExtensionNames} from '../../libraries/LibExtensionNames.sol';
+import {ExtensionInitArgs} from '../../interfaces/IExtension.sol';
+import {ITermsOwner} from '../../interfaces/registry/ITermsOwner.sol';
+import {LibAccess} from '../../libraries/LibAccess.sol';
 
 struct RegistrarRegistryConstructorArgs {
-    address owner; //can be zero
-    address[] otherAdmins; //can be empty
-    address extensionManager;
-    address entityCreator;
-    RegistrationTerms registrarTerms;
+    address owner;
+    address extensionsRegistry;
+    address[] admins;
 }
 
-contract RegistrarRegistry is CoreShell, IRegistrarRegistry {
-
-    IEntityFactory public immutable entityFactory;
-
-    constructor(RegistrarRegistryConstructorArgs memory args) CoreShell(CoreShellConstructorArgs({
-        owner: args.owner,//can be zero
-        otherAdmins: args.otherAdmins, //can be empty
-        extensionManager: args.extensionManager   
-    })) {
-        IExtension[] memory exts = extManager.getExtensions();
-        bytes memory cData = abi.encodeWithSelector(IExtension.initStorage.selector, args.owner, "RegistrarRegistry", 1, abi.encode(args.registrarTerms));
-        require(args.entityCreator != address(0), "EntityCreator cannot be zero address");
-        entityFactory = IEntityFactory(args.entityCreator);
-
-        for (uint256 i = 0; i < exts.length; i++) {
-            LibExtensions.lowLevelCallExtension(address(exts[i]), cData);
-        }
-        for(uint256 i = 0; i < args.otherAdmins.length; i++) {
-            //already checked zero-address in CoreShell
-            LibAccess._grantRevokableRole(LibRoles.ROLE_SIGNER, args.otherAdmins[i]);
-        }
+contract RegistrarRegistry is BasicShell, ITermsOwner {
+    
+    constructor(RegistrarRegistryConstructorArgs memory args) BasicShell(ICoreExtensionRegistry(args.extensionsRegistry)) {
+        string[] memory extNames = new string[](4);
+        extNames[0] = LibExtensionNames.ACCESS;
+        extNames[1] = LibExtensionNames.FACTORY;
+        extNames[2] = LibExtensionNames.REGISTRAR_REGISTRATION;
+        extNames[3] = LibExtensionNames.REGISTRAR_ENTITY_REMOVAL;
+        
+        InstallExtensionArgs memory extArgs = InstallExtensionArgs({
+            names: extNames,
+            owner: args.owner,
+            admins: args.admins
+        });
+        _installExtensions(extArgs);
     }
 
-    function createEntityInstance(address owner, string calldata name, bytes calldata initData) public override returns (address) {
-        return entityFactory.createEntity(owner, name, initData);
-    }
-
-    function isActiveTermsOwner(address caller) external view override returns (bool) {
-        //only registry signers are authorized to do anything with registrars.
-        return LibAccess.hasRole(LibRoles.ROLE_SIGNER, caller) ||
-            LibAccess.hasRole(LibRoles.ROLE_ADMIN, caller) ||
-            LibAccess.owner() == caller;
-    }
-
-    function isActive() external pure returns (bool) {
-        //this registry, as the terms owner, can never be inactive
+    function isStillActive() external pure override returns (bool) {
+        //registry is always active terms owner
         return true;
     }
 
-    function isTermsOwnerSigner(address _signer) external view override returns (bool) {
-        return LibAccess.hasRole(LibRoles.ROLE_SIGNER, _signer);
+    function isTermsOwnerSigner(address a) external view override returns (bool) {
+        return LibAccess.isSigner(a);
     }
+
 }
