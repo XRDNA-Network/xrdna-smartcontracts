@@ -21,6 +21,8 @@ abstract contract BaseEntity is BaseAccess, IRegisteredEntity {
         _;
     }
 
+    receive() external payable {}
+
     function name() external view returns (string memory) {
         return LibEntity.load().name;
     }

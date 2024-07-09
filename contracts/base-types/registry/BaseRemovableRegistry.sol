@@ -13,6 +13,7 @@ import {ITermsOwner} from '../../interfaces/registry/ITermsOwner.sol';
 
 abstract contract BaseRemovableRegistry is BaseRegistry, IRemovableRegistry {
 
+
     modifier onlyEntityOwner(address entity) {
         IRemovableEntity e = IRemovableEntity(entity);
         require(e.termsOwner() == msg.sender, "BaseRemovableRegistry: caller is not the entity's terms owner");

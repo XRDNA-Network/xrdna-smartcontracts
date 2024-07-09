@@ -1,47 +1,40 @@
 import { buildModule } from "@nomicfoundation/hardhat-ignition/modules";
 import LibrariesModule from "../../../Libraries.module";
-import FactoryExtModule from "../../../extensions/registry/FactoryExt.module";
-import CompanyRegistryModule from "../../../company/registry/CompanyRegistry.module";
-import AvatarRegistryModule from "../../../avatar/registry/AvatarRegistry.module";
+import CompanyRegistryProxyModule from "../../../company/registry/CompanyRegistryProxy.module";
+import AvatarRegistryProxyModule from "../../../avatar/registry/AvatarRegistryProxy.module";
 import ERC721RegistryModule from '../../registry/ERC721Registry.module';
-import ERC721ExtResolverModule from './NTERC721ExtResolver.module';
+import ERC721RegistryProxy from '../../registry/ERC721RegistryProxy.module';
 
 
-export default buildModule("NTERC721Module", (m) => {
+export default buildModule("NTERC721AssetModule", (m) => {
 
         const libs = m.useModule(LibrariesModule);
-        const extResolver = m.useModule(ERC721ExtResolverModule).erc721ExtensionResolver;
-        const aReg = m.useModule(AvatarRegistryModule).avatarRegistry;
-        const compReg = m.useModule(CompanyRegistryModule).companyRegistry;
-        const erc721Reg = m.useModule(ERC721RegistryModule).erc721Registry;
-        const factoryExt = m.useModule(FactoryExtModule).factoryExtension;
+        const aRegProxy = m.useModule(AvatarRegistryProxyModule).avatarRegistryProxy;
+        const compRegProxy = m.useModule(CompanyRegistryProxyModule).companyRegistryProxy;
+        const ercReg = m.useModule(ERC721RegistryModule).erc721Registry;
+        const ercRegProxy = m.useModule(ERC721RegistryProxy).erc721RegistryProxy;
 
-
-        //this registrar is cloned so any admin props will be replaced once cloned and initialized with new 
-        //registrar props
         const args = {
-            extensionResolver: extResolver,
-            assetRegistry: erc721Reg,
-            companyRegistry: compReg,
-            avatarRegistry: aReg,
+            assetRegistry: ercRegProxy,
+            companyRegistry: compRegProxy,
+            avatarRegistry: aRegProxy,
         }
         
-        const rr = m.contract("NTERC721Asset", [args], {
+        const rr = m.contract("NTERC20Asset", [args], {
             libraries: {
                 LibAccess: libs.LibAccess,
             },
             after: [
-                extResolver,
-                compReg,
-                aReg,
+                compRegProxy,
+                aRegProxy,
+                ercRegProxy,
                 libs.LibAccess
             ]
         });
-        const data = m.encodeFunctionCall(factoryExt, "setEntityImplementation", [rr]);
-        m.send("setEntityImplementation", erc721Reg, 0n, data);
+        const data = m.encodeFunctionCall(ercReg, "setEntityImplementation", [rr]);
+        m.send("setEntityImplementation", ercRegProxy, 0n, data);
         return {
             erc721Asset: rr,
-            erc721Registry: erc721Reg,
-            erc721ExtensionResolver: extResolver
+            erc721Registry: ercRegProxy,
         }
 });

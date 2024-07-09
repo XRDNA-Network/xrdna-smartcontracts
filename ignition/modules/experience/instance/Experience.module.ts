@@ -1,50 +1,42 @@
 import { buildModule } from "@nomicfoundation/hardhat-ignition/modules";
 import LibrariesModule from "../../Libraries.module";
-import RegistrarRegistryModule from "../../registrar/registry/RegistrarRegistry.module";
-import FactoryExtModule from "../../extensions/registry/FactoryExt.module";
-import CompanyRegistryModule from "../../company/registry/CompanyRegistry.module";
+import CompanyRegistryProxyModule from "../../company/registry/CompanyRegistryProxy.module";
+import ExpRegistryProxyModule from "../../experience/registry/ExperienceRegistryProxy.module";
 import ExpRegistryModule from "../../experience/registry/ExperienceRegistry.module";
-import ExpExtResolverModule from './ExperienceExtResolver.module';
-import PortalRegistryModule from "../../portal/PortalRegistry.module";
+import PortalRegistryProxyModule from "../../portal/PortalRegistryProxy.module";
 
 export default buildModule("ExperienceModule", (m) => {
 
         const libs = m.useModule(LibrariesModule);
-        const cExtResolver = m.useModule(ExpExtResolverModule).experienceExtensionResolver;
-        const cReg = m.useModule(CompanyRegistryModule).companyRegistry;
+        const cRegProxy = m.useModule(CompanyRegistryProxyModule).companyRegistryProxy;
+        const expRegProxy = m.useModule(ExpRegistryProxyModule).experienceRegistryProxy;
         const expReg = m.useModule(ExpRegistryModule).experienceRegistry;
-        const regReg = m.useModule(RegistrarRegistryModule).registrarRegistry;
-        const factoryExt = m.useModule(FactoryExtModule).factoryExtension;
-        const portalReg = m.useModule(PortalRegistryModule).portalRegistry;
+        const portalRegProxy = m.useModule(PortalRegistryProxyModule).portalRegistryProxy;
 
 
         //this registrar is cloned so any admin props will be replaced once cloned and initialized with new 
         //registrar props
         const args = {
-            extensionResolver: cExtResolver,
-            owningRegistry: expReg,
-            companyRegistry: cReg,
-            portalRegistry: portalReg,
+            experienceRegistry: expRegProxy,
+            companyRegistry: cRegProxy,
+            portalRegistry: portalRegProxy,
         }
         
         const rr = m.contract("Experience", [args], {
             libraries: {
                 LibAccess: libs.LibAccess,
-                LibVectorAddress: libs.LibVectorAddress
             },
             after: [
-                cExtResolver,
-                cReg,
-                expReg,
-                regReg,
-                cReg,
-                portalReg,
+                cRegProxy,
+                expRegProxy,
+                cRegProxy,
+                portalRegProxy,
                 libs.LibAccess
 
             ]
         });
-        const data = m.encodeFunctionCall(factoryExt, "setEntityImplementation", [rr]);
-        m.send("setEntityImplementation", expReg, 0n, data);
+        const data = m.encodeFunctionCall(expReg, "setEntityImplementation", [rr]);
+        m.send("setEntityImplementation", expRegProxy, 0n, data);
         return {
             experience: rr
         }

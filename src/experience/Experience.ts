@@ -1,5 +1,6 @@
 import { AddressLike, Contract, Provider, ethers } from "ethers";
 import {abi} from "../../artifacts/contracts/experience/instance/IExperience.sol/IExperience.json";
+import {abi as proxyABI} from '../../artifacts/contracts/base-types/entity/IEntityProxy.sol/IEntityProxy.json';
 import { RPCRetryHandler } from "../RPCRetryHandler";
 import { VectorAddress } from "../VectorAddress";
 import { AllLogParser } from "../AllLogParser";
@@ -26,7 +27,10 @@ export interface IJumpEntryRequest {
 
 export class Experience {
     static get abi() {
-        return abi;
+        return  [
+            ...abi,
+            ...proxyABI
+        ]
     }
     
     private con: Contract;

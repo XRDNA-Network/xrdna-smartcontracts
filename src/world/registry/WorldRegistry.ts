@@ -2,7 +2,7 @@ import { AddressLike, Provider, Signer, TransactionResponse, ethers } from "ethe
 import { RPCRetryHandler } from "../../RPCRetryHandler";
 import { AllLogParser } from "../../AllLogParser";
 import {abi as WorldRegistryABI} from '../../../artifacts/contracts/world/registry/IWorldRegistry.sol/IWorldRegistry.json';
-
+import {abi as proxyABI} from '../../../artifacts/contracts/base-types/BaseProxy.sol/BaseProxy.json';
 /**
  * Typescript proxy for WorldRegistry deployed contract.
  */
@@ -15,7 +15,10 @@ export interface IWorldRegistryOpts {
 
 export class WorldRegistry {
     static get abi() {
-        return WorldRegistryABI
+        return [
+            ...WorldRegistryABI,
+            ...proxyABI
+        ]
     }
     
     readonly address: string;

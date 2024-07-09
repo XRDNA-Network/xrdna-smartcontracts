@@ -5,7 +5,7 @@ import { RegistrationTerms } from "../../RegistrationTerms";
 import { VectorAddress } from "../../VectorAddress";
 import { LogNames } from "../../LogNames";
 import {abi as ABI} from '../../../artifacts/contracts/registrar/instance/IRegistrar.sol/IRegistrar.json';
-
+import {abi as proxyABI} from '../../../artifacts/contracts/base-types/entity/IEntityProxy.sol/IEntityProxy.json';
 
 /**
  * Typescript wrapper around regstirar functionality
@@ -40,17 +40,11 @@ export class Registrar {
     private con: ethers.Contract;
     readonly logParser: AllLogParser;
 
-    static encodeInitData(args: RegistrationTerms): string {
-        return ethers.AbiCoder.defaultAbiCoder().encode(
-            [
-                "tuple(uint256 fee,uint256 coveragePeriodDays,uint256 gracePeriodDays)",
-            ],
-            [args]
-        );
-    }
-
     static get abi() {
-        return ABI;
+        return [
+            ...ABI,
+            ...proxyABI
+        ]
     }
     
 

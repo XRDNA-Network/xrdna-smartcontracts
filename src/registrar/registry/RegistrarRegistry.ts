@@ -4,6 +4,7 @@ import { RPCRetryHandler } from "../../RPCRetryHandler";
 import { AllLogParser } from "../../AllLogParser";
 import { RegistrationTerms } from "../../RegistrationTerms";
 import {abi as ABI} from '../../../artifacts/contracts/registrar/registry/IRegistrarRegistry.sol/IRegistrarRegistry.json';
+import {abi as proxyABI} from '../../../artifacts/contracts/base-types/BaseProxy.sol/BaseProxy.json';
 
 /**
  * Typescript proxy for RegistrarRegistry deployed contract.
@@ -38,7 +39,10 @@ export interface IRegistrationResult {
 
 export class RegistrarRegistry {
     static get abi() {
-        return ABI;
+        return [
+            ...ABI,
+            ...proxyABI
+        ]
     }
     
     readonly address: string;

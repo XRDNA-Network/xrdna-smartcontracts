@@ -1,5 +1,6 @@
 import { AddressLike, Provider,ethers } from "ethers";
-import {abi} from "../../../artifacts/contracts/asset/IAsset.sol/IAsset.json";
+import {abi} from "../../../artifacts/contracts/asset/instance/erc20/IERC20Asset.sol/IERC20Asset.json";
+import {abi as proxyABI} from '../../../artifacts/contracts/base-types/entity/IEntityProxy.sol/IEntityProxy.json'
 import { RPCRetryHandler } from "../../RPCRetryHandler";
 import { AllLogParser } from "../../AllLogParser";
 import { BaseAsset } from "../BaseAsset";
@@ -27,7 +28,10 @@ export class ERC20Asset extends BaseAsset {
     }
 
     static get abi() {
-        return abi;
+        return [
+            ...abi,
+            ...proxyABI
+        ]
     }
 
     readonly address: string;

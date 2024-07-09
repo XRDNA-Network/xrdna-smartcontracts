@@ -1,14 +1,15 @@
 import { ChainIds } from './ChainIds';
  
 export enum ContractNames {
-    RegistrarRegistry = "RegistrarRegistryModule#RegistrarRegistry",
-    WorldRegistry = "WorldRegistryModule#WorldRegistry",
-    CompanyRegistry = "CompanyRegistryModule#CompanyRegistry",
-    AvatarRegistry = "AvatarRegistryModule#AvatarRegistry",
-    ERC20AssetRegistry = "ERC20RegistryModule#ERC20Registry",
-    ERC721AssetRegistry = "ERC721RegistryModule#ERC721Registry",
+    RegistrarRegistry = "RegistrarRegistryProxyModule#RegistrarRegistryProxy",
+    WorldRegistry = "WorldRegistryProxyModule#WorldRegistryProxy",
+    CompanyRegistry = "CompanyRegistryProxyModule#CompanyRegistryProxy",
+    AvatarRegistry = "AvatarRegistryProxyModule#AvatarRegistryProxy",
+    ERC20AssetRegistry = "ERC20RegistryProxyModule#ERC20RegistryProxy",
+    ERC721AssetRegistry = "ERC721RegistryProxyModule#ERC721RegistryProxy",
     MultiAssetRegistry = "MultiAssetRegistry#MultiAssetRegistry",
-    ExperienceRegistry = "ExperienceRegistryModule#ExperienceRegistry",
+    ExperienceRegistry = "ExperienceRegistryProxyModule#ExperienceRegistryProxy",
+    PortalRegistry = "PortalRegistryProxyModule#PortalRegistryProxy",
 
     /*
     AvatarFactory = "AvatarFactory#AvatarFactory",

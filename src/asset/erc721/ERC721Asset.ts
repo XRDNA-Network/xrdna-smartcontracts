@@ -1,5 +1,6 @@
 import { AddressLike, Provider, ethers } from "ethers";
-import {abi} from "../../../artifacts/contracts/asset/IAsset.sol/IAsset.json";
+import {abi} from "../../../artifacts/contracts/asset/instance/erc721/IERC721Asset.sol/IERC721Asset.json";
+import {abi as proxyABI} from '../../../artifacts/contracts/base-types/entity/IEntityProxy.sol/IEntityProxy.json'
 import { RPCRetryHandler } from "../../RPCRetryHandler";
 import { AllLogParser } from "../../AllLogParser";
 import { BaseAsset } from "../BaseAsset";
@@ -25,7 +26,10 @@ export type ERC721MintResult = {
 export class ERC721Asset extends BaseAsset {
 
     static get abi() {
-        return abi;
+        return [
+            ...abi,
+            ...proxyABI
+        ]
     }
     
     static encodeInitData(data: ERC721InitData): string {

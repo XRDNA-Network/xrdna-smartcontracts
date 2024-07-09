@@ -1,5 +1,6 @@
 import { Contract, Provider, Signer, TransactionResponse } from "ethers";
 import {abi} from "../../../artifacts/contracts/company/registry/ICompanyRegistry.sol/ICompanyRegistry.json";
+import {abi as proxyABI} from '../../../artifacts/contracts/base-types/BaseProxy.sol/BaseProxy.json';
 import { RPCRetryHandler } from "../../RPCRetryHandler";
 import { AllLogParser } from "../../AllLogParser";
 
@@ -11,7 +12,10 @@ export interface ICompanyRegistryOpts {
 
 export class CompanyRegistry {
     static get abi() {
-        return abi;
+        return [
+            ...abi,
+            ...proxyABI
+        ]
     }
     
     private con: Contract;

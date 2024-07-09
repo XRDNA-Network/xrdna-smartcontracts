@@ -1,54 +1,49 @@
 import { buildModule } from "@nomicfoundation/hardhat-ignition/modules";
-import {XRDNASigners} from '../../../../src';
-import {network} from 'hardhat';
-import Libraries from '../../libraries/Libraries.module';
-import RegistryExtMgr, {registryABI} from './RegistryExtMgr.module';
-import CoreExtRegistryModule from "../../core/CoreExtRegistry.module";
-import RegistrarFactoryModule from "../factory/RegistrarFactory.module";
-import { generateABI } from "../../ABIBuilder";
-
+import LibrariesModule from "../../Libraries.module";
+import CoreExtRegistryModule from "../../ext-registry/ExtensionRegistry.module";
+import { XRDNASigners } from "../../../../src";
+import { network } from "hardhat";
+import Extensions from '../../extensions/Extensions.module';
+import { Future } from "@nomicfoundation/ignition-core";
 
 export default buildModule("RegistrarRegistryModule", (m) => {
-    
-    const libs = m.useModule(Libraries);
-    const core = m.useModule(CoreExtRegistryModule).coreExtensionRegistry;
-    const extMgr = m.useModule(RegistryExtMgr).registrarRegistryExtentionManager;
-    const factory = m.useModule(RegistrarFactoryModule).registrarFactory;
 
-    const xrdna = new XRDNASigners();
-    const config = xrdna.deployment[network.config.chainId || 55555];
-    const owner = config.registrarRegistryAdmin;
-    const others = config.registrarRegistryOtherAdmins;
+        const libs = m.useModule(LibrariesModule);
+        const coreReg = m.useModule(CoreExtRegistryModule).extensionsRegistry;
+        const extOut = Extensions;
 
-    const args = {
-        owner,
-        otherAdmins: others || [],
-        coreExtensionRegistry: core,
-        extensionManager: extMgr,
-        entityCreator: factory,
-        registrarTerms: {
-            fee: 0n,
-            coveragePeriodDays: 0n,
-            gracePeriodDays: 30n //only for deactivation grace period before removal
+        m.useModule(extOut);
+        const allExts: Future[] = [];
+        extOut.futures.forEach((f) => {
+            allExts.push(f);
+        });
+
+        const xrdna = new XRDNASigners();
+        const config = xrdna.deployment[network.config.chainId || 55555];
+        const owner = config.registrarRegistryAdmin;
+        const others = config.registrarRegistryOtherAdmins;
+
+        //this registrar is cloned so any admin props will be replaced once cloned and initialized with new 
+        //registrar props
+        const args = {
+            owner,
+            extensionsRegistry: coreReg,
+            admins: others
         }
-    }
-
-    const regReg = m.contract("RegistrarRegistry", [args], {
-        libraries: {
-            LibAccess: libs.LibAccess,
-            LibExtensions: libs.LibExtensions
-        },
-        after: [
-            factory,
-            extMgr,
-        ]
-    });
-    generateABI({
-        contractName: "RegistrarRegistry",
-        abi: registryABI
-    })
-    m.call(factory, 'setAuthorizedRegistry', [regReg])
-    return {
-        registrarRegistry: regReg
-    };
+        
+        const rr = m.contract("RegistrarRegistry", [args], {
+            libraries: {
+                LibExtensions: libs.LibExtensions,
+                LibAccess: libs.LibAccess
+            },
+            after: [
+                coreReg,
+                ...allExts,
+                libs.LibExtensions,
+                libs.LibAccess
+            ]
+        });
+        return {
+            registrarRegistry: rr
+        }
 });

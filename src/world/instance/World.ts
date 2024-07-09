@@ -6,6 +6,7 @@ import { AllLogParser } from "../../AllLogParser";
 import { Version } from "../../Version";
 import { IUpgradeResult } from "../../interfaces/IUpgradeable";
 import {abi as WorldABI} from '../../../artifacts/contracts/world/instance/IWorld.sol/IWorld.json';
+import {abi as proxyABI} from '../../../artifacts/contracts/base-types/entity/IEntityProxy.sol/IEntityProxy.json';
 import { RegistrationTerms } from "../../RegistrationTerms";
 
 /**
@@ -58,7 +59,10 @@ export interface IAvatarRegistrationResult {
 export class World {
 
     static get abi() {
-        return  WorldABI
+        return  [
+            ...WorldABI,
+            ...proxyABI
+        ]
     }
     
     readonly address: string;
@@ -171,16 +175,16 @@ export class World {
     async registerAvatar(request: IWorldAvatarRegistrationRequest, tokens?: bigint): Promise<IAvatarRegistrationResult> {
 
         const initData = ethers.AbiCoder.defaultAbiCoder().encode([
-            'tuple(bool canReceiveTokensOutsideExperience, address defaultExperience, bytes appearanceDetails)',
+            'tuple(bool canReceiveTokensOutsideExperience, bytes appearanceDetails)',
         ],[{
             canReceiveTokensOutsideExperience: request.canReceiveTokensOutsideOfExperience,
-            defaultExperience: request.defaultExperience,
             appearanceDetails: Buffer.from(request.appearanceDetails)
         }]);
         const t = await RPCRetryHandler.withRetry(() => this.world.registerAvatar({
             owner: request.avatarOwner,
             sendTokensToOwner: request.sendTokensToOwner,
             name: request.username,
+            startingExperience: request.defaultExperience,
             initData
         }, {
             value: tokens

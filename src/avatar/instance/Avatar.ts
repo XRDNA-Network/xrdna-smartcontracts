@@ -4,7 +4,7 @@ import { VectorAddress } from "../../VectorAddress";
 import { AllLogParser } from "../../AllLogParser";
 import { Version } from "../../Version";
 import {abi as cABI} from '../../../artifacts/contracts/avatar/instance/IAvatar.sol/IAvatar.json';
-import { RegistrationTerms } from "../../RegistrationTerms";
+import {abi as proxyABI} from '../../../artifacts/contracts/base-types/entity/IEntityProxy.sol/IEntityProxy.json';
 import { LogNames } from "../../LogNames";
 import { ERC721Asset } from "../../asset";
 
@@ -41,7 +41,10 @@ export interface IAvatarInitData {
 export class Avatar {
 
     static get abi() {
-        return  cABI
+        return  [
+            ...cABI,
+            ...proxyABI
+        ]
     }
     
     readonly address: string;

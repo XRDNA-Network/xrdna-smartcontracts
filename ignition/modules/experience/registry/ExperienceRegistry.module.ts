@@ -1,54 +1,58 @@
 import { buildModule } from "@nomicfoundation/hardhat-ignition/modules";
 import LibrariesModule from "../../Libraries.module";
-import CoreExtRegistryModule from "../../ext-registry/ExtensionRegistry.module";
 import { XRDNASigners } from "../../../../src";
 import { network } from "hardhat";
-import Extensions from "../../extensions/Extensions.module";
 import { Future } from "@nomicfoundation/ignition-core";
-import WorldRegistryModule from "../../world/registry/WorldRegistry.module";
+import WorldRegistryModule from "../../world/registry/WorldRegistryProxy.module";
+import PortalRegistryProxyModule from "../../portal/PortalRegistryProxy.module";
+import PortalRegistryModule from "../../portal/PortalRegistry.module";
+import CompanyRegistryModule from "../../company/registry/CompanyRegistryProxy.module";
+import AvatarRegistryProxyModule from "../../avatar/registry/AvatarRegistryProxy.module";
+import AvatarRegistryModule from "../../avatar/registry/AvatarRegistry.module";
+
 
 export default buildModule("ExperienceRegistryModule", (m) => {
 
         const libs = m.useModule(LibrariesModule);
-        const coreReg = m.useModule(CoreExtRegistryModule).extensionsRegistry;
-        const worldReg = m.useModule(WorldRegistryModule).worldRegistry;
+        const worldRegProxy = m.useModule(WorldRegistryModule).worldRegistryProxy;
+        const portalRegProxy = m.useModule(PortalRegistryProxyModule).portalRegistryProxy;
+        const portalReg = m.useModule(PortalRegistryModule).portalRegistry;
         
-
-        const xrdna = new XRDNASigners();
-        const config = xrdna.deployment[network.config.chainId || 55555];
-        const owner = config.experienceRegistryAdmin;
-        const others = config.experienceRegistryOtherAdmins;
-
-       const extOut = Extensions;
-
-       m.useModule(extOut);
-       const allExts: Future[] = [];
-       extOut.futures.forEach((f) => {
-           allExts.push(f);
-       });
+        const avatarRegProxy = m.useModule(AvatarRegistryProxyModule).avatarRegistryProxy;
+        const avatarReg = m.useModule(AvatarRegistryModule).avatarRegistry;
+        const companyRegProxy = m.useModule(CompanyRegistryModule).companyRegistryProxy;
 
         //this registrar is cloned so any admin props will be replaced once cloned and initialized with new 
         //registrar props
         const args = {
-            owner,
-            extensionsRegistry: coreReg,
-            worldRegistry: worldReg,
-            admins: others
+            worldRegistry: worldRegProxy,
+            portalRegistry: portalRegProxy,
+            companyRegistry: companyRegProxy,
         }
         
         const rr = m.contract("ExperienceRegistry", [args], {
             libraries: {
-                LibExtensions: libs.LibExtensions,
+                LibFactory: libs.LibFactory,
+                LibRegistration: libs.LibRegistration,
+                LibVectorAddress: libs.LibVectorAddress,
+                LibEntityRemoval: libs.LibEntityRemoval,
                 LibAccess: libs.LibAccess
             },
             after: [
-                coreReg,
-                worldReg,
-                ...allExts,
-                libs.LibExtensions,
+                worldRegProxy,
+                portalRegProxy,
+                companyRegProxy,
+                avatarRegProxy,
+                libs.LibEntityRemoval,
+                libs.LibFactory,
+                libs.LibRegistration,
+                libs.LibVectorAddress,
                 libs.LibAccess
             ]
         });
+
+        
+        
         return {
             experienceRegistry: rr
         }

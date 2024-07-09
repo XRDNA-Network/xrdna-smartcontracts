@@ -20,10 +20,26 @@ struct CreateWorldArgs {
     bytes vectorAuthoritySignature;
 }
 
+
+struct ChangeControllerArgs {
+    address entity;
+    
+    bytes oldControllerSignature;
+
+    bytes entitySignature;
+
+    uint256 expiration;
+
+    RegistrationTerms newTerms;
+}
+
+
 interface IWorldRegistry is IRemovableRegistry, IVectoredRegistry {
 
+    event RegistrarChangedForWorld(address indexed world, address indexed oldRegistrar, address indexed newRegistrar);
     function createWorld(CreateWorldArgs calldata args) external payable returns (address);
     function isVectorAddressAuthority(address a) external view returns (bool);
     function addVectorAddressAuthority(address a) external;
     function removeVectorAddressAuthority(address a) external;
+    function changeControllerWithTerms(ChangeControllerArgs calldata args) external;
 }

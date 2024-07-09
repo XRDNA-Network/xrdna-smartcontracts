@@ -1,51 +1,33 @@
 import { buildModule } from "@nomicfoundation/hardhat-ignition/modules";
 import LibrariesModule from "../../Libraries.module";
-import CoreExtRegistryModule from "../../ext-registry/ExtensionRegistry.module";
-import { XRDNASigners } from "../../../../src";
-import { network } from "hardhat";
-import Extensions from "../../extensions/Extensions.module";
-import { Future } from "@nomicfoundation/ignition-core";
-import WorldRegistryModule from "../../world/registry/WorldRegistry.module";
+import WorldRegistryProxyModule from "../../world/registry/WorldRegistryProxy.module";
 
 export default buildModule("CompanyRegistryModule", (m) => {
 
         const libs = m.useModule(LibrariesModule);
-        const coreReg = m.useModule(CoreExtRegistryModule).extensionsRegistry;
-        const worldReg = m.useModule(WorldRegistryModule).worldRegistry;
+        const worldRegProxy = m.useModule(WorldRegistryProxyModule).worldRegistryProxy;
         
-
-        const xrdna = new XRDNASigners();
-        const config = xrdna.deployment[network.config.chainId || 55555];
-        const owner = config.companyRegistryAdmin;
-        const others = config.companyRegistryOtherAdmins;
-
-       const extOut = Extensions;
-
-       m.useModule(extOut);
-       const allExts: Future[] = [];
-       extOut.futures.forEach((f) => {
-           allExts.push(f);
-       });
 
         //this registrar is cloned so any admin props will be replaced once cloned and initialized with new 
         //registrar props
         const args = {
-            owner,
-            extensionsRegistry: coreReg,
-            worldRegistry: worldReg,
-            admins: others
+            worldRegistry: worldRegProxy,
         }
         
         const rr = m.contract("CompanyRegistry", [args], {
             libraries: {
-                LibExtensions: libs.LibExtensions,
-                LibAccess: libs.LibAccess
+                LibEntityRemoval: libs.LibEntityRemoval,
+                LibFactory: libs.LibFactory,
+                LibRegistration: libs.LibRegistration,
+                LibAccess: libs.LibAccess,
+                LibVectorAddress: libs.LibVectorAddress
             },
             after: [
-                coreReg,
-                worldReg,
-                ...allExts,
-                libs.LibExtensions,
+                worldRegProxy,
+                libs.LibEntityRemoval,
+                libs.LibFactory,
+                libs.LibRegistration,
+                libs.LibVectorAddress,
                 libs.LibAccess
             ]
         });

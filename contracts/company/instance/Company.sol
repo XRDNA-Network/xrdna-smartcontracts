@@ -12,32 +12,47 @@ import {LibAccess} from '../../libraries/LibAccess.sol';
 import {CompanyStorage, LibCompany} from './LibCompany.sol';
 import {IWorld, NewExperienceArgs} from '../../world/instance/IWorld.sol';
 import {Version} from '../../libraries/LibTypes.sol';
-
-
-/**
- * @dev Arguments for initializing a company.
- */
-struct CompanyInitArgs {
-     //the address of the company owner
-    address owner;
-}
+import {IAssetRegistry} from '../../asset/registry/IAssetRegistry.sol';
+import {IMintableAsset} from '../../asset/instance/IMintableAsset.sol';
+import {IAvatarRegistry} from '../../avatar/registry/IAvatarRegistry.sol';
+import {IAvatar, DelegatedJumpRequest} from '../../avatar/instance/IAvatar.sol';
+import {IExperience} from '../../experience/instance/IExperience.sol';
+import {IAsset} from '../../asset/instance/IAsset.sol';
 
 struct CompanyConstructorArgs {
     address companyRegistry;
     address experienceRegistry;
+    address erc20Registry;
+    address erc721Registry;
+    address avatarRegistry;
 }
 
 contract Company is BaseRemovableEntity, ICompany {
     
     address public immutable companyRegistry;
     IExperienceRegistry public immutable experienceRegistry;
+    IAssetRegistry public erc20Registry;
+    IAssetRegistry public erc721Registry;
+    IAvatarRegistry public avatarRegistry;
 
+
+    modifier onlyIfActive {
+        require(LibRemovableEntity.load().active, 'Company: Company is not active');
+        _;
+    }
 
     constructor(CompanyConstructorArgs memory args) {
         require(args.companyRegistry != address(0), 'Company: Invalid company registry');
         require(args.experienceRegistry != address(0), 'Company: Invalid experience registry');
+        require(args.erc20Registry != address(0), 'Company: Invalid erc20 registry');
+        require(args.erc721Registry != address(0), 'Company: Invalid erc721 registry');
+        require(args.avatarRegistry != address(0), 'Company: Invalid avatar registry');
+
         companyRegistry = args.companyRegistry;
         experienceRegistry = IExperienceRegistry(args.experienceRegistry);
+        erc20Registry = IAssetRegistry(args.erc20Registry);
+        erc721Registry = IAssetRegistry(args.erc721Registry);
+        avatarRegistry = IAvatarRegistry(args.avatarRegistry);
     }
 
     function version() external pure override returns (Version memory) {
@@ -45,15 +60,17 @@ contract Company is BaseRemovableEntity, ICompany {
     }
 
     
-    function init(string calldata name, address _world, VectorAddress calldata vector, bytes calldata initData) public onlyRegistry {
+    function init(string calldata name, address _owner, address _world, VectorAddress calldata vector, bytes calldata) public onlyRegistry {
+        require(_owner != address(0), 'Company: Invalid owner');
+        require(_world != address(0), 'Company: Invalid world');
+        
         LibEntity.load().name = name;   
         RemovableEntityStorage storage rs = LibRemovableEntity.load();
         rs.active = true;
         rs.termsOwner = _world;
         rs.vector = vector;
-        CompanyInitArgs memory args = abi.decode(initData, (CompanyInitArgs));
         address[] memory admins = new address[](0);
-        LibAccess.initAccess(args.owner, admins);
+        LibAccess.initAccess(_owner, admins);
     }
 
     function owningRegistry() internal view override returns (address) {
@@ -75,16 +92,63 @@ contract Company is BaseRemovableEntity, ICompany {
         return LibRemovableEntity.load().vector;
     }
 
-    /**
-     * @dev Returns whether this company can mint the given asset to the given address.
-     * The data parameter is dependent on the type of asset.
-     */
-    function canMintERC20(address asset, address to, bytes calldata data) public view returns (bool) {
-        return false;
+    function canMintERC20(address asset, address to, bytes calldata extra) public view onlyIfActive returns (bool) {
+        //check if asset is allowed
+        return _canMint(erc20Registry, asset, to, extra);
     }
-    
-    function canMintERC721(address asset, address to, bytes calldata data) public view returns (bool) {
-        return false;
+
+    function canMintERC721(address asset, address to, bytes calldata extra) public view onlyIfActive returns (bool) {
+        //check if asset is allowed
+        return _canMint(erc721Registry, asset, to, extra);
+    }
+
+    function mintERC20(address asset, address to, bytes calldata data) public onlySigner onlyIfActive {
+        require(canMintERC20(asset, to, data), "Company: cannot mint asset");
+        IMintableAsset(asset).mint(to, data);
+    }
+
+    function mintERC721(address asset, address to, bytes calldata data) public onlySigner onlyIfActive {
+        require(canMintERC721(asset, to, data), "Company: cannot mint asset");
+        IMintableAsset(asset).mint(to, data);
+    }
+
+    function revokeERC20(address asset, address holder, bytes calldata data) public onlySigner onlyIfActive {
+        _revoke(erc20Registry, asset, holder, data);
+    }
+
+    function revokeERC721(address asset, address holder, bytes calldata data) public onlySigner onlyIfActive {
+       _revoke(erc721Registry, asset, holder, data);
+    }
+
+    function _revoke(IAssetRegistry assetRegistry, address asset, address holder, bytes calldata data) internal {
+        require(assetRegistry.isRegistered(asset), "Company: asset not registered");
+        IMintableAsset mintable = IMintableAsset(asset);
+        require(mintable.issuer() == address(this), "Company: not issuer of asset");
+        mintable.revoke(holder, data);
+    }
+
+    function _canMint(IAssetRegistry assetRegistry, address asset, address to, bytes calldata extra) internal view returns (bool) {
+        require(assetRegistry.isRegistered(asset), "Company: asset not registered");
+
+        IMintableAsset mintable = IMintableAsset(asset);
+        //can only mint if company owns the asset
+        require(mintable.issuer() == address(this), "Company: not issuer of asset");
+        
+        //and the asset allows it
+        require(mintable.canMint(to, extra), "Company: cannot mint to address");
+
+        if(!avatarRegistry.isRegistered(to)) {
+            return true;
+        }
+
+        //otherwise have to make sure avatar allows it if they are not in our experience
+        IAvatar avatar = IAvatar(to);
+        if(!avatar.canReceiveTokensOutsideOfExperience()) {
+            address exp = avatar.location();
+            require(exp != address(0), "Company: avatar location is not an experience");
+            require(IExperience(exp).company() == address(this), "Company: avatar location is not in an experience owned by this company");
+        }
+        return true;
     }
 
     /**
@@ -130,39 +194,6 @@ contract Company is BaseRemovableEntity, ICompany {
 
 
     /**
-     * @dev Check whether this company owns the experience attached to the given portal id
-     */
-    function companyOwnsDestinationPortal(uint256 portalId) public view returns (bool) {
-        return false;
-    }
-
-    /**
-     * @dev Mints the given amount of the given asset to the given address. The data
-     * parameter is dependent on the type of asset.
-     */
-    function mintERC20(address asset, address to, bytes calldata data) public onlySigner {
-
-    }
-
-    function mintERC721(address asset, address to, bytes calldata data) public onlySigner {
-
-    }
-
-    /**
-     * @dev Revokes the given amount of the given asset from the given address. The data
-     * parameter is dependent on the type of asset. This is likely called when an avatar
-     * owner transfers the original asset on another chain (i.e. all assets in the 
-     * interoperability layer are synthetic assets that represent assets on other chains).
-     */
-    function revokeERC20(address asset, address holder, bytes calldata data) public onlySigner {
-
-    }
-
-    function revokeERC721(address asset, address holder, bytes calldata data) public onlySigner {
-
-    }
-
-    /**
      * @dev Withdraws the given amount of funds from the company. Only the owner can withdraw funds.
      */
     function withdraw(uint256 amount) public onlyOwner {
@@ -176,7 +207,8 @@ contract Company is BaseRemovableEntity, ICompany {
      * owner can add conditions.
      */
     function addExperienceCondition(address experience, address condition) public onlyAdmin {
-
+        require(IExperience(experience).company() == address(this), 'Company: Experience does not belong to company');
+        IExperience(experience).addPortalCondition(condition);
     }
 
 
@@ -184,7 +216,8 @@ contract Company is BaseRemovableEntity, ICompany {
      * @dev Removes an experience condition from an experience
      */
     function removeExperienceCondition(address experience) public onlyAdmin {
-
+        require(IExperience(experience).company() == address(this), 'Company: Experience does not belong to company');
+        IExperience(experience).removePortalCondition();
     }
 
     /**
@@ -192,7 +225,7 @@ contract Company is BaseRemovableEntity, ICompany {
      * Going through the company provides appropriate authorization checks.
      */
     function changeExperiencePortalFee(address experience, uint256 fee) public onlyAdmin {
-
+        IExperience(experience).changePortalFee(fee);
     }
 
     /**
@@ -201,14 +234,14 @@ contract Company is BaseRemovableEntity, ICompany {
      * issuer can add conditions.
      */
     function addAssetCondition(address asset, address condition) public onlyAdmin {
-
+        IAsset(asset).setCondition(condition);
     }
 
     /**
      * @dev Removes an asset condition from an asset
      */
     function removeAssetCondition(address asset) public onlyAdmin {
-
+        IAsset(asset).removeCondition();
     }
 
     /**
@@ -218,6 +251,13 @@ contract Company is BaseRemovableEntity, ICompany {
      * experience.
      */
     function delegateJumpForAvatar(DelegatedAvatarJumpRequest calldata request) public onlySigner {
-
+        IAvatar avatar = IAvatar(request.avatar);
+        //go through avatar contract to make the jump so that it pays the fee
+        avatar.delegateJump(DelegatedJumpRequest({
+            portalId: request.portalId,
+            agreedFee: request.agreedFee,
+            avatarOwnerSignature: request.avatarOwnerSignature
+        }));
+        emit ICompany.CompanyJumpedForAvatar(request.avatar, request.portalId, request.agreedFee);
     }
 }

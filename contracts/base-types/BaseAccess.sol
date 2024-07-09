@@ -8,12 +8,12 @@ import {LibAccess} from '../libraries/LibAccess.sol';
 abstract contract BaseAccess is IAccessControl {
 
     modifier onlyAdmin {
-        require(LibAccess.isAdmin(msg.sender), 'BaseAccess: not admin');
+        require(LibAccess.isAdmin(msg.sender), 'BaseAccess: restricted to admins');
         _;
     }
 
     modifier onlyOwner {
-        require(LibAccess.owner() == msg.sender, 'BaseAccess: not owner');
+        require(LibAccess.owner() == msg.sender, 'BaseAccess: restricted to owner');
         _;
     }
 

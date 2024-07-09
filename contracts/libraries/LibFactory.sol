@@ -8,6 +8,7 @@ import {IRegisteredEntity} from '../interfaces/entity/IRegisteredEntity.sol';
 
 struct FactoryStorage {
     address entityImplementation;
+    address proxyImplementation;
     Version entityVersion;
 }
 
@@ -18,6 +19,16 @@ library LibFactory {
         assembly {
             ds.slot := slot
         }
+    }
+
+    function setProxyImplementation(address _proxyImplementation) external {
+        FactoryStorage storage ds = load();
+        ds.proxyImplementation = _proxyImplementation;
+    }
+
+    function getProxyImplementation() external view returns (address) {
+        FactoryStorage storage ds = load();
+        return ds.proxyImplementation;
     }
 
     function setEntityImplementation(address _entityImplementation) external {

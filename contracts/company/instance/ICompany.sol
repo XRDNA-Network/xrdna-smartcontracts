@@ -69,7 +69,7 @@ interface ICompany is IAccessControl, IRemovableEntity {
     event CompanyReactivated();
 
 
-    function init(string calldata name, address world, VectorAddress calldata vector, bytes calldata initData) external;
+    function init(string calldata name, address owner, address world, VectorAddress calldata vector, bytes calldata initData) external;
 
     /**
         * @dev Returns the address of the world in which the company operates.
@@ -109,12 +109,6 @@ interface ICompany is IAccessControl, IRemovableEntity {
      * by company admin
      */
     function removeExperience(address experience, string calldata reason) external;
-
-
-    /**
-     * @dev Check whether this company owns the experience attached to the given portal id
-     */
-    function companyOwnsDestinationPortal(uint256 portalId) external view returns (bool);
 
     /**
      * @dev Mints the given amount of the given asset to the given address. The data

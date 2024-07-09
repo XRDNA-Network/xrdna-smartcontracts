@@ -11,10 +11,14 @@ interface IRegistry is IAccessControl {
 
     event RegistryAddedEntity(address indexed entity, address indexed owner);
     
+    function version() external pure returns(Version memory);
 
     //to create registered entities
     function setEntityImplementation(address implementation) external;
     function getEntityImplementation() external view returns (address);
+
+    function setProxyImplementation(address implementation) external;
+    function getProxyImplementation() external view returns (address);
     function getEntityVersion() external view returns (Version memory);
 
     function isRegistered(address addr) external view returns (bool);

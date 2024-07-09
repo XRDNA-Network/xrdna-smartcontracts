@@ -1,57 +1,52 @@
 import { buildModule } from "@nomicfoundation/hardhat-ignition/modules";
 import LibrariesModule from "../../Libraries.module";
-import RegistrarRegistryModule from "../../registrar/registry/RegistrarRegistry.module";
-import FactoryExtModule from "../../extensions/registry/FactoryExt.module";
+import RegistrarRegistryProxyModule from "../../registrar/registry/RegistrarRegistryProxy.module";
+import CompanyRegistryProxyModule from "../../company/registry/CompanyRegistryProxy.module";
 import CompanyRegistryModule from "../../company/registry/CompanyRegistry.module";
-import CompanyExtResolverModule from "./CompanyExtResolver.module";
-import WorldRegistryModule from "../../world/registry/WorldRegistry.module";
-import ERC20RegistryModule from "../../asset/registry/ERC20Registry.module";
-import ERC721RegistryModule from "../../asset/registry/ERC721Registry.module";
-import AvatarRegistryModule from "../../avatar/registry/AvatarRegistry.module";
+import ExperienceRegistryProxyModule from '../../experience/registry/ExperienceRegistryProxy.module';
+import ERC20RegistryProxyModule from "../../asset/registry/ERC20RegistryProxy.module";
+import ERC721RegistryProxyModule from "../../asset/registry/ERC721RegistryProxy.module";
+import AvatarRegistryProxyModule from "../../avatar/registry/AvatarRegistryProxy.module";
 
 export default buildModule("CompanyModule", (m) => {
 
         const libs = m.useModule(LibrariesModule);
-        const cExtResolver = m.useModule(CompanyExtResolverModule).companyExtensionResolver;
-        const worldReg = m.useModule(WorldRegistryModule).worldRegistry;
+        const cRegProxy = m.useModule(CompanyRegistryProxyModule).companyRegistryProxy;
         const cReg = m.useModule(CompanyRegistryModule).companyRegistry;
-        const regReg = m.useModule(RegistrarRegistryModule).registrarRegistry;
-        const factoryExt = m.useModule(FactoryExtModule).factoryExtension;
-        const erc20Reg = m.useModule(ERC20RegistryModule).erc20Registry;
-        const erc721Reg = m.useModule(ERC721RegistryModule).erc721Registry;
-        const avatarReg = m.useModule(AvatarRegistryModule).avatarRegistry;
+        const expRegProxy = m.useModule(ExperienceRegistryProxyModule).experienceRegistryProxy;
+        const regRegProxy = m.useModule(RegistrarRegistryProxyModule).registrarRegistryProxy;
+        const erc20RegProxy = m.useModule(ERC20RegistryProxyModule).erc20RegistryProxy;
+        const erc721RegProxy = m.useModule(ERC721RegistryProxyModule).erc721RegistryProxy;
+        const avatarRegProxy = m.useModule(AvatarRegistryProxyModule).avatarRegistryProxy;
 
 
         //this registrar is cloned so any admin props will be replaced once cloned and initialized with new 
         //registrar props
         const args = {
-            extensionResolver: cExtResolver,
-            owningRegistry: cReg,
-            worldRegistry: worldReg,
-            erc20Registry: erc20Reg,
-            erc721Registry: erc721Reg,
-            avatarRegistry: avatarReg,
+            companyRegistry: cRegProxy,
+            experienceRegistry: expRegProxy,
+            erc20Registry: erc20RegProxy,
+            erc721Registry: erc721RegProxy,
+            avatarRegistry: avatarRegProxy,
         }
         
         const rr = m.contract("Company", [args], {
             libraries: {
-                LibAccess: libs.LibAccess,
-                LibVectorAddress: libs.LibVectorAddress
+                LibAccess: libs.LibAccess
             },
             after: [
-                cExtResolver,
-                worldReg,
-                regReg,
+                regRegProxy,
+                expRegProxy,
                 cReg,
-                erc20Reg,
-                erc721Reg,
-                avatarReg,
+                erc20RegProxy,
+                erc721RegProxy,
+                avatarRegProxy,
                 libs.LibAccess
 
             ]
         });
-        const data = m.encodeFunctionCall(factoryExt, "setEntityImplementation", [rr]);
-        m.send("setEntityImplementation", cReg, 0n, data);
+        const data = m.encodeFunctionCall(cReg, "setEntityImplementation", [rr]);
+        m.send("setCompanyEntityImplementation", cRegProxy, 0n, data);
         return {
             company: rr
         }

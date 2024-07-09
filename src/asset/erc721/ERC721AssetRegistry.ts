@@ -1,5 +1,6 @@
 import { AddressLike, Contract, Provider, Signer, TransactionReceipt, TransactionResponse } from "ethers";
 import {abi} from "../../../artifacts/contracts/asset/registry/IAssetRegistry.sol/IAssetRegistry.json";
+import {abi as proxyABI} from '../../../artifacts/contracts/base-types/BaseProxy.sol/BaseProxy.json';
 import { ERC721Asset, ERC721InitData } from "./ERC721Asset";
 import { LogNames } from "../../LogNames";
 import { RPCRetryHandler } from "../../RPCRetryHandler";
@@ -19,7 +20,10 @@ export type CreateERC721AssetResult = {
 
 export class ERC721AssetRegistry {
     static get abi() {
-        return abi;
+        return  [
+            ...abi,
+            ...proxyABI
+        ]
     }
     
     private admin: Provider | Signer;

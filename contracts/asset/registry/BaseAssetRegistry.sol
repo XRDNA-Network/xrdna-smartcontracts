@@ -22,9 +22,10 @@ import {IAsset, AssetInitArgs} from '../instance/IAsset.sol';
 import {RegistrationTerms} from '../../libraries/LibTypes.sol';
 import {LibEntityRemoval} from '../../libraries/LibEntityRemoval.sol';
 import {IRemovableEntity} from '../../interfaces/entity/IRemovableEntity.sol';
+import {IEntityProxy} from '../../base-types/entity/IEntityProxy.sol';
 
 
-contract BaseAssetRegistry is BaseRemovableRegistry, IAssetRegistry {
+abstract contract BaseAssetRegistry is BaseRemovableRegistry, IAssetRegistry {
 
     /**
      * @dev Determines if the asset from the original chain has been registered
@@ -40,9 +41,11 @@ contract BaseAssetRegistry is BaseRemovableRegistry, IAssetRegistry {
     function registerAsset(CreateAssetArgs calldata args) public onlyAdmin returns (address asset)  {
         FactoryStorage storage fs = LibFactory.load();
         require(!assetExists(args.originAddress, args.originChainId), "BaseAssetRegistry: asset already exists");
+        require(fs.proxyImplementation != address(0), "BaseAssetRegistry: proxy implementation not set");
         require(fs.entityImplementation != address(0), "BaseAssetRegistry: entity implementation not set");
-        address entity = LibClone.clone(fs.entityImplementation);
-        require(entity != address(0), "BaseAssetRegistry: entity cloning failed");
+        address proxy = LibClone.clone(fs.proxyImplementation);
+        require(proxy != address(0), "BaseAssetRegistry: proxy cloning failed");
+        IEntityProxy(proxy).setImplementation(fs.entityImplementation);
 
         AssetInitArgs memory initArgs = AssetInitArgs({
             name: args.name,
@@ -53,7 +56,7 @@ contract BaseAssetRegistry is BaseRemovableRegistry, IAssetRegistry {
             initData: args.initData
         });
 
-        IAsset(entity).init(initArgs);
+        IAsset(proxy).init(initArgs);
        
         RegistrationTerms memory terms = RegistrationTerms({
             fee: 0,
@@ -61,10 +64,10 @@ contract BaseAssetRegistry is BaseRemovableRegistry, IAssetRegistry {
             gracePeriodDays: 30
         });
 
-        _registerRemovableEntity(entity, terms);
-        emit RegistryAddedEntity(entity, args.issuer);
+        _registerRemovableEntity(proxy, terms);
+        emit RegistryAddedEntity(proxy, args.issuer);
 
-        return entity;
+        return proxy;
     }
 
     function deactivateAsset(address asset, string calldata reason) public onlyAdmin {

@@ -102,7 +102,7 @@ describe("World", () => {
         expect(is).to.equal(false);
     });
 
-    it("Should not allow non-signer to withdraw funds", async () => {
+    it("Should not allow non-owner to withdraw funds", async () => {
         let fail = false;
         try {
             const fakeWorld = new World({
@@ -110,25 +110,25 @@ describe("World", () => {
                 admin: signers[9],
                 logParser: stack.logParser!
             });
-            const r = await fakeWorld.withdraw(BigInt("1000000000000000000"));
+            const r = await fakeWorld.withdraw(ethers.parseEther("1.0"));
             if(r) {
                 fail = true;
             }
         } catch(e:any) {
             expect(e.message).to.not.be.undefined;
-            if(e.message.indexOf("restricted to admins") < 0) {
+            if(e.message.indexOf("restricted to owner") < 0) {
                 throw e;
             }
         }
     });
 
     it("Should allow owner to withdraw funds", async () => {
-        const b4 = await ethers.provider.getBalance(worldOwner.address);
+        const b4 = await ethers.provider.getBalance(worldOwner!.address);
         const t = await world!.withdraw(ethers.parseEther("1.0"));
         const r  = await t.wait();
         expect(r).to.not.be.undefined;
         expect(r!.status).to.equal(1);
-        const after = await ethers.provider.getBalance(worldOwner.address);
+        const after = await ethers.provider.getBalance(worldOwner!.address);
         expect(after).to.be.greaterThan(b4);
     });
 

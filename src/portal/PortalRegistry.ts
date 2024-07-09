@@ -1,5 +1,6 @@
 import { AddressLike, Contract, Provider, Signer, TransactionResponse } from "ethers";
-import {abi} from "../../artifacts/contracts/portal/registry/IPortalRegistry.sol/IPortalRegistry.json";
+import {abi} from "../../artifacts/contracts/portal/IPortalRegistry.sol/IPortalRegistry.json";
+import {abi as proxyABI} from '../../artifacts/contracts/base-types/BaseProxy.sol/BaseProxy.json';
 import { RPCRetryHandler } from "../RPCRetryHandler";
 import { VectorAddress } from "../VectorAddress";
 import { AllLogParser } from "../AllLogParser";
@@ -25,7 +26,10 @@ export interface IPortalInfo {
 
 export class PortalRegistry {
     static get abi() {
-        return abi;
+        return  [
+            ...abi,
+            ...proxyABI
+        ]
     }
     
     private con: Contract;

@@ -1,22 +1,19 @@
 import { buildModule } from "@nomicfoundation/hardhat-ignition/modules";
 import LibrariesModule from "../../Libraries.module";
 import RegistrarRegistryModule from "../registry/RegistrarRegistry.module";
-import WorldRegistryModule from "../../world/registry/WorldRegistry.module";
-import FactoryExtModule from "../../extensions/registry/FactoryExt.module";
-import RegistrarExtResolverModule from "./RegistrarExtResolver.module";
+import RegistrarRegistryProxyModule from "../registry/RegistrarRegistryProxy.module";
+import WorldRegistryProxyModule from "../../world/registry/WorldRegistryProxy.module";
 
 export default buildModule("RegistrarModule", (m) => {
 
         const libs = m.useModule(LibrariesModule);
-        const regExtResolver = m.useModule(RegistrarExtResolverModule).registrarExtensionResolver;
         const regReg = m.useModule(RegistrarRegistryModule).registrarRegistry;
-        const worldReg = m.useModule(WorldRegistryModule).worldRegistry;
-        const factoryExt = m.useModule(FactoryExtModule).factoryExtension;
+        const regRegProxy = m.useModule(RegistrarRegistryProxyModule).registrarRegistryProxy;
+        const worldRegProxy = m.useModule(WorldRegistryProxyModule).worldRegistryProxy;
         
         const args = {
-            extensionResolver: regExtResolver,
-            owningRegistry: regReg,
-            worldRegistry: worldReg
+            registrarRegistry: regRegProxy,
+            worldRegistry: worldRegProxy
         }
         
         const fe = m.contract("Registrar", [args], {
@@ -24,14 +21,13 @@ export default buildModule("RegistrarModule", (m) => {
                 LibAccess: libs.LibAccess
             },
             after: [
-                regExtResolver,
-                regReg,
-                worldReg,
+                regRegProxy,
+                worldRegProxy,
                 libs.LibAccess
             ]
         });
-        const data = m.encodeFunctionCall(factoryExt, "setEntityImplementation", [fe]);
-        m.send("setEntityImplementation", regReg, 0n, data);
+        const data = m.encodeFunctionCall(regReg, "setEntityImplementation", [fe]);
+        m.send("setRegistrarEntityImplementation", regRegProxy, 0n, data);
         return {
             registrar: fe
         }

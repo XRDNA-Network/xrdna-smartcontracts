@@ -17,11 +17,15 @@ import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
 import {IExperience} from '../../experience/instance/IExperience.sol';
 import {IAsset} from '../../asset/instance/IAsset.sol';
 import {LibLinkedList, LinkedList} from '../../libraries/LibLinkedList.sol';
+import {AssetCheckArgs} from '../../asset/IAssetCondition.sol';
+import {IPortalRegistry} from '../../portal/IPortalRegistry.sol';
+import {PortalInfo} from '../../libraries/LibPortal.sol';
+import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
+import "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
 
 
 struct AvatarInitArgs {
     bool canReceiveTokensOutsideExperience;
-    address defaultExperience;
     bytes appearanceDetails;
 }
 
@@ -29,17 +33,20 @@ struct AvatarConstructorArgs {
     address avatarRegistry;
     address companyRegistry;
     address experienceRegistry;
+    address portalRegistry;
     address erc721Registry;
 }
 
 contract Avatar is BaseEntity, ReentrancyGuard, IAvatar {
 
     using LibLinkedList for LinkedList;
+    using MessageHashUtils for bytes;
     
     address public immutable avatarRegistry;
     IExperienceRegistry public immutable experienceRegistry;
     ICompanyRegistry public immutable companyRegistry;
     IAssetRegistry public immutable erc721Registry;
+    IPortalRegistry public immutable portalRegistry;
 
     modifier onlyActiveCompany {
         require(companyRegistry.isRegistered(msg.sender), 'Avatar: Company not registered');
@@ -52,11 +59,13 @@ contract Avatar is BaseEntity, ReentrancyGuard, IAvatar {
         require(args.experienceRegistry != address(0), 'Company: Invalid experience registry');
         require(args.companyRegistry != address(0), 'Company: Invalid company registry');
         require(args.erc721Registry != address(0), 'Company: Invalid ERC721 registry');
+        require(args.portalRegistry != address(0), 'Company: Invalid portal registry');
 
         avatarRegistry = args.avatarRegistry;
         experienceRegistry = IExperienceRegistry(args.experienceRegistry);
         companyRegistry = ICompanyRegistry(args.companyRegistry);
         erc721Registry = IAssetRegistry(args.erc721Registry);
+        portalRegistry = IPortalRegistry(args.portalRegistry);
     }
 
     function version() external pure override returns (Version memory) {
@@ -68,7 +77,7 @@ contract Avatar is BaseEntity, ReentrancyGuard, IAvatar {
         require(_owner != address(0), 'Avatar: Invalid owner');
         require(startingExperience != address(0), 'Avatar: Invalid starting experience');
         
-        address[] memory admins = new address[](1);
+        address[] memory admins = new address[](0);
         LibAccess.initAccess(_owner, admins);
         EntityStorage storage es = LibEntity.load();
         es.name = name;
@@ -130,27 +139,63 @@ contract Avatar is BaseEntity, ReentrancyGuard, IAvatar {
     }
 
     
-    function canAddWearable(Wearable calldata wearable) external view returns (bool) {
+    function getWearables() public view returns (Wearable[] memory) {
+        AvatarStorage storage s = LibAvatar.load();
+        return s.list.getAllItems();
+    }
+
+    /**
+     * @dev Check if the avatar is wearing a specific wearable asset.
+     */
+    function isWearing(Wearable calldata wearable) public view returns (bool) {
+        AvatarStorage storage s = LibAvatar.load();
+        return s.list.contains(wearable);
+    }
+
+    /**
+     * @dev Check if the avatar can wear the given asset 
+     */
+    function canAddWearable(Wearable calldata wearable) public view returns (bool) {
+        require(wearable.asset != address(0), "Avatar: wearable asset cannot be zero address");
+        require(wearable.tokenId > 0, "Avatar: wearable tokenId cannot be zero");
+        require(erc721Registry.isRegistered(wearable.asset), "Avatar: wearable asset not registered");
         
+        address loc = IAvatar(address(this)).location();
+        require(loc != address(0), "Avatar: location cannot be zero address");
+        IExperience exp = IExperience(loc);
+        require(IAsset(wearable.asset).canUseAsset(AssetCheckArgs({
+            asset: wearable.asset, 
+            world: exp.world(), 
+            company: exp.company(), 
+            experience: address(loc),
+            avatar: address(this)
+        })),"Avatar: wearable asset cannot be used by avatar");
+        IERC721 wAsset = IERC721(wearable.asset);
+        require(wAsset.ownerOf(wearable.tokenId) == address(this), "Avatar: wearable token not owned by avatar");
+        return true;
     }
 
-   
-    function addWearable(Wearable calldata wearable) external onlyOwner {
+    /**
+     * @dev Add a wearable asset to the avatar. This must be called by the avatar owner. 
+     * This will revert if there are already 200 wearables configured.
+     */
+    function addWearable(Wearable calldata wearable) public onlyOwner  {
+        canAddWearable(wearable);
 
+        AvatarStorage storage s = LibAvatar.load();
+        s.list.insert(wearable);
+        emit IAvatar.WearableAdded(wearable.asset, wearable.tokenId);
     }
 
-    
-    function removeWearable(Wearable calldata wearable) external onlyOwner {
-
-    }
-
-    
-    function getWearables() external view returns (Wearable[] memory) {
-
-    }
-
-    function isWearing(Wearable calldata wearable) external view returns (bool) {
-
+    /**
+     * @dev Remove a wearable asset from the avatar. This must be called by the avatar owner.
+     */
+    function removeWearable(Wearable calldata wearable) public onlyOwner {
+        require(wearable.asset != address(0), "Avatar: wearable asset cannot be zero address");
+        require(wearable.tokenId > 0, "Avatar: wearable tokenId cannot be zero");
+        AvatarStorage storage s = LibAvatar.load();
+        s.list.remove(wearable);
+        emit IAvatar.WearableRemoved(wearable.asset, wearable.tokenId);
     }
     
 
@@ -176,7 +221,20 @@ contract Avatar is BaseEntity, ReentrancyGuard, IAvatar {
      * from the avatar contract balance.
      */
     function jump(AvatarJumpRequest memory request) external payable onlyOwner {
+        PortalInfo memory portal = _verifyCompanySignature(request);
 
+        require(request.agreedFee == portal.fee, "Avatar: agreed fee does not match portal fee");
+        
+        if(portal.fee > 0) {
+            uint256 bal = address(this).balance + msg.value;
+            require(bal >= portal.fee, "Avatar: insufficient funds for jump fee");
+        }
+        AvatarStorage storage s = LibAvatar.load();
+        bytes memory connectionDetails = portalRegistry.jumpRequest{value: portal.fee}(request.portalId);
+        //have to set location AFTER jump success
+        s.currentExperience = address(portal.destination);
+        
+        emit IAvatar.JumpSuccess(address(portal.destination), portal.fee, connectionDetails);
     }
 
     /**
@@ -188,7 +246,21 @@ contract Avatar is BaseEntity, ReentrancyGuard, IAvatar {
      * coming from avatar contract.
      */
     function delegateJump(DelegatedJumpRequest memory request) external payable onlyActiveCompany {
+        _verifyAvatarSignature(request);
+        PortalInfo memory portal = portalRegistry.getPortalInfoById(request.portalId);
+        
+        require(request.agreedFee == portal.fee, "Avatar: agreed fee does not match portal fee");
 
+        if(portal.fee > 0) {
+            uint256 bal = address(this).balance + msg.value;
+            require(bal >= portal.fee, "Avatar: insufficient funds for jump fee");
+        }
+        AvatarStorage storage s = LibAvatar.load();
+        
+        bytes memory connectionDetails = portalRegistry.jumpRequest{value: portal.fee}(request.portalId);
+        //have to set location AFTER jump success
+        s.currentExperience = address(portal.destination);
+        emit IAvatar.JumpSuccess(address(portal.destination), portal.fee, connectionDetails);
     }
 
 
@@ -231,5 +303,55 @@ contract Avatar is BaseEntity, ReentrancyGuard, IAvatar {
             s.list.remove(Wearable(address(asset), tokenId));       
         }
     
+    }
+    
+    function _verifyCompanySignature(AvatarJumpRequest memory request) internal returns (PortalInfo memory portal) {
+        
+        //get the portal info for the destination experience
+        portal = portalRegistry.getPortalInfoById(request.portalId);
+
+        //get the destination experience's owning company
+        ICompany company = ICompany(portal.destination.company());
+        AvatarStorage storage s = LibAvatar.load();
+
+        //increment company signing nonce to avoid replays
+        uint256 nonce = s.companyNonces[address(company)];
+        ++s.companyNonces[address(company)];
+
+        //companies sign off and agree to the avatar jumping into the experience for the 
+        //given fee. This signature happens off chain between avatar client and company 
+        //infrastructure.
+        bytes32 hash = keccak256(abi.encode(request.portalId, request.agreedFee, nonce));
+
+        bytes memory b = new bytes(32);
+        assembly {
+            mstore(add(b, 32), hash) // set the bytes data
+        }
+        //make sure signer is a signer for the destination experience's company
+        bytes32 sigHash = b.toEthSignedMessageHash();
+        address r = ECDSA.recover(sigHash, request.destinationCompanySignature);
+        require(company.isSigner(r), "Avatar: company signer is not authorized");
+    }
+
+    //verify the avatar owner signature for a jump request
+    function _verifyAvatarSignature(DelegatedJumpRequest memory request) internal {
+        AvatarStorage storage s = LibAvatar.load();
+
+        //make sure cannot replay avatar signature
+        uint256 nonce = s.ownerNonce;
+        ++s.ownerNonce;
+
+        //avatar is agreeing to jump into the given destination portal for the given
+        //fee. This signature happens off chain between avatar client and company
+        bytes32 hash = keccak256(abi.encode(request.portalId, request.agreedFee, nonce));
+
+        bytes memory b = new bytes(32);
+        assembly {
+            mstore(add(b, 32), hash) // set the bytes data
+        }
+        bytes32 sigHash = b.toEthSignedMessageHash();
+        address r = ECDSA.recover(sigHash, request.avatarOwnerSignature);
+        //make sure signer is the avatar owner
+        require(r == LibAccess.owner(), "Avatar: avatar signer is not owner");
     }
 }

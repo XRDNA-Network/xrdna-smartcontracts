@@ -9,10 +9,6 @@ import {IAccessControl} from '../../interfaces/IAccessControl.sol';
 import {IRemovableEntity} from '../../interfaces/entity/IRemovableEntity.sol';
 import {ITermsOwner} from '../../interfaces/registry/ITermsOwner.sol';
 
-struct WorldInitArgs {
-    address owner;
-    address[] admins;
-}
 
 struct NewCompanyArgs {
 
@@ -48,6 +44,9 @@ struct NewAvatarArgs {
 
     //owner of the avatar contract
     address owner;
+    
+    //address of the experience where the avatar starts
+    address startingExperience;
 
     //avatar's globally unique name
     string name;
@@ -84,7 +83,7 @@ interface IWorld is IAccessControl, IRemovableEntity, ITermsOwner  {
     event WorldReactivatedExperience(address indexed experience, address indexed company);
     event WorldRemovedExperience(address indexed experience, address indexed company, string reason, uint256 portalId);
 
-    function init(string calldata name, VectorAddress calldata vector, bytes calldata initData) external;
+    function init(string calldata name, address owner, VectorAddress calldata vector, bytes calldata initData) external;
     function baseVector() external view returns (VectorAddress memory);
     function withdraw(uint256 amount) external;
 

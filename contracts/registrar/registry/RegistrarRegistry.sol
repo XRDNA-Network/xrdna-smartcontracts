@@ -2,14 +2,18 @@
 // Compatible with OpenZeppelin Contracts ^5.0.0
 pragma solidity ^0.8.24;
 
+import {BaseRegistry} from '../../base-types/registry/BaseRegistry.sol';
 import {BaseRemovableRegistry} from '../../base-types/registry/BaseRemovableRegistry.sol';
 import {LibAccess } from '../../libraries/LibAccess.sol';
 import {IRegistrarRegistry, CreateNonRemovableRegistrarArgs, CreateRegistrarArgs} from './IRegistrarRegistry.sol';
 import {VectorAddress, LibVectorAddress} from '../../libraries/LibVectorAddress.sol';
 import {FactoryStorage, LibFactory} from '../../libraries/LibFactory.sol';
 import {LibClone} from '../../libraries/LibClone.sol';
-import {IRegistrar, RegistrarInitArgs} from '../instance/IRegistrar.sol';
+import {IRegistrar} from '../instance/IRegistrar.sol';
 import {LibRegistration, TermsSignatureVerification} from '../../libraries/LibRegistration.sol';
+import {Version} from '../../libraries/LibTypes.sol';
+import {IEntityProxy} from '../../base-types/entity/IEntityProxy.sol';
+
 
 contract RegistrarRegistry is BaseRemovableRegistry {
 
@@ -18,25 +22,33 @@ contract RegistrarRegistry is BaseRemovableRegistry {
         _;
     }
 
+    function version() external pure override returns(Version memory) {
+        return Version(1, 0);
+    }
+
     function createNonRemovableRegistrar(CreateNonRemovableRegistrarArgs calldata args) external payable onlySigner returns (address) {
         FactoryStorage storage fs = LibFactory.load();
+        
+        require(fs.proxyImplementation != address(0), "RegistrarRegistration: proxy implementation not set");
         require(fs.entityImplementation != address(0), "RegistrarRegistry: entity implementation not set");
-        address entity = LibClone.clone(fs.entityImplementation);
-        require(entity != address(0), "RegistrarRegistration: entity cloning failed");
+        address proxy = LibClone.clone(fs.proxyImplementation);
+        require(proxy != address(0), "RegistrarRegistration: entity cloning failed");
 
-        IRegistrar(entity).init(args.name, args.initData);
-        _registerNonRemovableEntity(entity);
+        IEntityProxy(proxy).setImplementation(fs.entityImplementation);
+
+        IRegistrar(proxy).init(args.name, args.owner, args.initData);
+        _registerNonRemovableEntity(proxy);
         if(msg.value > 0) {
             if(args.sendTokensToOwner) {
                 payable(args.owner).transfer(msg.value);
             } else {
-                payable(entity).transfer(msg.value);
+                payable(proxy).transfer(msg.value);
             }
         }
 
-        emit RegistryAddedEntity(entity, args.owner);
+        emit RegistryAddedEntity(proxy, args.owner);
 
-        return entity;
+        return proxy;
     }
 
     function createRemovableRegistrar(CreateRegistrarArgs calldata args) external payable onlySigner returns (address) {
@@ -57,7 +69,7 @@ contract RegistrarRegistry is BaseRemovableRegistry {
 
         address entity = LibClone.clone(fs.entityImplementation);
         require(entity != address(0), "RegistrarRegistration: entity cloning failed");
-        IRegistrar(entity).init(args.name, args.initData);
+        IRegistrar(entity).init(args.name, args.owner, args.initData);
         _registerRemovableEntity(entity, args.terms);
          if(msg.value > 0) {
             if(args.sendTokensToOwner) {

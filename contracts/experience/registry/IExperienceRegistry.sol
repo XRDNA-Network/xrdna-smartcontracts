@@ -11,11 +11,31 @@ struct CreateExperienceArgs {
     address company;
     string name;
     VectorAddress vector;
-    uint256 entryFee;
     bytes initData;
 }
 
 interface IExperienceRegistry is IRemovableRegistry, IVectoredRegistry {
 
     function createExperience(CreateExperienceArgs calldata args) external payable returns (address, uint256);
+
+    /**
+     * @dev Deactivates an experience. This can only be called by the world registry. The company must be 
+     * the owner of the experience. Company initiates this call through a world so that events are 
+     * emitted for both the company and world for tracking purposes. The company must also belong to the world.
+     */
+    function deactivateExperience(address company, address exp, string calldata reason) external;
+
+    /**
+     * @dev Reactivates an experience. This can only be called by the world registry. The company must be 
+     * the owner of the experience. Company initiates this call through a world so that events are 
+     * emitted for both the company and world for tracking purposes. The company must also belong to the world.
+     */
+    function reactivateExperience(address company, address exp) external;
+
+    /**
+     * @dev Removes an experience from the registry. This can only be called by the world. The company must be
+        * the owner of the experience. Company initiates this call through a world so that events are
+        * emitted for both the company and world for tracking purposes. The company must also belong to the world.
+     */
+    function removeExperience(address company, address exp, string calldata reason) external returns (uint256 portalId);
 }

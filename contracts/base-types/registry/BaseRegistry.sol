@@ -7,15 +7,25 @@ import {BaseAccess} from '../BaseAccess.sol';
 import {LibRegistration} from '../../libraries/LibRegistration.sol';
 import {LibFactory} from '../../libraries/LibFactory.sol';
 import {Version} from '../../libraries/LibTypes.sol';
+import {LibAccess} from '../../libraries/LibAccess.sol';
+
 
 abstract contract BaseRegistry is BaseAccess, IRegistry {
 
-    function setEntityImplementation(address _entityImplementation) external {
+    function setEntityImplementation(address _entityImplementation) external onlyAdmin {
         LibFactory.setEntityImplementation(_entityImplementation);
     }
 
     function getEntityImplementation() external view returns (address) {
         return LibFactory.getEntityImplementation();
+    }
+
+    function setProxyImplementation(address _proxyImplementation) external onlyAdmin {
+        LibFactory.setProxyImplementation(_proxyImplementation);
+    }
+
+    function getProxyImplementation() external view returns (address) {
+        return LibFactory.getProxyImplementation();
     }
 
     function getEntityVersion() external view returns (Version memory) {

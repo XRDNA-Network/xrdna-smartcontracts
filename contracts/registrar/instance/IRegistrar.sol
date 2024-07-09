@@ -40,10 +40,6 @@ struct NewWorldArgs {
     bytes initData;
 }
 
-struct RegistrarInitArgs {
-    address owner;
-    address[] admins;
-}
 
 interface IRegistrar is IAccessControl, IRemovableEntity, ITermsOwner  {
 
@@ -52,7 +48,7 @@ interface IRegistrar is IAccessControl, IRemovableEntity, ITermsOwner  {
     event RegistrarReactivatedWorld(address indexed world);
     event RegistrarRemovedWorld(address indexed world, string reason);
 
-    function init(string calldata name, bytes calldata initData) external;
+    function init(string calldata name, address owner, bytes calldata initData) external;
 
     /**
      * @dev Registers a new world contract. Must be called by a registrar signer

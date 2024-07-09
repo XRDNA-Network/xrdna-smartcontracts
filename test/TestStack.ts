@@ -23,7 +23,7 @@ export class TestStack {
         const xrdna = new XRDNASigners(ethers.provider);
         this.xrdnaSigners = xrdna;
         const mod = await ignition.deploy(DeployAllModule);
-        const registryAddr = await mod.registrarRegistry.getAddress();
+        const registryAddr = await mod.registrarRegistryProxy.getAddress();
 
         this.registrarRegistryOwner = xrdna.testingConfig.registrarRegistryAdmin;
         const signerConfig = mapJsonToDeploymentAddressConfig(HardhatDeployment);
@@ -35,35 +35,35 @@ export class TestStack {
             logParser: this.logParser
         });
 
-        const worldAddr = await mod.worldRegistry.getAddress();
+        const worldAddr = await mod.worldRegistryProxy.getAddress();
         this.worldRegistry = new WorldRegistry({
             address: worldAddr,
             admin: this.registrarRegistryOwner,
             logParser: this.logParser
         });
 
-        const companyAddr = await mod.companyRegistry.getAddress();
+        const companyAddr = await mod.companyRegistryProxy.getAddress();
         this.companyRegistry = new CompanyRegistry({
             address: companyAddr,
             admin: this.registrarRegistryOwner,
             logParser: this.logParser
         });
 
-        const avatarAddr = await mod.avatarRegistry.getAddress();
+        const avatarAddr = await mod.avatarRegistryProxy.getAddress();
         this.avatarRegistry = new AvatarRegistry({
             address: avatarAddr,
             admin: this.registrarRegistryOwner,
             logParser: this.logParser
         });
 
-        const erc20Addr = await mod.erc20Registry.getAddress();
+        const erc20Addr = await mod.erc20RegistryProxy.getAddress();
         this.erc20Registry = new ERC20AssetRegistry({
             address: erc20Addr,
             admin: this.registrarRegistryOwner,
             logParser: this.logParser
         });
 
-        const erc721Addr = await mod.erc721Registry.getAddress();
+        const erc721Addr = await mod.erc721RegistryProxy.getAddress();
         this.erc721Registry = new ERC721AssetRegistry({
             address: erc721Addr,
             admin: this.registrarRegistryOwner,

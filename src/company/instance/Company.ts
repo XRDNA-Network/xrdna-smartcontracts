@@ -4,6 +4,7 @@ import { VectorAddress } from "../../VectorAddress";
 import { AllLogParser } from "../../AllLogParser";
 import { Version } from "../../Version";
 import {abi as cABI} from '../../../artifacts/contracts/company/instance/ICompany.sol/ICompany.json';
+import {abi as proxyABI} from '../../../artifacts/contracts/base-types/entity/IEntityProxy.sol/IEntityProxy.json';
 import { LogNames } from "../../LogNames";
 import { ERC20Asset, ERC721Asset } from "../../asset";
 
@@ -42,7 +43,10 @@ export interface IMintERC721Result {
 export class Company {
 
     static get abi() {
-        return  cABI
+        return  [
+            ...cABI,
+            ...proxyABI
+        ]
     }
     
     readonly address: string;

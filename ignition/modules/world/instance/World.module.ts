@@ -1,54 +1,49 @@
 import { buildModule } from "@nomicfoundation/hardhat-ignition/modules";
 import LibrariesModule from "../../Libraries.module";
+import WorldRegistryProxyModule from "../registry/WorldRegistryProxy.module";
 import WorldRegistryModule from "../registry/WorldRegistry.module";
-import RegistrarRegistryModule from "../../registrar/registry/RegistrarRegistry.module";
-import FactoryExtModule from "../../extensions/registry/FactoryExt.module";
-import WorldExtResolverModule from "./WorldExtResolver.module";
-import CompanyRegistryModule from "../../company/registry/CompanyRegistry.module";
-import AvatarRegistryModule from "../../avatar/registry/AvatarRegistry.module";
-import ExpRegistryModule from "../../experience/registry/ExperienceRegistry.module";
+import RegistrarRegistryProxyModule from "../../registrar/registry/RegistrarRegistryProxy.module";
+import CompanyRegistryProxyModule from "../../company/registry/CompanyRegistryProxy.module";
+import AvatarRegistryProxyModule from "../../avatar/registry/AvatarRegistryProxy.module";
+import ExpRegistryProxyModule from "../../experience/registry/ExperienceRegistryProxy.module";
 
 export default buildModule("WorldModule", (m) => {
 
         const libs = m.useModule(LibrariesModule);
-        const wExtResolver = m.useModule(WorldExtResolverModule).worldExtensionResolver;
+        const worldRegProxy = m.useModule(WorldRegistryProxyModule).worldRegistryProxy;
         const worldReg = m.useModule(WorldRegistryModule).worldRegistry;
-        const cReg = m.useModule(CompanyRegistryModule).companyRegistry;
-        const regReg = m.useModule(RegistrarRegistryModule).registrarRegistry;
-        const factoryExt = m.useModule(FactoryExtModule).factoryExtension;
-        const aReg = m.useModule(AvatarRegistryModule).avatarRegistry;
-        const expReg = m.useModule(ExpRegistryModule).experienceRegistry;
+        const cRegProxy = m.useModule(CompanyRegistryProxyModule).companyRegistryProxy;
+        const regRegProxy = m.useModule(RegistrarRegistryProxyModule).registrarRegistryProxy;
+        const aRegProxy = m.useModule(AvatarRegistryProxyModule).avatarRegistryProxy;
+        const expRegProxy = m.useModule(ExpRegistryProxyModule).experienceRegistryProxy;
 
 
         //this registrar is cloned so any admin props will be replaced once cloned and initialized with new 
         //registrar props
         const args = {
-            extensionResolver: wExtResolver,
-            owningRegistry: worldReg,
-            registrarRegistry: regReg,
-            companyRegistry: cReg,
-            avatarRegistry: aReg,
-            experienceRegistry: expReg
+            worldRegistry: worldRegProxy,
+            registrarRegistry: regRegProxy,
+            companyRegistry: cRegProxy,
+            avatarRegistry: aRegProxy,
+            experienceRegistry: expRegProxy
         }
         
         const rr = m.contract("World", [args], {
             libraries: {
-                LibAccess: libs.LibAccess,
-                LibVectorAddress: libs.LibVectorAddress
+                LibAccess: libs.LibAccess
             },
             after: [
-                wExtResolver,
-                worldReg,
-                regReg,
-                cReg,
-                aReg,
-                expReg,
+                worldRegProxy,
+                regRegProxy,
+                cRegProxy,
+                aRegProxy,
+                expRegProxy,
                 libs.LibAccess
 
             ]
         });
-        const data = m.encodeFunctionCall(factoryExt, "setEntityImplementation", [rr]);
-        m.send("setEntityImplementation", worldReg, 0n, data);
+        const data = m.encodeFunctionCall(worldReg, "setEntityImplementation", [rr]);
+        m.send("setEntityImplementation", worldRegProxy, 0n, data);
         return {
             world: rr
         }

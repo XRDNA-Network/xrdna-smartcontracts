@@ -2,6 +2,7 @@
 // Compatible with OpenZeppelin Contracts ^5.0.0
 pragma solidity ^0.8.24;
 
+import {BaseRegistry} from '../../base-types/registry/BaseRegistry.sol';
 import {BaseRemovableRegistry} from '../../base-types/registry/BaseRemovableRegistry.sol';
 import {BaseVectoredRegistry} from '../../base-types/registry/BaseVectoredRegistry.sol';
 import {LibAccess} from '../../libraries/LibAccess.sol';
@@ -18,11 +19,16 @@ import {RegistrationTerms} from '../../libraries/LibTypes.sol';
 import {IWorldRegistry} from '../../world/registry/IWorldRegistry.sol';
 import {IWorld} from '../../world/instance/IWorld.sol';
 import {LibRegistration, RegistrationWithTermsAndVector} from '../../libraries/LibRegistration.sol';
+import {IPortalRegistry, AddPortalRequest} from '../../portal/IPortalRegistry.sol';
+import {LibEntityRemoval} from '../../libraries/LibEntityRemoval.sol';
+import {IRemovableEntity} from '../../interfaces/entity/IRemovableEntity.sol';
+import {Version} from '../../libraries/LibTypes.sol';
+import {IEntityProxy} from '../../base-types/entity/IEntityProxy.sol';
 
 struct ExperienceRegistryConstructorArgs {
     address companyRegistry;
     address worldRegistry;
-    //address portalRegistry
+    address portalRegistry;
 }
 
 contract ExperienceRegistry is BaseRemovableRegistry, BaseVectoredRegistry, IExperienceRegistry {
@@ -31,6 +37,7 @@ contract ExperienceRegistry is BaseRemovableRegistry, BaseVectoredRegistry, IExp
 
     ICompanyRegistry public immutable companyRegistry;
     IWorldRegistry public immutable worldRegistry;
+    IPortalRegistry public immutable portalRegistry;
 
     modifier onlyCompanyWorldChain(address company) {
         //make sure caller is a registered and active world
@@ -45,23 +52,31 @@ contract ExperienceRegistry is BaseRemovableRegistry, BaseVectoredRegistry, IExp
         _;
     }
 
-    constructor(ExperienceRegistryConstructorArgs memory args) {
+    constructor(ExperienceRegistryConstructorArgs memory args)  {
         require(args.companyRegistry != address(0), 'ExperienceRegistry: Invalid company registry');
         require(args.worldRegistry != address(0), 'ExperienceRegistry: Invalid world registry');
+        require(args.portalRegistry != address(0), 'ExperienceRegistry: Invalid portal registry');
         companyRegistry = ICompanyRegistry(args.companyRegistry);
         worldRegistry = IWorldRegistry(args.worldRegistry);
+        portalRegistry = IPortalRegistry(args.portalRegistry);
+    }
+
+    function version() external pure override returns(Version memory) {
+        return Version(1, 0);
     }
 
 
-    function createExperience(CreateExperienceArgs calldata args) external payable onlyCompanyWorldChain(args.company) returns (address experience, uint256 portalId) {
+    function createExperience(CreateExperienceArgs calldata args) external payable onlyCompanyWorldChain(args.company) returns (address proxy, uint256 portalId) {
         //true,true means needs p and p_sub > 0
         args.vector.validate(true, true);
 
         FactoryStorage storage fs = LibFactory.load();
+        require(fs.proxyImplementation != address(0), "ExperienceRegistry: proxy implementation not set");
         require(fs.entityImplementation != address(0), "ExperienceRegistry: entity implementation not set");
         
-        experience = LibClone.clone(fs.entityImplementation);
-        require(experience != address(0), "RegistrarRegistration: entity cloning failed");
+        proxy = LibClone.clone(fs.proxyImplementation);
+        require(proxy != address(0), "RegistrarRegistration: proxy cloning failed");
+        IEntityProxy(proxy).setImplementation(fs.entityImplementation);
 
         RegistrationTerms memory terms = RegistrationTerms({
                 coveragePeriodDays: 0,
@@ -70,18 +85,61 @@ contract ExperienceRegistry is BaseRemovableRegistry, BaseVectoredRegistry, IExp
         });
 
         RegistrationWithTermsAndVector memory regArgs = RegistrationWithTermsAndVector({
-            entity: experience,
+            entity: proxy,
             terms: terms,
             vector: args.vector
         });
 
-        //FIXME: register portal as well. Get entry fee from newly created experience since it will
-        //have decoded it as part of its init args
-        portalId = 1; 
-
-        IExperience(experience).init(args.name, args.company, args.vector, args.initData);
+        IExperience(proxy).init(args.name, args.company, args.vector, args.initData);
         LibRegistration.registerRemovableVectoredEntity(regArgs);
-        emit RegistryAddedEntity(experience, args.company);
+
+        //create portal for experience
+        portalId = portalRegistry.addPortal(AddPortalRequest({
+            fee: IExperience(proxy).entryFee(),
+            destination: IExperience(proxy)
+        }));
+        
+        emit RegistryAddedEntity(proxy, args.company);
+    }
+
+    /**
+     * @dev Deactivates an experience. This can only be called by the world registry. The company must be 
+     * the owner of the experience. Company initiates this call through a world so that events are 
+     * emitted for both the company and world for tracking purposes. The company must also belong to the world.
+     */
+    function deactivateExperience(address company, address exp, string calldata reason) external onlyCompanyWorldChain(company) {
+        //company must be registered under world and the owner of experience and active
+        _verifyOwnershipChain(company, exp);
+        LibEntityRemoval.deactivateEntity(IRemovableEntity(exp), reason);
+    }
+
+    /**
+     * @dev Reactivates an experience. This can only be called by the world registry. The company must be 
+     * the owner of the experience. Company initiates this call through a world so that events are 
+     * emitted for both the company and world for tracking purposes. The company must also belong to the world.
+     */
+    function reactivateExperience(address company, address exp) external onlyCompanyWorldChain(company) {
+        //company must be registered under world and the owner of experience and active
+        _verifyOwnershipChain(company, exp);
+        LibEntityRemoval.reactivateEntity(IRemovableEntity(exp));
+    }
+
+    /**
+     * @dev Removes an experience from the registry. This can only be called by the world. The company must be
+        * the owner of the experience. Company initiates this call through a world so that events are
+        * emitted for both the company and world for tracking purposes. The company must also belong to the world.
+     */
+    function removeExperience(address company, address exp, string calldata reason) external onlyCompanyWorldChain(company) returns (uint256 portalId) {
+        _verifyOwnershipChain(company, exp);
+        LibEntityRemoval.removeEntity(IRemovableEntity(exp), reason);
+        portalId = portalRegistry.getIdForExperience(exp);
+        portalRegistry.removePortal(portalId, reason);
+    }
+
+
+    function _verifyOwnershipChain(address company, address exp) internal view {
+        IExperience e = IExperience(exp);
+        require(e.company() == company, "ExperienceRemovalExt: company is not the owner of the experience");
     }
 
 }
