@@ -50,7 +50,7 @@ contract Registrar is BaseRemovableEntity, IRegistrar {
      * @dev Registers a new world contract. Must be called by a registrar signer
      */
     function registerWorld(NewWorldArgs memory args) external payable  onlySigner  returns (address world){
-        return worldRegistry.createWorld{value: msg.value}(CreateWorldArgs({
+        world = worldRegistry.createWorld(CreateWorldArgs({
             sendTokensToOwner: args.sendTokensToOwner,
             owner: args.owner,
             name: args.name,
@@ -61,6 +61,13 @@ contract Registrar is BaseRemovableEntity, IRegistrar {
             vector: args.baseVector,
             vectorAuthoritySignature: args.vectorAuthoritySignature
         }));
+        if(msg.value > 0) {
+            if(args.sendTokensToOwner) {
+                payable(args.owner).transfer(msg.value);
+            } else {
+                payable(world).transfer(msg.value);
+            }
+        }
     }
 
     function deactivateWorld(address world, string calldata reason) external onlySigner {

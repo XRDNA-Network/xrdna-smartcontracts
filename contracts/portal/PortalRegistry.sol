@@ -17,6 +17,7 @@ import {Version} from '../libraries/LibTypes.sol';
 
 struct PortalRegistryConstructorArgs {
     address avatarRegistry;
+    address experienceRegistry;
 }
 
 contract PortalRegistry is BaseAccess, IPortalRegistry {
@@ -34,17 +35,17 @@ contract PortalRegistry is BaseAccess, IPortalRegistry {
         PortalInfo destPortal;
     }
 
-    IExperienceRegistry public experienceRegistry;
+    IExperienceRegistry public immutable experienceRegistry;
     IAvatarRegistry public immutable avatarRegistry;
 
-    modifier onlyExpRegistry() {
-        require(address(experienceRegistry) == msg.sender, "PortalRegistry: Only experience registry can call this function");
+    modifier onlyActiveExperience {
+        require(experienceRegistry.isRegistered(msg.sender), "PortalRegistry: Only registered experiences can call this function");
+        require(IExperience(msg.sender).isEntityActive(), "PortalRegistry: Only active experiences can call this function");
         _;
     }
 
     modifier onlyExperience {
         require(experienceRegistry.isRegistered(msg.sender), "PortalRegistry: Only registered experiences can call this function");
-        require(IExperience(msg.sender).isEntityActive(), "PortalRegistry: Only active experiences can call this function");
         _;
     }
 
@@ -55,19 +56,14 @@ contract PortalRegistry is BaseAccess, IPortalRegistry {
 
     constructor(PortalRegistryConstructorArgs memory args) {
         require(args.avatarRegistry != address(0), "PortalRegistry: Avatar registry cannot be the zero address" );
+        require(args.experienceRegistry != address(0), "PortalRegistry: Experience registry cannot be the zero address" );
         avatarRegistry = IAvatarRegistry(args.avatarRegistry);
+        experienceRegistry = IExperienceRegistry(args.experienceRegistry);
     }
 
     function version() external pure override returns (Version memory) {
         return Version(1, 0);
     }
-
-    function setExperienceRegistry(address expReg) external onlyAdmin {
-        require(expReg != address(0), "PortalRegistry: experience registry cannot be the zero address");
-        require(address(experienceRegistry) == address(0), "PortalRegistry: experience registry already set");
-        experienceRegistry = IExperienceRegistry(expReg);
-    }
-
 
     function getPortalInfoById(uint256 portalId) external view returns (PortalInfo memory) {
         return LibPortal.load().portals[portalId];
@@ -116,39 +112,40 @@ contract PortalRegistry is BaseAccess, IPortalRegistry {
      * when a new experience is created.
      * @param AddPortalRequest The request to add a new portal
      */
-    function addPortal(AddPortalRequest memory req) external onlyExpRegistry returns (uint256)  {
-        VectorAddress memory va = req.destination.vectorAddress();
+    function addPortal(AddPortalRequest memory req) external onlyActiveExperience returns (uint256)  {
+        VectorAddress memory va = IExperience(msg.sender).vectorAddress();
         bytes32 hash = keccak256(abi.encode(va.asLookupKey()));
         PortalRegistryStorage storage store = LibPortal.load();
         require(store.portalIdsByVectorHash[hash] == 0, "PortalRegistry: portal already exists for this vector address");
         ++store.nextPortalId;
         uint256 portalId = store.nextPortalId; 
         store.portalIdsByVectorHash[hash] = portalId;
-        store.portalIdsByExperience[address(req.destination)] = portalId;
+        store.portalIdsByExperience[msg.sender] = portalId;
         store.portals[portalId] = PortalInfo({
-            destination: req.destination,
+            destination: IExperience(msg.sender),
             condition: IPortalCondition(address(0)),
             fee: req.fee,
             active: true
         });
-        emit IPortalRegistry.PortalAdded(portalId, address(req.destination));
+        emit IPortalRegistry.PortalAdded(portalId, msg.sender);
         return portalId;
     }
     
     /**
      * @dev Changes the fee for a portal. This must be called by the destination experience
      */
-    function changePortalFee(uint256 newFee) external onlyExperience {
+    function changePortalFee(uint256 newFee) external onlyActiveExperience {
         PortalRegistryStorage storage store = LibPortal.load();
         uint256 portalId = store.portalIdsByExperience[msg.sender];
         store.portals[portalId].fee = newFee;
         emit IPortalRegistry.PortalFeeChanged(portalId, newFee);
     }
 
-    function deactivatePortal(uint256 portalId, string calldata reason) external onlyExpRegistry {
+    function deactivatePortal(uint256 portalId, string calldata reason) external onlyExperience {
         PortalRegistryStorage storage s = LibPortal.load();
         s.portals[portalId].active = false;
         address exp = address(s.portals[portalId].destination);
+        require(exp == msg.sender, "PortalRegistry: only the experience can deactivate its own portal");
         emit IPortalRegistry.PortalDeactivated(portalId, exp, reason);
     }
 
@@ -157,10 +154,11 @@ contract PortalRegistry is BaseAccess, IPortalRegistry {
      * when an experience is reactivated.
      * @param portalId The ID of the portal to reactivate
      */
-    function reactivatePortal(uint256 portalId) external onlyExpRegistry {
+    function reactivatePortal(uint256 portalId) external onlyExperience {
         PortalRegistryStorage storage s = LibPortal.load();
         s.portals[portalId].active = true;
         address exp = address(s.portals[portalId].destination);
+        require(exp == msg.sender, "PortalRegistry: only the experience can reactivate its own portal");
         emit IPortalRegistry.PortalReactivated(portalId, exp);
     }
 
@@ -170,16 +168,17 @@ contract PortalRegistry is BaseAccess, IPortalRegistry {
      * @param portalId The ID of the portal to remove
      * @param reason The reason for removing the portal
      */
-    function removePortal(uint256 portalId, string calldata reason) external onlyExpRegistry {
+    function removePortal(uint256 portalId, string calldata reason) external onlyExperience {
         PortalRegistryStorage storage s = LibPortal.load();
         PortalInfo memory pi = s.portals[portalId];
-        address exp = address(pi.destination);
+        address exp = msg.sender;
+        require(address(pi.destination) == exp, "PortalRegistry: only the experience can remove its own portal");
         s.portals[portalId].active = false;
         emit IPortalRegistry.PortalRemoved(portalId, exp, reason);
     }
 
 
-    function addCondition(IPortalCondition condition) external onlyExperience {
+    function addCondition(IPortalCondition condition) external onlyActiveExperience {
         PortalRegistryStorage storage s = LibPortal.load();
         require(address(condition) != address(0), "PortalRegistry: condition address cannot be 0");
         uint256 id = s.portalIdsByExperience[msg.sender];
@@ -188,7 +187,7 @@ contract PortalRegistry is BaseAccess, IPortalRegistry {
         emit IPortalRegistry.PortalConditionAdded(id, address(condition));
     }
 
-    function removeCondition() external onlyExperience {
+    function removeCondition() external onlyActiveExperience {
         PortalRegistryStorage storage s = LibPortal.load();
         uint256 portalId = s.portalIdsByExperience[msg.sender];
         s.portals[portalId].condition = IPortalCondition(address(0));

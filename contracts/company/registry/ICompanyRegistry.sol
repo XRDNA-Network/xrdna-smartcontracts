@@ -20,5 +20,5 @@ struct CreateCompanyArgs {
 
 interface ICompanyRegistry is IRemovableRegistry, IVectoredRegistry {
 
-    function createCompany(CreateCompanyArgs calldata args) external payable returns (address);
+    function createCompany(CreateCompanyArgs calldata args) external returns (address);
 }

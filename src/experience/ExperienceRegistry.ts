@@ -4,6 +4,7 @@ import {abi as proxyABI} from '../../artifacts/contracts/base-types/BaseProxy.so
 import { RPCRetryHandler } from "../RPCRetryHandler";
 import { VectorAddress } from "../VectorAddress";
 import { AllLogParser } from "../AllLogParser";
+import { IExperienceInfo } from "./IExperienceInfo";
 
 export interface IExperienceRegistryOpts {
     address: string;
@@ -11,12 +12,6 @@ export interface IExperienceRegistryOpts {
     logParser: AllLogParser;
 }
 
-export interface IExperienceInfo {
-    company: string;
-    world: string;
-    experience: string;
-    portalId: bigint;
-}
 
 export class ExperienceRegistry {
     static get abi() {
@@ -41,17 +36,6 @@ export class ExperienceRegistry {
 
     async isExperience(exp: AddressLike): Promise<boolean> {
         return await RPCRetryHandler.withRetry(() => this.con.isRegistered(exp));
-    }
-
-
-    async getExperienceInfo(address: string): Promise<IExperienceInfo> {
-        const r = await RPCRetryHandler.withRetry(() => this.con.getExperienceInfo(address));
-        return {
-            company: r[0],
-            world: r[1],
-            experience: address,
-            portalId: r[2]
-        } as IExperienceInfo;
     }
 
     async getExperienceByName(name: string): Promise<IExperienceInfo> {

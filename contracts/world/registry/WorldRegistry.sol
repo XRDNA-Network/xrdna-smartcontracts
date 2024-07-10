@@ -65,7 +65,7 @@ contract WorldRegistry is BaseRemovableRegistry, BaseVectoredRegistry, IWorldReg
         LibAccess.revokeRole(LibRoles.ROLE_VECTOR_AUTHORITY, a);
     }
 
-    function createWorld(CreateWorldArgs calldata args) public payable override onlyActiveRegistrar returns (address) {
+    function createWorld(CreateWorldArgs calldata args) public override onlyActiveRegistrar returns (address) {
         require(args.expiration > block.timestamp, "RegistrarRegistry: signature expired");
         require(args.terms.gracePeriodDays > 0, "RegistrarRegistry: grace period must be greater than 0");
         
@@ -99,13 +99,7 @@ contract WorldRegistry is BaseRemovableRegistry, BaseVectoredRegistry, IWorldReg
             vector: args.vector
         });
         LibRegistration.registerRemovableVectoredEntity(regArgs);
-         if(msg.value > 0) {
-            if(args.sendTokensToOwner) {
-                payable(args.owner).transfer(msg.value);
-            } else {
-                payable(proxy).transfer(msg.value);
-            }
-        }
+         
 
         emit RegistryAddedEntity(proxy, args.owner);
 

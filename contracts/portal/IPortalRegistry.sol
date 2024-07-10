@@ -9,7 +9,6 @@ import {PortalInfo} from '../libraries/LibPortal.sol';
 import {Version} from '../libraries/LibTypes.sol';
 
 struct AddPortalRequest {
-    IExperience destination;
     uint256 fee;
 }
 

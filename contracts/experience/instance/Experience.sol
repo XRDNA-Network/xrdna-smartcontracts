@@ -9,11 +9,12 @@ import {IExperienceRegistry} from '../../experience/registry/IExperienceRegistry
 import {LibEntity} from '../../libraries/LibEntity.sol';
 import {LibAccess} from '../../libraries/LibAccess.sol';
 import {Version} from '../../libraries/LibTypes.sol';
-import {IExperience, JumpEntryRequest} from './IExperience.sol';
+import {IExperience, ExperienceInfo, JumpEntryRequest} from './IExperience.sol';
 import {ICompany} from '../../company/instance/ICompany.sol';
 import {ExperienceStorage, LibExperience} from './LibExperience.sol';
-import {IPortalRegistry} from '../../portal/IPortalRegistry.sol';
+import {IPortalRegistry, AddPortalRequest} from '../../portal/IPortalRegistry.sol';
 import {IPortalCondition} from '../../portal/IPortalCondition.sol';
+import {IRemovable} from '../../interfaces/entity/IRemovable.sol';
 
 struct ExperienceConstructorArgs {
     address companyRegistry;
@@ -52,7 +53,7 @@ contract Experience is BaseRemovableEntity, IExperience {
         portalRegistry = IPortalRegistry(args.portalRegistry);
     }
 
-    function version() external pure override returns (Version memory) {
+    function version() public pure override returns (Version memory) {
         return Version(1, 0);
     }
 
@@ -69,6 +70,49 @@ contract Experience is BaseRemovableEntity, IExperience {
         es.connectionDetails = args.connectionDetails;
     }
 
+    function initPortal() public override returns (uint256 portal) {
+        
+        //create portal for experience
+        ExperienceStorage storage es = LibExperience.load();
+        
+        portal = portalRegistry.addPortal(AddPortalRequest({
+            fee: es.entryFee
+        }));
+        es.portalId = portal;
+    }
+
+    function portalId() public view override returns (uint256) {
+        return LibExperience.load().portalId;
+    }
+
+    function deactivate(string calldata reason) public override(IRemovable, BaseRemovableEntity) onlyRegistry {
+        //deactivate portal THEN experience
+        portalRegistry.deactivatePortal(LibExperience.load().portalId, reason);
+        super.deactivate(reason);
+        
+    }
+
+    function reactivate() public override(IRemovable, BaseRemovableEntity) onlyRegistry {
+        //reactivate experience THEN portal
+        super.reactivate();
+        portalRegistry.reactivatePortal(LibExperience.load().portalId);
+        
+    }
+
+    function remove(string calldata reason) public override(IRemovable, BaseRemovableEntity) onlyRegistry {
+        //remove portal THEN experience
+        portalRegistry.removePortal(LibExperience.load().portalId, reason);
+        super.remove(reason);
+    }
+
+    function getExperienceInfo(address experience) external view override returns (ExperienceInfo memory) {
+        return ExperienceInfo({
+            company: company(),
+            world: ICompany(company()).world(),
+            portalId: portalRegistry.getIdForExperience(experience)
+        });
+    }
+
     function owningRegistry() internal view override returns (address) {
         return address(experienceRegistry);
     }
@@ -76,14 +120,14 @@ contract Experience is BaseRemovableEntity, IExperience {
     /**
      * @dev Returns the company that controls this experience
      */
-    function company() external view returns (address) {
+    function company() public view returns (address) {
         return LibRemovableEntity.load().termsOwner;
     }
 
     /**
      * @dev Returns the world that this experience is in
      */
-    function world() external view returns (address) {
+    function world() public view returns (address) {
         return ICompany(LibRemovableEntity.load().termsOwner).world();
     }
 
@@ -91,7 +135,7 @@ contract Experience is BaseRemovableEntity, IExperience {
      * @dev Returns the spatial vector address for this experience, which is derived
      * from its parent company and world.
      */
-    function vectorAddress() external view returns (VectorAddress memory) {
+    function vectorAddress() public view returns (VectorAddress memory) {
         return LibRemovableEntity.load().vector;
     }
 
@@ -99,14 +143,14 @@ contract Experience is BaseRemovableEntity, IExperience {
     /**
      * @dev Returns the entry fee for this experience
      */
-    function entryFee() external view returns (uint256) {
+    function entryFee() public view returns (uint256) {
         return LibExperience.load().entryFee;
     }
 
     /**
      * @dev Adds a portal condition to the experience. This can only be called by the parent company contract
      */
-    function addPortalCondition(address condition) external onlyCompany {
+    function addPortalCondition(address condition) public onlyCompany {
         require(condition != address(0), 'Experience: Invalid condition');
         portalRegistry.addCondition(IPortalCondition(condition));
     }
@@ -114,14 +158,14 @@ contract Experience is BaseRemovableEntity, IExperience {
     /**
      * @dev Removes the portal condition from the experience. This can only be called by the parent company contract
      */
-    function removePortalCondition() external onlyCompany {
+    function removePortalCondition() public onlyCompany {
         portalRegistry.removeCondition();
     }
 
     /**
      * @dev Changes the portal fee for this experience. This can only be called by the parent company contract
      */
-    function changePortalFee(uint256 fee) external onlyCompany {
+    function changePortalFee(uint256 fee) public onlyCompany {
         portalRegistry.changePortalFee(fee);
     }
 
@@ -130,14 +174,14 @@ contract Experience is BaseRemovableEntity, IExperience {
      * the client and company implementation and will likely need to be decoded by the
      * company's infrastructure or API when a client attempts to jump into the experience.
      */
-    function connectionDetails() external view returns (bytes memory)  {
+    function connectionDetails() public view returns (bytes memory)  {
         return LibExperience.load().connectionDetails;
     }
 
     /**
      * @dev Sets the connection details for the experience. This can only be called by the parent company contract
      */
-    function setConnectionDetails(bytes memory details) external onlyCompany {
+    function setConnectionDetails(bytes memory details) public onlyCompany {
         LibExperience.load().connectionDetails = details;
     }
 
@@ -145,7 +189,7 @@ contract Experience is BaseRemovableEntity, IExperience {
      * @dev Called when an avatar jumps into this experience. This can only be called by the 
      * portal registry so that any portal condition is evaluated before entering the experience.
      */
-    function entering(JumpEntryRequest memory) external payable onlyPortalRegistry returns (bytes memory) {
+    function entering(JumpEntryRequest memory) public payable onlyPortalRegistry returns (bytes memory) {
         ExperienceStorage storage s = LibExperience.load();
         
         if(s.entryFee > 0) {

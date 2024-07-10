@@ -49,7 +49,7 @@ contract CompanyRegistry is BaseRemovableRegistry, BaseVectoredRegistry, ICompan
         return Version(1, 0);
     }
 
-    function createCompany(CreateCompanyArgs calldata args) external payable onlyActiveWorld returns (address) {
+    function createCompany(CreateCompanyArgs calldata args) external onlyActiveWorld returns (address) {
         require(args.terms.gracePeriodDays > 0, "RegistrarRegistrationExt: grace period required for removable registration");
         FactoryStorage storage fs = LibFactory.load();
         require(fs.proxyImplementation != address(0), "CompanyRegistration: proxy implementation not set");
@@ -83,13 +83,7 @@ contract CompanyRegistry is BaseRemovableRegistry, BaseVectoredRegistry, ICompan
         });
 
         LibRegistration.registerRemovableVectoredEntity(regArgs);
-        if(msg.value > 0) {
-            if(args.sendTokensToOwner) {
-                payable(args.owner).transfer(msg.value);
-            } else {
-                payable(proxy).transfer(msg.value);
-            }
-        }
+        
         emit RegistryAddedEntity(proxy, args.owner);
 
         return proxy;

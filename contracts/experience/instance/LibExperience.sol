@@ -6,6 +6,7 @@ import {LibStorageSlots} from '../../libraries/LibStorageSlots.sol';
 
 struct ExperienceStorage {
     uint256 entryFee;
+    uint256 portalId;
     bytes connectionDetails;
 }
 

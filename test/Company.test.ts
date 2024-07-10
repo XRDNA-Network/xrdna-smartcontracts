@@ -134,8 +134,9 @@ describe("Company", () => {
         const expAddress = experience.address;
         const experienceRegistry = stack.experienceRegistry;
         const isExp = await experienceRegistry!.isExperience(expAddress);
-        const {portalId} = await experienceRegistry!.getExperienceInfo(expAddress);
+        const {portalId} = await experience!.getExperienceInfo(expAddress);
         expect(isExp).to.be.true;
+        expect(portalId).to.be.greaterThan(0);
         const vector = await experience.vectorAddress();
         expect(vector.p).to.be.greaterThan(0);
         expect(vector.p_sub).to.be.greaterThan(0);

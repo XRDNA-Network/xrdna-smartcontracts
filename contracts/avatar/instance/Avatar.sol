@@ -24,11 +24,18 @@ import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
 
 
+/**
+ * @dev avatar initialization arguments. This is the extra bytes of an avatar creation request.
+ */
 struct AvatarInitArgs {
     bool canReceiveTokensOutsideExperience;
     bytes appearanceDetails;
 }
 
+/**
+ * @dev Avatar constructor arguments. These are mapped to immutable regitry addresses so that any
+ * clone of the avatar can access the same registry contracts.
+ */
 struct AvatarConstructorArgs {
     address avatarRegistry;
     address companyRegistry;
@@ -37,6 +44,12 @@ struct AvatarConstructorArgs {
     address erc721Registry;
 }
 
+/**
+ * @title Avatar
+ * @dev Avatar provides the basic functionality for avatar management, including the 
+ * ability to add and remove wearables, as well as the ability to jump between experiences.
+ * Avatar contracts hold assets and can be used to represent a user in a virtual world.
+ */
 contract Avatar is BaseEntity, ReentrancyGuard, IAvatar {
 
     using LibLinkedList for LinkedList;
@@ -49,11 +62,13 @@ contract Avatar is BaseEntity, ReentrancyGuard, IAvatar {
     IPortalRegistry public immutable portalRegistry;
 
     modifier onlyActiveCompany {
+        //make sure caller is an active registered company contract
         require(companyRegistry.isRegistered(msg.sender), 'Avatar: Company not registered');
         require(ICompany(msg.sender).isEntityActive(), 'Avatar: Company not active');
         _;
     }
 
+    //Called once when deploying the avatar logic
     constructor(AvatarConstructorArgs memory args) {
         require(args.avatarRegistry != address(0), 'Company: Invalid avatar registry');
         require(args.experienceRegistry != address(0), 'Company: Invalid experience registry');
@@ -68,29 +83,47 @@ contract Avatar is BaseEntity, ReentrancyGuard, IAvatar {
         portalRegistry = IPortalRegistry(args.portalRegistry);
     }
 
-    function version() external pure override returns (Version memory) {
+
+    function version() public pure override returns (Version memory) {
         return Version(1, 0);
     }
 
-    function init(string calldata name, address _owner, address startingExperience, bytes calldata initData) external onlyRegistry {
+    /**
+        * @dev Initialize the avatar. This is called by the avatar registry when creating a new avatar.
+        * It is invoked through its proxy so that any storage updates are done in the proxy's address space.
+     */
+    function init(string calldata name, address _owner, address startingExperience, bytes calldata initData) public onlyRegistry {
         require(LibAccess.owner() == address(0), 'Avatar: Already initialized');
         require(_owner != address(0), 'Avatar: Invalid owner');
         require(startingExperience != address(0), 'Avatar: Invalid starting experience');
+        require(experienceRegistry.isRegistered(startingExperience), 'Avatar: Starting experience not registered');
         
         address[] memory admins = new address[](0);
         LibAccess.initAccess(_owner, admins);
-        EntityStorage storage es = LibEntity.load();
-        es.name = name;
+        LibEntity.load().name = name;
 
         AvatarInitArgs memory args = abi.decode(initData, (AvatarInitArgs));
+
+        //avatar-specific storage
         AvatarStorage storage s = LibAvatar.load();
+
+        //whether the avatar can receive tokens outside of an experience (i.e. NFT airdrops)
         s.canReceiveTokensOutsideExperience = args.canReceiveTokensOutsideExperience;
+
+        //the starting experience (e.g. a World lobby)
         s.currentExperience = startingExperience;
+
+        //the appearance details of the avatar, specific to the avatar implementation
         s.appearanceDetails = args.appearanceDetails;
+
+        //The max number of wearables an avatar can wear
         s.list.maxSize = 200;
     }
 
     
+    /**
+     * @dev Get the registry that owns this contract.
+     */
     function owningRegistry() internal view override returns (address) {
         return avatarRegistry;
     }
@@ -98,14 +131,14 @@ contract Avatar is BaseEntity, ReentrancyGuard, IAvatar {
      /**
      * @dev get the Avatar's unique username
      */
-    function username() external view returns (string memory) {
+    function username() public view returns (string memory) {
         return LibEntity.load().name;
     }
 
     /**
      * @dev get the Avatar's current experience location
      */
-    function location() external view returns (address) {
+    function location() public view returns (address) {
         return LibAvatar.load().currentExperience;
     }
 
@@ -113,7 +146,7 @@ contract Avatar is BaseEntity, ReentrancyGuard, IAvatar {
      * @dev get the Avatar's appearance details. These will be specific to the avatar
      * implementation off chain should be used by clients to render the avatar correctly.
      */
-    function appearanceDetails() external view returns (bytes memory) {
+    function appearanceDetails() public view returns (bytes memory) {
         return LibAvatar.load().appearanceDetails;
     }
 
@@ -121,25 +154,27 @@ contract Avatar is BaseEntity, ReentrancyGuard, IAvatar {
      * @dev Check whether an avatar can receive tokens when not in an experience that 
      * matches their current location. This prevents spamming of tokens to the avatar.
      */
-    function canReceiveTokensOutsideOfExperience() external view returns (bool) {
+    function canReceiveTokensOutsideOfExperience() public view returns (bool) {
         return LibAvatar.load().canReceiveTokensOutsideExperience;
     }
 
     /**
      * @dev Get the next signing nonce for a company signature.
      */
-    function companySigningNonce(address signer) external view returns (uint256) {
+    function companySigningNonce(address signer) public view returns (uint256) {
         return LibAvatar.load().companyNonces[signer];
     }
 
     /**
      * @dev Get the next signing nonce for an avatar owner signature.
      */
-    function avatarOwnerSigningNonce() external view returns (uint256) {
+    function avatarOwnerSigningNonce() public view returns (uint256) {
         return LibAvatar.load().ownerNonce;
     }
 
-    
+    /**
+     * @dev Get the list of wearables the avatar is currently wearing.
+     */
     function getWearables() public view returns (Wearable[] memory) {
         AvatarStorage storage s = LibAvatar.load();
         return s.list.getAllItems();
@@ -160,10 +195,12 @@ contract Avatar is BaseEntity, ReentrancyGuard, IAvatar {
         require(wearable.asset != address(0), "Avatar: wearable asset cannot be zero address");
         require(wearable.tokenId > 0, "Avatar: wearable tokenId cannot be zero");
         require(erc721Registry.isRegistered(wearable.asset), "Avatar: wearable asset not registered");
+        require(IAsset(wearable.asset).isEntityActive(), "Avatar: wearable asset not active");
         
-        address loc = IAvatar(address(this)).location();
+        address loc = location();
         require(loc != address(0), "Avatar: location cannot be zero address");
         IExperience exp = IExperience(loc);
+        //make sure the avatar can use the asset in the current experience
         require(IAsset(wearable.asset).canUseAsset(AssetCheckArgs({
             asset: wearable.asset, 
             world: exp.world(), 
@@ -204,14 +241,14 @@ contract Avatar is BaseEntity, ReentrancyGuard, IAvatar {
      * @dev Set whether the avatar can receive tokens when not in an experience that matches 
      * their current location.
      */
-    function setCanReceiveTokensOutsideOfExperience(bool canReceive) external onlyOwner {
+    function setCanReceiveTokensOutsideOfExperience(bool canReceive) public onlyOwner {
         LibAvatar.load().canReceiveTokensOutsideExperience = canReceive;
     }
 
     /**
      * @dev Set the appearance details of the avatar. This must be called by the avatar owner.
      */
-    function setAppearanceDetails(bytes calldata details) external onlyOwner {
+    function setAppearanceDetails(bytes calldata details) public onlyOwner {
         LibAvatar.load().appearanceDetails = details;
         emit AppearanceChanged(details);
     }
@@ -221,7 +258,7 @@ contract Avatar is BaseEntity, ReentrancyGuard, IAvatar {
      * If fees are required for the jump, they must be attached to the transaction or come
      * from the avatar contract balance.
      */
-    function jump(AvatarJumpRequest memory request) external payable onlyOwner {
+    function jump(AvatarJumpRequest memory request) public payable onlyOwner {
         PortalInfo memory portal = _verifyCompanySignature(request);
 
         require(request.agreedFee == portal.fee, "Avatar: agreed fee does not match portal fee");
@@ -239,14 +276,14 @@ contract Avatar is BaseEntity, ReentrancyGuard, IAvatar {
     }
 
     /**
-     * @dev Company can pay for the avatar to jump to a new experience. This must be 
+     * @dev Company can pay for the avatar jump txn. This must be 
      * called by a registered company contract. The avatar owner must sign off on
      * the request using the owner nonce tracked by this contract. If fees are required
      * for the jump, they must be attached to the transaction or come from the avatar
      * contract balance. The avatar owner signature approves the transfer of funds if 
      * coming from avatar contract.
      */
-    function delegateJump(DelegatedJumpRequest memory request) external payable onlyActiveCompany {
+    function delegateJump(DelegatedJumpRequest memory request) public payable onlyActiveCompany {
         _verifyAvatarSignature(request);
         PortalInfo memory portal = portalRegistry.getPortalInfoById(request.portalId);
         
@@ -268,11 +305,16 @@ contract Avatar is BaseEntity, ReentrancyGuard, IAvatar {
     /**
      * @dev Withdraw funds from the avatar contract. This must be called by the avatar owner.
      */
-    function withdraw(uint256 amount) external onlyOwner {
+    function withdraw(uint256 amount) public onlyOwner {
         require(amount >= address(this).balance, 'Avatar: Insufficient balance');
         payable(owner()).transfer(amount);
     }
 
+    /**
+     * @dev Receive ERC721 tokens sent to the avatar. This must be called by a registered
+     * erc721 asset contract. If the avatar does not allow mints outside of its current
+     * experience, the issuer for the calling asset must match the current experience's company. 
+     */
     function onERC721Received(
         address ,
         address ,
@@ -294,6 +336,10 @@ contract Avatar is BaseEntity, ReentrancyGuard, IAvatar {
         return this.onERC721Received.selector;
     }
 
+    /**
+     * @dev Revoke ERC721 tokens sent to the avatar. This must be called by a registered
+     * erc721 asset contract.
+     */
     function onERC721Revoked(uint256 tokenId) public override nonReentrant {
         AvatarStorage storage s = LibAvatar.load();
         require(erc721Registry.isRegistered(msg.sender), "Avatar: only registered assets can call this function");

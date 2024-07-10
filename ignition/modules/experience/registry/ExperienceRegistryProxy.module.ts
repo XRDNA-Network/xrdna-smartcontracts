@@ -14,12 +14,6 @@ export default buildModule("ExperienceRegistryProxyModule", (m) => {
         const libs = m.useModule(LibrariesModule);
         const impl = m.useModule(ExperienceRegistryModule).experienceRegistry;
 
-        const portalRegProxy = m.useModule(PortalRegistryProxyModule).portalRegistryProxy;
-        const portalReg = m.useModule(PortalRegistryModule).portalRegistry;
-        const avatarRegProxy = m.useModule(AvatarRegistryProxyModule).avatarRegistryProxy;
-        const avatarReg = m.useModule(AvatarRegistryModule).avatarRegistry;
-
-
         const xrdna = new XRDNASigners();
         const config = xrdna.deployment[network.config.chainId || 55555];
         const owner = config.experienceRegistryAdmin;
@@ -39,17 +33,9 @@ export default buildModule("ExperienceRegistryProxyModule", (m) => {
             },
             after: [
                 impl,
-                portalRegProxy,
-                avatarRegProxy,
                 libs.LibAccess
             ]
         });
-
-        let data:any = m.encodeFunctionCall(portalReg, "setExperienceRegistry", [rr]);
-        m.send("setPortalExperienceRegistry", portalRegProxy, 0n, data);  
-
-        data = m.encodeFunctionCall(avatarReg, "setExperienceRegistry", [rr]);
-        m.send("setAvatarExperienceRegistry", avatarRegProxy, 0n, data);
 
         return {
             experienceRegistryProxy: rr

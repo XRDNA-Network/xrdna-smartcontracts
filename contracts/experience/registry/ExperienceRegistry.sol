@@ -11,7 +11,7 @@ import {LibRegistration, TermsSignatureVerification} from '../../libraries/LibRe
 import {FactoryStorage, LibFactory} from '../../libraries/LibFactory.sol';
 import {LibClone} from '../../libraries/LibClone.sol';
 import {VectorAddress, LibVectorAddress} from '../../libraries/LibVectorAddress.sol';
-import {IExperienceRegistry, ExperienceInfo, CreateExperienceArgs} from './IExperienceRegistry.sol';
+import {IExperienceRegistry, CreateExperienceArgs} from './IExperienceRegistry.sol';
 import {IExperience} from '../instance/IExperience.sol';
 import {ICompanyRegistry} from '../../company/registry/ICompanyRegistry.sol';
 import {ICompany} from '../../company/instance/ICompany.sol';
@@ -28,7 +28,7 @@ import {IEntityProxy} from '../../base-types/entity/IEntityProxy.sol';
 struct ExperienceRegistryConstructorArgs {
     address companyRegistry;
     address worldRegistry;
-    address portalRegistry;
+    //address portalRegistry;
 }
 
 contract ExperienceRegistry is BaseRemovableRegistry, BaseVectoredRegistry, IExperienceRegistry {
@@ -37,7 +37,6 @@ contract ExperienceRegistry is BaseRemovableRegistry, BaseVectoredRegistry, IExp
 
     ICompanyRegistry public immutable companyRegistry;
     IWorldRegistry public immutable worldRegistry;
-    IPortalRegistry public immutable portalRegistry;
 
     modifier onlyCompanyWorldChain(address company) {
         //make sure caller is a registered and active world
@@ -55,10 +54,8 @@ contract ExperienceRegistry is BaseRemovableRegistry, BaseVectoredRegistry, IExp
     constructor(ExperienceRegistryConstructorArgs memory args)  {
         require(args.companyRegistry != address(0), 'ExperienceRegistry: Invalid company registry');
         require(args.worldRegistry != address(0), 'ExperienceRegistry: Invalid world registry');
-        require(args.portalRegistry != address(0), 'ExperienceRegistry: Invalid portal registry');
         companyRegistry = ICompanyRegistry(args.companyRegistry);
         worldRegistry = IWorldRegistry(args.worldRegistry);
-        portalRegistry = IPortalRegistry(args.portalRegistry);
     }
 
     function version() external pure override returns(Version memory) {
@@ -90,14 +87,10 @@ contract ExperienceRegistry is BaseRemovableRegistry, BaseVectoredRegistry, IExp
             vector: args.vector
         });
 
-        IExperience(proxy).init(args.name, args.company, args.vector, args.initData);
+        IExperience exp = IExperience(proxy);
+        exp.init(args.name, args.company, args.vector, args.initData);
         LibRegistration.registerRemovableVectoredEntity(regArgs);
-
-        //create portal for experience
-        portalId = portalRegistry.addPortal(AddPortalRequest({
-            fee: IExperience(proxy).entryFee(),
-            destination: IExperience(proxy)
-        }));
+        portalId = exp.initPortal();
         
         emit RegistryAddedEntity(proxy, args.company);
     }
@@ -132,18 +125,10 @@ contract ExperienceRegistry is BaseRemovableRegistry, BaseVectoredRegistry, IExp
     function removeExperience(address company, address exp, string calldata reason) external onlyCompanyWorldChain(company) returns (uint256 portalId) {
         _verifyOwnershipChain(company, exp);
         LibEntityRemoval.removeEntity(IRemovableEntity(exp), reason);
-        portalId = portalRegistry.getIdForExperience(exp);
-        portalRegistry.removePortal(portalId, reason);
+        portalId = IExperience(exp).portalId();
     }
 
-    function getExperienceInfo(address experience) external view override returns (ExperienceInfo memory) {
-        IExperience e = IExperience(experience);
-        return ExperienceInfo({
-            company: e.company(),
-            world: ICompany(e.company()).world(),
-            portalId: portalRegistry.getIdForExperience(experience)
-        });
-    }
+    
 
 
     function _verifyOwnershipChain(address company, address exp) internal view {

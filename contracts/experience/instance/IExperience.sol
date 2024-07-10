@@ -14,6 +14,13 @@ struct JumpEntryRequest {
     address avatar;
 }
 
+
+struct ExperienceInfo {
+    address company;
+    address world;
+    uint256 portalId;
+}
+
 /**
  * @dev Interface for an experience. An experience is something a Company offers within a 
  * World. Avatars portal into experiences to interact with them. Portaling into an Experience
@@ -31,8 +38,10 @@ interface IExperience is IRemovableEntity {
     event ExperienceDeactivated();
     
 
+
     function init(string calldata name, address company, VectorAddress calldata vector, bytes calldata initData) external;
 
+    function initPortal() external returns (uint256 portalId);
     
     /**
      * @dev Returns the company that controls this experience
@@ -43,6 +52,11 @@ interface IExperience is IRemovableEntity {
      * @dev Returns the world that this experience is in
      */
     function world() external view returns (address);
+
+    /**
+     * @dev Returns the portal id attached to this experience
+     */
+    function portalId() external view returns (uint256);
 
     /**
      * @dev Returns the spatial vector address for this experience, which is derived
@@ -88,5 +102,10 @@ interface IExperience is IRemovableEntity {
      * portal registry so that any portal condition is evaluated before entering the experience.
      */
     function entering(JumpEntryRequest memory request) external payable returns (bytes memory);
+
+    /**
+     * @dev Returns the experience info for the given experience address.
+     */
+    function getExperienceInfo(address exp) external view returns (ExperienceInfo memory);
     
 }

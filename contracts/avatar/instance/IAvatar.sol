@@ -7,18 +7,39 @@ import {IAccessControl} from "../../interfaces/IAccessControl.sol";
 import {IRegisteredEntity} from "../../interfaces/entity/IRegisteredEntity.sol";
 import {Wearable} from '../../libraries/LibAvatar.sol';
 
+/**
+ * @dev Arguments for an avatar jump.
+ */
 struct AvatarJumpRequest {
+    //the destination portal id
     uint256 portalId;
+
+    //the fee for the jump, agreed between avatar owner and destination experience's company
     uint256 agreedFee;
+
+    //the signature of the destination company agreeing to the jump terms
     bytes destinationCompanySignature;
 }
 
+/**
+ * @dev Arguments for a delegated jump (i.e. company paying for txn)
+ */
 struct DelegatedJumpRequest {
+
+    //the destination portal id
     uint256 portalId;
+
+    //the fee for the jump, agreed between avatar owner and destination experience's company
     uint256 agreedFee;
+
+    //the signature of the avatar owner agreeing to the jump terms
     bytes avatarOwnerSignature;
 }
 
+/**
+ * @title IAvatar
+ * @dev The Avatar interface.
+ */
 interface IAvatar is IERC721Receiver, IAccessControl, IRegisteredEntity {
 
 
@@ -28,6 +49,10 @@ interface IAvatar is IERC721Receiver, IAccessControl, IRegisteredEntity {
     event AppearanceChanged(bytes indexed appearanceDetails);
     event JumpSuccess(address indexed experience, uint256 indexed fee, bytes connectionDetails);
 
+    /**
+     * @dev Initialize the Avatar with the given parameters. This function should only be called once
+     * after cloning a new avatar.
+     */
     function init(string calldata name, address owner, address startingExperience, bytes calldata initData) external;
     
     /**
@@ -62,17 +87,29 @@ interface IAvatar is IERC721Receiver, IAccessControl, IRegisteredEntity {
      */
     function avatarOwnerSigningNonce() external view returns (uint256);
     
+    /**
+     * @dev Determine if the given wearable can be used by the avatar.
+     */
     function canAddWearable(Wearable calldata wearable) external view returns (bool);
 
-   
+    /**
+     * @dev Add a new wearable to the avatar. This must be called by the avatar owner.
+     */
     function addWearable(Wearable calldata wearable) external;
-
     
+    /**
+     * @dev Remove a wearable from the avatar. This must be called by the avatar owner.
+     */
     function removeWearable(Wearable calldata wearable) external;
 
-    
+    /**
+     * @dev Get the wearables currently worn by the avatar.
+     */
     function getWearables() external view returns (Wearable[] memory);
 
+    /**
+     * @dev Check if the avatar is wearing a specific wearable.
+     */
     function isWearing(Wearable calldata wearable) external view returns (bool);
     
 
@@ -95,7 +132,7 @@ interface IAvatar is IERC721Receiver, IAccessControl, IRegisteredEntity {
     function jump(AvatarJumpRequest memory request) external payable;
 
     /**
-     * @dev Company can pay for the avatar to jump to a new experience. This must be 
+     * @dev Company can pay for the avatar jump txn. This must be 
      * called by a registered company contract. The avatar owner must sign off on
      * the request using the owner nonce tracked by this contract. If fees are required
      * for the jump, they must be attached to the transaction or come from the avatar

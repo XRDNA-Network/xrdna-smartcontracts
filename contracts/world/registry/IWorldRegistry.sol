@@ -37,7 +37,7 @@ struct ChangeControllerArgs {
 interface IWorldRegistry is IRemovableRegistry, IVectoredRegistry {
 
     event RegistrarChangedForWorld(address indexed world, address indexed oldRegistrar, address indexed newRegistrar);
-    function createWorld(CreateWorldArgs calldata args) external payable returns (address);
+    function createWorld(CreateWorldArgs calldata args) external returns (address);
     function isVectorAddressAuthority(address a) external view returns (bool);
     function addVectorAddressAuthority(address a) external;
     function removeVectorAddressAuthority(address a) external;

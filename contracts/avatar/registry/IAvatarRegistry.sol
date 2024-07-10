@@ -14,5 +14,5 @@ struct CreateAvatarArgs {
 
 interface IAvatarRegistry is IRegistry {
 
-    function createAvatar(CreateAvatarArgs calldata args) external payable returns (address);
+    function createAvatar(CreateAvatarArgs calldata args) external returns (address);
 }

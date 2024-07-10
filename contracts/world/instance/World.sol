@@ -99,7 +99,7 @@ contract World is BaseRemovableEntity, IWorld {
         ++ws.nextPValue;
         base.p = ws.nextPValue;
 
-        company = companyRegistry.createCompany{value: msg.value}(CreateCompanyArgs({
+        company = companyRegistry.createCompany(CreateCompanyArgs({
             sendTokensToOwner: args.sendTokensToOwner,
             owner: args.owner,
             name: args.name,
@@ -109,6 +109,14 @@ contract World is BaseRemovableEntity, IWorld {
             expiration: args.expiration,
             vector: base
         }));
+
+        if(msg.value > 0) {
+            if(args.sendTokensToOwner) {
+                payable(args.owner).transfer(msg.value);
+            } else {
+                payable(company).transfer(msg.value);
+            }
+        }
 
         emit WorldAddedCompany(company, args.owner, base);
     }
@@ -141,13 +149,21 @@ contract World is BaseRemovableEntity, IWorld {
      * @dev Registers a new avatar contract. Must be called by a world signer
      */
     function registerAvatar(NewAvatarArgs memory args) external payable onlySigner returns (address avatar) {
-        avatar = avatarRegistry.createAvatar{value: msg.value}(CreateAvatarArgs({
+        avatar = avatarRegistry.createAvatar(CreateAvatarArgs({
             sendTokensToOwner: args.sendTokensToOwner,
             owner: args.owner,
             name: args.name,
             startingExperience: args.startingExperience,
             initData: args.initData
         }));
+
+        if(msg.value > 0) {
+            if(args.sendTokensToOwner) {
+                payable(args.owner).transfer(msg.value);
+            } else {
+                payable(avatar).transfer(msg.value);
+            }
+        }
 
         emit WorldAddedAvatar(avatar, args.owner);
     }
