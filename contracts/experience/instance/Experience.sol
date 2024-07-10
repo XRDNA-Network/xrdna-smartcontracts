@@ -30,7 +30,7 @@ contract Experience is BaseRemovableEntity, IExperience {
     
     address public immutable companyRegistry;
     IExperienceRegistry public immutable experienceRegistry;
-    IPortalRegistry public portalRegistry;  
+    IPortalRegistry public immutable portalRegistry;  
 
     modifier onlyCompany {
         require(LibRemovableEntity.load().termsOwner == msg.sender, 'Experience: Only company can call');
@@ -130,7 +130,7 @@ contract Experience is BaseRemovableEntity, IExperience {
      * the client and company implementation and will likely need to be decoded by the
      * company's infrastructure or API when a client attempts to jump into the experience.
      */
-    function connectionDetails() external view onlyCompany returns (bytes memory)  {
+    function connectionDetails() external view returns (bytes memory)  {
         return LibExperience.load().connectionDetails;
     }
 

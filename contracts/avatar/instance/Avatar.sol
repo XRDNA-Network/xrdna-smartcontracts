@@ -87,6 +87,7 @@ contract Avatar is BaseEntity, ReentrancyGuard, IAvatar {
         s.canReceiveTokensOutsideExperience = args.canReceiveTokensOutsideExperience;
         s.currentExperience = startingExperience;
         s.appearanceDetails = args.appearanceDetails;
+        s.list.maxSize = 200;
     }
 
     

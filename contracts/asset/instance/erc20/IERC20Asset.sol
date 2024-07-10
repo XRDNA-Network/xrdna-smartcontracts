@@ -5,13 +5,33 @@ pragma solidity ^0.8.24;
 
 import {IMintableAsset} from '../IMintableAsset.sol';
 
+/**
+ * @title IERC20Asset
+ * @dev IERC20Asset represents a synthetic asset for any XR chain ERC20 tokens.
+ */
 interface IERC20Asset is IMintableAsset {
 
     event ERC20Minted(address indexed to, uint256 indexed amt);
     
+    /**
+        * @dev Returns the number of decimals for the asset (preferably aligned with original ERC20)
+     */
     function decimals() external view returns (uint8);
+
+    /**
+     * @dev Returns the total supply of the asset (this only represents the XR chain supply,
+     * not the original ERC20 supply)
+     */
     function totalSupply() external view returns (uint256);
+
+    /**
+     * @dev Returns the any spend allowance for the spender on the owner's asset
+     */
     function allowance(address owner, address spender) external view returns (uint256);
+
+    /**
+     * @dev Transfers the asset to the recipient
+     */
     function transfer(address, uint256) external returns (bool);
     
 

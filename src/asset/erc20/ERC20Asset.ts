@@ -12,19 +12,16 @@ export interface IERC20Opts {
 }
 
 export type ERC20InitData = {
-    originChainAddress: AddressLike;
     decimals: number;
-    originChainId: bigint;
     maxSupply: bigint;
-    symbol: string;
 }
 
 export class ERC20Asset extends BaseAsset {
 
     static encodeInitData(data: ERC20InitData): string {
-        const ifc = new ethers.Interface(abi);
-        const s = ifc.encodeFunctionData("encodeInitData", [data]);
-        return `0x${s.substring(10)}`;
+        return ethers.AbiCoder.defaultAbiCoder().encode([
+            'tuple(uint8 decimals,uint256 maxSupply)'
+        ], [data]);
     }
 
     static get abi() {

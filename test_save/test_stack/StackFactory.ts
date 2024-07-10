@@ -33,7 +33,7 @@ export interface IEcosystem {
         avatar: Avatar,
         testERC20: CreateERC20AssetResult,
         testERC721: CreateERC721AssetResult
-    }
+}
 
 export enum StackType {
     REGISTRAR = "REGISTRAR",

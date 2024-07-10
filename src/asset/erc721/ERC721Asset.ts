@@ -12,16 +12,14 @@ export interface IERC721Opts {
 }
 
 export type ERC721InitData = {
-    originChainAddress: AddressLike;
-    originChainId: bigint;
-    symbol: string;
-    baseURI: string;
+   baseURI: string;
 }
 
 export type ERC721MintResult = {
     tokenId: bigint;
     receipt: ethers.TransactionReceipt;
 }
+
 
 export class ERC721Asset extends BaseAsset {
 
@@ -33,9 +31,9 @@ export class ERC721Asset extends BaseAsset {
     }
     
     static encodeInitData(data: ERC721InitData): string {
-        const ifc = new ethers.Interface(abi);
-        const s = ifc.encodeFunctionData("encodeInitData", [data]);
-        return `0x${s.substring(10)}`;
+        return ethers.AbiCoder.defaultAbiCoder().encode([
+            'tuple(string baseURI)'
+        ], [data]);
     }
 
     readonly address: string;

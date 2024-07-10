@@ -31,9 +31,9 @@ contract Company is BaseRemovableEntity, ICompany {
     
     address public immutable companyRegistry;
     IExperienceRegistry public immutable experienceRegistry;
-    IAssetRegistry public erc20Registry;
-    IAssetRegistry public erc721Registry;
-    IAvatarRegistry public avatarRegistry;
+    IAssetRegistry public immutable erc20Registry;
+    IAssetRegistry public immutable erc721Registry;
+    IAvatarRegistry public immutable avatarRegistry;
 
 
     modifier onlyIfActive {
@@ -172,7 +172,7 @@ contract Company is BaseRemovableEntity, ICompany {
         emit CompanyAddedExperience(experience, portalId);
     }
 
-    function deactiveExperience(address experience, string calldata reason) public onlySigner {
+    function deactivateExperience(address experience, string calldata reason) public onlySigner {
         IWorld(world()).deactivateExperience(experience, reason);
         emit CompanyDeactivatedExperience(experience, reason);
     }

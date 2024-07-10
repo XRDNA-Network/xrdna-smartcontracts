@@ -19,6 +19,9 @@ export default buildModule("ERC721AssetProxyModule", (m) => {
                 libs.LibAccess
             ]
         });
+        const data = m.encodeFunctionCall(reg, "setProxyImplementation", [rr]);
+        m.send("setProxyImplementation", proxy, 0n, data);
+        
         return {
             erc20Proxy: rr
         }

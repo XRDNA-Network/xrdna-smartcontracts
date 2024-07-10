@@ -99,7 +99,7 @@ contract World is BaseRemovableEntity, IWorld {
         ++ws.nextPValue;
         base.p = ws.nextPValue;
 
-        company = companyRegistry.createCompany(CreateCompanyArgs({
+        company = companyRegistry.createCompany{value: msg.value}(CreateCompanyArgs({
             sendTokensToOwner: args.sendTokensToOwner,
             owner: args.owner,
             name: args.name,
@@ -141,7 +141,7 @@ contract World is BaseRemovableEntity, IWorld {
      * @dev Registers a new avatar contract. Must be called by a world signer
      */
     function registerAvatar(NewAvatarArgs memory args) external payable onlySigner returns (address avatar) {
-        avatar = avatarRegistry.createAvatar(CreateAvatarArgs({
+        avatar = avatarRegistry.createAvatar{value: msg.value}(CreateAvatarArgs({
             sendTokensToOwner: args.sendTokensToOwner,
             owner: args.owner,
             name: args.name,

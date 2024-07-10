@@ -14,6 +14,12 @@ struct CreateExperienceArgs {
     bytes initData;
 }
 
+struct ExperienceInfo {
+    address company;
+    address world;
+    uint256 portalId;
+}
+
 interface IExperienceRegistry is IRemovableRegistry, IVectoredRegistry {
 
     function createExperience(CreateExperienceArgs calldata args) external payable returns (address, uint256);
@@ -38,4 +44,9 @@ interface IExperienceRegistry is IRemovableRegistry, IVectoredRegistry {
         * emitted for both the company and world for tracking purposes. The company must also belong to the world.
      */
     function removeExperience(address company, address exp, string calldata reason) external returns (uint256 portalId);
+
+    /**
+     * @dev Returns the experience info for the given experience address.
+     */
+    function getExperienceInfo(address exp) external view returns (ExperienceInfo memory);
 }

@@ -27,12 +27,15 @@ struct ERC721InitData {
     string baseURI;
 }
 
+/**
+ * @title NTERC721Asset
+    * @dev NTERC721Asset represents a synthetic asset for any XR chain ERC721 tokens.
+ */
 contract NTERC721Asset is BaseAsset, ReentrancyGuard, IERC721Asset {
 
     using Strings for uint256;
     
-    constructor(BaseAssetConstructorArgs memory args) BaseAsset(args) {
-    }
+    constructor(BaseAssetConstructorArgs memory args) BaseAsset(args) {   }
 
     function version() external pure returns (Version memory) {
         return Version({
@@ -41,6 +44,12 @@ contract NTERC721Asset is BaseAsset, ReentrancyGuard, IERC721Asset {
         });
     }
 
+    /**
+     * @dev Initialize the state for the ERC721 asset. NOTE: this is called on the asset's proxy and 
+     * falls back to this version of the asset implementation. This is called when a new asset is 
+     * created in the ERC721 registry and its proxy is cloned. This implementation is set on the proxy
+     * and the init method is called in the context of the proxy (i.e. using proxy's storage).
+     */
     function init(AssetInitArgs calldata args) external onlyRegistry {
         
         ERC721InitData memory initData = abi.decode(args.initData, (ERC721InitData));
@@ -62,6 +71,9 @@ contract NTERC721Asset is BaseAsset, ReentrancyGuard, IERC721Asset {
         }
     }
 
+    /**
+     * @inheritdoc IERC721Asset
+     */
     function supportsInterface(bytes4 interfaceId) public view virtual  returns (bool) {
         return
             interfaceId == type(IERC721).interfaceId ||

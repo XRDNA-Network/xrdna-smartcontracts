@@ -24,7 +24,9 @@ describe("World", () => {
 
     it("Should create a world", async () => {
         worldOwner = signers[3];
-        const {world: w, registration} = await stack.createWorld(worldOwner, undefined, ethers.parseEther('2.0'));
+        const {world: w, registration} = await stack.createWorld({
+            owner: worldOwner, tokens: ethers.parseEther('2.0')
+        });
         world = w; 
         worldRegistration = registration;
         expect(world).to.not.be.null;

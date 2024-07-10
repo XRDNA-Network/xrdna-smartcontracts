@@ -20,7 +20,7 @@ export default buildModule("NTERC721AssetModule", (m) => {
             avatarRegistry: aRegProxy,
         }
         
-        const rr = m.contract("NTERC20Asset", [args], {
+        const rr = m.contract("NTERC721Asset", [args], {
             libraries: {
                 LibAccess: libs.LibAccess,
             },

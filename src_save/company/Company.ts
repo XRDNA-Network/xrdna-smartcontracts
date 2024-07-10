@@ -1,5 +1,5 @@
 import { AddressLike, Contract, Provider, Signer, TransactionReceipt, TransactionResponse, ethers } from "ethers";
-import {abi} from "../../artifacts/contracts/company/Company.sol/Company.json";
+import {abi} from "../../artifacts/contracts/company/instance/ICompany.sol/ICompany.json";
 import { RPCRetryHandler } from "../RPCRetryHandler";
 import { VectorAddress } from "../VectorAddress";
 import { LogNames } from "../LogNames";

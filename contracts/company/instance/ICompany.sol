@@ -99,7 +99,7 @@ interface ICompany is IAccessControl, IRemovableEntity {
     function addExperience(AddExperienceArgs memory args) external returns (address, uint256);
 
 
-    function deactiveExperience(address experience, string calldata reason) external;
+    function deactivateExperience(address experience, string calldata reason) external;
 
     function reactivateExperience(address experience) external;
 

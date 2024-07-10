@@ -18,6 +18,16 @@ export type CreateERC721AssetResult = {
     assetAddress: AddressLike;
 }
 
+
+export type ERC721CreateArgs = {
+    name: string;
+    issuer: AddressLike;
+    originChainId: bigint;
+    originChainAddress: AddressLike;
+    symbol: string;
+    initData: ERC721InitData;
+}
+
 export class ERC721AssetRegistry {
     static get abi() {
         return  [
@@ -49,16 +59,19 @@ export class ERC721AssetRegistry {
         return await RPCRetryHandler.withRetry(() => this.con.assetExists(originAddress, originChainId));
     }
 
-    async registerAsset(name: string, issuer: AddressLike, initData: ERC721InitData): Promise<CreateERC721AssetResult> {
-        let encoded = ERC721Asset.encodeInitData(initData as ERC721InitData);
+    async registerAsset(cArgs: ERC721CreateArgs): Promise<CreateERC721AssetResult> {
+        let encoded = ERC721Asset.encodeInitData(cArgs.initData as ERC721InitData);
                
         const args = {
-            name: name,
-            owner: issuer,
+            name: cArgs.name,
+            issuer: cArgs.issuer,
+            originChainId: cArgs.originChainId,
+            originAddress: cArgs.originChainAddress,
+            symbol: cArgs.symbol,
             initData: encoded
         };
 
-        const t = await  RPCRetryHandler.withRetry(()=>this.con.createAsset(args));
+        const t = await  RPCRetryHandler.withRetry(()=>this.con.registerAsset(args));
         const r = await t.wait();
         if(!r.status) {
             throw new Error("Asset txn failed with status 0");

@@ -7,6 +7,7 @@ import {abi as cABI} from '../../../artifacts/contracts/company/instance/ICompan
 import {abi as proxyABI} from '../../../artifacts/contracts/base-types/entity/IEntityProxy.sol/IEntityProxy.json';
 import { LogNames } from "../../LogNames";
 import { ERC20Asset, ERC721Asset } from "../../asset";
+import { Avatar } from "../../avatar";
 
 /**
  * Typescript proxy for World instance
@@ -40,6 +41,21 @@ export interface IMintERC721Result {
     tokenId: bigint;
 }
 
+
+export interface IDelegatedAvatarJumpRequest {
+    portalId: bigint,
+    agreedFee: bigint,
+    avatarOwnerSignature: string,
+    avatar: Avatar;
+}
+
+export interface IDelegatedAvatarJumpResult {
+    receipt: TransactionReceipt;
+    destination: AddressLike;
+    connectionDetails: string;
+    fee: bigint;
+}
+
 export class Company {
 
     static get abi() {
@@ -70,6 +86,10 @@ export class Company {
         return await RPCRetryHandler.withRetry(() => this.con.isEntityActive());
     }
 
+    async world(): Promise<AddressLike> {
+        return await RPCRetryHandler.withRetry(() => this.con.world());
+    }
+
     async owner(): Promise<string> {
         return await RPCRetryHandler.withRetry(() => this.con.owner());
     }
@@ -87,7 +107,7 @@ export class Company {
     }
 
     async getVectorAddress(): Promise<VectorAddress> {
-        return await RPCRetryHandler.withRetry(() => this.con.getBaseVector());
+        return await RPCRetryHandler.withRetry(() => this.con.vectorAddress());
     }
 
     async getName(): Promise<string> {
@@ -165,6 +185,19 @@ export class Company {
     }
 
 
+    async changeExperiencePortalFee(exp: string, fee: bigint): Promise<TransactionResponse> {
+        return await RPCRetryHandler.withRetry(() => this.con.changeExperiencePortalFee(exp, fee));
+    }
+
+    async addExperienceCondition(exp: string, condition: string): Promise<TransactionResponse> {
+        return await RPCRetryHandler.withRetry(() => this.con.addExperienceCondition(exp, condition));
+    }
+
+    async removeExperienceCondition(exp: string): Promise<TransactionResponse> {
+        return await RPCRetryHandler.withRetry(() => this.con.removeExperienceCondition(exp));
+    }
+
+
     async canMintERC20(asset: string, to: string, amount: bigint): Promise<boolean> {
         const data = ethers.AbiCoder.defaultAbiCoder().encode(["uint256"], [amount]);
         return await RPCRetryHandler.withRetry(() => this.con.canMintERC20(asset, to, data));
@@ -197,7 +230,7 @@ export class Company {
 
     async mintERC721(asset: AddressLike, to: AddressLike): Promise<IMintERC721Result> {
         const data = ethers.AbiCoder.defaultAbiCoder().encode(["uint256"], [0]);
-        const t = await RPCRetryHandler.withRetry(() => this.con.mint(asset, to, data));
+        const t = await RPCRetryHandler.withRetry(() => this.con.mintERC721(asset, to, data));
         const r = await t.wait();
         if(!r.status) {
             throw new Error("Transaction failed with status 0");
@@ -224,6 +257,53 @@ export class Company {
     async revokeERC721(asset: string, holder: string, tokenId: bigint): Promise<TransactionResponse> {
         const data = ethers.AbiCoder.defaultAbiCoder().encode(["uint256"], [tokenId]);
         return await RPCRetryHandler.withRetry(() => this.con.revokeERC721(asset, holder, data));
+    }
+
+    async addAssetCondition(asset: AddressLike, condition: AddressLike): Promise<TransactionResponse> {
+        return await RPCRetryHandler.withRetry(() => this.con.addAssetCondition(asset, condition));
+    }
+
+    async removeAssetCondition(asset: AddressLike): Promise<TransactionResponse> {
+        return await RPCRetryHandler.withRetry(() => this.con.removeAssetCondition(asset));
+    }
+
+    async signJumpRequest(props: {
+        nonce: bigint;
+        portalId: bigint;
+        fee: bigint;
+    }): Promise<string> {
+        const enc = ethers.AbiCoder.defaultAbiCoder().encode(["uint256", "uint256", "uint256"], [props.portalId, props.fee, props.nonce]);
+        const hashed = ethers.keccak256(enc);
+        return await RPCRetryHandler.withRetry(() => (this.admin as Signer).signMessage(ethers.getBytes(hashed)));
+    }
+
+    async payForAvatarJump(req: IDelegatedAvatarJumpRequest, tokens?: bigint): Promise<IDelegatedAvatarJumpResult> {
+        const t = await RPCRetryHandler.withRetry(() => this.con.delegateJumpForAvatar({
+            avatar: req.avatar.address,
+            portalId: req.portalId,
+            agreedFee: req.agreedFee,
+            avatarOwnerSignature: req.avatarOwnerSignature
+        }, {
+            value: tokens
+        }));
+        const r = await t.wait();
+        if(!r.status) {
+            throw new Error("Transaction failed with status 0");
+        }
+        const parser = req.avatar.logParser;
+        const logs = parser.parseLogs(r);
+        const jumps = logs.get(LogNames.JumpSuccess);
+        if(!jumps || jumps.length === 0) {
+            throw new Error("JumpSuccess log not found");
+        }
+        const jump = jumps[0];
+        return {
+            receipt: r,
+            destination: jump.args[0],
+            fee: jump.args[1],
+            connectionDetails: jump.args[2]
+        } as IDelegatedAvatarJumpResult;
+
     }
     
 }

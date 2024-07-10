@@ -18,6 +18,15 @@ export type CreateERC20AssetResult = {
     assetAddress: AddressLike;
 }
 
+export type ERC20CreateArgs = {
+    name: string;
+    issuer: AddressLike;
+    originChainId: bigint;
+    originChainAddress: AddressLike;
+    symbol: string;
+    initData: ERC20InitData;
+}
+
 export class ERC20AssetRegistry {
 
     static get abi() {
@@ -50,15 +59,18 @@ export class ERC20AssetRegistry {
         return await RPCRetryHandler.withRetry(() => this.con.assetExists(originAddress, originChainId));
     }
 
-    async registerAsset(name: string, issuer: AddressLike, initData: ERC20InitData): Promise<CreateERC20AssetResult> {
-        let encoded = ERC20Asset.encodeInitData(initData as ERC20InitData);
+    async registerAsset(cArgs: ERC20CreateArgs): Promise<CreateERC20AssetResult> {
+        let encoded = ERC20Asset.encodeInitData(cArgs.initData as ERC20InitData);
         let args = {
-            name: name,
-            owner: issuer,
+            name: cArgs.name,
+            issuer: cArgs.issuer,
+            originChainId: cArgs.originChainId,
+            originAddress: cArgs.originChainAddress,
+            symbol: cArgs.symbol,
             initData: encoded
         };
                
-        const t = await  RPCRetryHandler.withRetry(()=>this.con.createAsset(args));
+        const t = await  RPCRetryHandler.withRetry(()=>this.con.registerAsset(args));
         const r = await t.wait();
         if(!r.status) {
             throw new Error("Asset txn failed with status 0");

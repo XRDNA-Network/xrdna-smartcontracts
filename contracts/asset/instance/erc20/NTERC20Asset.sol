@@ -13,6 +13,7 @@ import {AssetInitArgs} from '../IAsset.sol';
 import {IERC20Asset} from './IERC20Asset.sol';
 import {IERC20Errors} from "@openzeppelin/contracts/interfaces/draft-IERC6093.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {IMintableAsset} from '../IMintableAsset.sol';
 
 
 struct ERC20InitData {
@@ -23,10 +24,13 @@ struct ERC20InitData {
     uint256 maxSupply;
 }
 
+/**
+ * @title NTERC20Asset
+ * @dev NTERC20Asset represents a synthetic asset for any XR chain ERC20 tokens.
+ */
 contract NTERC20Asset is BaseAsset, ReentrancyGuard, IERC20Asset {
     
-    constructor(BaseAssetConstructorArgs memory args) BaseAsset(args) {
-    }
+    constructor(BaseAssetConstructorArgs memory args) BaseAsset(args) { }
 
     function version() external pure returns (Version memory) {
         return Version({
@@ -35,12 +39,19 @@ contract NTERC20Asset is BaseAsset, ReentrancyGuard, IERC20Asset {
         });
     }
 
+    /**
+     * @dev Initialize the state for the ERC20 asset. NOTE: this is called on the asset's proxy and 
+     * falls back to this version of the asset implementation. This is called when a new asset is 
+     * created in the ERC20 registry and its proxy is cloned. This implementation is set on the proxy
+     * and the init method is called in the context of the proxy (i.e. using proxy's storage).
+     */
     function init(AssetInitArgs calldata args) external onlyRegistry {
         
         ERC20InitData memory initData = abi.decode(args.initData, (ERC20InitData));
         require(initData.decimals > 0, "NTERC20Asset: decimals must be greater than zero");
         require(initData.maxSupply > 0, "NTERC20Asset: max supply must be greater than zero");
 
+        //initialize basic token info
         initBase(BaseInitArgs({
             issuer: args.issuer,
             name: args.name,
@@ -49,15 +60,22 @@ contract NTERC20Asset is BaseAsset, ReentrancyGuard, IERC20Asset {
             originChainId: args.originChainId
         }));
         
+        //then erc20 specific fields
         ERC20Storage storage erc20Store = LibERC20.load();
         erc20Store.maxSupply = initData.maxSupply;
         erc20Store.decimals = initData.decimals;
     }
 
+    /**
+     * @inheritdoc IERC20Asset
+     */
     function decimals() external view returns (uint8) {
         return LibERC20.load().decimals;
     }
 
+    /**
+     * @inheritdoc IERC20Asset
+     */
     function totalSupply() external view returns (uint256) {
         return LibERC20.load().totalSupply;
     }
@@ -78,7 +96,9 @@ contract NTERC20Asset is BaseAsset, ReentrancyGuard, IERC20Asset {
     }
 
     
-
+    /**
+     * @inheritdoc IMintableAsset
+     */
     function canMint(address to, bytes calldata data) public override view returns (bool) {
         require(to != address(0), "NTERC20Asset: cannot mint to zero address");
         ERC20Storage storage s = LibERC20.load();
@@ -99,9 +119,7 @@ contract NTERC20Asset is BaseAsset, ReentrancyGuard, IERC20Asset {
     }
 
     /**
-     * @dev Mints tokens to the specified address. This can only be called by the issuer
-     * @param to the address to mint tokens to
-     * @param data the data to use for minting, which should be an encoded uint256 amount
+     * @inheritdoc IMintableAsset
      */
     function mint(address to, bytes calldata data) public nonReentrant onlyIssuer  {
         require(canMint(to, data), "NTERC20Asset: cannot mint tokens");
@@ -112,12 +130,7 @@ contract NTERC20Asset is BaseAsset, ReentrancyGuard, IERC20Asset {
     }
 
     /**
-     * @dev Revokes tokens from the specified address. This can only be called by the issuer
-     * @param tgt the address to revoke tokens from
-     * @param data the data to use for revoking, which should be an encoded uint256 amount
-     * This call is used when asset balance changes on original chain and the company needs
-     * to keep the recipients balance in sync. An oracle will likely be used to ensure the
-     * balances are synchronized.
+     * @inheritdoc IMintableAsset
      */
     function revoke(address tgt, bytes calldata data) public nonReentrant onlyIssuer {
         require(tgt != address(0), "NTERC20Asset: cannot revoke from zero address");
@@ -127,6 +140,9 @@ contract NTERC20Asset is BaseAsset, ReentrancyGuard, IERC20Asset {
         _burn(tgt, amt);
     }
 
+    /**
+     * @inheritdoc IERC20Asset
+     */
     function transfer(address, uint256) public pure returns (bool) {
        revert("NTERC20Asset: transfers not allowed yet");
     }

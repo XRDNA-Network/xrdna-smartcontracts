@@ -11,7 +11,7 @@ import {LibRegistration, TermsSignatureVerification} from '../../libraries/LibRe
 import {FactoryStorage, LibFactory} from '../../libraries/LibFactory.sol';
 import {LibClone} from '../../libraries/LibClone.sol';
 import {VectorAddress, LibVectorAddress} from '../../libraries/LibVectorAddress.sol';
-import {IExperienceRegistry, CreateExperienceArgs} from './IExperienceRegistry.sol';
+import {IExperienceRegistry, ExperienceInfo, CreateExperienceArgs} from './IExperienceRegistry.sol';
 import {IExperience} from '../instance/IExperience.sol';
 import {ICompanyRegistry} from '../../company/registry/ICompanyRegistry.sol';
 import {ICompany} from '../../company/instance/ICompany.sol';
@@ -134,6 +134,15 @@ contract ExperienceRegistry is BaseRemovableRegistry, BaseVectoredRegistry, IExp
         LibEntityRemoval.removeEntity(IRemovableEntity(exp), reason);
         portalId = portalRegistry.getIdForExperience(exp);
         portalRegistry.removePortal(portalId, reason);
+    }
+
+    function getExperienceInfo(address experience) external view override returns (ExperienceInfo memory) {
+        IExperience e = IExperience(experience);
+        return ExperienceInfo({
+            company: e.company(),
+            world: ICompany(e.company()).world(),
+            portalId: portalRegistry.getIdForExperience(experience)
+        });
     }
 
 
