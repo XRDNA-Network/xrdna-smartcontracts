@@ -14,6 +14,13 @@ struct JumpEntryRequest {
     address avatar;
 }
 
+struct ExperienceInitArgs {
+    string name;
+    address company;
+    VectorAddress vector;
+    bytes initData;
+}
+
 
 struct ExperienceInfo {
     address company;
@@ -38,9 +45,16 @@ interface IExperience is IRemovableEntity {
     event ExperienceDeactivated();
     
 
+    /**
+     * @dev Initializes the experience with the given arguments. This is called after cloning the experience
+     * proxy and assigning this contract as its logic. It can only be called once and by its registry.
+     */
+    function init(ExperienceInitArgs memory args) external;
 
-    function init(string calldata name, address company, VectorAddress calldata vector, bytes calldata initData) external;
-
+    /**
+     * @dev Initializes the portal for this experience. This is called after initialization and
+     * registration in the experience registry. It can only be called once and by its registry.
+     */
     function initPortal() external returns (uint256 portalId);
     
     /**

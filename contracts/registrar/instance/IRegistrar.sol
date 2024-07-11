@@ -4,7 +4,7 @@
 pragma solidity ^0.8.24;
 
 import {VectorAddress} from '../../libraries/LibVectorAddress.sol';
-import {RegistrationTerms} from '../../libraries/LibTypes.sol';
+import {RegistrationTerms} from '../../libraries/LibRegistration.sol';
 import {IAccessControl} from '../../interfaces/IAccessControl.sol';
 import {IRemovableEntity} from '../../interfaces/entity/IRemovableEntity.sol';
 import {ITermsOwner} from '../../interfaces/registry/ITermsOwner.sol';

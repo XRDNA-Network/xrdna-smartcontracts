@@ -4,7 +4,7 @@ pragma solidity ^0.8.24;
 
 import {ReentrancyGuard} from '@openzeppelin/contracts/utils/ReentrancyGuard.sol';
 import {BaseAsset, BaseAssetConstructorArgs, BaseInitArgs} from '../BaseAsset.sol';
-import {Version} from '../../../libraries/LibTypes.sol';
+import {Version} from '../../../libraries/LibVersion.sol';
 import {IAvatar} from '../../../avatar/instance/IAvatar.sol';
 import {LibRemovableEntity, RemovableEntityStorage} from '../../../libraries/LibRemovableEntity.sol';
 import {LibAsset, AssetStorage} from '../../../libraries/LibAsset.sol';
@@ -13,7 +13,6 @@ import {AssetInitArgs} from '../IAsset.sol';
 import {IERC20Asset} from './IERC20Asset.sol';
 import {IERC20Errors} from "@openzeppelin/contracts/interfaces/draft-IERC6093.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import {IMintableAsset} from '../IMintableAsset.sol';
 
 
 struct ERC20InitData {
@@ -97,13 +96,11 @@ contract NTERC20Asset is BaseAsset, ReentrancyGuard, IERC20Asset {
 
     
     /**
-     * @inheritdoc IMintableAsset
+     * @inheritdoc IERC20Asset
      */
-    function canMint(address to, bytes calldata data) public override view returns (bool) {
+    function canMint(address to, uint256 amt) public override view returns (bool) {
         require(to != address(0), "NTERC20Asset: cannot mint to zero address");
         ERC20Storage storage s = LibERC20.load();
-        
-        uint256 amt = abi.decode(data, (uint256));
         require(s.totalSupply + amt <= s.maxSupply, "NTERC20Asset: max supply exceeded");
         //if the asset is going to an avatar
         if(avatarRegistry.isRegistered(to)) {
@@ -119,22 +116,20 @@ contract NTERC20Asset is BaseAsset, ReentrancyGuard, IERC20Asset {
     }
 
     /**
-     * @inheritdoc IMintableAsset
+     * @inheritdoc IERC20Asset
      */
-    function mint(address to, bytes calldata data) public nonReentrant onlyIssuer  {
-        require(canMint(to, data), "NTERC20Asset: cannot mint tokens");
-        uint256 amt = abi.decode(data, (uint256));
+    function mint(address to, uint256 amt) public nonReentrant onlyIssuer  {
+        require(canMint(to, amt), "NTERC20Asset: cannot mint tokens");
         
         //if all good, mint tokens
         _mint(to, amt);
     }
 
     /**
-     * @inheritdoc IMintableAsset
+     * @inheritdoc IERC20Asset
      */
-    function revoke(address tgt, bytes calldata data) public nonReentrant onlyIssuer {
+    function revoke(address tgt, uint256 amt) public nonReentrant onlyIssuer {
         require(tgt != address(0), "NTERC20Asset: cannot revoke from zero address");
-        uint256 amt = abi.decode(data, (uint256));
         require(amt > 0, "NTERC20Asset: revoke amount must be greater than zero");
         require(balanceOf(tgt) >= amt, "NTERC20Asset: insufficient balance to revoke");
         _burn(tgt, amt);

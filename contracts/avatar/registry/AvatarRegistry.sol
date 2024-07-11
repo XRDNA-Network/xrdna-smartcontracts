@@ -13,11 +13,11 @@ import {IWorldRegistry} from '../../world/registry/IWorldRegistry.sol';
 import {IWorld} from '../../world/instance/IWorld.sol';
 import {LibRegistration, RegistrationWithTermsAndVector} from '../../libraries/LibRegistration.sol';
 import {IAvatarRegistry, CreateAvatarArgs} from './IAvatarRegistry.sol';
-import {IAvatar} from '../instance/IAvatar.sol';
+import {IAvatar, AvatarInitArgs} from '../instance/IAvatar.sol';
 import {IExperienceRegistry} from '../../experience/registry/IExperienceRegistry.sol';
 import {IExperience} from '../../experience/instance/IExperience.sol';
 import {IEntityProxy} from '../../base-types/entity/IEntityProxy.sol';
-import {Version} from '../../libraries/LibTypes.sol';
+import {Version} from '../../libraries/LibVersion.sol';
 
 /**
  * @dev Arguments for the AvatarRegistry constructor
@@ -56,6 +56,10 @@ contract AvatarRegistry is BaseRegistry, IAvatarRegistry {
         return Version(1,0);
     }
 
+    function canUpOrDowngrade() internal view override {
+        //no-op since avatars are not removable
+    }
+
     /**
      * @dev Create a new Avatar entity
      */
@@ -63,8 +67,7 @@ contract AvatarRegistry is BaseRegistry, IAvatarRegistry {
         FactoryStorage storage fs = LibFactory.load();
         require(fs.entityImplementation != address(0), "AvatarRegistration: entity implementation not set");
         require(fs.proxyImplementation != address(0), "AvatarRegistration: proxy implementation not set");
-        require(args.startingExperience != address(0), "AvatarRegistration: starting experience required"); 
-       
+        
         //clone avatar proxy for new address space
         proxy = LibClone.clone(fs.proxyImplementation);
         require(proxy != address(0), "AvatarRegistration: proxy cloning failed");
@@ -72,8 +75,15 @@ contract AvatarRegistry is BaseRegistry, IAvatarRegistry {
         //set implementation on the new proxy
         IEntityProxy(proxy).setImplementation(fs.entityImplementation);
 
+        AvatarInitArgs memory aArgs = AvatarInitArgs({
+            name: args.name,
+            owner: args.owner,
+            startingExperience: args.startingExperience,
+            initData: args.initData
+        });
+
         //initialize new avatar proxy storage
-        IAvatar(proxy).init(args.name, args.owner, args.startingExperience, args.initData);
+        IAvatar(proxy).init(aArgs);
         
         //store the new avatar proxy
         _registerNonRemovableEntity(proxy);

@@ -3,17 +3,18 @@
 pragma solidity ^0.8.24;
 
 import {BaseRemovableEntity} from '../../base-types/entity/BaseRemovableEntity.sol';
-import {VectorAddress} from '../../libraries/LibVectorAddress.sol';
+import {VectorAddress, LibVectorAddress} from '../../libraries/LibVectorAddress.sol';
 import {LibRemovableEntity, RemovableEntityStorage} from '../../libraries/LibRemovableEntity.sol';
-import {ICompany, AddExperienceArgs, DelegatedAvatarJumpRequest} from './ICompany.sol';
+import {ICompany, CompanyInitArgs, AddExperienceArgs, DelegatedAvatarJumpRequest} from './ICompany.sol';
 import {IExperienceRegistry} from '../../experience/registry/IExperienceRegistry.sol';
 import {LibEntity} from '../../libraries/LibEntity.sol';
 import {LibAccess} from '../../libraries/LibAccess.sol';
 import {CompanyStorage, LibCompany} from './LibCompany.sol';
 import {IWorld, NewExperienceArgs} from '../../world/instance/IWorld.sol';
-import {Version} from '../../libraries/LibTypes.sol';
+import {Version} from '../../libraries/LibVersion.sol';
 import {IAssetRegistry} from '../../asset/registry/IAssetRegistry.sol';
-import {IMintableAsset} from '../../asset/instance/IMintableAsset.sol';
+import {IERC20Asset} from '../../asset/instance/erc20/IERC20Asset.sol';
+import {IERC721Asset} from '../../asset/instance/erc721/IERC721Asset.sol';
 import {IAvatarRegistry} from '../../avatar/registry/IAvatarRegistry.sol';
 import {IAvatar, DelegatedJumpRequest} from '../../avatar/instance/IAvatar.sol';
 import {IExperience} from '../../experience/instance/IExperience.sol';
@@ -27,7 +28,15 @@ struct CompanyConstructorArgs {
     address avatarRegistry;
 }
 
+/** 
+ * @title Company contract
+ * @dev A company can issue assets and add experiences to worlds. This is the company logic 
+ * implementation. All companies are fronted by an EntityProxy. The company constructor 
+ * sets up immutable references to various registries for logic implementation.
+ */
 contract Company is BaseRemovableEntity, ICompany {
+
+    using LibVectorAddress for VectorAddress;
     
     address public immutable companyRegistry;
     IExperienceRegistry public immutable experienceRegistry;
@@ -41,6 +50,9 @@ contract Company is BaseRemovableEntity, ICompany {
         _;
     }
 
+    /**
+     * 
+     */
     constructor(CompanyConstructorArgs memory args) {
         require(args.companyRegistry != address(0), 'Company: Invalid company registry');
         require(args.experienceRegistry != address(0), 'Company: Invalid experience registry');
@@ -60,19 +72,35 @@ contract Company is BaseRemovableEntity, ICompany {
     }
 
     
-    function init(string calldata name, address _owner, address _world, VectorAddress calldata vector, bytes calldata) public onlyRegistry {
-        require(_owner != address(0), 'Company: Invalid owner');
-        require(_world != address(0), 'Company: Invalid world');
+    /**
+     * @dev Initializes the company with the given information. This is called by the company registry
+     * after cloning the company's proxy and assigning this logic to it.
+     */
+    function init(CompanyInitArgs memory args) public onlyRegistry {
+        require(args.owner != address(0), 'Company: Invalid owner');
+        require(args.world != address(0), 'Company: Invalid world');
+        require(bytes(args.name).length > 0, 'Company: Invalid name');
+
+        //true, false means we need a p value but not a p_sub value   
+        args.vector.validate(true, false);
         
-        LibEntity.load().name = name;   
+        //set the company name
+        LibEntity.load().name = args.name;
+
+        //initialize general removable entity storage
         RemovableEntityStorage storage rs = LibRemovableEntity.load();
         rs.active = true;
-        rs.termsOwner = _world;
-        rs.vector = vector;
+        rs.termsOwner = args.world;
+        rs.vector = args.vector;
+
+        //intialize access controls
         address[] memory admins = new address[](0);
-        LibAccess.initAccess(_owner, admins);
+        LibAccess.initAccess(args.owner, admins);
     }
 
+    /**
+     * @dev Returns the address of the company registry
+     */
     function owningRegistry() internal view override returns (address) {
         return companyRegistry;
     }
@@ -92,76 +120,134 @@ contract Company is BaseRemovableEntity, ICompany {
         return LibRemovableEntity.load().vector;
     }
 
-    function canMintERC20(address asset, address to, bytes calldata extra) public view onlyIfActive returns (bool) {
+    /**
+     * @dev Checks if this company can mint the given ERC20 asset. Only active companies can mint assets.
+     */
+    function canMintERC20(address asset, address to, uint256 amount) public view onlyIfActive returns (bool) {
         //check if asset is allowed
-        return _canMint(erc20Registry, asset, to, extra);
-    }
+        //make sure asset is registered
+        require(erc20Registry.isRegistered(asset), "Company: asset not registered");
 
-    function canMintERC721(address asset, address to, bytes calldata extra) public view onlyIfActive returns (bool) {
-        //check if asset is allowed
-        return _canMint(erc721Registry, asset, to, extra);
-    }
+        //make sure asset is active
+        IERC20Asset mintable = IERC20Asset(asset);
+        require(mintable.isEntityActive(), "Company: asset not active");
 
-    function mintERC20(address asset, address to, bytes calldata data) public onlySigner onlyIfActive {
-        require(canMintERC20(asset, to, data), "Company: cannot mint asset");
-        IMintableAsset(asset).mint(to, data);
-    }
-
-    function mintERC721(address asset, address to, bytes calldata data) public onlySigner onlyIfActive {
-        require(canMintERC721(asset, to, data), "Company: cannot mint asset");
-        IMintableAsset(asset).mint(to, data);
-    }
-
-    function revokeERC20(address asset, address holder, bytes calldata data) public onlySigner onlyIfActive {
-        _revoke(erc20Registry, asset, holder, data);
-    }
-
-    function revokeERC721(address asset, address holder, bytes calldata data) public onlySigner onlyIfActive {
-       _revoke(erc721Registry, asset, holder, data);
-    }
-
-    function _revoke(IAssetRegistry assetRegistry, address asset, address holder, bytes calldata data) internal {
-        require(assetRegistry.isRegistered(asset), "Company: asset not registered");
-        IMintableAsset mintable = IMintableAsset(asset);
-        require(mintable.issuer() == address(this), "Company: not issuer of asset");
-        mintable.revoke(holder, data);
-    }
-
-    function _canMint(IAssetRegistry assetRegistry, address asset, address to, bytes calldata extra) internal view returns (bool) {
-        require(assetRegistry.isRegistered(asset), "Company: asset not registered");
-
-        IMintableAsset mintable = IMintableAsset(asset);
         //can only mint if company owns the asset
         require(mintable.issuer() == address(this), "Company: not issuer of asset");
         
-        //and the asset allows it
-        require(mintable.canMint(to, extra), "Company: cannot mint to address");
+        //and the asset allows to mint
+        require(mintable.canMint(to, amount), "Company: cannot mint to address");
 
-        if(!avatarRegistry.isRegistered(to)) {
-            return true;
-        }
+        _verifyAvatarMinting(to);
 
-        //otherwise have to make sure avatar allows it if they are not in our experience
-        IAvatar avatar = IAvatar(to);
-        if(!avatar.canReceiveTokensOutsideOfExperience()) {
-            address exp = avatar.location();
-            require(exp != address(0), "Company: avatar location is not an experience");
-            require(IExperience(exp).company() == address(this), "Company: avatar location is not in an experience owned by this company");
-        }
+        //all checks passed
         return true;
     }
 
     /**
-     * @dev Adds an experience to the world. This also creates a portal into the 
-     * experience and registers it in the PortalRegistry. It is assumed that the 
-     * initialization data for the experience will include the expected fee
-     * for the portal.
+     * @dev Checks if this company can mint the given ERC721 asset. Only active companies can mint assets.
      */
-    function addExperience(AddExperienceArgs memory args) public onlySigner returns (address experience, uint256 portalId) {
+    function canMintERC721(address asset, address to) public view onlyIfActive returns (bool) {
+        //check if asset is allowed
+        //make sure asset is registered
+        require(erc721Registry.isRegistered(asset), "Company: asset not registered");
+
+        //make sure asset is active
+        IERC721Asset mintable = IERC721Asset(asset);
+        require(mintable.isEntityActive(), "Company: asset not active");
+
+        //can only mint if company owns the asset
+        require(mintable.issuer() == address(this), "Company: not issuer of asset");
+        
+        //and the asset allows to mint
+        require(mintable.canMint(to), "Company: cannot mint to address");
+
+        _verifyAvatarMinting(to);
+
+        //all checks passed
+        return true;
+    }
+
+    /**
+     * @dev Mints the given ERC20 asset to the given address. This can only be called by a company
+     * signer and only if the company is active.
+     */
+    function mintERC20(address asset, address to, uint256 amount) public onlySigner {
+        require(canMintERC20(asset, to, amount), "Company: cannot mint asset");
+        IERC20Asset(asset).mint(to, amount);
+    }
+
+    /**
+     * @dev Mints the given ERC721 asset to the given address. This can only be called by a company
+     * signer and only if the company is active.
+     */
+    function mintERC721(address asset, address to) public onlySigner {
+        require(canMintERC721(asset, to), "Company: cannot mint asset");
+        IERC721Asset(asset).mint(to);
+    }
+
+    /**
+     * @dev Revokes the given ERC20 asset from the given address. This can only be called by a company
+     * signer and only if the company is active.
+     */
+    function revokeERC20(address asset, address holder, uint256 amount) public onlySigner onlyIfActive {
+       //make sure the asset is registered. It doesn't have to be active to be revoked
+        require(erc20Registry.isRegistered(asset), "Company: asset not registered");
+        IERC20Asset mintable = IERC20Asset(asset);
+
+        //make sure this company is the asset issuer
+        require(mintable.issuer() == address(this), "Company: not issuer of asset");
+        mintable.revoke(holder, amount);
+    }
+
+    /**
+     * @dev Revokes the given ERC721 asset from the given address. This can only be called by a company
+     * signer and only if the company is active.
+     */
+    function revokeERC721(address asset, address holder, uint256 tokenId) public onlySigner onlyIfActive {
+       //make sure the asset is registered. It doesn't have to be active to be revoked
+        require(erc721Registry.isRegistered(asset), "Company: asset not registered");
+        IERC721Asset mintable = IERC721Asset(asset);
+
+        //make sure this company is the asset issuer
+        require(mintable.issuer() == address(this), "Company: not issuer of asset");
+        mintable.revoke(holder, tokenId);
+    }
+
+    //verify if receiver is avatar and if ok to mint to the avatar
+    function _verifyAvatarMinting(address to) internal view {
+        //if minting to an avatar, 
+        if(avatarRegistry.isRegistered(to)) {
+            //make sure avatar allows it if they are not in this company's experience
+            IAvatar avatar = IAvatar(to);
+            if(!avatar.canReceiveTokensOutsideOfExperience()) {
+                address exp = avatar.location();
+                require(exp != address(0), "Company: avatar location is not an experience");
+                require(IExperience(exp).company() == address(this), "Company: avatar location is not in an experience owned by this company");
+            }
+        }
+    }
+
+    /**
+     * @dev Adds an experience to the parent world. This also creates a portal into the 
+     * experience and registers it in the PortalRegistry.
+     */
+    function addExperience(AddExperienceArgs memory args) public onlyAdmin returns (address experience, uint256 portalId) {
+        
+        //use the company's vector as a starting point
         VectorAddress memory sub = vectorAddress();
+
         CompanyStorage storage cs = LibCompany.load();
+
+        //increment the sub-plane counter for this company
         ++cs.nextPSubValue;
+
+        //assign it to the copied vector
         sub.p_sub = cs.nextPSubValue;
+
+        //create the experience through our parent world. This is mostly so simplify off-chain
+        //data indexing for all parties. Otherwise, world owners would have to monitor every
+        //company contract they regsitered for experience updates.
         NewExperienceArgs memory expArgs = NewExperienceArgs({
             vector: sub,
             name: args.name,
@@ -172,12 +258,19 @@ contract Company is BaseRemovableEntity, ICompany {
         emit CompanyAddedExperience(experience, portalId);
     }
 
-    function deactivateExperience(address experience, string calldata reason) public onlySigner {
+    /**
+     * @dev Deactivates an experience. This can only be called by company admin
+     */
+    function deactivateExperience(address experience, string calldata reason) public onlyAdmin {
+        //ask the world to deactivate
         IWorld(world()).deactivateExperience(experience, reason);
         emit CompanyDeactivatedExperience(experience, reason);
     }
 
-    function reactivateExperience(address experience) public onlySigner {
+    /**
+     * @dev Reactivates an experience. This can only be called by company admin
+     */
+    function reactivateExperience(address experience) public onlyAdmin {
         IWorld(world()).reactivateExperience(experience);
         emit CompanyReactivatedExperience(experience);
     }
@@ -187,7 +280,7 @@ contract Company is BaseRemovableEntity, ICompany {
      * experience and unregisters it from the PortalRegistry. This can only be called
      * by company admin
      */
-    function removeExperience(address experience, string calldata reason) public onlySigner {
+    function removeExperience(address experience, string calldata reason) public onlyAdmin {
         uint256 portalId = IWorld(world()).removeExperience(experience, reason);
         emit CompanyRemovedExperience(experience, reason, portalId);
     }

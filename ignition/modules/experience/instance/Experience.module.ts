@@ -25,6 +25,7 @@ export default buildModule("ExperienceModule", (m) => {
         const rr = m.contract("Experience", [args], {
             libraries: {
                 LibAccess: libs.LibAccess,
+                LibVectorAddress: libs.LibVectorAddress
             },
             after: [
                 cRegProxy,

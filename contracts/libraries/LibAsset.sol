@@ -5,10 +5,10 @@ pragma solidity ^0.8.24;
 import {LibStorageSlots} from '../libraries/LibStorageSlots.sol';
 import {IAssetCondition} from '../asset/IAssetCondition.sol';
 
+/**
+ * Storage structure for assets.
+ */
 struct AssetStorage {
-    bool active;
-
-    bool removed;
     
     //the contract address on the origin chain
     address originAddress;

@@ -6,22 +6,39 @@ import {BaseRegistry} from './BaseRegistry.sol';
 import {IRemovableRegistry} from '../../interfaces/registry/IRemovableRegistry.sol';
 import {LibEntityRemoval} from '../../libraries/LibEntityRemoval.sol';
 import {IRemovableEntity} from '../../interfaces/entity/IRemovableEntity.sol';
-import {RegistrationTerms} from '../../libraries/LibTypes.sol';
+import {RegistrationTerms} from '../../libraries/LibRegistration.sol';
 import {ChangeEntityTermsArgs} from '../../interfaces/registry/IRemovableRegistry.sol';
 import {LibRegistration} from '../../libraries/LibRegistration.sol';
 import {ITermsOwner} from '../../interfaces/registry/ITermsOwner.sol';
 
+/**
+ * @title BaseRemovableRegistry
+ * @dev Base contract for all registries that support entity removal.
+ */
 abstract contract BaseRemovableRegistry is BaseRegistry, IRemovableRegistry {
 
 
     modifier onlyEntityOwner(address entity) {
         IRemovableEntity e = IRemovableEntity(entity);
+        //get the authority for the entity and make sure that's who the caller is
         require(e.termsOwner() == msg.sender, "BaseRemovableRegistry: caller is not the entity's terms owner");
         ITermsOwner to = ITermsOwner(msg.sender);
+        
+        //make sure authority is also active
         require(to.isStillActive(), "BaseRemovableRegistry: caller is not active");
         _;
     }
 
+    modifier onlyActiveEntity() {
+        //make sure the removable entity has not been deactivated
+        IRemovableEntity e = IRemovableEntity(msg.sender);
+        require(e.isEntityActive(), "BaseRemovableRegistry: entity is not active");
+        _;
+    }
+
+    /**
+     * @dev Called by the entity's authority to deactivate the entity for the given reason.
+     */
     function deactivateEntity(IRemovableEntity entity, string calldata reason) external onlyEntityOwner(address(entity)) override {
         LibEntityRemoval.deactivateEntity(entity, reason);
     }
@@ -116,11 +133,26 @@ abstract contract BaseRemovableRegistry is BaseRegistry, IRemovableRegistry {
         LibEntityRemoval.renewEntity(addr);
     }
 
+    /**
+     * @dev Change the terms for an entity. Can only be called by the entity's terms owner.
+     */
     function changeEntityTerms(ChangeEntityTermsArgs calldata args) public onlyEntityOwner(args.entity) override{
         LibRegistration.changeEntityTerms(args);
     }
 
-    function _registerRemovableEntity(address entity, RegistrationTerms memory terms) internal {
-        LibRegistration.registerRemovableEntity(entity, terms);
+    /**
+     * @dev Upgrade the entity to the latest version of the registry. This overrides base registry version
+     * to ensure entity is actually still active.
+     */
+    function canUpOrDowngrade() internal view override {
+        IRemovableEntity e = IRemovableEntity(msg.sender);
+        require(e.isEntityActive(), "BaseRemovableRegistry: entity is not active");
+    }
+
+    /**
+     * @dev Register an entity in the registry.
+     */
+    function _registerRemovableEntity(address entity, address termsOwner, RegistrationTerms memory terms) internal {
+        LibRegistration.registerRemovableEntity(entity, termsOwner, terms);
     }
 }

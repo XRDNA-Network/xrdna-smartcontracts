@@ -4,8 +4,13 @@ pragma solidity ^0.8.24;
 
 import {LibStorageSlots} from './LibStorageSlots.sol';
 
+//experience-specific storage
 struct ExperienceStorage {
+
+    //the fee for the experience portal
     uint256 entryFee;
+
+    //how to connect to the details, if applicable
     bytes connectionDetails;
 }
 

@@ -2,6 +2,8 @@
 // Compatible with OpenZeppelin Contracts ^5.0.0
 pragma solidity ^0.8.24;
 
+
+//just uses cloning technique to copy proxies
 library LibClone {
     function clone(address impl) internal returns (address proxy){
         require(impl != address(0), "LibClone: implementation cannot be zero address");

@@ -6,10 +6,19 @@ import {LibStorageSlots} from './LibStorageSlots.sol';
 import {IExperience} from '../experience/instance/IExperience.sol';
 import {IPortalCondition} from '../portal/IPortalCondition.sol';
 
+//public portal information
 struct PortalInfo {
+
+    //destination experience for the portal
     IExperience destination;
+
+    //any condition that has been applied to the portal
     IPortalCondition condition;
+
+    //fee to make the jump
     uint256 fee;
+
+    //whether the portal is active
     bool active;
 }
 

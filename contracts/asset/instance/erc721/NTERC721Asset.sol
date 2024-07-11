@@ -4,7 +4,7 @@ pragma solidity ^0.8.24;
 
 import {ReentrancyGuard} from '@openzeppelin/contracts/utils/ReentrancyGuard.sol';
 import {BaseAsset, BaseAssetConstructorArgs, BaseInitArgs} from '../BaseAsset.sol';
-import {Version} from '../../../libraries/LibTypes.sol';
+import {Version} from '../../../libraries/LibVersion.sol';
 import {IAvatar} from '../../../avatar/instance/IAvatar.sol';
 import {LibRemovableEntity, RemovableEntityStorage} from '../../../libraries/LibRemovableEntity.sol';
 import {LibAsset, AssetStorage} from '../../../libraries/LibAsset.sol';
@@ -123,7 +123,7 @@ contract NTERC721Asset is BaseAsset, ReentrancyGuard, IERC721Asset {
      * @param to the address to mint to
      * data is not used in minting so it is ignored
      */
-    function canMint(address to, bytes calldata) public view override returns (bool) {
+    function canMint(address to) public view override returns (bool) {
         require(to != address(0), "NTERC721Asset: mint to the zero address");
         if(avatarRegistry.isRegistered(to)) {
             IAvatar avatar = IAvatar(to);
@@ -137,10 +137,9 @@ contract NTERC721Asset is BaseAsset, ReentrancyGuard, IERC721Asset {
     /**
      * @dev Mints NFT to the specified address. This can only be called by the issuer
      * @param to the address to mint tokens to
-     * @param data the data to use for minting, which should be an encoded uint256 amount
      */
-    function mint(address to, bytes calldata data) public nonReentrant onlyIssuer {
-        require(canMint(to, data), "NTERC721Asset: cannot mint to address");
+    function mint(address to) public nonReentrant onlyIssuer {
+        require(canMint(to), "NTERC721Asset: cannot mint to address");
         ERC721Storage storage s = LibERC721.load();
         
         ++s.tokenIdCounter;
@@ -151,14 +150,10 @@ contract NTERC721Asset is BaseAsset, ReentrancyGuard, IERC721Asset {
      /**
      * @dev Revokes NFT from the specified address. This can only be called by the issuer
      * @param holder the address to revoke NFT from
-     * @param data the data to use for revoking, which should be an encoded uint256 tokenId
-     * This call is used when asset is transferred on original chain and the company needs
-     * to keep the recipients assets in sync. An oracle will likely be used to ensure the
-     * ownership synchronized.
      */
-    function revoke(address holder, bytes calldata data) public nonReentrant onlyIssuer {
-        (uint256 tokenId) = abi.decode(data, (uint256));
+    function revoke(address holder, uint256 tokenId) public nonReentrant onlyIssuer {
         require(holder != address(0), "NTERC721Asset: token does not exist");
+        require(tokenId != 0, "NTERC721Asset: token id cannot be zero");
         address owner = LibERC721.requireOwned(tokenId);
         require(owner == holder, "NTERC721Asset: not the owner of token id provided");
         

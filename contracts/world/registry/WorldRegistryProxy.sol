@@ -20,6 +20,6 @@ contract WorldRegistryProxy is BaseProxy {
         admins: args.admins
     })) {
         require(args.vectorAuthority != address(0), "WorldRegistryProxy: vector authority is zero address");
-        LibAccess._grantRole(LibRoles.ROLE_VECTOR_AUTHORITY, args.vectorAuthority);
+        LibAccess.grantRole(LibRoles.ROLE_VECTOR_AUTHORITY, args.vectorAuthority);
     }
 }

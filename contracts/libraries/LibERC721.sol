@@ -6,6 +6,7 @@ import {LibStorageSlots} from './LibStorageSlots.sol';
 import {IERC721Errors} from "@openzeppelin/contracts/interfaces/draft-IERC6093.sol";
 import {IERC721} from "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 
+//NFT specific storage fields
 struct ERC721Storage {
     string baseURI;
     uint256 tokenIdCounter;
@@ -25,6 +26,9 @@ library LibERC721 {
         }
     }
     
+    /**
+     * @dev require that the given token id has an owner and if so, return the owner address. Revert otherwise.
+     */
     function requireOwned(uint256 tokenId) internal view returns (address) {
         ERC721Storage storage store = load();
         address owner = store.owners[tokenId];
@@ -51,14 +55,14 @@ library LibERC721 {
      * `balanceOf(a)` must be equal to the number of tokens such that `_ownerOf(tokenId)` is `a`.
      */
     function _ownerOf(uint256 tokenId) internal view returns (address) {
-        return LibERC721.load().owners[tokenId];
+        return load().owners[tokenId];
     }
     
     /**
      * @dev Returns the approved address for `tokenId`. Returns 0 if `tokenId` is not minted.
      */
     function _getApproved(uint256 tokenId) internal view returns (address) {
-        return LibERC721.load().tokenApprovals[tokenId];
+        return load().tokenApprovals[tokenId];
     }
 
     /**
@@ -87,7 +91,7 @@ library LibERC721 {
      */
     function _update(address to, uint256 tokenId, address auth) internal returns (address) {
         address from = _ownerOf(tokenId);
-        ERC721Storage storage s = LibERC721.load();
+        ERC721Storage storage s = load();
         // Perform (optional) operator check
         if (auth != address(0)) {
             _checkAuthorized(from, auth, tokenId);
@@ -127,7 +131,7 @@ library LibERC721 {
      * assumption.
      */
     function _checkAuthorized(address owner, address spender, uint256 tokenId) internal view {
-        if (!LibERC721._isAuthorized(owner, spender, tokenId)) {
+        if (!_isAuthorized(owner, spender, tokenId)) {
             if (owner == address(0)) {
                 revert IERC721Errors.ERC721NonexistentToken(tokenId);
             } else {
@@ -168,7 +172,7 @@ library LibERC721 {
                 emit IERC721.Approval(owner, to, tokenId);
             }
         }
-        ERC721Storage storage s = LibERC721.load();
+        ERC721Storage storage s = load();
         s.tokenApprovals[tokenId] = to;
     }
 }

@@ -6,7 +6,7 @@ import {IExperience} from '../experience/instance/IExperience.sol';
 import {VectorAddress} from '../libraries/LibVectorAddress.sol';
 import {IPortalCondition} from './IPortalCondition.sol';
 import {PortalInfo} from '../libraries/LibPortal.sol';
-import {Version} from '../libraries/LibTypes.sol';
+import {Version} from '../libraries/LibVersion.sol';
 
 struct AddPortalRequest {
     uint256 fee;

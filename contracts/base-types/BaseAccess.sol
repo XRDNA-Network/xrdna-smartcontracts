@@ -5,6 +5,10 @@ pragma solidity ^0.8.24;
 import {IAccessControl} from '../interfaces/IAccessControl.sol';
 import {LibAccess} from '../libraries/LibAccess.sol';
 
+/**
+ * @title BaseAccess
+ * @dev Base contract for all contracts that require access control.
+ */
 abstract contract BaseAccess is IAccessControl {
 
     modifier onlyAdmin {

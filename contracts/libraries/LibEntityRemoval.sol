@@ -6,10 +6,15 @@ pragma solidity ^0.8.24;
 import {IEntityRemoval} from "../interfaces/registry/IEntityRemoval.sol";
 import {IRemovableEntity} from '../interfaces/entity/IRemovableEntity.sol';
 import {ITermsOwner} from '../interfaces/registry/ITermsOwner.sol';
-import {RegistrationTerms} from '../libraries/LibTypes.sol';
+import {RegistrationTerms} from '../libraries/LibRegistration.sol';
 import {LibStringCase} from '../libraries/LibStringCase.sol';
 import {RegistrationStorage, TermedRegistration, LibRegistration} from './LibRegistration.sol';
 
+/**
+ * @title LibEntityRemoval
+ * @dev Library for managing the removal of entities from the registry. Entities can be deactivated, reactivated, and removed
+ * by the terms owner. Entities can also be enforced to deactivate or remove by anyone if they are outside the grace period.
+ */
 library LibEntityRemoval {
 
     using LibStringCase for string;
@@ -17,26 +22,34 @@ library LibEntityRemoval {
     uint256 constant DAY = 1 days;
 
     /** 
-      @dev Called by the entity's terms owner to deactivate the entity. This is usually due to non-payment of fees or 
+      @dev Intiiated by the entity's terms owner to deactivate the entity. This is usually due to non-payment of fees or 
       * mallicious activity. The entity can be reactivated by the terms owner.
      */
     function deactivateEntity(IRemovableEntity entity, string calldata reason) public {
         
         RegistrationStorage storage rs = LibRegistration.load();
         TermedRegistration storage reg = rs.removableRegistrations[address(entity)];
+
+        //establish the grace period starting time
         reg.deactivationTime = block.timestamp;
+
+        //tell the entity to deactivate itself for the given reason
         entity.deactivate(reason);
         emit IEntityRemoval.RegistryDeactivatedEntity(address(entity), reason);
     }
 
     /**
-     * @dev Called by the entity's terms owner to reactivate the entity.
+     * @dev Initiated by the entity's terms owner to reactivate the entity.
      */
     function reactivateEntity(IRemovableEntity entity) public {
         
         RegistrationStorage storage rs = LibRegistration.load();
         TermedRegistration storage reg = rs.removableRegistrations[address(entity)];
+
+        //clear the grace period clock
         reg.deactivationTime = 0;
+
+        //tell the entity to reactivate itself
         entity.reactivate();
         emit IEntityRemoval.RegistryReactivatedEntity(address(entity));
     }
@@ -50,9 +63,17 @@ library LibEntityRemoval {
         
         RegistrationStorage storage rs = LibRegistration.load();
         TermedRegistration storage reg = rs.removableRegistrations[address(entity)];
+
+        //make sure we've established the grace period countdown (i.e. deactivated first)
         require(reg.deactivationTime > 0, "EntityRemovalExt: entity must be deactivated before removal");
+        
+        //make sure we've exhausted the grace period
         require(block.timestamp > reg.deactivationTime + (reg.terms.gracePeriodDays * DAY), "EntityRemovalExt: deactivation grace period has not expired");
+        
+        //tell the entity they're being removed
         entity.remove(reason);
+
+        //delete the entries
         delete rs.removableRegistrations[address(entity)];
         string memory nm = entity.name().lower();
         delete rs.registrationsByName[nm];
@@ -74,11 +95,20 @@ library LibEntityRemoval {
     function canBeDeactivated(address addr) public view returns (bool) {
         RegistrationStorage storage rs = LibRegistration.load();
         TermedRegistration storage reg = rs.removableRegistrations[addr];
+
+        //If there are no actual registration terms or coverage period, then 
+        //entity cannot be forced into deactivation.
         if(reg.terms.coveragePeriodDays == 0) {
             return false;
         }
+
+        //but if the terms have expired
         uint256 expTime = reg.lastRenewed + (reg.terms.coveragePeriodDays * DAY);
+
+        //but are inside the grace period
         uint256 graceTime = expTime + (reg.terms.gracePeriodDays * DAY);
+
+        //then it should be allowable to deactivate the entity
         return block.timestamp >= expTime && block.timestamp < graceTime;
     }
 
@@ -89,12 +119,18 @@ library LibEntityRemoval {
     function canBeRemoved(address addr) public view returns (bool) {
         RegistrationStorage storage rs = LibRegistration.load();
         TermedRegistration storage reg = rs.removableRegistrations[addr];
+
+        //no registration coverage means cannot be removed
         if(reg.terms.coveragePeriodDays == 0) {
             return false;
         }
+
+        //if the entity was never deactivated, then cannot be removed
         if(reg.deactivationTime == 0){
             return false;
         }
+
+        //can only be removed if grace period has expired
         uint256 expTime = reg.deactivationTime + (reg.terms.coveragePeriodDays * DAY);
         return block.timestamp >= expTime;
     }
@@ -104,10 +140,17 @@ library LibEntityRemoval {
      * succeed if the entity is inside the grace period
      */
     function enforceDeactivation(IRemovableEntity addr) public {
+
+        //make sure we can force deactivation
         require(canBeDeactivated(address(addr)), "EntityRemovalExt: Entity cannot be deactivated");
+
+        //tell the entity to deactivate itself
         addr.deactivate("Deactivation enforced due to terms expiration");
+
         RegistrationStorage storage rs = LibRegistration.load();
         TermedRegistration storage tr = rs.removableRegistrations[address(addr)];
+
+        //start the grace period countdown
         tr.deactivationTime = block.timestamp;
         emit IEntityRemoval.RegistryEnforcedDeactivation(address(addr));
     }
@@ -118,9 +161,14 @@ library LibEntityRemoval {
      */
     function enforceRemoval(IRemovableEntity e) public {
         address addr = address(e);
+        //make sure we can force removal
         require(canBeRemoved(addr), "StatusChangesExt: entity cannot be removed");
         RegistrationStorage storage rs = LibRegistration.load();
+
+        //tell entity that it's being removed
         e.remove("Removal enforced due to terms expiration");
+
+        //delete entries
         delete rs.removableRegistrations[addr];
         string memory nm = e.name().lower();
         delete rs.registrationsByName[nm];
@@ -143,9 +191,12 @@ library LibEntityRemoval {
     function getExpiration(address addr) external view returns (uint256) {
         RegistrationStorage storage rs = LibRegistration.load();
         TermedRegistration storage tr = rs.removableRegistrations[addr];
+
+        //no coverage means no expiration possible
         if(tr.terms.coveragePeriodDays == 0){
             return 0;
         }
+        //otherwise expiration is the last renewal time plus the coverage period
         return tr.lastRenewed + tr.terms.coveragePeriodDays * DAY;
     }
 
@@ -155,9 +206,13 @@ library LibEntityRemoval {
     function isExpired(address addr) external view returns (bool) {
         RegistrationStorage storage rs = LibRegistration.load();
         TermedRegistration storage tr = rs.removableRegistrations[addr];
+
+        //no coverage means no expiration
         if(tr.terms.coveragePeriodDays == 0){
             return false;
         }
+
+        //is the current block time is greater than the expiration time
         return block.timestamp > tr.lastRenewed + tr.terms.coveragePeriodDays * DAY;
     }
 
@@ -167,11 +222,18 @@ library LibEntityRemoval {
     function isInGracePeriod(address addr) external view returns (bool) {
         RegistrationStorage storage rs = LibRegistration.load();
         TermedRegistration storage tr = rs.removableRegistrations[addr];
+        //no coverage, no grace period
         if(tr.terms.coveragePeriodDays == 0){
             return false;
         }
+
+        //expiration time of the registration
         uint256 exTime = tr.lastRenewed + tr.terms.coveragePeriodDays * DAY;
+
+        //the grace period
         uint graceExp = exTime + tr.terms.gracePeriodDays * DAY;
+
+        //we're in the grace period if the coverage has expired but we're still within the grace period
         bool expired = block.timestamp > exTime;
         return expired && block.timestamp < graceExp;
     }
@@ -182,14 +244,30 @@ library LibEntityRemoval {
     function renewEntity(address addr) external {
         RegistrationStorage storage rs = LibRegistration.load();
         TermedRegistration storage tr = rs.removableRegistrations[addr];
+
+        //no renewal allowed if no coverage period
         require(tr.terms.coveragePeriodDays > 0, "RenewalExt: Entity does not have renewal terms");
+
+        //make sure sufficient fee included in registration renewal.
         uint256 fee = tr.terms.fee;
         require(msg.value >= fee, "RenewalExt: Insufficient funds for new terms");
+
+        //reset the entity's registration time
         tr.lastRenewed = block.timestamp;
-        tr.deactivationTime = 0;
+
+        if(tr.deactivationTime > 0){
+            //if previously deactivated, reactivate the entity
+            IRemovableEntity(addr).reactivate();
+            //clear deactivation.
+            tr.deactivationTime = 0;
+        }
+        
         uint256 refund = msg.value - fee;
+
+        //send funds to the terms owner for the renewal.
         payable(tr.owner).transfer(fee);
         if(refund > 0) {
+            //return any excess funds to the sender
             payable(msg.sender).transfer(refund);
         }
         

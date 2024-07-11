@@ -7,7 +7,10 @@ import {LibStorageSlots} from './LibStorageSlots.sol';
 
  
 struct AccessStorage {
+    //the primary owner of the contract
     address owner;
+
+    //roles mapped to addresses that have the role
     mapping(bytes32 => mapping(address => bool)) roles;
 }
 
@@ -28,26 +31,44 @@ library LibAccess {
         }
     }
 
+    /**
+     * @dev Initializes the access control contract with an owner and a list of admins. Owners
+     * and admins are also given signing privileges.
+     */
     function initAccess(address _owner, address[] calldata admins) external {
         AccessStorage storage s = load();
         require(s.owner == address(0), "Already initialized");
         require(_owner != address(0), "Owner cannot be zero address");
         s.owner = _owner;
-        s.roles[LibRoles.ROLE_OWNER][_owner] = true;
-        s.roles[LibRoles.ROLE_ADMIN][_owner] = true;
-        s.roles[LibRoles.ROLE_SIGNER][_owner] = true;
+
+        //access primary map once time for each role type to save gas
+        mapping(address => bool) storage ownerRoles = s.roles[LibRoles.ROLE_OWNER];
+        mapping(address => bool) storage adminRoles = s.roles[LibRoles.ROLE_ADMIN];
+        mapping(address => bool) storage signerRoles = s.roles[LibRoles.ROLE_SIGNER];
+
+        //set owner privs
+        ownerRoles[_owner] = true;
+        adminRoles[_owner] = true;
+        signerRoles[_owner] = true;
         for(uint256 i=0;i<admins.length;++i) {
+            //set admin privs
             require(admins[i] != address(0), "Admins cannot be zero address");
-            s.roles[LibRoles.ROLE_ADMIN][admins[i]] = true;
-            s.roles[LibRoles.ROLE_SIGNER][admins[i]] = true;
+            adminRoles[admins[i]] = true;
+            signerRoles[admins[i]] = true;
         }
     }
 
+    /**
+     * @dev Returns the owner of the contract.
+     */
     function owner() external view returns (address) {
         AccessStorage storage s = load();
         return s.owner;
     }
 
+    /**
+     * @dev Sets the owner of the contract. Should only be called by the current owner.
+     */
     function setOwner(address o) external {
         require(o != address(0), "AccessControl: cannot set owner to zero address");
         AccessStorage storage s = load();
@@ -56,37 +77,57 @@ library LibAccess {
         s.roles[LibRoles.ROLE_ADMIN][o] = true;
     }
 
+    /**
+     * @dev Adds a list of admins to the contract. Should only be called by an admin
+     */
     function addSigners(address[] calldata signers) external {
         AccessStorage storage s = load();
+        mapping(address => bool) storage signerRoles = s.roles[LibRoles.ROLE_SIGNER];
         for(uint256 i=0;i<signers.length;++i) {
             require(signers[i] != address(0), "SharedLibAccess: cannot add zero address signers");
-            s.roles[LibRoles.ROLE_SIGNER][signers[i]] = true;
+            signerRoles[signers[i]] = true;
         }
     }
 
+    /**
+     * @dev Removes a list of admins from the contract. Should only be called by an admin
+     */
     function removeSigners(address[] calldata signers) external {
         AccessStorage storage s = load();
+        mapping(address => bool) storage signerRoles = s.roles[LibRoles.ROLE_SIGNER];
         for(uint256 i=0;i<signers.length;++i) {
             require(signers[i] != address(0), "SharedLibAccess: cannot remove zero address signers");
-            s.roles[LibRoles.ROLE_SIGNER][signers[i]] = false;
+            delete signerRoles[signers[i]];
         }
     }
 
+    /**
+     * @dev Returns true if the given address is a registered signer
+     */
     function isSigner(address a) external view returns (bool) {
         AccessStorage storage s = load();
         return s.roles[LibRoles.ROLE_SIGNER][a];
     }
 
+    /**
+     * @dev Returns true if the given address is a registered admin
+     */
     function isAdmin(address a) external view returns (bool) {
         AccessStorage storage s = load();
-        return s.roles[LibRoles.ROLE_ADMIN][a] || s.roles[LibRoles.ROLE_OWNER][a];
+        return s.roles[LibRoles.ROLE_ADMIN][a];
     }
 
+    /**
+     * @dev Returns true if the given address has the specified role
+     */
     function hasRole(bytes32 role, address account) external view returns (bool) {
         AccessStorage storage s = load();
         return s.roles[role][account];
     }
 
+    /**
+     * @dev Grants a role to an address. Should only be called by an admin.
+     */
     function grantRole(bytes32 role, address account) external {
         require(account != address(0), "AccessControl: cannot grant role to zero address");
         AccessStorage storage s = load();
@@ -94,12 +135,9 @@ library LibAccess {
         require(s.roles[role][account], "AccessControl: failed to grant role");
     }
 
-    function _grantRole(bytes32 role, address account) internal {
-        require(account != address(0), "AccessControl: cannot grant role to zero address");
-        AccessStorage storage s = load();
-        s.roles[role][account] = true;
-    }
-
+    /**
+     * @dev Revokes a role from an address. Should only be called by an admin.
+     */
     function revokeRole(bytes32 role, address account) external {
         require(account != address(0), "AccessControl: cannot revoke role from zero address");
         AccessStorage storage s = load();

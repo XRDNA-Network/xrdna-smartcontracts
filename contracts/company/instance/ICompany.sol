@@ -34,6 +34,23 @@ struct DelegatedAvatarJumpRequest {
     bytes avatarOwnerSignature;
 }
 
+struct CompanyInitArgs {
+    //name of the company
+    string name;
+
+    //owner of the company
+    address owner;
+
+    //world in which the company operates
+    address world;
+
+    //vector address assigned to the company
+    VectorAddress vector;
+
+    //initialization data
+    bytes initData;
+
+}
 
 /**
  * @title ICompany
@@ -69,7 +86,7 @@ interface ICompany is IAccessControl, IRemovableEntity {
     event CompanyReactivated();
 
 
-    function init(string calldata name, address owner, address world, VectorAddress calldata vector, bytes calldata initData) external;
+    function init(CompanyInitArgs memory args) external;
 
     /**
         * @dev Returns the address of the world in which the company operates.
@@ -86,9 +103,12 @@ interface ICompany is IAccessControl, IRemovableEntity {
      * @dev Returns whether this company can mint the given asset to the given address.
      * The data parameter is dependent on the type of asset.
      */
-    function canMintERC20(address asset, address to, bytes calldata data) external view returns (bool);
+    function canMintERC20(address asset, address to, uint256 amount) external view returns (bool);
     
-    function canMintERC721(address asset, address to, bytes calldata data) external view returns (bool);
+    /**
+     * @dev Returns whether this company can mint the given ERC721 to the given address.
+     */
+    function canMintERC721(address asset, address to) external view returns (bool);
 
     /**
      * @dev Adds an experience to the world. This also creates a portal into the 
@@ -98,9 +118,17 @@ interface ICompany is IAccessControl, IRemovableEntity {
      */
     function addExperience(AddExperienceArgs memory args) external returns (address, uint256);
 
-
+    /**
+     * @dev Deactivates an experience. This will prevent avatars from entering the experience
+     * but will not remove the experience from the world. This can only be called by the
+     * company admin.
+     */
     function deactivateExperience(address experience, string calldata reason) external;
 
+    /**
+     * @dev Reactivates an experience that was previously deactivated. This can only be called
+     * by the company admin.
+     */
     function reactivateExperience(address experience) external;
 
     /**
@@ -111,12 +139,16 @@ interface ICompany is IAccessControl, IRemovableEntity {
     function removeExperience(address experience, string calldata reason) external;
 
     /**
-     * @dev Mints the given amount of the given asset to the given address. The data
-     * parameter is dependent on the type of asset.
+     * @dev Mints the given asset to the given address with the given amount.
      */
-    function mintERC20(address asset, address to, bytes calldata data) external;
+    function mintERC20(address asset, address to, uint256 amount) external;
 
-    function mintERC721(address asset, address to, bytes calldata data) external;
+    /**
+     * @dev Mints an ERC721 to the given address. The token ID associated with the 
+     * minted asset is an incremental counter for the asset. This is intentionally
+     * decoupled from its originating asset on another chain to preserve privacy.
+     */
+    function mintERC721(address asset, address to) external;
 
     /**
      * @dev Revokes the given amount of the given asset from the given address. The data
@@ -124,9 +156,14 @@ interface ICompany is IAccessControl, IRemovableEntity {
      * owner transfers the original asset on another chain (i.e. all assets in the 
      * interoperability layer are synthetic assets that represent assets on other chains).
      */
-    function revokeERC20(address asset, address holder, bytes calldata data) external;
+    function revokeERC20(address asset, address holder, uint256 amount) external;
 
-    function revokeERC721(address asset, address holder, bytes calldata data) external;
+    /**
+     * @dev Revokes the given ERC721 token from the given address. This is likely called
+     * when an avatar owner transfers the original asset on another chain (i.e. all assets
+     * in the interoperability layer are synthetic assets that represent assets on other chains).
+     */
+    function revokeERC721(address asset, address holder, uint256 tokenId) external;
 
     /**
      * @dev Withdraws the given amount of funds from the company. Only the owner can withdraw funds.

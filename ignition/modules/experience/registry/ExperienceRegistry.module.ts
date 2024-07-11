@@ -25,7 +25,6 @@ export default buildModule("ExperienceRegistryModule", (m) => {
             libraries: {
                 LibFactory: libs.LibFactory,
                 LibRegistration: libs.LibRegistration,
-                LibVectorAddress: libs.LibVectorAddress,
                 LibEntityRemoval: libs.LibEntityRemoval,
                 LibAccess: libs.LibAccess
             },

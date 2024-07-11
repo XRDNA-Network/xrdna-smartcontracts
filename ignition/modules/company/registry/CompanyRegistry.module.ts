@@ -19,8 +19,7 @@ export default buildModule("CompanyRegistryModule", (m) => {
                 LibEntityRemoval: libs.LibEntityRemoval,
                 LibFactory: libs.LibFactory,
                 LibRegistration: libs.LibRegistration,
-                LibAccess: libs.LibAccess,
-                LibVectorAddress: libs.LibVectorAddress
+                LibAccess: libs.LibAccess
             },
             after: [
                 worldRegProxy,

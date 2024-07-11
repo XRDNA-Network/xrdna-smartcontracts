@@ -12,14 +12,13 @@ import {LibClone} from '../../libraries/LibClone.sol';
 import {VectorAddress, LibVectorAddress} from '../../libraries/LibVectorAddress.sol';
 import {ICompanyRegistry} from '../../company/registry/ICompanyRegistry.sol';
 import {ICompany} from '../../company/instance/ICompany.sol';
-import {RegistrationTerms} from '../../libraries/LibTypes.sol';
+import {RegistrationTerms} from '../../libraries/LibRegistration.sol';
 import {IWorldRegistry} from '../../world/registry/IWorldRegistry.sol';
 import {IWorld} from '../../world/instance/IWorld.sol';
 import {LibRegistration, RegistrationWithTermsAndVector} from '../../libraries/LibRegistration.sol';
 import {IAssetRegistry, CreateAssetArgs} from './IAssetRegistry.sol';
 import {LibAssetRegistry} from './LibAssetRegistry.sol';
 import {IAsset, AssetInitArgs} from '../instance/IAsset.sol';
-import {RegistrationTerms} from '../../libraries/LibTypes.sol';
 import {LibEntityRemoval} from '../../libraries/LibEntityRemoval.sol';
 import {IRemovableEntity} from '../../interfaces/entity/IRemovableEntity.sol';
 import {IEntityProxy} from '../../base-types/entity/IEntityProxy.sol';
@@ -78,7 +77,8 @@ abstract contract BaseAssetRegistry is BaseRemovableRegistry, IAssetRegistry {
             gracePeriodDays: 30
         });
 
-        _registerRemovableEntity(proxy, terms);
+        //asset names are not guaranteed to be globally unique so we ignore the name
+        LibRegistration.registerRemovableEntityIgnoreName(proxy, args.issuer, terms);
         emit RegistryAddedEntity(proxy, args.issuer);
 
         return proxy;

@@ -30,7 +30,8 @@ export default buildModule("WorldModule", (m) => {
         
         const rr = m.contract("World", [args], {
             libraries: {
-                LibAccess: libs.LibAccess
+                LibAccess: libs.LibAccess,
+                LibVectorAddress: libs.LibVectorAddress,
             },
             after: [
                 worldRegProxy,

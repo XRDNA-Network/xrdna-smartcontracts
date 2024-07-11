@@ -199,18 +199,15 @@ export class Company {
 
 
     async canMintERC20(asset: string, to: string, amount: bigint): Promise<boolean> {
-        const data = ethers.AbiCoder.defaultAbiCoder().encode(["uint256"], [amount]);
-        return await RPCRetryHandler.withRetry(() => this.con.canMintERC20(asset, to, data));
+        return await RPCRetryHandler.withRetry(() => this.con.canMintERC20(asset, to, amount));
     }
 
     async canMintERC721(asset: string, to: string): Promise<boolean> {
-        const data = ethers.AbiCoder.defaultAbiCoder().encode(["uint256"], [0]);
-        return await RPCRetryHandler.withRetry(() => this.con.canMintERC721(asset, to, data));
+        return await RPCRetryHandler.withRetry(() => this.con.canMintERC721(asset, to));
     }
 
     async mintERC20(asset: string, to: string, amount: bigint): Promise<IMintERC20Result> {
-        const data = ethers.AbiCoder.defaultAbiCoder().encode(["uint256"], [amount]);
-        const t = await RPCRetryHandler.withRetry(() => this.con.mintERC20(asset, to, data));
+        const t = await RPCRetryHandler.withRetry(() => this.con.mintERC20(asset, to, amount));
         const r = await t.wait();
         if(!r.status) {
             throw new Error("Transaction failed with status 0");
@@ -229,8 +226,7 @@ export class Company {
     }
 
     async mintERC721(asset: AddressLike, to: AddressLike): Promise<IMintERC721Result> {
-        const data = ethers.AbiCoder.defaultAbiCoder().encode(["uint256"], [0]);
-        const t = await RPCRetryHandler.withRetry(() => this.con.mintERC721(asset, to, data));
+        const t = await RPCRetryHandler.withRetry(() => this.con.mintERC721(asset, to));
         const r = await t.wait();
         if(!r.status) {
             throw new Error("Transaction failed with status 0");
@@ -250,13 +246,11 @@ export class Company {
     }
 
     async revokeERC20(asset: string, holder: string, amount: bigint): Promise<TransactionResponse> {
-        const data = ethers.AbiCoder.defaultAbiCoder().encode(["uint256"], [amount]);
-        return await RPCRetryHandler.withRetry(() => this.con.revokeERC20(asset, holder, data));
+        return await RPCRetryHandler.withRetry(() => this.con.revokeERC20(asset, holder, amount));
     }
 
     async revokeERC721(asset: string, holder: string, tokenId: bigint): Promise<TransactionResponse> {
-        const data = ethers.AbiCoder.defaultAbiCoder().encode(["uint256"], [tokenId]);
-        return await RPCRetryHandler.withRetry(() => this.con.revokeERC721(asset, holder, data));
+        return await RPCRetryHandler.withRetry(() => this.con.revokeERC721(asset, holder, tokenId));
     }
 
     async addAssetCondition(asset: AddressLike, condition: AddressLike): Promise<TransactionResponse> {

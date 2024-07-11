@@ -3,12 +3,12 @@
 pragma solidity ^0.8.24;
 
 import {BaseRemovableEntity} from '../../base-types/entity/BaseRemovableEntity.sol';
-import {IWorld, NewCompanyArgs, NewAvatarArgs, NewExperienceArgs} from './IWorld.sol';
+import {IWorld, WorldInitArgs, NewCompanyArgs, NewAvatarArgs, NewExperienceArgs} from './IWorld.sol';
 import {LibEntity} from '../../libraries/LibEntity.sol';
 import {LibRemovableEntity, RemovableEntityStorage} from '../../libraries/LibRemovableEntity.sol';
 import {LibAccess} from '../../libraries/LibAccess.sol';
-import {Version} from '../../libraries/LibTypes.sol';
-import {VectorAddress} from '../../libraries/LibVectorAddress.sol';
+import {Version} from '../../libraries/LibVersion.sol';
+import {VectorAddress, LibVectorAddress} from '../../libraries/LibVectorAddress.sol';
 import {IRegistrarRegistry} from '../../registrar/registry/IRegistrarRegistry.sol';
 import {IRegistrar} from '../../registrar/instance/IRegistrar.sol';
 import {ICompanyRegistry, CreateCompanyArgs} from '../../company/registry/ICompanyRegistry.sol';
@@ -30,6 +30,8 @@ struct WorldConstructorArgs {
 
 
 contract World is BaseRemovableEntity, IWorld {
+
+    using LibVectorAddress for VectorAddress;
 
     address public immutable worldRegistry;
     IAvatarRegistry public immutable avatarRegistry;
@@ -53,7 +55,7 @@ contract World is BaseRemovableEntity, IWorld {
         experienceRegistry = IExperienceRegistry(args.experienceRegistry);
     }
 
-    function version() external pure override returns (Version memory) {
+    function version() public pure override returns (Version memory) {
         return Version(1, 0);
     }
 
@@ -61,30 +63,49 @@ contract World is BaseRemovableEntity, IWorld {
         return worldRegistry;
     }
 
-    function init(string calldata name, address owner, VectorAddress calldata vector, bytes calldata) external onlyRegistry {
-        LibEntity.load().name = name;
+    function init(WorldInitArgs memory args) public onlyRegistry {
+        require(bytes(args.name).length > 0, 'World: Name required');
+        require(args.owner != address(0), 'World: Owner required');
+        require(args.termsOwner != address(0), 'World: Terms owner required');
+
+        //false, false means p and p_sub must be 0
+        args.vector.validate(false, false);
+
+        LibEntity.load().name = args.name;
         RemovableEntityStorage storage rs = LibRemovableEntity.load();
         rs.active = true;
-        rs.termsOwner = msg.sender;
-        rs.vector = vector;
+        rs.termsOwner = args.termsOwner;
+        rs.vector = args.vector;
         address[] memory admins = new address[](0);
-        LibAccess.initAccess(owner, admins);
+        LibAccess.initAccess(args.owner, admins);
     }
 
-    function baseVector() external view returns (VectorAddress memory) {
+    /**
+     * @dev Returns the base vector for the world
+     */
+    function baseVector() public view returns (VectorAddress memory) {
         return LibRemovableEntity.load().vector;
     }
    
-
-    function isStillActive() external view returns (bool) {
+    /**
+     * @dev Returns whether the world is still active
+     */
+    function isStillActive() public view returns (bool) {
         return LibRemovableEntity.load().active;
     }
 
-    function isTermsOwnerSigner(address a) external view returns (bool) {
+    /**
+     * @dev Returns whether the given address is a signer for the world. The world is terms
+     * owner for companies.
+     */
+    function isTermsOwnerSigner(address a) public view returns (bool) {
         return isSigner(a);
     }
 
-    function withdraw(uint256 amount) external onlyOwner {
+    /**
+     * @dev Allows withdraw of registration renewal fees
+     */
+    function withdraw(uint256 amount) public onlyOwner {
         require(amount <= address(this).balance, "Registrar: insufficient balance");
         payable(LibAccess.owner()).transfer(amount);
     }
@@ -92,13 +113,19 @@ contract World is BaseRemovableEntity, IWorld {
     /**
      * @dev Registers a new company contract. Must be called by a world signer
      */
-    function registerCompany(NewCompanyArgs memory args) external payable onlySigner returns (address company) {
+    function registerCompany(NewCompanyArgs memory args) public payable onlySigner returns (address company) {
        
-        VectorAddress memory base = IWorld(address(this)).baseVector();
+        //get the base vector for this world
+        VectorAddress memory base = baseVector();
         WorldStorage storage ws = LibWorld.load();
+
+        //establish the next P value for the new company
         ++ws.nextPValue;
+
+        //ane apply it to the copied vector address
         base.p = ws.nextPValue;
 
+        //create the company in the registry
         company = companyRegistry.createCompany(CreateCompanyArgs({
             sendTokensToOwner: args.sendTokensToOwner,
             owner: args.owner,
@@ -110,6 +137,7 @@ contract World is BaseRemovableEntity, IWorld {
             vector: base
         }));
 
+        //transfer any tokens if applicable
         if(msg.value > 0) {
             if(args.sendTokensToOwner) {
                 payable(args.owner).transfer(msg.value);
@@ -124,7 +152,7 @@ contract World is BaseRemovableEntity, IWorld {
     /**
      * @dev Deactivates a company contract. Must be called by a world signer
      */
-    function deactivateCompany(address company, string calldata reason) external onlySigner {
+    function deactivateCompany(address company, string calldata reason) public onlySigner {
         companyRegistry.deactivateEntity(IRemovableEntity(company), reason);
         emit WorldDeactivatedCompany(company, reason);
     }
@@ -132,7 +160,7 @@ contract World is BaseRemovableEntity, IWorld {
     /**
      * @dev Reactivates a company contract. Must be called by a world signer
      */
-    function reactivateCompany(address company) external onlySigner {
+    function reactivateCompany(address company) public onlySigner {
         companyRegistry.reactivateEntity(IRemovableEntity(company));
         emit WorldReactivatedCompany(company);
     }
@@ -140,7 +168,7 @@ contract World is BaseRemovableEntity, IWorld {
     /**
      * @dev Removes a company contract. Must be called by a world signer
      */
-    function removeCompany(address company, string calldata reason) external onlySigner {
+    function removeCompany(address company, string calldata reason) public onlySigner {
         companyRegistry.removeEntity(IRemovableEntity(company), reason);
         emit WorldRemovedCompany(company, reason);
     }
@@ -148,7 +176,8 @@ contract World is BaseRemovableEntity, IWorld {
     /**
      * @dev Registers a new avatar contract. Must be called by a world signer
      */
-    function registerAvatar(NewAvatarArgs memory args) external payable onlySigner returns (address avatar) {
+    function registerAvatar(NewAvatarArgs memory args) public payable onlySigner returns (address avatar) {
+        //have avatar registry create avatar
         avatar = avatarRegistry.createAvatar(CreateAvatarArgs({
             sendTokensToOwner: args.sendTokensToOwner,
             owner: args.owner,
@@ -157,6 +186,7 @@ contract World is BaseRemovableEntity, IWorld {
             initData: args.initData
         }));
 
+        //transfer tokens if applicable
         if(msg.value > 0) {
             if(args.sendTokensToOwner) {
                 payable(args.owner).transfer(msg.value);
@@ -171,7 +201,7 @@ contract World is BaseRemovableEntity, IWorld {
     /**
      * @dev Add an experience to the world. This is called by the company offering the experience
      */
-    function addExperience(NewExperienceArgs memory args) external payable onlyActiveCompany returns (address experience, uint256 portalId) {
+    function addExperience(NewExperienceArgs memory args) public payable onlyActiveCompany returns (address experience, uint256 portalId) {
         CreateExperienceArgs memory expArgs = CreateExperienceArgs({
             company: msg.sender,
             vector: args.vector,
@@ -185,7 +215,7 @@ contract World is BaseRemovableEntity, IWorld {
     /**
      * @dev Deactivates a company contract. Must be called by owning company
      */
-    function deactivateExperience(address experience, string calldata reason) external onlyActiveCompany {
+    function deactivateExperience(address experience, string calldata reason) public onlyActiveCompany {
         experienceRegistry.deactivateExperience(msg.sender, experience, reason);
         emit IWorld.WorldDeactivatedExperience(experience, msg.sender, reason);
     }
@@ -193,7 +223,7 @@ contract World is BaseRemovableEntity, IWorld {
     /**
      * @dev Reactivates an experience contract. Must be called by owning company
      */
-    function reactivateExperience(address experience) external onlyActiveCompany {
+    function reactivateExperience(address experience) public onlyActiveCompany {
         experienceRegistry.reactivateExperience(msg.sender, experience);
         emit IWorld.WorldReactivatedExperience(experience, msg.sender);
     }
@@ -201,7 +231,7 @@ contract World is BaseRemovableEntity, IWorld {
     /**
      * @dev Removes a experience contract. Must be called by owning company
      */
-    function removeExperience(address experience, string calldata reason) external onlyActiveCompany returns (uint256 portalId) {
+    function removeExperience(address experience, string calldata reason) public onlyActiveCompany returns (uint256 portalId) {
         portalId = experienceRegistry.removeExperience(msg.sender, experience, reason);
         emit IWorld.WorldRemovedExperience(experience, msg.sender, reason, portalId);
     }

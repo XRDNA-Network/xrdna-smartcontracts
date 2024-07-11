@@ -3,8 +3,18 @@
 pragma solidity ^0.8.24;
 
 import {IRemovableEntity} from '../entity/IRemovableEntity.sol';
-import {RegistrationTerms} from '../../libraries/LibTypes.sol';
+import {RegistrationTerms} from '../../libraries/LibRegistration.sol';
 
+/**
+ * @title IEntityRemoval
+ * @dev The IEntityRemoval contract is the interface for removing entities from a registry. There are 
+ * two ways entities can be deactivated and/or removed. The terms owner can deactivate or reactivated
+ * entities at will. The terms owner can also remove an entity but only after a grace period following
+ * deactivation. 
+ * 
+ * The second way is if the registration terms expire. In this case anyone can enforce deactivation
+ * and ultimate removal.
+ */
 interface IEntityRemoval {
 
     event RegistryDeactivatedEntity(address indexed entity, string reason);

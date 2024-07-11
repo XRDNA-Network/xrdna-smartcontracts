@@ -183,6 +183,11 @@ describe("World", () => {
             provider: ethers.provider,
             logParser: stack.logParser!
         });
+
+        //make sure vector for world didn't change after creating company
+        const vector = await world!.getVectorAddress();
+        expect(vector.p).is.equal(0);
+        expect(vector.p_sub).is.equal(0);
     });
 
     

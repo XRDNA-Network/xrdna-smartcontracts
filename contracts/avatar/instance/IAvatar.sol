@@ -36,6 +36,20 @@ struct DelegatedJumpRequest {
     bytes avatarOwnerSignature;
 }
 
+struct AvatarInitArgs {
+    //the name of the avatar
+    string name;
+
+    //the owner of the avatar
+    address owner;
+
+    //the starting experience for the avatar
+    address startingExperience;
+
+    //initialization data
+    bytes initData;
+}
+
 /**
  * @title IAvatar
  * @dev The Avatar interface.
@@ -53,7 +67,7 @@ interface IAvatar is IERC721Receiver, IAccessControl, IRegisteredEntity {
      * @dev Initialize the Avatar with the given parameters. This function should only be called once
      * after cloning a new avatar.
      */
-    function init(string calldata name, address owner, address startingExperience, bytes calldata initData) external;
+    function init(AvatarInitArgs memory args) external;
     
     /**
      * @dev get the Avatar's unique username

@@ -4,7 +4,7 @@ pragma solidity ^0.8.24;
 
 import {BaseRegistry} from '../../base-types/registry/BaseRegistry.sol';
 import {BaseAssetRegistry} from './BaseAssetRegistry.sol';
-import {Version} from '../../libraries/LibTypes.sol';
+import {Version} from '../../libraries/LibVersion.sol';
 
 /**
  * @title ERC20Registry

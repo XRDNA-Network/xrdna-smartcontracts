@@ -4,6 +4,7 @@ pragma solidity ^0.8.24;
 
 import {LibStorageSlots} from './LibStorageSlots.sol';
 
+//erc20-specific storage fields
 struct ERC20Storage {
     uint8 decimals;
     uint256 maxSupply;

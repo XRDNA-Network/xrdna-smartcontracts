@@ -3,20 +3,30 @@
 pragma solidity ^0.8.24;
 
 import {LibStorageSlots} from '../../libraries/LibStorageSlots.sol';
-import {Version} from '../../libraries/LibTypes.sol';
+import {Version} from '../../libraries/LibVersion.sol';
 import {IEntityProxy} from './IEntityProxy.sol';
 
+//used to check entity version
 interface IProvidesVersion {
     function version() external view returns (Version memory);
 }
 
+/**
+ * Storage for entity proxy
+ */
 struct ProxyStorage {
     address implementation;
     Version version;
 }
 
+/**
+    * @title EntityProxy
+    * @dev Base contract for all entity proxy types. Proxies are cloned as part of the registration
+    * process. They are used to forward calls to the entity implementation contract.
+ */
 abstract contract EntityProxy is IEntityProxy {
 
+    // The registry that owns this entity
     address public immutable parentRegistry;
     
     modifier onlyRegistry {
@@ -38,6 +48,10 @@ abstract contract EntityProxy is IEntityProxy {
         }
     }
 
+    /**
+     * @dev Set the implementation contract for the proxy. This is only callable by the registry
+     * that clones the proxy. This is called just after cloning or during an entity upgrade.
+     */
     function setImplementation(address _implementation) external onlyRegistry {
         Version memory version = IProvidesVersion(_implementation).version();
         ProxyStorage storage ps = load();
@@ -45,16 +59,25 @@ abstract contract EntityProxy is IEntityProxy {
         ps.version = version;
     }
 
+    /**
+     * @dev Get the implementation contract for the proxy
+     */
     function getImplementation() external view returns (address) {
         ProxyStorage storage ps = load();
         return ps.implementation;
     }
 
+    /**
+     * @dev Get the version of the implementation contract for the proxy
+     */
     function getVersion() external view returns (Version memory) {
         ProxyStorage storage ps = load();
         return ps.version;
     }
 
+    /**
+     * @dev Fallback function that forwards all calls to the implementation contract
+     */
     fallback() external payable {
         ProxyStorage storage ps = load();
         address _impl = ps.implementation;

@@ -3,13 +3,13 @@
 pragma solidity ^0.8.24;
 
 import {BaseRemovableEntity} from '../../base-types/entity/BaseRemovableEntity.sol';
-import {VectorAddress} from '../../libraries/LibVectorAddress.sol';
+import {VectorAddress, LibVectorAddress} from '../../libraries/LibVectorAddress.sol';
 import {LibRemovableEntity, RemovableEntityStorage} from '../../libraries/LibRemovableEntity.sol';
 import {IExperienceRegistry} from '../../experience/registry/IExperienceRegistry.sol';
 import {LibEntity} from '../../libraries/LibEntity.sol';
 import {LibAccess} from '../../libraries/LibAccess.sol';
-import {Version} from '../../libraries/LibTypes.sol';
-import {IExperience, ExperienceInfo, JumpEntryRequest} from './IExperience.sol';
+import {Version} from '../../libraries/LibVersion.sol';
+import {IExperience, ExperienceInitArgs, ExperienceInfo, JumpEntryRequest} from './IExperience.sol';
 import {ICompany} from '../../company/instance/ICompany.sol';
 import {ExperienceStorage, LibExperience} from './LibExperience.sol';
 import {IPortalRegistry, AddPortalRequest} from '../../portal/IPortalRegistry.sol';
@@ -22,12 +22,14 @@ struct ExperienceConstructorArgs {
     address portalRegistry;
 }
 
-struct ExperienceInitArgs {
+struct ExperienceInitData {
     uint256 entryFee;
     bytes connectionDetails;
 }
 
 contract Experience is BaseRemovableEntity, IExperience {
+
+    using LibVectorAddress for VectorAddress;
     
     address public immutable companyRegistry;
     IExperienceRegistry public immutable experienceRegistry;
@@ -58,33 +60,57 @@ contract Experience is BaseRemovableEntity, IExperience {
     }
 
     
-    function init(string calldata name, address _world, VectorAddress calldata vector, bytes calldata initData) public onlyRegistry {
-        LibEntity.load().name = name;   
+    /**
+     * @dev initialize storage for a new experience. This can only be called by the experience registry
+     */
+    function init(ExperienceInitArgs memory args) public onlyRegistry {
+        require(bytes(args.name).length > 0, 'Experience: Invalid name');
+        require(args.company != address(0), 'Experience: Invalid company');
+        require(bytes(args.name).length > 0, 'Experience: Invalid name');
         RemovableEntityStorage storage rs = LibRemovableEntity.load();
+        require(rs.termsOwner == address(0), 'Experience: Already initialized');
+
+        //true,true means both p and p_sub must be > 0
+        args.vector.validate(true, true);
+
+        LibEntity.load().name = args.name;   
+       
         rs.active = true;
-        rs.termsOwner = _world;
-        rs.vector = vector;
-        ExperienceInitArgs memory args = abi.decode(initData, (ExperienceInitArgs));
+        rs.termsOwner = args.company;
+        rs.vector = args.vector;
+        ExperienceInitData memory data = abi.decode(args.initData, (ExperienceInitData));
         ExperienceStorage storage es = LibExperience.load();
-        es.entryFee = args.entryFee;
-        es.connectionDetails = args.connectionDetails;
+        es.entryFee = data.entryFee;
+        es.connectionDetails = data.connectionDetails;
     }
 
+    /**
+     * @dev Initializes the portal for the experience. This can only be called by the experience registry
+     * and must be called AFTER initialization. This is because the portal registry will require that 
+     * the caller (this experience) is registered, and registration requires certain information about 
+     * the experience that is set during initialization.
+     */
     function initPortal() public override returns (uint256 portal) {
         
-        //create portal for experience
         ExperienceStorage storage es = LibExperience.load();
-        
+        //register new portal with the registry
         portal = portalRegistry.addPortal(AddPortalRequest({
             fee: es.entryFee
         }));
         es.portalId = portal;
     }
 
+    /**
+     * @dev Returns the portal id attached to this experience
+     */
     function portalId() public view override returns (uint256) {
         return LibExperience.load().portalId;
     }
 
+    /**
+     * @dev Deactivates the experience. This can only be called by the experience registry. This also
+     * deactivates the portal associated with the experience.
+     */
     function deactivate(string calldata reason) public override(IRemovable, BaseRemovableEntity) onlyRegistry {
         //deactivate portal THEN experience
         portalRegistry.deactivatePortal(LibExperience.load().portalId, reason);
@@ -92,6 +118,10 @@ contract Experience is BaseRemovableEntity, IExperience {
         
     }
 
+    /**
+     * @dev Reactivates the experience. This can only be called by the experience registry. This also
+     * reactivates the portal associated with the experience.
+     */
     function reactivate() public override(IRemovable, BaseRemovableEntity) onlyRegistry {
         //reactivate experience THEN portal
         super.reactivate();
@@ -99,12 +129,19 @@ contract Experience is BaseRemovableEntity, IExperience {
         
     }
 
+    /**
+     * @dev Removes the experience. This can only be called by the experience registry. This also
+     * removes the portal associated with the experience.
+     */
     function remove(string calldata reason) public override(IRemovable, BaseRemovableEntity) onlyRegistry {
         //remove portal THEN experience
         portalRegistry.removePortal(LibExperience.load().portalId, reason);
         super.remove(reason);
     }
 
+    /**
+     * @dev Returns information about this experience
+     */
     function getExperienceInfo(address experience) external view override returns (ExperienceInfo memory) {
         return ExperienceInfo({
             company: company(),
@@ -113,6 +150,9 @@ contract Experience is BaseRemovableEntity, IExperience {
         });
     }
 
+    /**
+     * @dev Returns the owning registry for this entity
+     */
     function owningRegistry() internal view override returns (address) {
         return address(experienceRegistry);
     }

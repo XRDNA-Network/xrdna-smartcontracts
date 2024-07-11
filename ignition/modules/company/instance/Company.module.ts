@@ -32,7 +32,8 @@ export default buildModule("CompanyModule", (m) => {
         
         const rr = m.contract("Company", [args], {
             libraries: {
-                LibAccess: libs.LibAccess
+                LibAccess: libs.LibAccess,
+                LibVectorAddress: libs.LibVectorAddress
             },
             after: [
                 regRegProxy,

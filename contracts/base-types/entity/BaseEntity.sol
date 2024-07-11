@@ -4,7 +4,7 @@ pragma solidity ^0.8.24;
 
 import {BaseAccess} from '../BaseAccess.sol';
 import {IRegisteredEntity} from '../../interfaces/entity/IRegisteredEntity.sol';
-import {Version} from '../../libraries/LibTypes.sol';
+import {Version} from '../../libraries/LibVersion.sol';
 import {LibEntity} from '../../libraries/LibEntity.sol';
 
 /**

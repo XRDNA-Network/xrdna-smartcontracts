@@ -4,6 +4,7 @@ pragma solidity ^0.8.24;
 
 import {LibStorageSlots} from './LibStorageSlots.sol';
 
+//all entities have at least a name
 struct EntityStorage {
     string name;
 }

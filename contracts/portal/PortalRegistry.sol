@@ -5,14 +5,14 @@ pragma solidity ^0.8.24;
 import {BaseAccess} from '../base-types/BaseAccess.sol';
 import {IPortalRegistry, AddPortalRequest} from './IPortalRegistry.sol';
 import {PortalRegistryStorage, PortalInfo, LibPortal} from '../libraries/LibPortal.sol';
-import {IPortalCondition} from './IPortalCondition.sol';
+import {IPortalCondition, JumpEvaluationArgs} from './IPortalCondition.sol';
 import {IExperience, JumpEntryRequest} from '../experience/instance/IExperience.sol';
 import {IExperienceRegistry} from '../experience/registry/IExperienceRegistry.sol';
 import {IAvatarRegistry} from '../avatar/registry/IAvatarRegistry.sol';
 import {IAvatar} from '../avatar/instance/IAvatar.sol';
 import {VectorAddress, LibVectorAddress} from '../libraries/LibVectorAddress.sol';
 import {LibAccess} from '../libraries/LibAccess.sol';
-import {Version} from '../libraries/LibTypes.sol';
+import {Version} from '../libraries/LibVersion.sol';
 
 
 struct PortalRegistryConstructorArgs {
@@ -205,10 +205,6 @@ contract PortalRegistry is BaseAccess, IPortalRegistry {
          */
         PortalJumpMetadata memory meta = _getExperienceDetails(portalId);
 
-        if(address(meta.destPortal.condition) != address(0)) {
-            require(meta.destPortal.condition.canJump(address(meta.destinationExperience), meta.sourceWorld, meta.sourceCompany, address(meta.sourceExperience), msg.sender), "PortalRegistry: portal jump conditions not met");
-        }
-
         if(meta.destPortal.fee > 0) {
             //make sure sufficient funds were forwarded in txn
             require(msg.value >= meta.destPortal.fee, "PortalRegistry: Insufficient fee attached to jump request");
@@ -233,7 +229,7 @@ contract PortalRegistry is BaseAccess, IPortalRegistry {
          
     }
 
-    function _getExperienceDetails(uint256 destPortalId) internal view returns (PortalJumpMetadata memory meta) {
+    function _getExperienceDetails(uint256 destPortalId) internal returns (PortalJumpMetadata memory meta) {
         //get avatar's current location
         IAvatar avatar = IAvatar(msg.sender);
         address exp = avatar.location();
@@ -256,6 +252,19 @@ contract PortalRegistry is BaseAccess, IPortalRegistry {
         PortalInfo storage destPortal = s.portals[destPortalId];
         require(destPortal.active, "PortalRegistry: destination portal is not active");
         require(address(destPortal.destination) != address(0), "PortalRegistry: invalid destination portal id");
+        
+        //make sure any jump conditions are met
+        if(address(destPortal.condition) != address(0)) {
+            JumpEvaluationArgs memory args = JumpEvaluationArgs({
+                destinationExperience: address(destPortal.destination),
+                sourceWorld: sourcePortal.destination.world(),
+                sourceCompany: sourcePortal.destination.company(),
+                sourceExperience: address(sourcePortal.destination),
+                avatar: msg.sender
+            });
+            require(destPortal.condition.canJump(args), "PortalRegistry: portal jump conditions not met");
+        }
+
         return PortalJumpMetadata({
             sourcePortal: sourcePortal,
             destPortal: destPortal,

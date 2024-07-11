@@ -11,11 +11,15 @@ import {FactoryStorage, LibFactory} from '../../libraries/LibFactory.sol';
 import {LibClone} from '../../libraries/LibClone.sol';
 import {IRegistrar} from '../instance/IRegistrar.sol';
 import {LibRegistration, TermsSignatureVerification} from '../../libraries/LibRegistration.sol';
-import {Version} from '../../libraries/LibTypes.sol';
+import {Version} from '../../libraries/LibVersion.sol';
 import {IEntityProxy} from '../../base-types/entity/IEntityProxy.sol';
 
 
-contract RegistrarRegistry is BaseRemovableRegistry {
+/**
+ * @title RegistrarRegistry
+    * @dev RegistrarRegistry is a registry that creates and manages registrars. It is the terms authority for all registrars.
+ */
+contract RegistrarRegistry is BaseRemovableRegistry, IRegistrarRegistry {
 
     modifier onlySigner {
         require(LibAccess.isSigner(msg.sender), "RegistrarRegistry: caller is not a signer");
@@ -26,18 +30,30 @@ contract RegistrarRegistry is BaseRemovableRegistry {
         return Version(1, 0);
     }
 
+    /**
+     * @inheritdoc IRegistrarRegistry
+     */
     function createNonRemovableRegistrar(CreateNonRemovableRegistrarArgs calldata args) external payable onlySigner returns (address) {
         FactoryStorage storage fs = LibFactory.load();
         
+        //make sure proxy and logic have been set
         require(fs.proxyImplementation != address(0), "RegistrarRegistration: proxy implementation not set");
         require(fs.entityImplementation != address(0), "RegistrarRegistry: entity implementation not set");
+        
+        //clone the registrar proxy
         address proxy = LibClone.clone(fs.proxyImplementation);
         require(proxy != address(0), "RegistrarRegistration: entity cloning failed");
 
+        //and set the impl logic on the new proxy address
         IEntityProxy(proxy).setImplementation(fs.entityImplementation);
 
+        //initialize registrar state
         IRegistrar(proxy).init(args.name, args.owner, args.initData);
+
+        //register non-removable
         _registerNonRemovableEntity(proxy);
+
+        //transfer tokens if applicable
         if(msg.value > 0) {
             if(args.sendTokensToOwner) {
                 payable(args.owner).transfer(msg.value);
@@ -51,13 +67,24 @@ contract RegistrarRegistry is BaseRemovableRegistry {
         return proxy;
     }
 
-    function createRemovableRegistrar(CreateRegistrarArgs calldata args) external payable onlySigner returns (address) {
+    /**
+     * @inheritdoc IRegistrarRegistry
+     */
+    function createRemovableRegistrar(CreateRegistrarArgs calldata args) external payable onlySigner returns (address proxy) {
+        
+        //make sure signature for terms is still valid
         require(args.expiration > block.timestamp, "RegistrarRegistry: signature expired");
+
+        //and that there is a grace period, if even terms have 0 coverage period. This gives Registrar
+        //opportunity to correct any issues with the terms before being removed.
         require(args.terms.gracePeriodDays > 0, "RegistrarRegistry: grace period must be greater than 0");
+        
         FactoryStorage storage fs = LibFactory.load();
+        require(fs.proxyImplementation != address(0), "RegistrarRegistration: proxy implementation not set");
         require(fs.entityImplementation != address(0), "RegistrarRegistry: entity implementation not set");
         
         
+        //verify signature of terms by owner
         TermsSignatureVerification memory verification = TermsSignatureVerification({
             owner: args.owner,
             termsOwner: address(this),
@@ -67,21 +94,35 @@ contract RegistrarRegistry is BaseRemovableRegistry {
         });
         LibRegistration.verifyNewEntityTermsSignature(verification);
 
-        address entity = LibClone.clone(fs.entityImplementation);
-        require(entity != address(0), "RegistrarRegistration: entity cloning failed");
-        IRegistrar(entity).init(args.name, args.owner, args.initData);
-        _registerRemovableEntity(entity, args.terms);
+        //clone the proxy
+        proxy = LibClone.clone(fs.proxyImplementation);
+        require(proxy != address(0), "RegistrarRegistration: proxy cloning failed");
+        IEntityProxy(proxy).setImplementation(fs.entityImplementation);
+
+        //initialize registrar state
+        IRegistrar(proxy).init(args.name, args.owner, args.initData);
+
+        //register entity as removable
+        _registerRemovableEntity(proxy, address(this), args.terms);
+
+        //transfer tokens if applicable
          if(msg.value > 0) {
             if(args.sendTokensToOwner) {
                 payable(args.owner).transfer(msg.value);
             } else {
-                payable(entity).transfer(msg.value);
+                payable(proxy).transfer(msg.value);
             }
         }
 
-        emit RegistryAddedEntity(entity, args.owner);
+        emit RegistryAddedEntity(proxy, args.owner);
+    }
 
-        return entity;
+    /**
+     * @dev withdraw funds from the contract
+     */
+    function withdraw(uint256 amount) public onlyOwner {
+        require(amount <= address(this).balance, "RegistrarRegistry: amount exceeds balance");
+        payable(owner()).transfer(amount);
     }
 }
 

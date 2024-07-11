@@ -7,8 +7,8 @@ import {BaseEntity} from '../../base-types/entity/BaseEntity.sol';
 import {IExperienceRegistry} from '../../experience/registry/IExperienceRegistry.sol';
 import {LibEntity, EntityStorage} from '../../libraries/LibEntity.sol';
 import {LibAccess} from '../../libraries/LibAccess.sol';
-import {Version} from '../../libraries/LibTypes.sol';
-import {IAvatar, AvatarJumpRequest, DelegatedJumpRequest} from './IAvatar.sol';
+import {Version} from '../../libraries/LibVersion.sol';
+import {IAvatar, AvatarInitArgs, AvatarJumpRequest, DelegatedJumpRequest} from './IAvatar.sol';
 import {LibAvatar, Wearable, AvatarStorage} from '../../libraries/LibAvatar.sol';
 import {ICompanyRegistry} from '../../company/registry/ICompanyRegistry.sol';
 import {ICompany} from '../../company/instance/ICompany.sol';
@@ -27,7 +27,7 @@ import "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
 /**
  * @dev avatar initialization arguments. This is the extra bytes of an avatar creation request.
  */
-struct AvatarInitArgs {
+struct AvatarInitData {
     bool canReceiveTokensOutsideExperience;
     bytes appearanceDetails;
 }
@@ -92,29 +92,30 @@ contract Avatar is BaseEntity, ReentrancyGuard, IAvatar {
         * @dev Initialize the avatar. This is called by the avatar registry when creating a new avatar.
         * It is invoked through its proxy so that any storage updates are done in the proxy's address space.
      */
-    function init(string calldata name, address _owner, address startingExperience, bytes calldata initData) public onlyRegistry {
+    function init(AvatarInitArgs memory args) public onlyRegistry {
         require(LibAccess.owner() == address(0), 'Avatar: Already initialized');
-        require(_owner != address(0), 'Avatar: Invalid owner');
-        require(startingExperience != address(0), 'Avatar: Invalid starting experience');
-        require(experienceRegistry.isRegistered(startingExperience), 'Avatar: Starting experience not registered');
-        
-        address[] memory admins = new address[](0);
-        LibAccess.initAccess(_owner, admins);
-        LibEntity.load().name = name;
+        require(args.owner != address(0), 'Avatar: Invalid owner');
+        require(args.startingExperience != address(0), 'Avatar: Invalid starting experience');
+        require(experienceRegistry.isRegistered(args.startingExperience), 'Avatar: Starting experience not registered');
+        require(bytes(args.name).length > 0, 'Avatar: Name required');
 
-        AvatarInitArgs memory args = abi.decode(initData, (AvatarInitArgs));
+        address[] memory admins = new address[](0);
+        LibAccess.initAccess(args.owner, admins);
+        LibEntity.load().name = args.name;
+
+        AvatarInitData memory data = abi.decode(args.initData, (AvatarInitData));
 
         //avatar-specific storage
         AvatarStorage storage s = LibAvatar.load();
 
         //whether the avatar can receive tokens outside of an experience (i.e. NFT airdrops)
-        s.canReceiveTokensOutsideExperience = args.canReceiveTokensOutsideExperience;
+        s.canReceiveTokensOutsideExperience = data.canReceiveTokensOutsideExperience;
 
         //the starting experience (e.g. a World lobby)
-        s.currentExperience = startingExperience;
+        s.currentExperience = args.startingExperience;
 
         //the appearance details of the avatar, specific to the avatar implementation
-        s.appearanceDetails = args.appearanceDetails;
+        s.appearanceDetails = data.appearanceDetails;
 
         //The max number of wearables an avatar can wear
         s.list.maxSize = 200;

@@ -3,13 +3,13 @@
 pragma solidity ^0.8.24;
 
 
-import {IMintableAsset} from '../IMintableAsset.sol';
+import {IAsset} from '../IAsset.sol';
 
 /**
     * @title IERC721Asset
     * @dev IERC721Asset represents a synthetic asset for any XR chain ERC721 tokens.
  */
-interface IERC721Asset is IMintableAsset {
+interface IERC721Asset  is IAsset {
 
     /**
      * @dev Emitted when `tokenId` token is transferred from `from` to `to`.
@@ -21,6 +21,22 @@ interface IERC721Asset is IMintableAsset {
     event Approval(address indexed owner, address indexed approved, uint256 indexed tokenId);
 
     event ERC721Minted(address indexed to, uint256 indexed tokenId);
+
+    /**
+     * @dev Returns true if the asset can be minted to the given address with the given data
+     */
+    function canMint(address to) external view returns (bool);
+
+    /**
+     * @dev Mints the asset to the given address with the given data. Only callable by the asset issuer
+     * after verifying the minting parameters.
+     */
+    function mint(address to) external;
+
+    /**
+     * @dev Revokes the asset from the given address with the given data. Only callable by the asset issuer
+     */
+    function revoke(address holder, uint256 tokenId) external;
 
     /**
      * @dev returns whether given selector is supported by this contract

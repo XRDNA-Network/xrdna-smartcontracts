@@ -29,21 +29,36 @@ abstract contract BaseRemovableEntity is BaseEntity, IRemovableEntity {
         emit EntityDeactivated(msg.sender, reason);
     }
 
+    /**
+     * @dev Reactivate the entity. This is only callable by the owning registry, which handles
+     * authorization checks.
+     */
     function reactivate() public virtual onlyRegistry {
         LibRemovableEntity.load().active = true;
         emit EntityReactivated(msg.sender);
     }
 
+    /**
+     * @dev Remove the entity. This is only callable by the owning registry, which handles
+     * authorization checks.
+     */
     function remove(string calldata reason) public virtual onlyRegistry {
         require(!LibRemovableEntity.load().active, 'RemovableEntity: must deactivate first');
         LibRemovableEntity.load().removed = true;
         emit EntityRemoved(msg.sender, reason);
     }
 
+    /**
+     * @dev Check whether the entity is active
+     
+     */
     function isEntityActive() public view returns (bool) {
         return LibRemovableEntity.load().active;
     }
 
+    /**
+     * @dev Check whether the entity is removed
+     */
     function isRemoved() public view returns (bool) {
         return LibRemovableEntity.load().removed;
     }

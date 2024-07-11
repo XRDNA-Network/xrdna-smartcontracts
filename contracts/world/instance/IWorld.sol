@@ -4,7 +4,7 @@
 pragma solidity ^0.8.24;
 
 import {VectorAddress} from '../../libraries/LibVectorAddress.sol';
-import {RegistrationTerms} from '../../libraries/LibTypes.sol';
+import {RegistrationTerms} from '../../libraries/LibRegistration.sol';
 import {IAccessControl} from '../../interfaces/IAccessControl.sol';
 import {IRemovableEntity} from '../../interfaces/entity/IRemovableEntity.sol';
 import {ITermsOwner} from '../../interfaces/registry/ITermsOwner.sol';
@@ -68,6 +68,19 @@ struct NewExperienceArgs {
     bytes initData;
 }
 
+struct WorldInitArgs {
+    address owner; 
+    address termsOwner;
+    VectorAddress vector;
+    string name;
+    bytes initData;
+}
+
+/**
+ * @title IWorld
+    * @dev IWorld is the interface for a world contract. A world registers companies and avatars as well as
+    * add experiences for companies. It is the registration terms authority for all companies.
+ */
 interface IWorld is IAccessControl, IRemovableEntity, ITermsOwner  {
 
     event WorldAddedCompany(address indexed company, address indexed owner, VectorAddress vector);
@@ -83,7 +96,7 @@ interface IWorld is IAccessControl, IRemovableEntity, ITermsOwner  {
     event WorldReactivatedExperience(address indexed experience, address indexed company);
     event WorldRemovedExperience(address indexed experience, address indexed company, string reason, uint256 portalId);
 
-    function init(string calldata name, address owner, VectorAddress calldata vector, bytes calldata initData) external;
+    function init(WorldInitArgs memory args) external;
     function baseVector() external view returns (VectorAddress memory);
     function withdraw(uint256 amount) external;
 

@@ -4,11 +4,23 @@ pragma solidity ^0.8.24;
 
 
 import {VectorAddress} from '../../libraries/LibVectorAddress.sol';
-import {Version} from '../../libraries/LibTypes.sol';
+import {Version} from '../../libraries/LibVersion.sol';
 
 
+/**
+ * @title IRegisteredEntity
+ * @dev The IRegisteredEntity contract is the base interface for all registered entities (Worlds, 
+ * Companies, Experiences, etc.). It provides a name and version for the entity.
+ */
 interface IRegisteredEntity {
 
+    /**
+     * @dev Returns the name of the entity.
+     */
     function name() external view returns (string memory);
+
+    /**
+     * @dev Returns the version of the entity.
+     */
     function version() external view returns (Version memory);
 }
