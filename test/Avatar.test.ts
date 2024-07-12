@@ -209,7 +209,6 @@ describe('Avatar', () => {
         const nameB4 = await avatar.getName();
 
         const avatarRegistry = stack.avatarRegistry!;
-        const regAdmin = stack.avatarRegistryOwner;
         const t = await avatarRegistry.setEntityImplementation(stack.avatarV2Address!);
         const er = await t.wait();
         if (!er || er.status !== 1) {
