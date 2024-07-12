@@ -15,6 +15,8 @@ import {Version} from '../../libraries/LibVersion.sol';
 interface IRegistry is IAccessControl {
 
 
+    event RegistryEntityImplementationSet(address indexed implementation);
+    event RegistryProxyImplementationSet(address indexed implementation);
     event RegistryAddedEntity(address indexed entity, address indexed owner);
     event RegistryUpgradedEntity(address indexed entity, address indexed newImplementation);
     event RegistryDowngradedEntity(address indexed entity, address indexed newImplementation);

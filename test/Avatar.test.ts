@@ -3,11 +3,29 @@ import { World } from "../typechain-types";
 import {ethers} from "hardhat" 
 // import {ethers } from "ethers"
 
-import { ERC721Asset } from "../src";
+import { Avatar, ERC721Asset, IAvatarOpts } from "../src";
 import exp from "constants";
 import { hexlify } from "ethers";
 import { IEcosystem, TestStack } from "./TestStack";
 import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
+
+import {abi} from "../artifacts/contracts/test/IAvatarV2.sol/IAvatarV2.json";
+
+class AvatarV2 extends Avatar {
+
+    constructor(opts: IAvatarOpts) {
+        super(opts);
+        this.con = new ethers.Contract(this.address, abi, this.admin);
+    }
+
+    async getValue(): Promise<bigint> {
+        return await this.con.getValue();
+    }
+
+    async setValue(value: bigint): Promise<ethers.TransactionReceipt> {
+        return await this.con.setValue(value);
+    }
+}
 
 describe('Avatar', () => {
     
@@ -184,7 +202,42 @@ describe('Avatar', () => {
         const wearables2 = await avatar.getWearables();
         const isWearing2 = wearables2.find(w => w.tokenId == tokenId.tokenId);
         expect(isWearing2).to.be.undefined;
-    })
+    });
+
+    it("Should be upgradeable", async () => {
+        const {avatar} = ecosystem;
+        const nameB4 = await avatar.getName();
+
+        const avatarRegistry = stack.avatarRegistry!;
+        const regAdmin = stack.avatarRegistryOwner;
+        const t = await avatarRegistry.setEntityImplementation(stack.avatarV2Address!);
+        const er = await t.wait();
+        if (!er || er.status !== 1) {
+            throw new Error("Transaction failed");
+        }
+        await avatar.upgrade();
+
+        const avatarV2 = new AvatarV2({
+            address: avatar.address,
+            admin: ecosystem.avatarOwner,
+            logParser: avatar.logParser
+        });
+
+        const value = await avatarV2.getValue();
+        expect(value).to.equal(0n);
+        const r = await avatarV2.setValue(1n);
+        const r2 = await r.wait();
+        if (!r2) {
+            throw new Error("Transaction failed");
+        }
+        expect(r2.status).to.equal(1);
+        const value2 = await avatarV2.getValue();
+        expect(value2).to.equal(1n);
+
+        //get a previously set value
+        const name = await avatarV2.getName();
+        expect(name).to.equal(nameB4);
+    });
 
     // flashbacks to vyper compiler bug leading to nonfunctioning reentrancy guards
     it('should not allow reentrancy', async () => {

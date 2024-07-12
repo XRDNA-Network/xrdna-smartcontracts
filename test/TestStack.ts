@@ -1,6 +1,6 @@
 import { RegistrarRegistry, XRDNASigners, AllLogParser, mapJsonToDeploymentAddressConfig, Registrar, signTerms, World, DeploymentAddressConfig, signVectorAddress, VectorAddress, Company, RegistrationTerms, Avatar, Experience, IWorldRegistration, WorldRegistry, CompanyRegistry, AvatarRegistry, ERC20AssetRegistry, ERC721AssetRegistry, ERC20Asset, ERC20InitData, ERC20CreateArgs, ERC721Asset, ERC721InitData, ERC721CreateArgs, IPortalInfo, CreateERC20AssetResult, CreateERC721AssetResult, ICompanyRegistrationRequest, PortalRegistry, ExperienceRegistry } from "../src";
 import {ethers, ignition} from 'hardhat';
-import DeployAllModule from "../ignition/modules/DeployAll.module";
+import TestModule from "../ignition/modules/Test.module";
 
 import HardhatDeployment from '../ignition/deployments/chain-55555/deployed_addresses.json';
 import { Signer } from "ethers";
@@ -34,26 +34,44 @@ export interface IEcosystem {
 export class TestStack {
 
     registrarRegistry?: RegistrarRegistry;
-    worldRegistry?: WorldRegistry;
-    companyRegistry?: CompanyRegistry;
-    portalRegistry?: PortalRegistry;
-    experienceRegistry?: ExperienceRegistry;
-    avatarRegistry?: AvatarRegistry;
-    erc20Registry?: ERC20AssetRegistry;
-    erc721Registry?: ERC721AssetRegistry;
-    xrdnaSigners: XRDNASigners;
     registrarRegistryOwner?: Signer;
+    worldRegistry?: WorldRegistry;
+    worldRegistryOwner?: Signer;
+    companyRegistry?: CompanyRegistry;
+    companyRegistryOwner?: Signer;
+    portalRegistry?: PortalRegistry;
+    portalRegistryOwner?: Signer;
+    experienceRegistry?: ExperienceRegistry;
+    experienceRegistryOwner?: Signer;
+    avatarRegistry?: AvatarRegistry;
+    avatarRegistryOwner?: Signer;
+    erc20Registry?: ERC20AssetRegistry;
+    erc20RegistryOwner?: Signer;
+    erc721Registry?: ERC721AssetRegistry;
+    erc721RegistryOwner?: Signer;
+    xrdnaSigners: XRDNASigners;
+    
     registrar?: Registrar;
     world?: World;
+    avatarV2Address?: string;
     logParser?: AllLogParser;
 
     async init() {
         const xrdna = new XRDNASigners(ethers.provider);
         this.xrdnaSigners = xrdna;
-        const mod = await ignition.deploy(DeployAllModule);
+        const mod = await ignition.deploy(TestModule);
         const registryAddr = await mod.registrarRegistryProxy.getAddress();
+        this.avatarV2Address = await mod.avatarV2.getAddress();
 
         this.registrarRegistryOwner = xrdna.testingConfig.registrarRegistryAdmin;
+        this.avatarRegistryOwner = xrdna.testingConfig.avatarRegistryAdmin;
+        this.companyRegistryOwner = xrdna.testingConfig.companyRegistryAdmin;
+        this.experienceRegistryOwner = xrdna.testingConfig.experienceRegistryAdmin;
+        this.erc20RegistryOwner = xrdna.testingConfig.assetRegistryAdmin;
+        this.erc721RegistryOwner = xrdna.testingConfig.assetRegistryAdmin;
+        this.portalRegistryOwner = xrdna.testingConfig.portalRegistryAdmin;
+        this.worldRegistryOwner = xrdna.testingConfig.worldRegistryAdmin;
+
         const signerConfig = mapJsonToDeploymentAddressConfig(HardhatDeployment);
         this.logParser =  new AllLogParser(signerConfig);
 

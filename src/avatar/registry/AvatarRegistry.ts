@@ -39,4 +39,15 @@ export class AvatarRegistry {
         return await RPCRetryHandler.withRetry(() => this.con.isRegistered(avatar));
     }
 
+    async setEntityImplementation(impl: string): Promise<TransactionResponse> {
+        const t = await  await RPCRetryHandler.withRetry(() => this.con.setEntityImplementation(impl));
+        const r = await t.wait();
+        const logs = this.logParser.parseLogs(r);
+        const set = logs.get("RegistryEntityImplementationSet");
+        if(!set || set.length == 0) {
+            throw new Error("Entity implementation not set");
+        }
+        return t;
+    }
+
 }

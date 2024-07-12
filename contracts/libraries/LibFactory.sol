@@ -5,6 +5,7 @@ pragma solidity ^0.8.24;
 import {Version} from './LibVersion.sol';
 import {LibStorageSlots} from './LibStorageSlots.sol';
 import {IRegisteredEntity} from '../interfaces/entity/IRegisteredEntity.sol';
+import {IRegistry} from '../interfaces/registry/IRegistry.sol';
 
 // Storage related to proxy/entity cloning for registries
 struct FactoryStorage {
@@ -35,6 +36,7 @@ library LibFactory {
     function setProxyImplementation(address _proxyImplementation) external {
         FactoryStorage storage ds = load();
         ds.proxyImplementation = _proxyImplementation;
+        emit IRegistry.RegistryProxyImplementationSet(_proxyImplementation);
     }
 
     /**
@@ -54,6 +56,7 @@ library LibFactory {
         ds.entityImplementation = _entityImplementation;
         Version memory v = IRegisteredEntity(_entityImplementation).version();
         ds.entityVersion = v;
+        emit IRegistry.RegistryEntityImplementationSet(_entityImplementation);
     }
 
     /**

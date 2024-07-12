@@ -95,7 +95,7 @@ contract Avatar is BaseEntity, IAvatar {
         avatarRegistry.upgradeEntity();
     }
 
-    function version() public pure override returns (Version memory) {
+    function version() public pure override virtual returns (Version memory) {
         return Version(1, 0);
     }
 
