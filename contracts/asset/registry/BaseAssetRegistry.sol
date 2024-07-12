@@ -28,12 +28,19 @@ import {IEntityProxy} from '../../base-types/entity/IEntityProxy.sol';
  */
 abstract contract BaseAssetRegistry is BaseRemovableRegistry, IAssetRegistry {
 
+     modifier onlyAdminOrIssuer(address asset)  {
+        require(isAdmin(msg.sender) || IAsset(asset).issuer() == msg.sender, "BaseAssetRegistry: unauthorized");
+        _;
+    }
+
     /**
      * @dev Determines if an asset from an original chain has been registered
      */
     function assetExists(address original, uint256 chainId) public view returns (bool) {
         return LibAssetRegistry.assetExists(original, chainId);
     }
+
+   
 
     /**
      * @dev Registers a new asset with the registry. Only callable by the registry admin
@@ -84,26 +91,23 @@ abstract contract BaseAssetRegistry is BaseRemovableRegistry, IAssetRegistry {
     /**
      * @dev Deactivates an asset in the registry. Only callable by the registry admin
      */
-    function deactivateAsset(address asset, string calldata reason) public onlyAdmin {
+    function deactivateAsset(address asset, string calldata reason) public onlyAdminOrIssuer(asset) nonReentrant {
         LibEntityRemoval.deactivateEntity(IRemovableEntity(asset), reason);
-        emit RegistryDeactivatedEntity(asset, reason);
     }
 
     /**
      * @dev Reactivates an asset in the registry. Only callable by the registry admin
      */
-    function reactivateAsset(address asset) public onlyAdmin {
+    function reactivateAsset(address asset) public onlyAdminOrIssuer(asset) nonReentrant {
         LibEntityRemoval.reactivateEntity(IRemovableEntity(asset));
-        emit RegistryReactivatedEntity(asset);
     }
 
     /**
      * @dev Removes an asset from the registry. Only callable by the registry admin AFTER
         * the grace period has expired.
      */
-    function removeAsset(address asset, string calldata reason) public onlyAdmin {
+    function removeAsset(address asset, string calldata reason) public onlyAdminOrIssuer(asset) nonReentrant {
         LibEntityRemoval.removeEntity(IRemovableEntity(asset), reason);
-        emit RegistryRemovedEntity(asset, reason);
     }
 
 }
