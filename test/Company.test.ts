@@ -137,7 +137,7 @@ describe("Company", () => {
         const {portalId} = await experience!.getExperienceInfo(expAddress);
         expect(isExp).to.be.true;
         expect(portalId).to.be.greaterThan(0);
-        const vector = await experience.vectorAddress();
+        const vector = await experience.getVectorAddress();
         expect(vector.p).to.be.greaterThan(0);
         expect(vector.p_sub).to.be.greaterThan(0);
     })
@@ -251,7 +251,7 @@ describe("Company", () => {
             provider: ethers.provider,
             logParser: stack.logParser!
         });
-        const vector = await expInstance.vectorAddress();
+        const vector = await expInstance.getVectorAddress();
         expect(vector.p).to.be.greaterThan(0);
         expect(vector.p_sub).to.be.greaterThan(0);
         isExp = await expReg.isExperience(expInstance.address);

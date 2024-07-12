@@ -70,7 +70,7 @@ export class Experience {
         return await RPCRetryHandler.withRetry(() => this.con.company());
     }
 
-    async vectorAddress(): Promise<VectorAddress> {
+    async getVectorAddress(): Promise<VectorAddress> {
         const r = await RPCRetryHandler.withRetry(() => this.con.vectorAddress());
         return {
             x: r[0],
