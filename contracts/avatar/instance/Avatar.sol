@@ -19,6 +19,7 @@ import {LibLinkedList, LinkedList} from '../../libraries/LibLinkedList.sol';
 import {AssetCheckArgs} from '../../asset/IAssetCondition.sol';
 import {IPortalRegistry} from '../../portal/IPortalRegistry.sol';
 import {PortalInfo} from '../../libraries/LibPortal.sol';
+import {IAvatarRegistry} from '../registry/IAvatarRegistry.sol';
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
 
@@ -54,7 +55,7 @@ contract Avatar is BaseEntity, IAvatar {
     using LibLinkedList for LinkedList;
     using MessageHashUtils for bytes;
     
-    address public immutable avatarRegistry;
+    IAvatarRegistry public immutable avatarRegistry;
     IExperienceRegistry public immutable experienceRegistry;
     ICompanyRegistry public immutable companyRegistry;
     IAssetRegistry public immutable erc721Registry;
@@ -75,7 +76,7 @@ contract Avatar is BaseEntity, IAvatar {
         require(args.erc721Registry != address(0), 'Company: Invalid ERC721 registry');
         require(args.portalRegistry != address(0), 'Company: Invalid portal registry');
 
-        avatarRegistry = args.avatarRegistry;
+        avatarRegistry = IAvatarRegistry(args.avatarRegistry);
         experienceRegistry = IExperienceRegistry(args.experienceRegistry);
         companyRegistry = ICompanyRegistry(args.companyRegistry);
         erc721Registry = IAssetRegistry(args.erc721Registry);
@@ -90,6 +91,9 @@ contract Avatar is BaseEntity, IAvatar {
         payable(msg.sender).transfer(amount);
     }
 
+    function upgrade() public override onlyOwner nonReentrant {
+        avatarRegistry.upgradeEntity();
+    }
 
     function version() public pure override returns (Version memory) {
         return Version(1, 0);
@@ -133,7 +137,7 @@ contract Avatar is BaseEntity, IAvatar {
      * @dev Get the registry that owns this contract.
      */
     function owningRegistry() internal view override returns (address) {
-        return avatarRegistry;
+        return address(avatarRegistry);
     }
     
      /**

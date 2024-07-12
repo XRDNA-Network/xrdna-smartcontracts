@@ -103,7 +103,7 @@ export class World {
     }
 
     async getVectorAddress(): Promise<VectorAddress> {
-        return await RPCRetryHandler.withRetry(() => this.world.baseVector());
+        return await RPCRetryHandler.withRetry(() => this.world.vectorAddress());
     }
 
     async getName(): Promise<string> {

@@ -12,6 +12,7 @@ import {IAsset} from './IAsset.sol';
 import {LibRemovableEntity} from '../../libraries/LibRemovableEntity.sol';
 import {IAvatar} from '../../avatar/instance/IAvatar.sol';
 import {IExperience} from '../../experience/instance/IExperience.sol';
+import {IRegistry} from '../../interfaces/registry/IRegistry.sol';
 
 /**
  * Constructor arguments that immutably reference registries and factories required
@@ -180,6 +181,10 @@ abstract contract BaseAsset is BaseRemovableEntity, IAsset {
                 require(IExperience(exp).company() == issuer(), "BaseAsset: avatar location is not in an experience owned by this company");
             }
         }
+    }
+
+    function upgrade() external onlyIssuer nonReentrant override{
+        IRegistry(owningRegistry()).upgradeEntity();
     }
 
 }

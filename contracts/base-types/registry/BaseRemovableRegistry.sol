@@ -94,7 +94,7 @@ abstract contract BaseRemovableRegistry is BaseRegistry, IRemovableRegistry {
      * @dev Enforces removal of an entity. Can be called by anyone but will only
      * succeed if it is outside the grace period
      */
-    function enforceRemoval(IRemovableEntity e) public {
+    function enforceRemoval(IRemovableEntity e) public virtual {
         LibEntityRemoval.enforceRemoval(e);
     }
 
@@ -152,7 +152,7 @@ abstract contract BaseRemovableRegistry is BaseRegistry, IRemovableRegistry {
     /**
      * @dev Register an entity in the registry.
      */
-    function _registerRemovableEntity(address entity, address termsOwner, RegistrationTerms memory terms) internal {
-        LibRegistration.registerRemovableEntity(entity, termsOwner, terms);
+    function _registerRemovableEntity(address entity, address termsOwner, RegistrationTerms memory terms, string calldata name) internal {
+        LibRegistration.registerRemovableEntity(entity, termsOwner, terms, name);
     }
 }

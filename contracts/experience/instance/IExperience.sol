@@ -4,6 +4,7 @@ pragma solidity ^0.8.24;
 
 import {VectorAddress} from '../../libraries/LibVectorAddress.sol';
 import {IRemovableEntity} from '../../interfaces/entity/IRemovableEntity.sol';
+import {IVectoredEntity} from '../../base-types/entity/IVectoredEntity.sol';
 
 /**
  * @dev Entry request when an avatar jumps into an experience
@@ -34,7 +35,7 @@ struct ExperienceInfo {
  * may incur a fee paid by the Avatar. An Experience may have hooks that are called when an
  * Avatar enters the experience that can further evaluate the request outside of Portal conditions.
  */
-interface IExperience is IRemovableEntity {
+interface IExperience is IVectoredEntity, IRemovableEntity {
 
     event ConnectionDetailsChanged(bytes newDetails);
     event JumpEntry(address indexed sourceWorld, address indexed sourceCompany, address indexed avatar, uint256 attachedFees);
@@ -71,13 +72,6 @@ interface IExperience is IRemovableEntity {
      * @dev Returns the portal id attached to this experience
      */
     function portalId() external view returns (uint256);
-
-    /**
-     * @dev Returns the spatial vector address for this experience, which is derived
-     * from its parent company and world.
-     */
-    function vectorAddress() external view returns (VectorAddress memory);
-
 
     /**
      * @dev Returns the entry fee for this experience

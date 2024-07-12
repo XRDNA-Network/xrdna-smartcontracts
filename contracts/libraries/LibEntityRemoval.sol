@@ -5,8 +5,9 @@ pragma solidity ^0.8.24;
 
 import {IEntityRemoval} from "../interfaces/registry/IEntityRemoval.sol";
 import {IRemovableEntity} from '../interfaces/entity/IRemovableEntity.sol';
-import {RegistrationTerms} from '../libraries/LibRegistration.sol';
-import {LibStringCase} from '../libraries/LibStringCase.sol';
+import {RegistrationTerms} from './LibRegistration.sol';
+import {LibStringCase} from './LibStringCase.sol';
+import {VectorAddress} from './LibVectorAddress.sol';
 import {RegistrationStorage, TermedRegistration, LibRegistration} from './LibRegistration.sol';
 
 /**
@@ -67,6 +68,10 @@ library LibEntityRemoval {
      * for the entity to respond to deactivation.
      */
     function removeEntity(IRemovableEntity entity, string calldata reason) public nonReentrant {
+        _removeEntity(entity, reason);
+    }
+
+    function _removeEntity(IRemovableEntity entity, string calldata reason) private {
         
         RegistrationStorage storage rs = LibRegistration.load();
         TermedRegistration storage reg = rs.removableRegistrations[address(entity)];
@@ -84,6 +89,12 @@ library LibEntityRemoval {
         delete rs.removableRegistrations[address(entity)];
         string memory nm = entity.name().lower();
         delete rs.registrationsByName[nm];
+        emit IEntityRemoval.RegistryRemovedEntity(address(entity), reason);
+    }
+
+    function removeEntityWithVector(IRemovableEntity entity, VectorAddress memory vector, string calldata reason) public nonReentrant {
+        _removeEntity(entity, reason);
+        LibRegistration.removeVectorRegistration(vector);
         emit IEntityRemoval.RegistryRemovedEntity(address(entity), reason);
     }
 
@@ -112,11 +123,8 @@ library LibEntityRemoval {
         //but if the terms have expired
         uint256 expTime = reg.lastRenewed + (reg.terms.coveragePeriodDays * DAY);
 
-        //but are inside the grace period
-        uint256 graceTime = expTime + (reg.terms.gracePeriodDays * DAY);
-
         //then it should be allowable to deactivate the entity
-        return block.timestamp >= expTime && block.timestamp < graceTime;
+        return block.timestamp >= expTime;
     }
 
     /**
@@ -138,7 +146,7 @@ library LibEntityRemoval {
         }
 
         //can only be removed if grace period has expired
-        uint256 expTime = reg.deactivationTime + (reg.terms.coveragePeriodDays * DAY);
+        uint256 expTime = reg.deactivationTime + (reg.terms.gracePeriodDays * DAY);
         return block.timestamp >= expTime;
     }
 
@@ -167,6 +175,11 @@ library LibEntityRemoval {
      * succeed if it is outside the grace period
      */
     function enforceRemoval(IRemovableEntity e) public nonReentrant {
+        _enforceRemoval(e);
+
+    }
+
+    function _enforceRemoval(IRemovableEntity e) private {
         address addr = address(e);
         //make sure we can force removal
         require(canBeRemoved(addr), "StatusChangesExt: entity cannot be removed");
@@ -182,11 +195,16 @@ library LibEntityRemoval {
         emit IEntityRemoval.RegistryEnforcedRemoval(addr);
     }
 
+    function enforceRemovalWithVector(IRemovableEntity e, VectorAddress memory vector) public nonReentrant {
+        _enforceRemoval(e);
+        LibRegistration.removeVectorRegistration(vector);
+        emit IEntityRemoval.RegistryEnforcedRemoval(address(e));
+    }
 
     /**
      * @dev Returns the last renewal timestamp in seconds for the given address.
      */
-    function getLastRenewal(address addr) external view returns (uint256) {
+    function getLastRenewal(address addr) public view returns (uint256) {
         RegistrationStorage storage rs = LibRegistration.load();
         TermedRegistration storage tr = rs.removableRegistrations[addr];
         return tr.lastRenewed;
@@ -195,7 +213,7 @@ library LibEntityRemoval {
     /**
      * @dev Returns the expiration timestamp in seconds for the given address.
      */
-    function getExpiration(address addr) external view returns (uint256) {
+    function getExpiration(address addr) public view returns (uint256) {
         RegistrationStorage storage rs = LibRegistration.load();
         TermedRegistration storage tr = rs.removableRegistrations[addr];
 
@@ -210,23 +228,17 @@ library LibEntityRemoval {
     /**
      * @dev Check whether an address is expired.
      */
-    function isExpired(address addr) external view returns (bool) {
-        RegistrationStorage storage rs = LibRegistration.load();
-        TermedRegistration storage tr = rs.removableRegistrations[addr];
-
-        //no coverage means no expiration
-        if(tr.terms.coveragePeriodDays == 0){
-            return false;
-        }
+    function isExpired(address addr) public view returns (bool) {
+        uint256 exp = getExpiration(addr);
 
         //is the current block time is greater than the expiration time
-        return block.timestamp > tr.lastRenewed + tr.terms.coveragePeriodDays * DAY;
+        return exp > 0 && block.timestamp >= exp;
     }
 
     /**
      * @dev Check whether an address is in the grace period.
      */
-    function isInGracePeriod(address addr) external view returns (bool) {
+    function isInGracePeriod(address addr) public view returns (bool) {
         RegistrationStorage storage rs = LibRegistration.load();
         TermedRegistration storage tr = rs.removableRegistrations[addr];
         //no coverage, no grace period
@@ -241,14 +253,14 @@ library LibEntityRemoval {
         uint graceExp = exTime + tr.terms.gracePeriodDays * DAY;
 
         //we're in the grace period if the coverage has expired but we're still within the grace period
-        bool expired = block.timestamp > exTime;
+        bool expired = block.timestamp >= exTime;
         return expired && block.timestamp < graceExp;
     }
 
     /**
      * @dev Renew an entity by paying the renewal fee.
      */
-    function renewEntity(address addr) external nonReentrant {
+    function renewEntity(address addr) public nonReentrant {
         RegistrationStorage storage rs = LibRegistration.load();
         TermedRegistration storage tr = rs.removableRegistrations[addr];
 

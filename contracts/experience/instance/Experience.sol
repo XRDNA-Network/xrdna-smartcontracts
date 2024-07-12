@@ -56,6 +56,10 @@ contract Experience is BaseRemovableEntity, IExperience {
 
     receive() external payable {}
 
+    function upgrade() public override onlyCompany {
+        experienceRegistry.upgradeEntity();
+    }
+
     function version() public pure override returns (Version memory) {
         return Version(1, 0);
     }

@@ -30,7 +30,7 @@ struct WorldRegistryConstructorArgs {
  * @title WorldRegistry
  * @dev A registry for creating and managing worlds
  */
-contract WorldRegistry is BaseRemovableRegistry, BaseVectoredRegistry, IWorldRegistry {
+contract WorldRegistry is BaseVectoredRegistry, IWorldRegistry {
 
     using MessageHashUtils for bytes;
     using LibVectorAddress for VectorAddress;
@@ -126,6 +126,7 @@ contract WorldRegistry is BaseRemovableRegistry, BaseVectoredRegistry, IWorldReg
             entity: proxy,
             termsOwner: msg.sender,
             terms: args.terms,
+            name: args.name,
             vector: args.vector
         });
         LibRegistration.registerRemovableVectoredEntity(regArgs);

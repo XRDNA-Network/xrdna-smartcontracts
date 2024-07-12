@@ -33,6 +33,8 @@ struct RegistrationWithTermsAndVector {
     //the terms for the entity
     RegistrationTerms terms;
 
+    string name;
+
     //the vector address for the entity
     VectorAddress vector;
 }
@@ -99,9 +101,9 @@ library LibRegistration {
 
     uint256 public constant DAY = 1 days;
 
-    modifier nonReentrant() {
-        RegistrationStorage storage rs = load();
-        require(rs.reentrancyLock == 0, "LibRegistration: reentrant call");
+    modifier nonReentrant {
+        RegistrationStorage storage rs = LibRegistration.load();
+        require(rs.reentrancyLock == 0, "EntityRemovalExt: reentrant call");
         rs.reentrancyLock = 1;
         _;
         rs.reentrancyLock = 0;
@@ -151,6 +153,12 @@ library LibRegistration {
         return rs.registrationsByVector[hashed];
     }
 
+    function removeVectorRegistration(VectorAddress memory vector) public {
+        RegistrationStorage storage rs = load();
+        bytes32 hashed = keccak256(bytes(vector.asLookupKey()));
+        delete rs.registrationsByVector[hashed];
+    }
+
     /**
      * @dev Registers a non-removable entity ignoring the name.
      */
@@ -163,12 +171,10 @@ library LibRegistration {
     /**
      * @dev Registers a non-removable entity. The name must be globally unique.
      */
-    function registerNonRemovableEntity(address entity) public nonReentrant {
+    function registerNonRemovableEntity(address entity, string calldata name) public {
         RegistrationStorage storage rs = load();
-        require(!rs.staticRegistrations[entity], "LibRegistration: entity already registered");
-        IRegisteredEntity e = IRegisteredEntity(entity);
-        
-        string memory nm = e.name().lower();
+        require(!rs.staticRegistrations[entity], "LibRegistration: entity already registered"); 
+        string memory nm = name.lower();
         require(bytes(nm).length > 0, "LibRegistration: entity name is empty");
         require(rs.registrationsByName[nm] == address(0), "LibRegistration: entity name already registered");
         rs.registrationsByName[nm] = entity;
@@ -179,7 +185,8 @@ library LibRegistration {
     /**
      * @dev Registers a removable entity. The name must be globally unique.
      */
-    function registerRemovableEntity(address entity, address termsOwner, RegistrationTerms memory terms) public nonReentrant {
+    function registerRemovableEntity(address entity, address termsOwner, RegistrationTerms memory terms, string memory name) public {
+        
         require(termsOwner != address(0), "LibRegistration: terms owner cannot be zero address");
 
         RegistrationStorage storage rs = load();
@@ -195,8 +202,7 @@ library LibRegistration {
         require(terms.gracePeriodDays > 0, "LibRegistration: grace period must be greater than 0");
 
         //make sure the entity has a globally unique name (barring any hidden or whitespace characters)
-        IRegisteredEntity e = IRegisteredEntity(entity);
-        string memory nm = e.name().lower();
+        string memory nm = name.lower();
         require(bytes(nm).length > 0, "LibRegistration: entity name is empty");
         require(rs.registrationsByName[nm] == address(0), "LibRegistration: entity name already registered");
         rs.registrationsByName[nm] = entity;
@@ -230,7 +236,7 @@ library LibRegistration {
      * @dev Registers a removable entity with a vector address.
      */
     function registerRemovableVectoredEntity(RegistrationWithTermsAndVector memory args) public {
-        registerRemovableEntity(args.entity, args.termsOwner, args.terms);
+        registerRemovableEntity(args.entity, args.termsOwner, args.terms, args.name);
         if(bytes(args.vector.x).length > 0) {
             RegistrationStorage storage rs = load();
             string memory asKey = args.vector.asLookupKey();
@@ -259,7 +265,7 @@ library LibRegistration {
      * is the authority for the entity. This checks that the entity agreed to the terms by
      * checking signature.
      */
-    function changeEntityTerms(ChangeEntityTermsArgs calldata args) public {
+    function changeEntityTerms(ChangeEntityTermsArgs calldata args) public nonReentrant {
         RegistrationStorage storage rs = load();
         TermedRegistration storage reg = rs.removableRegistrations[args.entity];
         RegistrationTerms memory newTerms = _verifyEntitySignature(args);

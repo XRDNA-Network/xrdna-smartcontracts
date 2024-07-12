@@ -19,7 +19,7 @@ abstract contract BaseRegistry is ReentrancyGuard, BaseAccess, IRegistry {
 
     using LibVersion for Version;
     
-    modifier onlyRegisteredEntity {
+    modifier onlyUpgradeable {
         require(isRegistered(msg.sender), 'Registry: entity is not registered');
         canUpOrDowngrade();
         _;
@@ -71,7 +71,7 @@ abstract contract BaseRegistry is ReentrancyGuard, BaseAccess, IRegistry {
      * done through the registry so that arbitrary logic cannot be attached to entity proxies to circumvent
      * protocol behaviors.
      */
-    function upgradeEntity() public virtual onlyRegisteredEntity nonReentrant {
+    function upgradeEntity() public virtual onlyUpgradeable nonReentrant {
         IEntityProxy proxy = IEntityProxy(msg.sender); 
         Version memory v = proxy.getVersion();
 
@@ -90,7 +90,7 @@ abstract contract BaseRegistry is ReentrancyGuard, BaseAccess, IRegistry {
      * done through the registry so that arbitrary logic cannot be attached to entity proxies to circumvent
      * protocol behaviors. This is useful for emergency situations where a bug is found in the latest logic.
      */
-    function downgradeEntity() public virtual onlyRegisteredEntity nonReentrant {
+    function downgradeEntity() public virtual onlyUpgradeable nonReentrant {
         IEntityProxy proxy = IEntityProxy(msg.sender); 
         Version memory v = proxy.getVersion();
 
@@ -121,7 +121,7 @@ abstract contract BaseRegistry is ReentrancyGuard, BaseAccess, IRegistry {
     /**
      * @dev Register an entity in the registry.
      */
-    function _registerNonRemovableEntity(address entity) internal {
-        LibRegistration.registerNonRemovableEntity(entity);
+    function _registerNonRemovableEntity(address entity, string calldata name) internal {
+        LibRegistration.registerNonRemovableEntity(entity, name);
     }
 }

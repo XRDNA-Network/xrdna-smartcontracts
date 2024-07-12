@@ -25,7 +25,7 @@ struct CompanyRegistryConstructorArgs {
  * @title CompanyRegistry
  * @dev A registry for Company entities
  */
-contract CompanyRegistry is BaseRemovableRegistry, BaseVectoredRegistry, ICompanyRegistry {
+contract CompanyRegistry is BaseVectoredRegistry, ICompanyRegistry {
 
     IWorldRegistry public immutable worldRegistry;
 
@@ -89,6 +89,7 @@ contract CompanyRegistry is BaseRemovableRegistry, BaseVectoredRegistry, ICompan
         RegistrationWithTermsAndVector memory regArgs = RegistrationWithTermsAndVector({
             entity: proxy,
             terms: args.terms,
+            name: args.name,
             termsOwner: msg.sender,
             vector: args.vector
         });

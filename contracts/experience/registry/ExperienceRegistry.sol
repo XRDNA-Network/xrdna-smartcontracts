@@ -31,7 +31,7 @@ struct ExperienceRegistryConstructorArgs {
  * @title ExperienceRegistry
  * @dev A registry for experiences. Experiences are created and controlled through company contracts.
  */
-contract ExperienceRegistry is BaseRemovableRegistry, BaseVectoredRegistry, IExperienceRegistry {
+contract ExperienceRegistry is BaseVectoredRegistry, IExperienceRegistry {
 
     ICompanyRegistry public immutable companyRegistry;
     IWorldRegistry public immutable worldRegistry;
@@ -102,6 +102,7 @@ contract ExperienceRegistry is BaseRemovableRegistry, BaseVectoredRegistry, IExp
             entity: proxy,
             termsOwner: args.company,
             terms: terms,
+            name: args.name,
             vector: args.vector
         });
         LibRegistration.registerRemovableVectoredEntity(regArgs);

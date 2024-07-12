@@ -22,4 +22,9 @@ interface IRegisteredEntity {
      * @dev Returns the version of the entity.
      */
     function version() external view returns (Version memory);
+
+    /**
+     * @dev Upgrades the entity to the latest version of the entity logic, if applicable.
+     */
+    function upgrade() external;
 }

@@ -86,5 +86,4 @@ interface IERC721Asset  is IAsset {
      * and the receiver must implement ERC721Receiver interface
      */
     function safeTransferFrom(address from, address to, uint256 tokenId, bytes calldata data) external;
-
 }

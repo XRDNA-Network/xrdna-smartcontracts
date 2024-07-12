@@ -5,6 +5,7 @@ pragma solidity ^0.8.24;
 import {VectorAddress} from '../../libraries/LibVectorAddress.sol';
 import {IAccessControl} from '../../interfaces/IAccessControl.sol';
 import {IRemovableEntity} from '../../interfaces/entity/IRemovableEntity.sol';
+import {IVectoredEntity} from '../../base-types/entity/IVectoredEntity.sol';
 
 /**
  * @dev Arguments for companies to add an experience to a world.
@@ -58,7 +59,7 @@ struct CompanyInitArgs {
  * Companies register through Worlds in order to offer experiences to avatars and 
  * create assets within worlds.
  */
-interface ICompany is IAccessControl, IRemovableEntity {
+interface ICompany is IAccessControl, IVectoredEntity, IRemovableEntity {
 
     event CompanyAddedExperience(address indexed experience, uint256 indexed portalId);
     event CompanyDeactivatedExperience(address indexed experience, string reason);
@@ -92,12 +93,6 @@ interface ICompany is IAccessControl, IRemovableEntity {
         * @dev Returns the address of the world in which the company operates.
      */
     function world() external view returns (address);
-
-    /**
-     * @dev Returns the vector address of the company. The vector address is assigned by
-     * the operating World.
-     */
-    function vectorAddress() external view returns (VectorAddress memory);
 
     /**
      * @dev Returns whether this company can mint the given asset to the given address.
@@ -144,6 +139,11 @@ interface ICompany is IAccessControl, IRemovableEntity {
     function removeExperience(address experience, string calldata reason) external;
 
     /**
+     * @dev Request that the given company-owned experience upgrade itself
+     */
+    function upgradeExperience(address exp) external;
+
+    /**
      * @dev Mints the given asset to the given address with the given amount.
      */
     function mintERC20(address asset, address to, uint256 amount) external;
@@ -169,6 +169,20 @@ interface ICompany is IAccessControl, IRemovableEntity {
      * in the interoperability layer are synthetic assets that represent assets on other chains).
      */
     function revokeERC721(address asset, address holder, uint256 tokenId) external;
+
+    /**
+     * @dev Upgrades the given ERC20 asset to a new version. This is useful for companies
+     * that want to upgrade the logic of their assets. This can only be called by the company
+     * admin.
+     */
+    function upgradeERC20(address asset) external;
+
+    /**
+     * @dev Upgrades the given ERC721 asset to a new version. This is useful for companies
+     * that want to upgrade the logic of their assets. This can only be called by the company
+     * admin.
+     */
+    function upgradeERC721(address asset) external;
 
     /**
      * @dev Withdraws the given amount of funds from the company. Only the owner can withdraw funds.

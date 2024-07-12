@@ -8,6 +8,7 @@ import {RegistrationTerms} from '../../libraries/LibRegistration.sol';
 import {IAccessControl} from '../../interfaces/IAccessControl.sol';
 import {IRemovableEntity} from '../../interfaces/entity/IRemovableEntity.sol';
 import {ITermsOwner} from '../../interfaces/registry/ITermsOwner.sol';
+import {IVectoredEntity} from '../../base-types/entity/IVectoredEntity.sol';
 
 
 struct NewCompanyArgs {
@@ -81,7 +82,7 @@ struct WorldInitArgs {
     * @dev IWorld is the interface for a world contract. A world registers companies and avatars as well as
     * add experiences for companies. It is the registration terms authority for all companies.
  */
-interface IWorld is IAccessControl, IRemovableEntity, ITermsOwner  {
+interface IWorld is IAccessControl, IVectoredEntity, IRemovableEntity, ITermsOwner  {
 
     event WorldAddedCompany(address indexed company, address indexed owner, VectorAddress vector);
     event WorldAddedAvatar(address indexed avatar, address indexed owner);
@@ -97,7 +98,7 @@ interface IWorld is IAccessControl, IRemovableEntity, ITermsOwner  {
     event WorldRemovedExperience(address indexed experience, address indexed company, string reason, uint256 portalId);
 
     function init(WorldInitArgs memory args) external;
-    function baseVector() external view returns (VectorAddress memory);
+    function vectorAddress() external view returns (VectorAddress memory);
     function withdraw(uint256 amount) external;
 
     /**

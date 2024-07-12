@@ -86,7 +86,7 @@ contract AvatarRegistry is BaseRegistry, IAvatarRegistry {
         IAvatar(proxy).init(aArgs);
         
         //store the new avatar proxy
-        _registerNonRemovableEntity(proxy);
+        _registerNonRemovableEntity(proxy, args.name);
         
         emit RegistryAddedEntity(proxy, args.owner);
     }

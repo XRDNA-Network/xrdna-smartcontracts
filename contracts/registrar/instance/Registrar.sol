@@ -10,6 +10,7 @@ import {LibAccess} from '../../libraries/LibAccess.sol';
 import {Version} from '../../libraries/LibVersion.sol';
 import {IWorldRegistry, CreateWorldArgs} from '../../world/registry/IWorldRegistry.sol';
 import {IRemovableEntity} from '../../interfaces/entity/IRemovableEntity.sol';
+import {IRegistrarRegistry} from '../registry/IRegistrarRegistry.sol';
 
 struct RegistrarConstructorArgs {
     address registrarRegistry;
@@ -23,25 +24,29 @@ struct RegistrarConstructorArgs {
  */
 contract Registrar is BaseRemovableEntity, IRegistrar {
 
-    address public immutable registrarRegistry;
+    IRegistrarRegistry public immutable registrarRegistry;
     IWorldRegistry public immutable worldRegistry;
 
     //initialized once to establish immutable registry addresses for all uses of implementation logic.
     constructor(RegistrarConstructorArgs memory args) {
         require(args.registrarRegistry != address(0), 'Registrar: Invalid registrar registry');
         require(args.worldRegistry != address(0), 'Registrar: Invalid world registry');
-        registrarRegistry = args.registrarRegistry;
+        registrarRegistry = IRegistrarRegistry(args.registrarRegistry);
         worldRegistry = IWorldRegistry(args.worldRegistry);
     }
 
     receive() external payable {}
+
+    function upgrade() public override onlyOwner {
+        registrarRegistry.upgradeEntity();
+    }
 
     function version() external pure override returns (Version memory) {
         return Version(1, 0);
     }
 
     function owningRegistry() internal view override returns (address) {
-        return registrarRegistry;
+        return address(registrarRegistry);
     }
 
     /**

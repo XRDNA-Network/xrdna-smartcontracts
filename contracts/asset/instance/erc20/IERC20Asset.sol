@@ -48,6 +48,5 @@ interface IERC20Asset is IAsset {
      * @dev Transfers the asset to the recipient
      */
     function transfer(address, uint256) external returns (bool);
-    
 
 }

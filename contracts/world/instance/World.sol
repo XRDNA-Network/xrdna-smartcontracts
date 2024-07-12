@@ -18,6 +18,7 @@ import {IRemovableEntity} from '../../interfaces/entity/IRemovableEntity.sol';
 import {IAvatarRegistry, CreateAvatarArgs} from '../../avatar/registry/IAvatarRegistry.sol';
 import {IExperienceRegistry, CreateExperienceArgs} from '../../experience/registry/IExperienceRegistry.sol';
 import {IExperience} from '../../experience/instance/IExperience.sol';
+import {IWorldRegistry} from '../registry/IWorldRegistry.sol';
 
 struct WorldConstructorArgs {
     address registrarRegistry;
@@ -32,7 +33,7 @@ contract World is BaseRemovableEntity, IWorld {
 
     using LibVectorAddress for VectorAddress;
 
-    address public immutable worldRegistry;
+    IWorldRegistry public immutable worldRegistry;
     IAvatarRegistry public immutable avatarRegistry;
     ICompanyRegistry public immutable companyRegistry;
     IExperienceRegistry public immutable experienceRegistry;
@@ -48,7 +49,7 @@ contract World is BaseRemovableEntity, IWorld {
         require(args.avatarRegistry != address(0), 'World: Invalid avatar registry');
         require(args.companyRegistry != address(0), 'World: Invalid company registry');
         require(args.experienceRegistry != address(0), 'World: Invalid experience registry');
-        worldRegistry = args.worldRegistry;
+        worldRegistry = IWorldRegistry(args.worldRegistry);
         avatarRegistry = IAvatarRegistry(args.avatarRegistry);
         companyRegistry = ICompanyRegistry(args.companyRegistry);
         experienceRegistry = IExperienceRegistry(args.experienceRegistry);
@@ -56,12 +57,16 @@ contract World is BaseRemovableEntity, IWorld {
 
     receive() external payable {}
 
+    function upgrade() public override onlyOwner {
+        worldRegistry.upgradeEntity();
+    }
+    
     function version() public pure override returns (Version memory) {
         return Version(1, 0);
     }
 
     function owningRegistry() internal view override returns (address) {
-        return worldRegistry;
+        return address(worldRegistry);
     }
 
     function init(WorldInitArgs memory args) public onlyRegistry {
@@ -84,7 +89,7 @@ contract World is BaseRemovableEntity, IWorld {
     /**
      * @dev Returns the base vector for the world
      */
-    function baseVector() public view returns (VectorAddress memory) {
+    function vectorAddress() public view returns (VectorAddress memory) {
         return LibRemovableEntity.load().vector;
     }
    
@@ -117,7 +122,7 @@ contract World is BaseRemovableEntity, IWorld {
     function registerCompany(NewCompanyArgs memory args) public payable onlySigner nonReentrant returns (address company) {
        
         //get the base vector for this world
-        VectorAddress memory base = baseVector();
+        VectorAddress memory base = vectorAddress();
         WorldStorage storage ws = LibWorld.load();
 
         //establish the next P value for the new company

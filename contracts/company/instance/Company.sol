@@ -19,6 +19,7 @@ import {IAvatarRegistry} from '../../avatar/registry/IAvatarRegistry.sol';
 import {IAvatar, DelegatedJumpRequest} from '../../avatar/instance/IAvatar.sol';
 import {IExperience} from '../../experience/instance/IExperience.sol';
 import {IAsset} from '../../asset/instance/IAsset.sol';
+import {ICompanyRegistry} from '../registry/ICompanyRegistry.sol';
 
 struct CompanyConstructorArgs {
     address companyRegistry;
@@ -38,7 +39,7 @@ contract Company is BaseRemovableEntity, ICompany {
 
     using LibVectorAddress for VectorAddress;
     
-    address public immutable companyRegistry;
+    ICompanyRegistry public immutable companyRegistry;
     IExperienceRegistry public immutable experienceRegistry;
     IAssetRegistry public immutable erc20Registry;
     IAssetRegistry public immutable erc721Registry;
@@ -61,7 +62,7 @@ contract Company is BaseRemovableEntity, ICompany {
         require(args.erc721Registry != address(0), 'Company: Invalid erc721 registry');
         require(args.avatarRegistry != address(0), 'Company: Invalid avatar registry');
 
-        companyRegistry = args.companyRegistry;
+        companyRegistry = ICompanyRegistry(args.companyRegistry);
         experienceRegistry = IExperienceRegistry(args.experienceRegistry);
         erc20Registry = IAssetRegistry(args.erc20Registry);
         erc721Registry = IAssetRegistry(args.erc721Registry);
@@ -73,6 +74,10 @@ contract Company is BaseRemovableEntity, ICompany {
     function withdraw(uint256 amount) public onlyOwner {
         require(amount <= address(this).balance, 'Company: Insufficient balance');
         payable(msg.sender).transfer(amount);
+    }
+
+    function upgrade() public onlyOwner nonReentrant {
+        companyRegistry.upgradeEntity();
     }
 
     function version() external pure override returns (Version memory) {
@@ -110,7 +115,7 @@ contract Company is BaseRemovableEntity, ICompany {
      * @dev Returns the address of the company registry
      */
     function owningRegistry() internal view override returns (address) {
-        return companyRegistry;
+        return address(companyRegistry);
     }
     
     /**
@@ -202,6 +207,13 @@ contract Company is BaseRemovableEntity, ICompany {
         mintable.revoke(holder, amount);
     }
 
+    function upgradeERC20(address asset) public nonReentrant onlyAdmin onlyIfActive {
+        require(erc20Registry.isRegistered(asset), "Company: asset not registered");
+        IERC20Asset a = IERC20Asset(asset);
+        require(a.issuer() == address(this), "Company: not issuer of asset");
+        a.upgrade();
+    }
+
     /**
      * @dev Revokes the given ERC721 asset from the given address. This can only be called by a company
      * signer and only if the company is active.
@@ -214,12 +226,21 @@ contract Company is BaseRemovableEntity, ICompany {
         mintable.revoke(holder, tokenId);
     }
 
+    function upgradeERC721(address asset) public nonReentrant onlyAdmin onlyIfActive {
+        require(erc721Registry.isRegistered(asset), "Company: asset not registered");
+        IERC721Asset a = IERC721Asset(asset);
+        require(a.issuer() == address(this), "Company: not issuer of asset");
+        a.upgrade();
+    }
+
     /**
         * @dev Sets the base URI for an ERC721 asset minted by this company. This can only be called by admins
      */
     function setERC721BaseURI(address asset, string calldata uri) public nonReentrant onlyAdmin {
         require(erc721Registry.isRegistered(asset), "Company: asset not registered");
-        IERC721Asset(asset).setBaseURI(uri);
+        IERC721Asset e = IERC721Asset(asset);
+        require(e.isEntityActive(), "Company: asset not active");
+        e.setBaseURI(uri);
     }
 
     /**
@@ -277,6 +298,13 @@ contract Company is BaseRemovableEntity, ICompany {
     function removeExperience(address experience, string calldata reason) public nonReentrant onlyAdmin {
         uint256 portalId = IWorld(world()).removeExperience(experience, reason);
         emit CompanyRemovedExperience(experience, reason, portalId);
+    }
+
+    function upgradeExperience(address exp) public nonReentrant onlyAdmin onlyIfActive {
+        require(experienceRegistry.isRegistered(exp), 'Company: Experience not registered');
+        IExperience e = IExperience(exp);
+        require(e.company() == address(this), 'Company: Experience does not belong to company');
+        e.upgrade();
     }
 
     /**

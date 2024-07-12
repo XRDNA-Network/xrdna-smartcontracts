@@ -57,7 +57,7 @@ contract RegistrarRegistry is BaseRemovableRegistry, IRegistrarRegistry {
         IRegistrar(proxy).init(args.name, args.owner, args.initData);
 
         //register non-removable
-        _registerNonRemovableEntity(proxy);
+        _registerNonRemovableEntity(proxy, args.name);
 
         //transfer tokens if applicable
         if(msg.value > 0) {
@@ -106,7 +106,7 @@ contract RegistrarRegistry is BaseRemovableRegistry, IRegistrarRegistry {
         IRegistrar(proxy).init(args.name, args.owner, args.initData);
 
         //register entity as removable
-        _registerRemovableEntity(proxy, address(this), args.terms);
+        _registerRemovableEntity(proxy, address(this), args.terms, args.name);
 
         //transfer tokens if applicable
          if(msg.value > 0) {

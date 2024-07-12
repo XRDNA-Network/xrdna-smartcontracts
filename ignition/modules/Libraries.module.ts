@@ -4,16 +4,21 @@ export default buildModule("Libraries", (m) => {
 
         const libAccess = m.library("LibAccess");
         const libVector = m.library("LibVectorAddress");
-
-        const libEntityRemoval = m.library("LibEntityRemoval");
-        const libFactory = m.library("LibFactory");
-        const libLinkedList = m.library("LibLinkedList");
-        
         const libRegistration = m.library("LibRegistration", {
             libraries: {
                 LibVectorAddress: libVector
             }
         });
+
+        const libEntityRemoval = m.library("LibEntityRemoval", {
+            libraries: {
+                LibRegistration: libRegistration
+            }
+        });
+        const libFactory = m.library("LibFactory");
+        const libLinkedList = m.library("LibLinkedList");
+        
+        
         const libRemovableEntity = m.library("LibRemovableEntity");
 
 
