@@ -3,7 +3,6 @@
 pragma solidity ^0.8.24;
 
 
-import {VectorAddress} from '../../libraries/LibVectorAddress.sol';
 import {Version} from '../../libraries/LibVersion.sol';
 
 

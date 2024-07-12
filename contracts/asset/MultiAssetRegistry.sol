@@ -49,7 +49,8 @@ contract MultiAssetRegistry is IMultiAssetRegistry, AccessControl {
      * @inheritdoc IMultiAssetRegistry
      */
     function isRegistered(address asset) external view override returns (bool) {
-        for (uint256 i = 0; i < registries.length; i++) {
+        uint256 len = registries.length;
+        for (uint256 i = 0; i < len; i++) {
             if (registries[i].isRegistered(asset)) {
                 return true;
             }

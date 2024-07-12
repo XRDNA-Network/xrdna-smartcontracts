@@ -2,14 +2,11 @@
 // Compatible with OpenZeppelin Contracts ^5.0.0
 pragma solidity ^0.8.24;
 
-import {ReentrancyGuard} from '@openzeppelin/contracts/utils/ReentrancyGuard.sol';
 import {BaseAsset, BaseAssetConstructorArgs, BaseInitArgs} from '../BaseAsset.sol';
 import {Version} from '../../../libraries/LibVersion.sol';
-import {IAvatar} from '../../../avatar/instance/IAvatar.sol';
-import {LibRemovableEntity, RemovableEntityStorage} from '../../../libraries/LibRemovableEntity.sol';
-import {LibAsset, AssetStorage} from '../../../libraries/LibAsset.sol';
 import {LibERC721, ERC721Storage} from '../../../libraries/LibERC721.sol';
 import {AssetInitArgs} from '../IAsset.sol';
+import {IAvatar} from '../../../avatar/instance/IAvatar.sol';
 import {IERC721Asset} from './IERC721Asset.sol';
 import {IERC721Errors} from "@openzeppelin/contracts/interfaces/draft-IERC6093.sol";
 import {IERC721} from "@openzeppelin/contracts/token/ERC721/IERC721.sol";
@@ -31,7 +28,7 @@ struct ERC721InitData {
  * @title NTERC721Asset
     * @dev NTERC721Asset represents a synthetic asset for any XR chain ERC721 tokens.
  */
-contract NTERC721Asset is BaseAsset, ReentrancyGuard, IERC721Asset {
+contract NTERC721Asset is BaseAsset, IERC721Asset {
 
     using Strings for uint256;
     
@@ -84,12 +81,12 @@ contract NTERC721Asset is BaseAsset, ReentrancyGuard, IERC721Asset {
     /**
      * @dev See {IERC721-balanceOf}.
      */
-    function balanceOf(address owner) public view virtual returns (uint256) {
-        if (owner == address(0)) {
+    function balanceOf(address _owner) public view virtual returns (uint256) {
+        if (_owner == address(0)) {
             revert IERC721Errors.ERC721InvalidOwner(address(0));
         }
         ERC721Storage storage s = LibERC721.load();
-        return s.balances[owner];
+        return s.balances[_owner];
     }
 
     /**
@@ -119,18 +116,26 @@ contract NTERC721Asset is BaseAsset, ReentrancyGuard, IERC721Asset {
     }
 
     /**
+     * @dev Set the base URI for all token IDs. Can only be called by a
+     */
+    function setBaseURI(string calldata uri) public onlyIssuer {
+        ERC721Storage storage s = LibERC721.load();
+        if(!_endsWith(uri, "/")) {
+            s.baseURI = string.concat(uri, "/");
+        } else {
+            s.baseURI = uri;
+        }
+        emit BaseURIChanged(uri);
+    }
+
+    /**
      * @dev determine if the asset can be minted
      * @param to the address to mint to
      * data is not used in minting so it is ignored
      */
     function canMint(address to) public view override returns (bool) {
         require(to != address(0), "NTERC721Asset: mint to the zero address");
-        if(avatarRegistry.isRegistered(to)) {
-            IAvatar avatar = IAvatar(to);
-            if(!avatar.canReceiveTokensOutsideOfExperience()) {
-                _verifyAvatarLocationMatchesIssuer(IAvatar(to));
-            }
-        }
+        _verifyAvatarMinting(to);
         return true;
     }
 
@@ -154,8 +159,8 @@ contract NTERC721Asset is BaseAsset, ReentrancyGuard, IERC721Asset {
     function revoke(address holder, uint256 tokenId) public nonReentrant onlyIssuer {
         require(holder != address(0), "NTERC721Asset: token does not exist");
         require(tokenId != 0, "NTERC721Asset: token id cannot be zero");
-        address owner = LibERC721.requireOwned(tokenId);
-        require(owner == holder, "NTERC721Asset: not the owner of token id provided");
+        address _owner = LibERC721.requireOwned(tokenId);
+        require(_owner == holder, "NTERC721Asset: not the owner of token id provided");
         
         _burn(tokenId);
         
@@ -163,7 +168,6 @@ contract NTERC721Asset is BaseAsset, ReentrancyGuard, IERC721Asset {
             // Notify the avatar that the token has been revoked and remove it from wearables
             IAvatar(holder).onERC721Revoked(tokenId);
         }
-        
     }
 
     function approve(address, uint256) public pure returns (bool) {
@@ -179,8 +183,8 @@ contract NTERC721Asset is BaseAsset, ReentrancyGuard, IERC721Asset {
         return LibERC721._getApproved(tokenId);
     }
 
-    function isApprovedForAll(address owner, address operator) public view virtual returns (bool) {
-        return LibERC721.load().operatorApprovals[owner][operator];
+    function isApprovedForAll(address _owner, address operator) public view virtual returns (bool) {
+        return LibERC721.load().operatorApprovals[_owner][operator];
     }
 
     /**

@@ -5,12 +5,9 @@ pragma solidity ^0.8.24;
 import {BaseRegistry} from '../../base-types/registry/BaseRegistry.sol';
 import {BaseRemovableRegistry} from '../../base-types/registry/BaseRemovableRegistry.sol';
 import {BaseVectoredRegistry} from '../../base-types/registry/BaseVectoredRegistry.sol';
-import {LibAccess} from '../../libraries/LibAccess.sol';
-import {LibRoles} from '../../libraries/LibRoles.sol';
 import {LibRegistration, TermsSignatureVerification} from '../../libraries/LibRegistration.sol';
 import {FactoryStorage, LibFactory} from '../../libraries/LibFactory.sol';
 import {LibClone} from '../../libraries/LibClone.sol';
-import {VectorAddress} from '../../libraries/LibVectorAddress.sol';
 import {IExperienceRegistry, CreateExperienceArgs} from './IExperienceRegistry.sol';
 import {IExperience, ExperienceInitArgs} from '../instance/IExperience.sol';
 import {ICompanyRegistry} from '../../company/registry/ICompanyRegistry.sol';
@@ -69,7 +66,7 @@ contract ExperienceRegistry is BaseRemovableRegistry, BaseVectoredRegistry, IExp
      * experience owner. Note that only a company can intiate the experience creation through its parent
      *  World contract; meaning, a World cannot act alone to create a new experience on behalf of a company.
      */
-    function createExperience(CreateExperienceArgs calldata args) external payable onlyWorldCompanyChain(args.company) returns (address proxy, uint256 portalId) {
+    function createExperience(CreateExperienceArgs calldata args) external onlyWorldCompanyChain(args.company) nonReentrant returns (address proxy, uint256 portalId) {
         
         FactoryStorage storage fs = LibFactory.load();
         //make sure proxy and entity implementations are set
@@ -121,7 +118,7 @@ contract ExperienceRegistry is BaseRemovableRegistry, BaseVectoredRegistry, IExp
      * the owner of the experience. Company initiates this call through a world so that events are 
      * emitted for both the company and world for tracking purposes. The company must also belong to the world.
      */
-    function deactivateExperience(address company, address exp, string calldata reason) external onlyWorldCompanyChain(company) {
+    function deactivateExperience(address company, address exp, string calldata reason) external onlyWorldCompanyChain(company) nonReentrant {
         //company must be registered under world and the owner of experience and active
         _verifyExpOwnership(company, exp);
         LibEntityRemoval.deactivateEntity(IRemovableEntity(exp), reason);
@@ -132,7 +129,7 @@ contract ExperienceRegistry is BaseRemovableRegistry, BaseVectoredRegistry, IExp
      * the owner of the experience. Company initiates this call through a world so that events are 
      * emitted for both the company and world for tracking purposes. The company must also belong to the world.
      */
-    function reactivateExperience(address company, address exp) external onlyWorldCompanyChain(company) {
+    function reactivateExperience(address company, address exp) external onlyWorldCompanyChain(company) nonReentrant {
         //company must be registered under world and the owner of experience and active
         _verifyExpOwnership(company, exp);
         LibEntityRemoval.reactivateEntity(IRemovableEntity(exp));
@@ -143,7 +140,7 @@ contract ExperienceRegistry is BaseRemovableRegistry, BaseVectoredRegistry, IExp
         * the owner of the experience. Company initiates this call through a world so that events are
         * emitted for both the company and world for tracking purposes. The company must also belong to the world.
      */
-    function removeExperience(address company, address exp, string calldata reason) external onlyWorldCompanyChain(company) returns (uint256 portalId) {
+    function removeExperience(address company, address exp, string calldata reason) external onlyWorldCompanyChain(company) nonReentrant returns (uint256 portalId) {
         _verifyExpOwnership(company, exp);
         LibEntityRemoval.removeEntity(IRemovableEntity(exp), reason);
         portalId = IExperience(exp).portalId();

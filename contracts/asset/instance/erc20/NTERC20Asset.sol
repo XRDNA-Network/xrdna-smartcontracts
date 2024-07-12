@@ -2,12 +2,8 @@
 // Compatible with OpenZeppelin Contracts ^5.0.0
 pragma solidity ^0.8.24;
 
-import {ReentrancyGuard} from '@openzeppelin/contracts/utils/ReentrancyGuard.sol';
 import {BaseAsset, BaseAssetConstructorArgs, BaseInitArgs} from '../BaseAsset.sol';
 import {Version} from '../../../libraries/LibVersion.sol';
-import {IAvatar} from '../../../avatar/instance/IAvatar.sol';
-import {LibRemovableEntity, RemovableEntityStorage} from '../../../libraries/LibRemovableEntity.sol';
-import {LibAsset, AssetStorage} from '../../../libraries/LibAsset.sol';
 import {LibERC20, ERC20Storage} from '../../../libraries/LibERC20.sol';
 import {AssetInitArgs} from '../IAsset.sol';
 import {IERC20Asset} from './IERC20Asset.sol';
@@ -27,7 +23,7 @@ struct ERC20InitData {
  * @title NTERC20Asset
  * @dev NTERC20Asset represents a synthetic asset for any XR chain ERC20 tokens.
  */
-contract NTERC20Asset is BaseAsset, ReentrancyGuard, IERC20Asset {
+contract NTERC20Asset is BaseAsset, IERC20Asset {
     
     constructor(BaseAssetConstructorArgs memory args) BaseAsset(args) { }
 
@@ -90,8 +86,8 @@ contract NTERC20Asset is BaseAsset, ReentrancyGuard, IERC20Asset {
     /**
      * @dev See {IERC20-allowance}.
      */
-    function allowance(address owner, address spender) public view virtual returns (uint256) {
-        return LibERC20.load().allowances[owner][spender];
+    function allowance(address _owner, address spender) public view virtual returns (uint256) {
+        return LibERC20.load().allowances[_owner][spender];
     }
 
     
@@ -103,15 +99,7 @@ contract NTERC20Asset is BaseAsset, ReentrancyGuard, IERC20Asset {
         ERC20Storage storage s = LibERC20.load();
         require(s.totalSupply + amt <= s.maxSupply, "NTERC20Asset: max supply exceeded");
         //if the asset is going to an avatar
-        if(avatarRegistry.isRegistered(to)) {
-            IAvatar avatar = IAvatar(to);
-            //If the avatar opts to restrict token minting to only experiences/company
-            //they are visiting
-            if(!avatar.canReceiveTokensOutsideOfExperience()) {
-                //check that the issuer is the same as the avatar's current experience owner
-                _verifyAvatarLocationMatchesIssuer(IAvatar(to));
-            }
-        }
+        _verifyAvatarMinting(to);
         return true;
     }
 

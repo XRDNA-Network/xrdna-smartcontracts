@@ -4,12 +4,9 @@ pragma solidity ^0.8.24;
 
 import {BaseRemovableRegistry} from '../../base-types/registry/BaseRemovableRegistry.sol';
 import {BaseVectoredRegistry} from '../../base-types/registry/BaseVectoredRegistry.sol';
-import {LibAccess} from '../../libraries/LibAccess.sol';
-import {LibRoles} from '../../libraries/LibRoles.sol';
 import {LibRegistration, TermsSignatureVerification} from '../../libraries/LibRegistration.sol';
 import {FactoryStorage, LibFactory} from '../../libraries/LibFactory.sol';
 import {LibClone} from '../../libraries/LibClone.sol';
-import {VectorAddress, LibVectorAddress} from '../../libraries/LibVectorAddress.sol';
 import {ICompanyRegistry} from '../../company/registry/ICompanyRegistry.sol';
 import {ICompany} from '../../company/instance/ICompany.sol';
 import {RegistrationTerms} from '../../libraries/LibRegistration.sol';
@@ -42,7 +39,7 @@ abstract contract BaseAssetRegistry is BaseRemovableRegistry, IAssetRegistry {
      * @dev Registers a new asset with the registry. Only callable by the registry admin
      * after verifying ownership by the issuing company.
      */
-    function registerAsset(CreateAssetArgs calldata args) public onlyAdmin returns (address asset)  {
+    function registerAsset(CreateAssetArgs calldata args) public onlyAdmin nonReentrant returns (address asset)  {
         FactoryStorage storage fs = LibFactory.load();
         require(!assetExists(args.originAddress, args.originChainId), "BaseAssetRegistry: asset already exists");
         require(fs.proxyImplementation != address(0), "BaseAssetRegistry: proxy implementation not set");

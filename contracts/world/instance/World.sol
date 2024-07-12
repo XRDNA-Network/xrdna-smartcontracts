@@ -9,7 +9,6 @@ import {LibRemovableEntity, RemovableEntityStorage} from '../../libraries/LibRem
 import {LibAccess} from '../../libraries/LibAccess.sol';
 import {Version} from '../../libraries/LibVersion.sol';
 import {VectorAddress, LibVectorAddress} from '../../libraries/LibVectorAddress.sol';
-import {IRegistrarRegistry} from '../../registrar/registry/IRegistrarRegistry.sol';
 import {IRegistrar} from '../../registrar/instance/IRegistrar.sol';
 import {ICompanyRegistry, CreateCompanyArgs} from '../../company/registry/ICompanyRegistry.sol';
 import {ICompany} from '../../company/instance/ICompany.sol';
@@ -54,6 +53,8 @@ contract World is BaseRemovableEntity, IWorld {
         companyRegistry = ICompanyRegistry(args.companyRegistry);
         experienceRegistry = IExperienceRegistry(args.experienceRegistry);
     }
+
+    receive() external payable {}
 
     function version() public pure override returns (Version memory) {
         return Version(1, 0);
@@ -113,7 +114,7 @@ contract World is BaseRemovableEntity, IWorld {
     /**
      * @dev Registers a new company contract. Must be called by a world signer
      */
-    function registerCompany(NewCompanyArgs memory args) public payable onlySigner returns (address company) {
+    function registerCompany(NewCompanyArgs memory args) public payable onlySigner nonReentrant returns (address company) {
        
         //get the base vector for this world
         VectorAddress memory base = baseVector();
@@ -136,6 +137,7 @@ contract World is BaseRemovableEntity, IWorld {
             expiration: args.expiration,
             vector: base
         }));
+        require(company != address(0), 'World: Company creation failed');
 
         //transfer any tokens if applicable
         if(msg.value > 0) {
@@ -152,7 +154,7 @@ contract World is BaseRemovableEntity, IWorld {
     /**
      * @dev Deactivates a company contract. Must be called by a world signer
      */
-    function deactivateCompany(address company, string calldata reason) public onlySigner {
+    function deactivateCompany(address company, string calldata reason) public onlySigner nonReentrant {
         companyRegistry.deactivateEntity(IRemovableEntity(company), reason);
         emit WorldDeactivatedCompany(company, reason);
     }
@@ -160,7 +162,7 @@ contract World is BaseRemovableEntity, IWorld {
     /**
      * @dev Reactivates a company contract. Must be called by a world signer
      */
-    function reactivateCompany(address company) public onlySigner {
+    function reactivateCompany(address company) public onlySigner nonReentrant {
         companyRegistry.reactivateEntity(IRemovableEntity(company));
         emit WorldReactivatedCompany(company);
     }
@@ -168,7 +170,7 @@ contract World is BaseRemovableEntity, IWorld {
     /**
      * @dev Removes a company contract. Must be called by a world signer
      */
-    function removeCompany(address company, string calldata reason) public onlySigner {
+    function removeCompany(address company, string calldata reason) public onlySigner nonReentrant {
         companyRegistry.removeEntity(IRemovableEntity(company), reason);
         emit WorldRemovedCompany(company, reason);
     }
@@ -176,7 +178,7 @@ contract World is BaseRemovableEntity, IWorld {
     /**
      * @dev Registers a new avatar contract. Must be called by a world signer
      */
-    function registerAvatar(NewAvatarArgs memory args) public payable onlySigner returns (address avatar) {
+    function registerAvatar(NewAvatarArgs memory args) public payable onlySigner nonReentrant returns (address avatar) {
         //have avatar registry create avatar
         avatar = avatarRegistry.createAvatar(CreateAvatarArgs({
             sendTokensToOwner: args.sendTokensToOwner,
@@ -185,7 +187,7 @@ contract World is BaseRemovableEntity, IWorld {
             startingExperience: args.startingExperience,
             initData: args.initData
         }));
-
+        require(avatar != address(0), 'World: Avatar creation failed');
         //transfer tokens if applicable
         if(msg.value > 0) {
             if(args.sendTokensToOwner) {
@@ -201,7 +203,7 @@ contract World is BaseRemovableEntity, IWorld {
     /**
      * @dev Add an experience to the world. This is called by the company offering the experience
      */
-    function addExperience(NewExperienceArgs memory args) public payable onlyActiveCompany returns (address experience, uint256 portalId) {
+    function addExperience(NewExperienceArgs memory args) public onlyActiveCompany nonReentrant returns (address experience, uint256 portalId) {
         CreateExperienceArgs memory expArgs = CreateExperienceArgs({
             company: msg.sender,
             vector: args.vector,
@@ -215,7 +217,7 @@ contract World is BaseRemovableEntity, IWorld {
     /**
      * @dev Deactivates a company contract. Must be called by owning company
      */
-    function deactivateExperience(address experience, string calldata reason) public onlyActiveCompany {
+    function deactivateExperience(address experience, string calldata reason) public onlyActiveCompany nonReentrant {
         experienceRegistry.deactivateExperience(msg.sender, experience, reason);
         emit IWorld.WorldDeactivatedExperience(experience, msg.sender, reason);
     }
@@ -223,7 +225,7 @@ contract World is BaseRemovableEntity, IWorld {
     /**
      * @dev Reactivates an experience contract. Must be called by owning company
      */
-    function reactivateExperience(address experience) public onlyActiveCompany {
+    function reactivateExperience(address experience) public onlyActiveCompany nonReentrant {
         experienceRegistry.reactivateExperience(msg.sender, experience);
         emit IWorld.WorldReactivatedExperience(experience, msg.sender);
     }
@@ -231,7 +233,7 @@ contract World is BaseRemovableEntity, IWorld {
     /**
      * @dev Removes a experience contract. Must be called by owning company
      */
-    function removeExperience(address experience, string calldata reason) public onlyActiveCompany returns (uint256 portalId) {
+    function removeExperience(address experience, string calldata reason) public onlyActiveCompany nonReentrant returns (uint256 portalId) {
         portalId = experienceRegistry.removeExperience(msg.sender, experience, reason);
         emit IWorld.WorldRemovedExperience(experience, msg.sender, reason, portalId);
     }

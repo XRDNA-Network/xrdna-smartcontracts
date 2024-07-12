@@ -111,6 +111,11 @@ interface ICompany is IAccessControl, IRemovableEntity {
     function canMintERC721(address asset, address to) external view returns (bool);
 
     /**
+     * @dev Sets a new BaseURI for an ERC721 asset. This should only be called by admins
+     */
+    function setERC721BaseURI(address asset, string calldata baseURI) external;
+
+    /**
      * @dev Adds an experience to the world. This also creates a portal into the 
      * experience and registers it in the PortalRegistry. It is assumed that the 
      * initialization data for the experience will include the expected fee

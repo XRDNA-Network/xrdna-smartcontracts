@@ -5,6 +5,7 @@ pragma solidity ^0.8.24;
 import {LibStorageSlots} from '../../libraries/LibStorageSlots.sol';
 import {Version} from '../../libraries/LibVersion.sol';
 import {IEntityProxy} from './IEntityProxy.sol';
+import {LibAccess} from '../../libraries/LibAccess.sol';
 
 //used to check entity version
 interface IProvidesVersion {
@@ -34,11 +35,23 @@ abstract contract EntityProxy is IEntityProxy {
         _;
     }
 
-    receive() external payable {}
+    modifier onlyOwner {
+        require(msg.sender == LibAccess.owner(), 'EntityProxy: restricted to owner');
+        _;
+    }
+
 
     constructor(address registry) {
         require(registry != address(0), "EntityProxy: registry is zero address");
         parentRegistry  = registry;
+    }
+
+
+    receive() external payable {}
+
+    function withdraw(uint256 amount) external onlyOwner {
+        require(amount <= address(this).balance, "EntityProxy: insufficient balance");
+        payable(msg.sender).transfer(amount);
     }
 
     function load() internal pure returns (ProxyStorage storage ps) {

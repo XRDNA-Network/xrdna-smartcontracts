@@ -4,9 +4,6 @@ pragma solidity ^0.8.24;
 
 import {IRemovableEntity} from '../../interfaces/entity/IRemovableEntity.sol';
 import {AssetCheckArgs} from '../IAssetCondition.sol';
-import {IAssetRegistry} from '../registry/IAssetRegistry.sol';
-
-
 
 /**
  * @dev Basic initialization arguments for an asset

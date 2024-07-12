@@ -2,6 +2,7 @@
 // Compatible with OpenZeppelin Contracts ^5.0.0
 pragma solidity ^0.8.24;
 
+import {ReentrancyGuard} from '@openzeppelin/contracts/utils/ReentrancyGuard.sol';
 import {BaseAccess} from '../base-types/BaseAccess.sol';
 import {IPortalRegistry, AddPortalRequest} from './IPortalRegistry.sol';
 import {PortalRegistryStorage, PortalInfo, LibPortal} from '../libraries/LibPortal.sol';
@@ -11,7 +12,6 @@ import {IExperienceRegistry} from '../experience/registry/IExperienceRegistry.so
 import {IAvatarRegistry} from '../avatar/registry/IAvatarRegistry.sol';
 import {IAvatar} from '../avatar/instance/IAvatar.sol';
 import {VectorAddress, LibVectorAddress} from '../libraries/LibVectorAddress.sol';
-import {LibAccess} from '../libraries/LibAccess.sol';
 import {Version} from '../libraries/LibVersion.sol';
 
 
@@ -20,7 +20,7 @@ struct PortalRegistryConstructorArgs {
     address experienceRegistry;
 }
 
-contract PortalRegistry is BaseAccess, IPortalRegistry {
+contract PortalRegistry is ReentrancyGuard, BaseAccess, IPortalRegistry {
 
     using LibVectorAddress for VectorAddress;
 
@@ -60,6 +60,8 @@ contract PortalRegistry is BaseAccess, IPortalRegistry {
         avatarRegistry = IAvatarRegistry(args.avatarRegistry);
         experienceRegistry = IExperienceRegistry(args.experienceRegistry);
     }
+
+    receive() external payable {  }
 
     function version() external pure override returns (Version memory) {
         return Version(1, 0);
@@ -112,7 +114,7 @@ contract PortalRegistry is BaseAccess, IPortalRegistry {
      * when a new experience is created.
      * @param AddPortalRequest The request to add a new portal
      */
-    function addPortal(AddPortalRequest memory req) external onlyActiveExperience returns (uint256)  {
+    function addPortal(AddPortalRequest memory req) external onlyActiveExperience nonReentrant returns (uint256)  {
         VectorAddress memory va = IExperience(msg.sender).vectorAddress();
         bytes32 hash = keccak256(abi.encode(va.asLookupKey()));
         PortalRegistryStorage storage store = LibPortal.load();
@@ -168,12 +170,17 @@ contract PortalRegistry is BaseAccess, IPortalRegistry {
      * @param portalId The ID of the portal to remove
      * @param reason The reason for removing the portal
      */
-    function removePortal(uint256 portalId, string calldata reason) external onlyExperience {
+    function removePortal(uint256 portalId, string calldata reason) external onlyExperience nonReentrant {
         PortalRegistryStorage storage s = LibPortal.load();
         PortalInfo memory pi = s.portals[portalId];
         address exp = msg.sender;
         require(address(pi.destination) == exp, "PortalRegistry: only the experience can remove its own portal");
-        s.portals[portalId].active = false;
+        delete s.portals[portalId];
+        delete s.portalIdsByExperience[exp];
+        VectorAddress memory va = IExperience(msg.sender).vectorAddress();
+        bytes32 hash = keccak256(abi.encode(va.asLookupKey()));
+        delete s.portalIdsByVectorHash[hash];
+        
         emit IPortalRegistry.PortalRemoved(portalId, exp, reason);
     }
 
@@ -195,7 +202,7 @@ contract PortalRegistry is BaseAccess, IPortalRegistry {
     }
 
 
-     function jumpRequest(uint256 portalId) external payable onlyAvatar returns (bytes memory) {
+     function jumpRequest(uint256 portalId) external payable onlyAvatar nonReentrant returns (bytes memory) {
         
         /**
          * This contract delegates jump request authorization to the avatar. Only the avatar
@@ -275,5 +282,14 @@ contract PortalRegistry is BaseAccess, IPortalRegistry {
             destWorld: destPortal.destination.world(),
             destCompany: destPortal.destination.company()
         });
+    }
+
+    /**
+     * @dev Withdraws funds from the contract but should only ever be necessary to recover funds 
+     * sent to this contract by mistake. All funds for experience jumps are transferred to the
+     * destination experience.
+     */
+    function withdraw(uint256 amount) external onlyOwner {
+        payable(msg.sender).transfer(amount);
     }
 }

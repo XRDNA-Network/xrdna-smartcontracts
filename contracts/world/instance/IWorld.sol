@@ -128,7 +128,7 @@ interface IWorld is IAccessControl, IRemovableEntity, ITermsOwner  {
     /**
      * @dev Add an experience to the world. This is called by the company offering the experience
      */
-    function addExperience(NewExperienceArgs memory args) external payable returns (address experience, uint256 portalId);
+    function addExperience(NewExperienceArgs memory args) external returns (address experience, uint256 portalId);
 
     /**
      * @dev Deactivates a company contract. Must be called by owning company

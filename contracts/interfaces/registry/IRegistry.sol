@@ -3,7 +3,6 @@
 pragma solidity ^0.8.24;
 
 import {IAccessControl} from '../IAccessControl.sol';
-import {IEntityRemoval} from './IEntityRemoval.sol';
 import {Version} from '../../libraries/LibVersion.sol';
 
 /**

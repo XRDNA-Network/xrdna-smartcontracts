@@ -2,9 +2,9 @@
 // Compatible with OpenZeppelin Contracts ^5.0.0
 pragma solidity ^0.8.24;
 
+
 import {BaseRegistry} from '../../base-types/registry/BaseRegistry.sol';
 import {LibAccess} from '../../libraries/LibAccess.sol';
-import {LibRoles} from '../../libraries/LibRoles.sol';
 import {LibRegistration, TermsSignatureVerification} from '../../libraries/LibRegistration.sol';
 import {FactoryStorage, LibFactory} from '../../libraries/LibFactory.sol';
 import {LibClone} from '../../libraries/LibClone.sol';
@@ -63,7 +63,7 @@ contract AvatarRegistry is BaseRegistry, IAvatarRegistry {
     /**
      * @dev Create a new Avatar entity
      */
-    function createAvatar(CreateAvatarArgs calldata args) external onlyActiveWorld returns (address proxy) {
+    function createAvatar(CreateAvatarArgs calldata args) external onlyActiveWorld nonReentrant returns (address proxy) {
         FactoryStorage storage fs = LibFactory.load();
         require(fs.entityImplementation != address(0), "AvatarRegistration: entity implementation not set");
         require(fs.proxyImplementation != address(0), "AvatarRegistration: proxy implementation not set");

@@ -61,7 +61,7 @@ library LibAccess {
     /**
      * @dev Returns the owner of the contract.
      */
-    function owner() external view returns (address) {
+    function owner() internal view returns (address) {
         AccessStorage storage s = load();
         return s.owner;
     }

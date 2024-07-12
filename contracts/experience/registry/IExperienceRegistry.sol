@@ -27,7 +27,7 @@ interface IExperienceRegistry is IRemovableRegistry, IVectoredRegistry {
     /**
      * @dev Creates a new experience.
      */
-    function createExperience(CreateExperienceArgs calldata args) external payable returns (address, uint256);
+    function createExperience(CreateExperienceArgs calldata args) external returns (address, uint256);
 
     /**
      * @dev Deactivates an experience. This can only be called by a world. The company must be 

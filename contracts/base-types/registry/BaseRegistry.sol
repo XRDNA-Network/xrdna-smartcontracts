@@ -2,12 +2,12 @@
 // Compatible with OpenZeppelin Contracts ^5.0.0
 pragma solidity ^0.8.24;
 
+import {ReentrancyGuard} from '@openzeppelin/contracts/utils/ReentrancyGuard.sol';
 import {IRegistry} from '../../interfaces/registry/IRegistry.sol';
 import {BaseAccess} from '../BaseAccess.sol';
 import {LibRegistration} from '../../libraries/LibRegistration.sol';
 import {FactoryStorage, LibFactory} from '../../libraries/LibFactory.sol';
 import {Version, LibVersion} from '../../libraries/LibVersion.sol';
-import {LibAccess} from '../../libraries/LibAccess.sol';
 import {IRegisteredEntity} from '../../interfaces/entity/IRegisteredEntity.sol';
 import {IEntityProxy} from '../entity/IEntityProxy.sol';
 
@@ -15,7 +15,7 @@ import {IEntityProxy} from '../entity/IEntityProxy.sol';
  * @title BaseRegistry
  * @dev Base contract for all registries.
  */
-abstract contract BaseRegistry is BaseAccess, IRegistry {
+abstract contract BaseRegistry is ReentrancyGuard, BaseAccess, IRegistry {
 
     using LibVersion for Version;
     
@@ -71,7 +71,7 @@ abstract contract BaseRegistry is BaseAccess, IRegistry {
      * done through the registry so that arbitrary logic cannot be attached to entity proxies to circumvent
      * protocol behaviors.
      */
-    function upgradeEntity() public virtual onlyRegisteredEntity {
+    function upgradeEntity() public virtual onlyRegisteredEntity nonReentrant {
         IEntityProxy proxy = IEntityProxy(msg.sender); 
         Version memory v = proxy.getVersion();
 
@@ -90,7 +90,7 @@ abstract contract BaseRegistry is BaseAccess, IRegistry {
      * done through the registry so that arbitrary logic cannot be attached to entity proxies to circumvent
      * protocol behaviors. This is useful for emergency situations where a bug is found in the latest logic.
      */
-    function downgradeEntity() public virtual onlyRegisteredEntity {
+    function downgradeEntity() public virtual onlyRegisteredEntity nonReentrant {
         IEntityProxy proxy = IEntityProxy(msg.sender); 
         Version memory v = proxy.getVersion();
 

@@ -1,5 +1,5 @@
 import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
-import { Registrar, World } from "../src";
+import { Experience, Registrar, World } from "../src";
 import { ethers } from "hardhat";
 // import {ethers } from "ethers"
 import { expect } from "chai";
@@ -345,7 +345,7 @@ describe('JumpTest', () => {
             portalId: experience.portalId
         })
         // company deactivates experience
-        const deactivateT = await company2.deactivateExperience(experience2.address, "TESTING");
+        const deactivateT = await company2.deactivateExperience(current.toString(), "TESTING");
         const deactivateR = await deactivateT.wait();
         if (!deactivateR) {
             throw new Error("Transaction failed with status 0");
@@ -376,11 +376,18 @@ describe('JumpTest', () => {
 
     it('should not allow jump into deactivated experience', async () => {
         // creates a new experience, signs jump request, deactivates experience, tries to jump
-        const {experience, experience2, portalForExperience, company, company2, avatar} = ecosystem;
-        const experience3 = await company.addExperience({
+        const {experience, company, avatar} = ecosystem;
+        const experience3R = await company.addExperience({
             name: "Test Experience 3",
             connectionDetails: "0x",
             entryFee: 0n
+        });
+        
+        const experience3 = new Experience({
+            address: experience3R.experienceAddress.toString(),
+            provider: ethers.provider,
+            portalId: experience3R.portalId,
+            logParser: stack.logParser!
         });
 
         const portalRegistry = stack.portalRegistry!;
@@ -401,26 +408,18 @@ describe('JumpTest', () => {
             portalId: experience3.portalId
         })
         const expReg = stack.experienceRegistry!;
-        const isActiveBefore = await expReg.isExperience(experience3.experienceAddress.toString());
+        const isActiveBefore = await experience3.isActive();
         expect(isActiveBefore).to.be.true;
         // company deactivates experience
-        const deactivateT = await company.deactivateExperience(experience3.experienceAddress.toString(), "TEST");
+        const deactivateT = await company.deactivateExperience(experience3.address, "TEST");
         const deactivateR = await deactivateT.wait();
         if (!deactivateR) {
             throw new Error("Transaction failed with status 0");
         }
         expect(deactivateR.status).to.be.equal(1);
 
-        await time.increase(86400+1);
-        const removeT = await company.removeExperience(experience3.experienceAddress.toString(), "TEST");
-        const removeR = await removeT.wait();
-        if (!removeR) {
-            throw new Error("Transaction failed with status 0");
-        }
-        expect(removeR.status).to.be.equal(1);
-
         // test view functions
-        const isActiveAfter = await expReg.isExperience(experience3.experienceAddress.toString());
+        const isActiveAfter = await experience3.isActive();
         expect(isActiveAfter).to.be.false;
 
         let jumpFailed = false;

@@ -57,7 +57,9 @@ abstract contract BaseAccess is IAccessControl {
         LibAccess.setOwner(newOwner);
     }
 
+    /*
     function initAccess(address o, address[] calldata admins) internal {
         LibAccess.initAccess(o, admins);
     }
+    */
 }

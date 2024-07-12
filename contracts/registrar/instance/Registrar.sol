@@ -34,6 +34,7 @@ contract Registrar is BaseRemovableEntity, IRegistrar {
         worldRegistry = IWorldRegistry(args.worldRegistry);
     }
 
+    receive() external payable {}
 
     function version() external pure override returns (Version memory) {
         return Version(1, 0);
@@ -46,21 +47,22 @@ contract Registrar is BaseRemovableEntity, IRegistrar {
     /**
      * @dev Initializes the registrar. Must be called by the registry during registration
      */
-    function init(string calldata name, address owner, bytes calldata) external onlyRegistry {
-        LibEntity.load().name = name;
+    function init(string calldata _name, address _owner, bytes calldata) external onlyRegistry {
+       require(bytes(_name).length > 0, "Registrar: name required");
+       LibEntity.load().name = _name;
         RemovableEntityStorage storage rs = LibRemovableEntity.load();
         rs.active = true;
         //the registry itself is the terms authority for a registrar
         rs.termsOwner = msg.sender;
         address[] memory admins = new address[](0);
-        LibAccess.initAccess(owner, admins);
+        LibAccess.initAccess(_owner, admins);
     }
 
 
     /**
      * @dev Registers a new world contract. Must be called by a registrar signer
      */
-    function registerWorld(NewWorldArgs memory args) external payable  onlySigner  returns (address world){
+    function registerWorld(NewWorldArgs memory args) external payable  onlySigner nonReentrant  returns (address world){
         world = worldRegistry.createWorld(CreateWorldArgs({
             sendTokensToOwner: args.sendTokensToOwner,
             owner: args.owner,
@@ -72,6 +74,7 @@ contract Registrar is BaseRemovableEntity, IRegistrar {
             vector: args.baseVector,
             vectorAuthoritySignature: args.vectorAuthoritySignature
         }));
+        require(world != address(0), "Registrar: world creation failed");
         //transfer any attached tokens
         if(msg.value > 0) {
             if(args.sendTokensToOwner) {
@@ -85,21 +88,21 @@ contract Registrar is BaseRemovableEntity, IRegistrar {
     /**
      * @dev Deactivates a world contract. Must be called by a registrar signer
      */
-    function deactivateWorld(address world, string calldata reason) external onlySigner {
+    function deactivateWorld(address world, string calldata reason) external onlySigner nonReentrant {
         worldRegistry.deactivateEntity(IRemovableEntity(world), reason);
     }
 
     /**
      * @dev Reactivates a world contract. Must be called by a registrar signer
      */
-    function reactivateWorld(address world) external onlySigner {
+    function reactivateWorld(address world) external onlySigner nonReentrant {
         worldRegistry.reactivateEntity(IRemovableEntity(world));
     }
 
     /**
      * @dev Removes a world contract. Must be called by a registrar signer
      */
-    function removeWorld(address world, string calldata reason) external onlySigner {
+    function removeWorld(address world, string calldata reason) external onlySigner nonReentrant {
         worldRegistry.removeEntity(IRemovableEntity(world), reason);
     }
 
@@ -117,4 +120,11 @@ contract Registrar is BaseRemovableEntity, IRegistrar {
     function isTermsOwnerSigner(address a) external view returns (bool) {
         return isSigner(a);
     }
+
+    function withdraw(uint256 amount) external override onlyOwner {
+        require(amount <= address(this).balance, "Registrar: insufficient balance");
+        payable(owner()).transfer(amount);
+    }
+
+    
 }

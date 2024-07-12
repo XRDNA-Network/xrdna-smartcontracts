@@ -6,13 +6,16 @@ import {BaseRegistry} from '../../base-types/registry/BaseRegistry.sol';
 import {BaseRemovableRegistry} from '../../base-types/registry/BaseRemovableRegistry.sol';
 import {LibAccess } from '../../libraries/LibAccess.sol';
 import {IRegistrarRegistry, CreateNonRemovableRegistrarArgs, CreateRegistrarArgs} from './IRegistrarRegistry.sol';
-import {VectorAddress, LibVectorAddress} from '../../libraries/LibVectorAddress.sol';
 import {FactoryStorage, LibFactory} from '../../libraries/LibFactory.sol';
 import {LibClone} from '../../libraries/LibClone.sol';
 import {IRegistrar} from '../instance/IRegistrar.sol';
 import {LibRegistration, TermsSignatureVerification} from '../../libraries/LibRegistration.sol';
 import {Version} from '../../libraries/LibVersion.sol';
 import {IEntityProxy} from '../../base-types/entity/IEntityProxy.sol';
+import {IRemovableEntity} from '../../interfaces/entity/IRemovableEntity.sol';
+import {ChangeEntityTermsArgs, IRemovableRegistry} from '../../interfaces/registry/IRemovableRegistry.sol';
+import {LibEntityRemoval} from '../../libraries/LibEntityRemoval.sol';
+import {IEntityRemoval} from '../../interfaces/registry/IEntityRemoval.sol';
 
 
 /**
@@ -30,10 +33,13 @@ contract RegistrarRegistry is BaseRemovableRegistry, IRegistrarRegistry {
         return Version(1, 0);
     }
 
+
+    receive() external payable {}
+    
     /**
      * @inheritdoc IRegistrarRegistry
      */
-    function createNonRemovableRegistrar(CreateNonRemovableRegistrarArgs calldata args) external payable onlySigner returns (address) {
+    function createNonRemovableRegistrar(CreateNonRemovableRegistrarArgs calldata args) external payable onlySigner nonReentrant returns (address) {
         FactoryStorage storage fs = LibFactory.load();
         
         //make sure proxy and logic have been set
@@ -70,11 +76,8 @@ contract RegistrarRegistry is BaseRemovableRegistry, IRegistrarRegistry {
     /**
      * @inheritdoc IRegistrarRegistry
      */
-    function createRemovableRegistrar(CreateRegistrarArgs calldata args) external payable onlySigner returns (address proxy) {
+    function createRemovableRegistrar(CreateRegistrarArgs calldata args) external payable onlySigner nonReentrant returns (address proxy) {
         
-        //make sure signature for terms is still valid
-        require(args.expiration > block.timestamp, "RegistrarRegistry: signature expired");
-
         //and that there is a grace period, if even terms have 0 coverage period. This gives Registrar
         //opportunity to correct any issues with the terms before being removed.
         require(args.terms.gracePeriodDays > 0, "RegistrarRegistry: grace period must be greater than 0");
@@ -123,6 +126,37 @@ contract RegistrarRegistry is BaseRemovableRegistry, IRegistrarRegistry {
     function withdraw(uint256 amount) public onlyOwner {
         require(amount <= address(this).balance, "RegistrarRegistry: amount exceeds balance");
         payable(owner()).transfer(amount);
+    }
+
+    /**
+     * @dev Called by the entity's authority to deactivate the entity for the given reason.
+     */
+    function deactivateEntity(IRemovableEntity entity, string calldata reason) external onlyAdmin override(BaseRemovableRegistry, IEntityRemoval)  {
+        LibEntityRemoval.deactivateEntity(entity, reason);
+    }
+
+    /**
+     * @dev Called by the entity's terms owner to reactivate the entity.
+     */
+    function reactivateEntity(IRemovableEntity entity) external onlyAdmin override(BaseRemovableRegistry, IEntityRemoval)   {
+        LibEntityRemoval.reactivateEntity(entity);
+    }
+
+    /**
+     * @dev Removes an entity from the registry. Can only be called by the terms owner and only after deactivating
+     * the entity and waiting for the grace period to expire. A grace period must be set to given ample time
+     * for the entity to respond to deactivation.
+     */
+    function removeEntity(IRemovableEntity entity, string calldata reason) external onlyAdmin override(BaseRemovableRegistry, IEntityRemoval)   {
+        LibEntityRemoval.removeEntity(entity, reason);
+    }
+
+    /**
+     * @dev Returns the terms for the given entity address
+     
+     */
+    function changeEntityTerms(ChangeEntityTermsArgs calldata args) public onlyAdmin override(BaseRemovableRegistry, IRemovableRegistry)   {
+        LibRegistration.changeEntityTerms(args);
     }
 }
 

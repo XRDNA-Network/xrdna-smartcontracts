@@ -253,6 +253,10 @@ export class Company {
         return await RPCRetryHandler.withRetry(() => this.con.revokeERC721(asset, holder, tokenId));
     }
 
+    async setERC721BaseURI(asset: string, uri: string): Promise<TransactionResponse> {
+        return await RPCRetryHandler.withRetry(() => this.con.setERC721BaseURI(asset, uri));
+    }
+
     async addAssetCondition(asset: AddressLike, condition: AddressLike): Promise<TransactionResponse> {
         return await RPCRetryHandler.withRetry(() => this.con.addAssetCondition(asset, condition));
     }

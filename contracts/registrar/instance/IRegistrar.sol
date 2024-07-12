@@ -48,7 +48,7 @@ interface IRegistrar is IAccessControl, IRemovableEntity, ITermsOwner  {
     event RegistrarReactivatedWorld(address indexed world);
     event RegistrarRemovedWorld(address indexed world, string reason);
 
-    function init(string calldata name, address owner, bytes calldata initData) external;
+    function init(string calldata _name, address _owner, bytes calldata _initData) external;
 
     /**
      * @dev Registers a new world contract. Must be called by a registrar signer
@@ -69,4 +69,6 @@ interface IRegistrar is IAccessControl, IRemovableEntity, ITermsOwner  {
      * @dev Removes a world contract. Must be called by a registrar signer
      */
     function removeWorld(address world, string calldata reason) external;
+
+    function withdraw(uint256 amount) external;
 }

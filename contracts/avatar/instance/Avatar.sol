@@ -2,7 +2,6 @@
 // Compatible with OpenZeppelin Contracts ^5.0.0
 pragma solidity ^0.8.24;
 
-import {ReentrancyGuard} from '@openzeppelin/contracts/utils/ReentrancyGuard.sol';
 import {BaseEntity} from '../../base-types/entity/BaseEntity.sol';
 import {IExperienceRegistry} from '../../experience/registry/IExperienceRegistry.sol';
 import {LibEntity, EntityStorage} from '../../libraries/LibEntity.sol';
@@ -50,7 +49,7 @@ struct AvatarConstructorArgs {
  * ability to add and remove wearables, as well as the ability to jump between experiences.
  * Avatar contracts hold assets and can be used to represent a user in a virtual world.
  */
-contract Avatar is BaseEntity, ReentrancyGuard, IAvatar {
+contract Avatar is BaseEntity, IAvatar {
 
     using LibLinkedList for LinkedList;
     using MessageHashUtils for bytes;
@@ -81,6 +80,14 @@ contract Avatar is BaseEntity, ReentrancyGuard, IAvatar {
         companyRegistry = ICompanyRegistry(args.companyRegistry);
         erc721Registry = IAssetRegistry(args.erc721Registry);
         portalRegistry = IPortalRegistry(args.portalRegistry);
+    }
+
+
+    receive() external payable {}
+
+    function withdraw(uint256 amount) public onlyOwner {
+        require(amount <= address(this).balance, 'Company: Insufficient balance');
+        payable(msg.sender).transfer(amount);
     }
 
 
@@ -218,7 +225,7 @@ contract Avatar is BaseEntity, ReentrancyGuard, IAvatar {
      * @dev Add a wearable asset to the avatar. This must be called by the avatar owner. 
      * This will revert if there are already 200 wearables configured.
      */
-    function addWearable(Wearable calldata wearable) public onlyOwner  {
+    function addWearable(Wearable calldata wearable) public nonReentrant onlyOwner  {
         canAddWearable(wearable);
 
         AvatarStorage storage s = LibAvatar.load();
@@ -259,7 +266,8 @@ contract Avatar is BaseEntity, ReentrancyGuard, IAvatar {
      * If fees are required for the jump, they must be attached to the transaction or come
      * from the avatar contract balance.
      */
-    function jump(AvatarJumpRequest memory request) public payable onlyOwner {
+    function jump(AvatarJumpRequest memory request) public payable nonReentrant onlyOwner {
+        require(request.portalId > 0, "Avatar: portalId cannot be zero");
         PortalInfo memory portal = _verifyCompanySignature(request);
 
         require(request.agreedFee == portal.fee, "Avatar: agreed fee does not match portal fee");
@@ -284,9 +292,10 @@ contract Avatar is BaseEntity, ReentrancyGuard, IAvatar {
      * contract balance. The avatar owner signature approves the transfer of funds if 
      * coming from avatar contract.
      */
-    function delegateJump(DelegatedJumpRequest memory request) public payable onlyActiveCompany {
+    function delegateJump(DelegatedJumpRequest memory request) public payable nonReentrant onlyActiveCompany {
         _verifyAvatarSignature(request);
         PortalInfo memory portal = portalRegistry.getPortalInfoById(request.portalId);
+        require(portal.destination.company() == msg.sender, "Avatar: company does not own destination experience");
         
         require(request.agreedFee == portal.fee, "Avatar: agreed fee does not match portal fee");
 
@@ -302,14 +311,6 @@ contract Avatar is BaseEntity, ReentrancyGuard, IAvatar {
         emit IAvatar.JumpSuccess(address(portal.destination), portal.fee, connectionDetails);
     }
 
-
-    /**
-     * @dev Withdraw funds from the avatar contract. This must be called by the avatar owner.
-     */
-    function withdraw(uint256 amount) public onlyOwner {
-        require(amount >= address(this).balance, 'Avatar: Insufficient balance');
-        payable(owner()).transfer(amount);
-    }
 
     /**
      * @dev Receive ERC721 tokens sent to the avatar. This must be called by a registered
@@ -357,6 +358,7 @@ contract Avatar is BaseEntity, ReentrancyGuard, IAvatar {
         
         //get the portal info for the destination experience
         portal = portalRegistry.getPortalInfoById(request.portalId);
+        require(address(portal.destination) != address(0), "Avatar: destination portal not found: ");
 
         //get the destination experience's owning company
         ICompany company = ICompany(portal.destination.company());

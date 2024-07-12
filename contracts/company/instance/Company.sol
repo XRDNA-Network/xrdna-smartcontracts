@@ -47,6 +47,7 @@ contract Company is BaseRemovableEntity, ICompany {
 
     modifier onlyIfActive {
         require(LibRemovableEntity.load().active, 'Company: Company is not active');
+        require(IWorld(LibRemovableEntity.load().termsOwner).isEntityActive(), 'Company: World is not active');
         _;
     }
 
@@ -65,6 +66,13 @@ contract Company is BaseRemovableEntity, ICompany {
         erc20Registry = IAssetRegistry(args.erc20Registry);
         erc721Registry = IAssetRegistry(args.erc721Registry);
         avatarRegistry = IAvatarRegistry(args.avatarRegistry);
+    }
+
+    receive() external payable {}
+
+    function withdraw(uint256 amount) public onlyOwner {
+        require(amount <= address(this).balance, 'Company: Insufficient balance');
+        payable(msg.sender).transfer(amount);
     }
 
     function version() external pure override returns (Version memory) {
@@ -138,8 +146,6 @@ contract Company is BaseRemovableEntity, ICompany {
         //and the asset allows to mint
         require(mintable.canMint(to, amount), "Company: cannot mint to address");
 
-        _verifyAvatarMinting(to);
-
         //all checks passed
         return true;
     }
@@ -162,8 +168,6 @@ contract Company is BaseRemovableEntity, ICompany {
         //and the asset allows to mint
         require(mintable.canMint(to), "Company: cannot mint to address");
 
-        _verifyAvatarMinting(to);
-
         //all checks passed
         return true;
     }
@@ -172,7 +176,7 @@ contract Company is BaseRemovableEntity, ICompany {
      * @dev Mints the given ERC20 asset to the given address. This can only be called by a company
      * signer and only if the company is active.
      */
-    function mintERC20(address asset, address to, uint256 amount) public onlySigner {
+    function mintERC20(address asset, address to, uint256 amount) public nonReentrant onlySigner {
         require(canMintERC20(asset, to, amount), "Company: cannot mint asset");
         IERC20Asset(asset).mint(to, amount);
     }
@@ -181,7 +185,7 @@ contract Company is BaseRemovableEntity, ICompany {
      * @dev Mints the given ERC721 asset to the given address. This can only be called by a company
      * signer and only if the company is active.
      */
-    function mintERC721(address asset, address to) public onlySigner {
+    function mintERC721(address asset, address to) public nonReentrant onlySigner {
         require(canMintERC721(asset, to), "Company: cannot mint asset");
         IERC721Asset(asset).mint(to);
     }
@@ -190,13 +194,11 @@ contract Company is BaseRemovableEntity, ICompany {
      * @dev Revokes the given ERC20 asset from the given address. This can only be called by a company
      * signer and only if the company is active.
      */
-    function revokeERC20(address asset, address holder, uint256 amount) public onlySigner onlyIfActive {
+    function revokeERC20(address asset, address holder, uint256 amount) public nonReentrant onlySigner onlyIfActive {
        //make sure the asset is registered. It doesn't have to be active to be revoked
         require(erc20Registry.isRegistered(asset), "Company: asset not registered");
         IERC20Asset mintable = IERC20Asset(asset);
 
-        //make sure this company is the asset issuer
-        require(mintable.issuer() == address(this), "Company: not issuer of asset");
         mintable.revoke(holder, amount);
     }
 
@@ -204,35 +206,27 @@ contract Company is BaseRemovableEntity, ICompany {
      * @dev Revokes the given ERC721 asset from the given address. This can only be called by a company
      * signer and only if the company is active.
      */
-    function revokeERC721(address asset, address holder, uint256 tokenId) public onlySigner onlyIfActive {
+    function revokeERC721(address asset, address holder, uint256 tokenId) public nonReentrant onlySigner onlyIfActive {
        //make sure the asset is registered. It doesn't have to be active to be revoked
         require(erc721Registry.isRegistered(asset), "Company: asset not registered");
         IERC721Asset mintable = IERC721Asset(asset);
 
-        //make sure this company is the asset issuer
-        require(mintable.issuer() == address(this), "Company: not issuer of asset");
         mintable.revoke(holder, tokenId);
     }
 
-    //verify if receiver is avatar and if ok to mint to the avatar
-    function _verifyAvatarMinting(address to) internal view {
-        //if minting to an avatar, 
-        if(avatarRegistry.isRegistered(to)) {
-            //make sure avatar allows it if they are not in this company's experience
-            IAvatar avatar = IAvatar(to);
-            if(!avatar.canReceiveTokensOutsideOfExperience()) {
-                address exp = avatar.location();
-                require(exp != address(0), "Company: avatar location is not an experience");
-                require(IExperience(exp).company() == address(this), "Company: avatar location is not in an experience owned by this company");
-            }
-        }
+    /**
+        * @dev Sets the base URI for an ERC721 asset minted by this company. This can only be called by admins
+     */
+    function setERC721BaseURI(address asset, string calldata uri) public nonReentrant onlyAdmin {
+        require(erc721Registry.isRegistered(asset), "Company: asset not registered");
+        IERC721Asset(asset).setBaseURI(uri);
     }
 
     /**
      * @dev Adds an experience to the parent world. This also creates a portal into the 
      * experience and registers it in the PortalRegistry.
      */
-    function addExperience(AddExperienceArgs memory args) public onlyAdmin returns (address experience, uint256 portalId) {
+    function addExperience(AddExperienceArgs memory args) public nonReentrant onlyAdmin returns (address experience, uint256 portalId) {
         
         //use the company's vector as a starting point
         VectorAddress memory sub = vectorAddress();
@@ -261,7 +255,7 @@ contract Company is BaseRemovableEntity, ICompany {
     /**
      * @dev Deactivates an experience. This can only be called by company admin
      */
-    function deactivateExperience(address experience, string calldata reason) public onlyAdmin {
+    function deactivateExperience(address experience, string calldata reason) public nonReentrant onlyAdmin {
         //ask the world to deactivate
         IWorld(world()).deactivateExperience(experience, reason);
         emit CompanyDeactivatedExperience(experience, reason);
@@ -270,7 +264,7 @@ contract Company is BaseRemovableEntity, ICompany {
     /**
      * @dev Reactivates an experience. This can only be called by company admin
      */
-    function reactivateExperience(address experience) public onlyAdmin {
+    function reactivateExperience(address experience) public nonReentrant onlyAdmin {
         IWorld(world()).reactivateExperience(experience);
         emit CompanyReactivatedExperience(experience);
     }
@@ -280,18 +274,9 @@ contract Company is BaseRemovableEntity, ICompany {
      * experience and unregisters it from the PortalRegistry. This can only be called
      * by company admin
      */
-    function removeExperience(address experience, string calldata reason) public onlyAdmin {
+    function removeExperience(address experience, string calldata reason) public nonReentrant onlyAdmin {
         uint256 portalId = IWorld(world()).removeExperience(experience, reason);
         emit CompanyRemovedExperience(experience, reason, portalId);
-    }
-
-
-    /**
-     * @dev Withdraws the given amount of funds from the company. Only the owner can withdraw funds.
-     */
-    function withdraw(uint256 amount) public onlyOwner {
-        require(amount >= address(this).balance, 'Company: Insufficient funds');
-        payable(LibAccess.owner()).transfer(amount);
     }
 
     /**
@@ -299,7 +284,7 @@ contract Company is BaseRemovableEntity, ICompany {
      * contract provides the necessary authorization checks and that only the experience
      * owner can add conditions.
      */
-    function addExperienceCondition(address experience, address condition) public onlyAdmin {
+    function addExperienceCondition(address experience, address condition) public nonReentrant onlyAdmin {
         require(IExperience(experience).company() == address(this), 'Company: Experience does not belong to company');
         IExperience(experience).addPortalCondition(condition);
     }
@@ -308,7 +293,7 @@ contract Company is BaseRemovableEntity, ICompany {
     /**
      * @dev Removes an experience condition from an experience
      */
-    function removeExperienceCondition(address experience) public onlyAdmin {
+    function removeExperienceCondition(address experience) public nonReentrant onlyAdmin {
         require(IExperience(experience).company() == address(this), 'Company: Experience does not belong to company');
         IExperience(experience).removePortalCondition();
     }
@@ -317,7 +302,7 @@ contract Company is BaseRemovableEntity, ICompany {
      * @dev Changes the fee associated with a portal to an experience owned by the company.
      * Going through the company provides appropriate authorization checks.
      */
-    function changeExperiencePortalFee(address experience, uint256 fee) public onlyAdmin {
+    function changeExperiencePortalFee(address experience, uint256 fee) public nonReentrant onlyAdmin {
         IExperience(experience).changePortalFee(fee);
     }
 
@@ -326,14 +311,14 @@ contract Company is BaseRemovableEntity, ICompany {
      * contract provides the necessary authorization checks and that only the asset
      * issuer can add conditions.
      */
-    function addAssetCondition(address asset, address condition) public onlyAdmin {
+    function addAssetCondition(address asset, address condition) public nonReentrant onlyAdmin {
         IAsset(asset).setCondition(condition);
     }
 
     /**
      * @dev Removes an asset condition from an asset
      */
-    function removeAssetCondition(address asset) public onlyAdmin {
+    function removeAssetCondition(address asset) public nonReentrant onlyAdmin {
         IAsset(asset).removeCondition();
     }
 
@@ -343,7 +328,7 @@ contract Company is BaseRemovableEntity, ICompany {
      * for companies that want to offer free jumps to avatars but charge them for the
      * experience.
      */
-    function delegateJumpForAvatar(DelegatedAvatarJumpRequest calldata request) public onlySigner {
+    function delegateJumpForAvatar(DelegatedAvatarJumpRequest calldata request) public nonReentrant onlySigner {
         IAvatar avatar = IAvatar(request.avatar);
         //go through avatar contract to make the jump so that it pays the fee
         avatar.delegateJump(DelegatedJumpRequest({

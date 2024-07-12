@@ -27,6 +27,7 @@ struct ChangeEntityTermsArgs {
  */
 interface IRemovableRegistry is IRegistry, IEntityRemoval {
 
+
     event RegistrarDeactivatedWorld(address indexed world, string reason);
     event RegistrarReactivatedWorld(address indexed world);
     event RegistrarRemovedWorld(address indexed world, string reason);

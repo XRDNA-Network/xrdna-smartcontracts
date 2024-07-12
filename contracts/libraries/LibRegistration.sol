@@ -12,7 +12,6 @@ import {ChangeEntityTermsArgs} from '../interfaces/registry/IRemovableRegistry.s
 
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
-import "hardhat/console.sol";
 
 
 
@@ -77,6 +76,8 @@ struct TermedRegistration {
 //entity registration storage
 struct RegistrationStorage {
 
+    uint256 reentrancyLock;
+
     //removable entities
     mapping(address => TermedRegistration) removableRegistrations;
 
@@ -96,8 +97,15 @@ library LibRegistration {
     using MessageHashUtils for bytes;
     using LibVectorAddress for VectorAddress;
 
-
     uint256 public constant DAY = 1 days;
+
+    modifier nonReentrant() {
+        RegistrationStorage storage rs = load();
+        require(rs.reentrancyLock == 0, "LibRegistration: reentrant call");
+        rs.reentrancyLock = 1;
+        _;
+        rs.reentrancyLock = 0;
+    }
 
     function load() internal pure returns (RegistrationStorage storage ds) {
         bytes32 slot = LibStorageSlots.REGISTRATION_STORAGE;
@@ -155,7 +163,7 @@ library LibRegistration {
     /**
      * @dev Registers a non-removable entity. The name must be globally unique.
      */
-    function registerNonRemovableEntity(address entity) public {
+    function registerNonRemovableEntity(address entity) public nonReentrant {
         RegistrationStorage storage rs = load();
         require(!rs.staticRegistrations[entity], "LibRegistration: entity already registered");
         IRegisteredEntity e = IRegisteredEntity(entity);
@@ -171,7 +179,7 @@ library LibRegistration {
     /**
      * @dev Registers a removable entity. The name must be globally unique.
      */
-    function registerRemovableEntity(address entity, address termsOwner, RegistrationTerms memory terms) public {
+    function registerRemovableEntity(address entity, address termsOwner, RegistrationTerms memory terms) public nonReentrant {
         require(termsOwner != address(0), "LibRegistration: terms owner cannot be zero address");
 
         RegistrationStorage storage rs = load();
@@ -221,7 +229,7 @@ library LibRegistration {
     /**
      * @dev Registers a removable entity with a vector address.
      */
-    function registerRemovableVectoredEntity(RegistrationWithTermsAndVector memory args) public  {
+    function registerRemovableVectoredEntity(RegistrationWithTermsAndVector memory args) public {
         registerRemovableEntity(args.entity, args.termsOwner, args.terms);
         if(bytes(args.vector.x).length > 0) {
             RegistrationStorage storage rs = load();
@@ -254,7 +262,6 @@ library LibRegistration {
     function changeEntityTerms(ChangeEntityTermsArgs calldata args) public {
         RegistrationStorage storage rs = load();
         TermedRegistration storage reg = rs.removableRegistrations[args.entity];
-        require(ITermsOwner(reg.owner).isStillActive(), "RegistrationModule: entity terms owner is no longer active");
         RegistrationTerms memory newTerms = _verifyEntitySignature(args);
         reg.terms = newTerms;
 
@@ -307,8 +314,8 @@ library LibRegistration {
         bytes32 sigHash = b.toEthSignedMessageHash();
         address w = ECDSA.recover(sigHash, args.entitySignature);
 
-        //the entity can sign with any signer address to agree to changing terms
-        require(IAccessControl(args.entity).isSigner(w), "BaseRegistrationModule: entity signature invalid");
+        //the entity admin address must agree to changing terms
+        require(IAccessControl(args.entity).isAdmin(w), "BaseRegistrationModule: entity signature invalid");
         return newTerms;
     }
 }

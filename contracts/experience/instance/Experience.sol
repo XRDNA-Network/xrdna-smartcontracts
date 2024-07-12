@@ -7,7 +7,6 @@ import {VectorAddress, LibVectorAddress} from '../../libraries/LibVectorAddress.
 import {LibRemovableEntity, RemovableEntityStorage} from '../../libraries/LibRemovableEntity.sol';
 import {IExperienceRegistry} from '../../experience/registry/IExperienceRegistry.sol';
 import {LibEntity} from '../../libraries/LibEntity.sol';
-import {LibAccess} from '../../libraries/LibAccess.sol';
 import {Version} from '../../libraries/LibVersion.sol';
 import {IExperience, ExperienceInitArgs, ExperienceInfo, JumpEntryRequest} from './IExperience.sol';
 import {ICompany} from '../../company/instance/ICompany.sol';
@@ -55,6 +54,8 @@ contract Experience is BaseRemovableEntity, IExperience {
         portalRegistry = IPortalRegistry(args.portalRegistry);
     }
 
+    receive() external payable {}
+
     function version() public pure override returns (Version memory) {
         return Version(1, 0);
     }
@@ -66,7 +67,6 @@ contract Experience is BaseRemovableEntity, IExperience {
     function init(ExperienceInitArgs memory args) public onlyRegistry {
         require(bytes(args.name).length > 0, 'Experience: Invalid name');
         require(args.company != address(0), 'Experience: Invalid company');
-        require(bytes(args.name).length > 0, 'Experience: Invalid name');
         RemovableEntityStorage storage rs = LibRemovableEntity.load();
         require(rs.termsOwner == address(0), 'Experience: Already initialized');
 
@@ -90,7 +90,7 @@ contract Experience is BaseRemovableEntity, IExperience {
      * the caller (this experience) is registered, and registration requires certain information about 
      * the experience that is set during initialization.
      */
-    function initPortal() public override returns (uint256 portal) {
+    function initPortal() public override nonReentrant returns (uint256 portal) {
         
         ExperienceStorage storage es = LibExperience.load();
         //register new portal with the registry
@@ -111,18 +111,17 @@ contract Experience is BaseRemovableEntity, IExperience {
      * @dev Deactivates the experience. This can only be called by the experience registry. This also
      * deactivates the portal associated with the experience.
      */
-    function deactivate(string calldata reason) public override(IRemovable, BaseRemovableEntity) onlyRegistry {
+    function deactivate(string calldata reason) public override(IRemovable, BaseRemovableEntity) onlyRegistry nonReentrant {
         //deactivate portal THEN experience
         portalRegistry.deactivatePortal(LibExperience.load().portalId, reason);
         super.deactivate(reason);
-        
     }
 
     /**
      * @dev Reactivates the experience. This can only be called by the experience registry. This also
      * reactivates the portal associated with the experience.
      */
-    function reactivate() public override(IRemovable, BaseRemovableEntity) onlyRegistry {
+    function reactivate() public override(IRemovable, BaseRemovableEntity) onlyRegistry nonReentrant {
         //reactivate experience THEN portal
         super.reactivate();
         portalRegistry.reactivatePortal(LibExperience.load().portalId);
@@ -133,7 +132,7 @@ contract Experience is BaseRemovableEntity, IExperience {
      * @dev Removes the experience. This can only be called by the experience registry. This also
      * removes the portal associated with the experience.
      */
-    function remove(string calldata reason) public override(IRemovable, BaseRemovableEntity) onlyRegistry {
+    function remove(string calldata reason) public override(IRemovable, BaseRemovableEntity) onlyRegistry nonReentrant {
         //remove portal THEN experience
         portalRegistry.removePortal(LibExperience.load().portalId, reason);
         super.remove(reason);
@@ -190,7 +189,7 @@ contract Experience is BaseRemovableEntity, IExperience {
     /**
      * @dev Adds a portal condition to the experience. This can only be called by the parent company contract
      */
-    function addPortalCondition(address condition) public onlyCompany {
+    function addPortalCondition(address condition) public onlyCompany nonReentrant {
         require(condition != address(0), 'Experience: Invalid condition');
         portalRegistry.addCondition(IPortalCondition(condition));
     }
@@ -198,14 +197,14 @@ contract Experience is BaseRemovableEntity, IExperience {
     /**
      * @dev Removes the portal condition from the experience. This can only be called by the parent company contract
      */
-    function removePortalCondition() public onlyCompany {
+    function removePortalCondition() public onlyCompany nonReentrant {
         portalRegistry.removeCondition();
     }
 
     /**
      * @dev Changes the portal fee for this experience. This can only be called by the parent company contract
      */
-    function changePortalFee(uint256 fee) public onlyCompany {
+    function changePortalFee(uint256 fee) public onlyCompany nonReentrant {
         portalRegistry.changePortalFee(fee);
     }
 
@@ -229,8 +228,9 @@ contract Experience is BaseRemovableEntity, IExperience {
      * @dev Called when an avatar jumps into this experience. This can only be called by the 
      * portal registry so that any portal condition is evaluated before entering the experience.
      */
-    function entering(JumpEntryRequest memory) public payable onlyPortalRegistry returns (bytes memory) {
+    function entering(JumpEntryRequest memory) public payable onlyPortalRegistry nonReentrant returns (bytes memory) {
         ExperienceStorage storage s = LibExperience.load();
+        require(ICompany(LibRemovableEntity.load().termsOwner).isEntityActive(), 'Experience: Company is not active');
         
         if(s.entryFee > 0) {
             require(msg.value == s.entryFee, "Experience: incorrect entry fee");
@@ -238,6 +238,15 @@ contract Experience is BaseRemovableEntity, IExperience {
         }
         return s.connectionDetails;
     }
-    
+
+    /**
+     * @dev Withdraws funds from the experience. This can only be called by the parent company contract 
+     * but should never be necessary since all funds for experience jumps are transferred to the company. 
+     * This is really only necessary to recover funds mistakenely sent to this contract.
+     */
+    function withdraw(uint256 amount) public onlyCompany {
+        require(amount <= address(this).balance, 'Experience: Insufficient balance');
+        payable(msg.sender).transfer(amount);
+    }
 
 }

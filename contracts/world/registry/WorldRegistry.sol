@@ -84,15 +84,8 @@ contract WorldRegistry is BaseRemovableRegistry, BaseVectoredRegistry, IWorldReg
     /**
      * @inheritdoc IWorldRegistry
      */
-    function createWorld(CreateWorldArgs calldata args) public override onlyActiveRegistrar returns (address) {
-        
-        //make sure terms sig has not expired
-        require(args.expiration > block.timestamp, "RegistrarRegistry: signature expired");
-
-        //make sure there is a grace period if no terms coverage applied. This allows worlds to 
-        //respond to deactivation before being removed.
-        require(args.terms.gracePeriodDays > 0, "RegistrarRegistry: grace period must be greater than 0");
-        
+    function createWorld(CreateWorldArgs calldata args) public override onlyActiveRegistrar nonReentrant returns (address) {
+         
         //make sure proxy and logic has been set
         FactoryStorage storage fs = LibFactory.load();
         require(fs.entityImplementation != address(0), "RegistrarRegistry: entity implementation not set");
@@ -146,7 +139,7 @@ contract WorldRegistry is BaseRemovableRegistry, BaseVectoredRegistry, IWorldReg
     /**
      * @inheritdoc IWorldRegistry
      */
-    function changeRegistrarWithTerms(ChangeRegistrarArgs calldata args) external override onlyActiveRegistrar {
+    function changeRegistrarWithTerms(ChangeRegistrarArgs calldata args) external override onlyActiveRegistrar nonReentrant {
 
         //verify signatures for migrating to new registrar
         _verifyMigrationSigs(args);
@@ -180,7 +173,7 @@ contract WorldRegistry is BaseRemovableRegistry, BaseVectoredRegistry, IWorldReg
         require(args.expiration > block.timestamp, "Registrar: migration signature expired");
         RegistrationStorage storage rs = LibRegistration.load();
         TermedRegistration storage tr = rs.removableRegistrations[args.entity];
-        ITermsOwner owner = ITermsOwner(tr.owner);
+        ITermsOwner to = ITermsOwner(tr.owner);
 
         bytes32 hash = keccak256(abi.encode(msg.sender, args.expiration, args.newTerms.fee, args.newTerms.coveragePeriodDays, args.newTerms.gracePeriodDays));
         bytes memory b = new bytes(32);
@@ -190,10 +183,10 @@ contract WorldRegistry is BaseRemovableRegistry, BaseVectoredRegistry, IWorldReg
         //make sure signer is a signer for the destination experience's company
         bytes32 sigHash = b.toEthSignedMessageHash();
         address w = ECDSA.recover(sigHash, args.entitySignature);
-        require(IWorld(args.entity).isSigner(w), "Registrar: entity signature invalid");
+        require(IWorld(args.entity).isAdmin(w), "Registrar: entity signature invalid");
         
         if(args.oldRegistrarSignature.length == 0) {
-            require(!owner.isStillActive(), "Registrar: current registrar is active but no signature provided");
+            require(!to.isStillActive(), "Registrar: current registrar is active but no signature provided");
         } else {
             bytes32 oldHash = keccak256(abi.encode(args.entity, msg.sender, args.expiration));
             bytes memory oldB = new bytes(32);
@@ -202,7 +195,7 @@ contract WorldRegistry is BaseRemovableRegistry, BaseVectoredRegistry, IWorldReg
             }
             bytes32 oldSigHash = oldB.toEthSignedMessageHash();
             address r = ECDSA.recover(oldSigHash, args.oldRegistrarSignature);
-            require(owner.isTermsOwnerSigner(r), "Registrar: current registrar signature invalid");
+            require(to.isTermsOwnerSigner(r), "Registrar: current registrar signature invalid");
         }
     }
 }

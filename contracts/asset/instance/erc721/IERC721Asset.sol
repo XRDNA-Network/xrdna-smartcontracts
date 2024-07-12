@@ -20,6 +20,8 @@ interface IERC721Asset  is IAsset {
      */
     event Approval(address indexed owner, address indexed approved, uint256 indexed tokenId);
 
+    event BaseURIChanged(string baseURI);
+
     event ERC721Minted(address indexed to, uint256 indexed tokenId);
 
     /**
@@ -52,6 +54,11 @@ interface IERC721Asset  is IAsset {
      * @dev Returns the uri used to retrieve token metadata
      */
     function tokenURI(uint256 tokenId) external view returns (string memory);
+
+    /**
+     * @dev Sets the base URI for all token ids
+     */
+    function setBaseURI(string memory baseURI) external;
 
     /**
      * @dev Gets address approved to manage the given token ID

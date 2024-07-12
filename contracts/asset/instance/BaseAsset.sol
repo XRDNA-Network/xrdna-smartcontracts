@@ -107,28 +107,28 @@ abstract contract BaseAsset is BaseRemovableEntity, IAsset {
      * @dev Returns the symbol of the token, usually a shorter version of the
      * name.
      */
-    function symbol() external view returns (string memory) {
+    function symbol() public view returns (string memory) {
         return LibAsset.load().symbol;
     }
 
     /**
      * @dev Returns the address of the issuer (company) of the asset.
      */
-    function issuer() external view returns (address) {
+    function issuer() public view returns (address) {
         return LibAsset.load().issuer;
     }
 
     /**
      * @dev Returns the address of the origin chain where the asset was created.
      */
-    function originAddress() external view returns (address) {
+    function originAddress() public view returns (address) {
         return LibAsset.load().originAddress;
     }
 
     /**
      * @dev Returns the chain id of the origin chain where the asset was created.
      */
-    function originChainId() external view returns (uint256) {
+    function originChainId() public view returns (uint256) {
         return LibAsset.load().originChainId;
     }
 
@@ -136,7 +136,7 @@ abstract contract BaseAsset is BaseRemovableEntity, IAsset {
      * @dev sets a condition on the asset for viewing and / or using. Only the issuer can
      * call this function.
      */
-    function setCondition(address condition) external onlyIssuer {
+    function setCondition(address condition) public onlyIssuer {
         require(condition != address(0), "BaseAsset: condition cannot be zero address");
         LibAsset.load().condition = IAssetCondition(condition);
         emit AssetConditionSet(condition);
@@ -146,7 +146,7 @@ abstract contract BaseAsset is BaseRemovableEntity, IAsset {
      * @dev removes the condition on the asset for viewing and / or using. Only the issuer can
         * call this function.
      */
-    function removeCondition() external onlyIssuer {
+    function removeCondition() public onlyIssuer {
         delete LibAsset.load().condition;
         emit AssetConditionRemoved();
     }   
@@ -154,7 +154,7 @@ abstract contract BaseAsset is BaseRemovableEntity, IAsset {
     /**
      * @dev Checks if the asset can be viewed based on the world/company/experience/avatar
      */
-    function canViewAsset(AssetCheckArgs memory args) external view returns (bool) {
+    function canViewAsset(AssetCheckArgs memory args) public view returns (bool) {
         IAssetCondition con = LibAsset.load().condition;
         return address(con) == address(0) || con.canView(args);
     }
@@ -162,21 +162,24 @@ abstract contract BaseAsset is BaseRemovableEntity, IAsset {
     /**
      * @dev Checks if the asset can be used based on the world/company/experience/avatar
      */
-    function canUseAsset(AssetCheckArgs memory args) external view returns (bool) {
+    function canUseAsset(AssetCheckArgs memory args) public view returns (bool) {
         IAssetCondition con = LibAsset.load().condition;
         return address(con) == address(0) || con.canUse(args);
     }
 
 
-    /**
-     * @dev Verifies that the issuer of this asset also ows the experience for the avatar. 
-     * This prevents airdropping tokens when not wanted by the avatar.
-     */
-    function _verifyAvatarLocationMatchesIssuer(IAvatar avatar) internal view {
-        //get the avatar's current location
-        address e = avatar.location();
-        require(e != address(0), "BaseAsset: avatar has no location");
-        IExperience exp = IExperience(e);
-        require(exp.company() == LibAsset.load().issuer, "BaseAsset: avatar does not allow assets outside of its current experience");
+    //verify if receiver is avatar and if ok to mint to the avatar
+    function _verifyAvatarMinting(address to) internal view {
+        //if minting to an avatar, 
+        if(avatarRegistry.isRegistered(to)) {
+            //make sure avatar allows it if they are not in this company's experience
+            IAvatar avatar = IAvatar(to);
+            if(!avatar.canReceiveTokensOutsideOfExperience()) {
+                address exp = avatar.location();
+                require(exp != address(0), "BaseAsset: avatar location is not an experience");
+                require(IExperience(exp).company() == issuer(), "BaseAsset: avatar location is not in an experience owned by this company");
+            }
+        }
     }
+
 }

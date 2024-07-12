@@ -6,11 +6,9 @@ import {BaseRegistry} from '../../base-types/registry/BaseRegistry.sol';
 import {BaseRemovableRegistry} from '../../base-types/registry/BaseRemovableRegistry.sol';
 import {BaseVectoredRegistry} from '../../base-types/registry/BaseVectoredRegistry.sol';
 import {LibAccess} from '../../libraries/LibAccess.sol';
-import {LibRoles} from '../../libraries/LibRoles.sol';
 import {LibRegistration, TermsSignatureVerification} from '../../libraries/LibRegistration.sol';
 import {FactoryStorage, LibFactory} from '../../libraries/LibFactory.sol';
 import {LibClone} from '../../libraries/LibClone.sol';
-import {VectorAddress, LibVectorAddress} from '../../libraries/LibVectorAddress.sol';
 import {ICompanyRegistry, CreateCompanyArgs} from './ICompanyRegistry.sol';
 import {ICompany, CompanyInitArgs} from '../instance/ICompany.sol';
 import {IWorldRegistry} from '../../world/registry/IWorldRegistry.sol';
@@ -54,10 +52,8 @@ contract CompanyRegistry is BaseRemovableRegistry, BaseVectoredRegistry, ICompan
     /**
      * @dev create a company and register it in this registry.
      */
-    function createCompany(CreateCompanyArgs calldata args) external onlyActiveWorld returns (address) {
+    function createCompany(CreateCompanyArgs calldata args) external nonReentrant onlyActiveWorld returns (address) {
         
-        //since companies are removable entities, they must have a grace period before removal.
-        require(args.terms.gracePeriodDays > 0, "RegistrarRegistrationExt: grace period required for removable registration");
         FactoryStorage storage fs = LibFactory.load();
         
         //make sure we have the necessary implementations set

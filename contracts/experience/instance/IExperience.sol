@@ -55,7 +55,7 @@ interface IExperience is IRemovableEntity {
      * @dev Initializes the portal for this experience. This is called after initialization and
      * registration in the experience registry. It can only be called once and by its registry.
      */
-    function initPortal() external returns (uint256 portalId);
+    function initPortal() external returns (uint256 id);
     
     /**
      * @dev Returns the company that controls this experience

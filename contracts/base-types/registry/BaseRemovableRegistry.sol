@@ -39,14 +39,14 @@ abstract contract BaseRemovableRegistry is BaseRegistry, IRemovableRegistry {
     /**
      * @dev Called by the entity's authority to deactivate the entity for the given reason.
      */
-    function deactivateEntity(IRemovableEntity entity, string calldata reason) external onlyEntityOwner(address(entity)) override {
+    function deactivateEntity(IRemovableEntity entity, string calldata reason) external onlyEntityOwner(address(entity)) override virtual {
         LibEntityRemoval.deactivateEntity(entity, reason);
     }
 
     /**
      * @dev Called by the entity's terms owner to reactivate the entity.
      */
-    function reactivateEntity(IRemovableEntity entity) external onlyEntityOwner(address(entity)) override {
+    function reactivateEntity(IRemovableEntity entity) external onlyEntityOwner(address(entity)) override virtual {
         LibEntityRemoval.reactivateEntity(entity);
     }
 
@@ -55,7 +55,7 @@ abstract contract BaseRemovableRegistry is BaseRegistry, IRemovableRegistry {
      * the entity and waiting for the grace period to expire. A grace period must be set to given ample time
      * for the entity to respond to deactivation.
      */
-    function removeEntity(IRemovableEntity entity, string calldata reason) external onlyEntityOwner(address(entity)) override {
+    function removeEntity(IRemovableEntity entity, string calldata reason) external onlyEntityOwner(address(entity)) override virtual {
         LibEntityRemoval.removeEntity(entity, reason);
     }
 
@@ -136,7 +136,7 @@ abstract contract BaseRemovableRegistry is BaseRegistry, IRemovableRegistry {
     /**
      * @dev Change the terms for an entity. Can only be called by the entity's terms owner.
      */
-    function changeEntityTerms(ChangeEntityTermsArgs calldata args) public onlyEntityOwner(args.entity) override{
+    function changeEntityTerms(ChangeEntityTermsArgs calldata args) public onlyEntityOwner(args.entity) override virtual {
         LibRegistration.changeEntityTerms(args);
     }
 

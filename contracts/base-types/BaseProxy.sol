@@ -61,6 +61,11 @@ abstract contract BaseProxy {
 
     receive() external payable {}
 
+    function withdraw(uint256 amount) external onlyOwner {
+        require(amount <= address(this).balance, "EntityProxy: insufficient balance");
+        payable(msg.sender).transfer(amount);
+    }
+
     //storage loader
     function load() internal pure returns (ProxyStorage storage ps) {
         bytes32 slot = LibStorageSlots.ENTITY_PROXY_STORAGE;
