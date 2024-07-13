@@ -98,7 +98,7 @@ describe("Company", () => {
         expect(r.receipt.status).to.equal(1);
         expect(r.tokenId).to.be.greaterThan(0);
         mintedERC721TokenId = r.tokenId;
-        const assetCon = new ERC721Asset({address: asset, provider: ethers.provider, logParser: stack.logParser!})
+        const assetCon = new ERC721Asset({address: asset, signerOrProvider: ethers.provider, logParser: stack.logParser!})
         const owner = await assetCon.ownerOf(r.tokenId);
         const balance = await assetCon.balanceOf(to);
         expect(owner).to.equal(to);
@@ -248,7 +248,7 @@ describe("Company", () => {
         const expInstance = new Experience({
             address: expRes.experienceAddress.toString(),
             portalId: expRes.portalId,
-            provider: ethers.provider,
+            signerOrProvider: ethers.provider,
             logParser: stack.logParser!
         });
         const vector = await expInstance.getVectorAddress();

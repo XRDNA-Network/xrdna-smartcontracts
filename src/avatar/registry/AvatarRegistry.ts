@@ -3,14 +3,11 @@ import {abi} from "../../../artifacts/contracts/avatar/registry/IAvatarRegistry.
 import {abi as proxyABI} from '../../../artifacts/contracts/base-types/BaseProxy.sol/BaseProxy.json';
 import { RPCRetryHandler } from "../../RPCRetryHandler";
 import { AllLogParser } from "../../AllLogParser";
+import { BaseRegistry } from "../../base-types/registry/BaseRegistry";
+import { IWrapperOpts } from "../../interfaces/IWrapperOpts";
 
-export interface IAvatarRegistryOpts {
-    address: string;
-    admin: Provider | Signer;
-    logParser: AllLogParser;
-}
 
-export class AvatarRegistry {
+export class AvatarRegistry extends BaseRegistry {
     static get abi() {
         return [
             ...abi,
@@ -19,35 +16,23 @@ export class AvatarRegistry {
     }
     
     private con: Contract;
-    private address: string;
-    private admin: Provider | Signer;
-    readonly logParser: AllLogParser;
 
-    constructor(opts: IAvatarRegistryOpts) {
-        this.address = opts.address;
-        this.admin = opts.admin;
+    constructor(opts: IWrapperOpts) {
+        super(opts);
         const abi = AvatarRegistry.abi;
         if(!abi || abi.length === 0) {
             throw new Error("Invalid ABI");
         }
         this.con = new Contract(this.address, abi, this.admin);
-        this.logParser = opts.logParser;
         this.logParser.addAbi(this.address, abi);
+    }
+
+    getContract(): Contract {
+        return this.con;
     }
 
     async isRegisteredAvatar(avatar: string): Promise<boolean> {
         return await RPCRetryHandler.withRetry(() => this.con.isRegistered(avatar));
-    }
-
-    async setEntityImplementation(impl: string): Promise<TransactionResponse> {
-        const t = await  await RPCRetryHandler.withRetry(() => this.con.setEntityImplementation(impl));
-        const r = await t.wait();
-        const logs = this.logParser.parseLogs(r);
-        const set = logs.get("RegistryEntityImplementationSet");
-        if(!set || set.length == 0) {
-            throw new Error("Entity implementation not set");
-        }
-        return t;
     }
 
 }

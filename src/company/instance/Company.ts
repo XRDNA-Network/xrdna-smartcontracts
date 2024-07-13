@@ -1,22 +1,15 @@
 import { AddressLike, Provider, Signer, TransactionReceipt, TransactionResponse, ethers } from "ethers";
 import { RPCRetryHandler } from "../../RPCRetryHandler";
 import { VectorAddress } from "../../VectorAddress";
-import { AllLogParser } from "../../AllLogParser";
 import { Version } from "../../Version";
 import {abi as cABI} from '../../../artifacts/contracts/company/instance/ICompany.sol/ICompany.json';
 import {abi as proxyABI} from '../../../artifacts/contracts/base-types/entity/IEntityProxy.sol/IEntityProxy.json';
 import { LogNames } from "../../LogNames";
 import { ERC20Asset, ERC721Asset } from "../../asset";
 import { Avatar } from "../../avatar";
+import { BaseRemovableEntity } from "../../base-types/entity/BaseRemovableEntity";
+import { IWrapperOpts } from "../../interfaces/IWrapperOpts";
 
-/**
- * Typescript proxy for World instance
- */
-export interface ICompanyOpts {
-    address: string;
-    admin: Signer | Provider;
-    logParser: AllLogParser;
-}
 
 export interface IAddExperienceArgs {
     name: string,
@@ -56,7 +49,7 @@ export interface IDelegatedAvatarJumpResult {
     fee: bigint;
 }
 
-export class Company {
+export class Company extends BaseRemovableEntity {
 
     static get abi() {
         return  [
@@ -65,45 +58,28 @@ export class Company {
         ]
     }
     
-    readonly address: string;
-    readonly admin: Provider | Signer;
     private con: ethers.Contract;
-    readonly logParser: AllLogParser;
 
-    constructor(opts: ICompanyOpts) {
-        this.address = opts.address;
-        this.admin = opts.admin;
+    constructor(opts: IWrapperOpts) {
+        super(opts);
         const abi = Company.abi;
         if(!abi || abi.length === 0) {
             throw new Error("Invalid ABI");
         }
         this.con = new ethers.Contract(this.address, abi, this.admin);
-        this.logParser = opts.logParser;
         this.logParser.addAbi(this.address, abi);
     }
 
+    getContract(): ethers.Contract {
+        return this.con;
+    }
+
     async isActive(): Promise<boolean> {
-        return await RPCRetryHandler.withRetry(() => this.con.isEntityActive());
+        return super.isEntityActive();
     }
 
     async world(): Promise<AddressLike> {
         return await RPCRetryHandler.withRetry(() => this.con.world());
-    }
-
-    async owner(): Promise<string> {
-        return await RPCRetryHandler.withRetry(() => this.con.owner());
-    }
-
-    async addSigners(signers: string[]): Promise<TransactionResponse> {
-        return await RPCRetryHandler.withRetry(() => this.con.addSigners(signers));
-    }
-
-    async removeSigners(signers: string[]): Promise<TransactionResponse> {
-        return await RPCRetryHandler.withRetry(() => this.con.removeSigners(signers));
-    }
-
-    async isSigner(address: string): Promise<boolean> {
-        return await RPCRetryHandler.withRetry(() => this.con.isSigner(address));
     }
 
     async getVectorAddress(): Promise<VectorAddress> {
@@ -212,7 +188,7 @@ export class Company {
         if(!r.status) {
             throw new Error("Transaction failed with status 0");
         }
-        const erc20 = new ERC20Asset({address: asset, provider: this.admin as Provider, logParser: this.logParser});
+        const erc20 = new ERC20Asset({address: asset, signerOrProvider: this.admin as Provider, logParser: this.logParser});
 
         const logs = erc20.logParser.parseLogs(r);
         const xfers = logs.get(LogNames.ERC20Minted);
@@ -232,7 +208,7 @@ export class Company {
             throw new Error("Transaction failed with status 0");
         }
 
-        const erc721 = new ERC721Asset({address: asset.toString(), provider: this.admin as Provider, logParser: this.logParser});
+        const erc721 = new ERC721Asset({address: asset.toString(), signerOrProvider: this.admin as Provider, logParser: this.logParser});
 
         const logs = erc721.logParser.parseLogs(r);
         const xfers = logs.get(LogNames.ERC721Minted);

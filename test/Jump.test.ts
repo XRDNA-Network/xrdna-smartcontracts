@@ -385,7 +385,7 @@ describe('JumpTest', () => {
         
         const experience3 = new Experience({
             address: experience3R.experienceAddress.toString(),
-            provider: ethers.provider,
+            signerOrProvider: ethers.provider,
             portalId: experience3R.portalId,
             logParser: stack.logParser!
         });

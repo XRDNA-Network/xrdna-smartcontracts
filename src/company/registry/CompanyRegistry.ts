@@ -3,14 +3,11 @@ import {abi} from "../../../artifacts/contracts/company/registry/ICompanyRegistr
 import {abi as proxyABI} from '../../../artifacts/contracts/base-types/BaseProxy.sol/BaseProxy.json';
 import { RPCRetryHandler } from "../../RPCRetryHandler";
 import { AllLogParser } from "../../AllLogParser";
+import { BaseVectoredRegistry } from "../../base-types/registry/BaseVectoredRegistry";
+import { IWrapperOpts } from "../../interfaces/IWrapperOpts";
 
-export interface ICompanyRegistryOpts {
-    address: string;
-    admin: Provider | Signer;
-    logParser: AllLogParser;
-}
 
-export class CompanyRegistry {
+export class CompanyRegistry extends BaseVectoredRegistry {
     static get abi() {
         return [
             ...abi,
@@ -19,20 +16,19 @@ export class CompanyRegistry {
     }
     
     private con: Contract;
-    private address: string;
-    private admin: Provider | Signer;
-    readonly logParser: AllLogParser;
 
-    constructor(opts: ICompanyRegistryOpts) {
-        this.address = opts.address;
-        this.admin = opts.admin;
+    constructor(opts: IWrapperOpts) {
+        super(opts);
         const abi = CompanyRegistry.abi;
         if(!abi || abi.length === 0) {
             throw new Error("Invalid ABI");
         }
         this.con = new Contract(this.address, abi, this.admin);
-        this.logParser = opts.logParser;
         this.logParser.addAbi(this.address, abi);
+    }
+
+    getContract(): Contract {
+        return this.con;
     }
 
     async isRegisteredCompany(company: string): Promise<boolean> {

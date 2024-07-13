@@ -7,12 +7,8 @@ import {abi as cABI} from '../../../artifacts/contracts/avatar/instance/IAvatar.
 import {abi as proxyABI} from '../../../artifacts/contracts/base-types/entity/IEntityProxy.sol/IEntityProxy.json';
 import { LogNames } from "../../LogNames";
 import { ERC721Asset } from "../../asset";
-
-export interface IAvatarOpts {
-    address: string;
-    admin: Signer | Provider;
-    logParser: AllLogParser;
-}
+import { BaseRemovableEntity } from "../../base-types/entity/BaseRemovableEntity";
+import { IWrapperOpts } from "../../interfaces/IWrapperOpts";
 
 
 export interface IAvatarJumpRequest {
@@ -38,7 +34,7 @@ export interface IAvatarInitData {
     appearanceDetails: string;
 }
 
-export class Avatar {
+export class Avatar extends BaseRemovableEntity {
 
     static get abi() {
         return  [
@@ -47,41 +43,20 @@ export class Avatar {
         ]
     }
     
-    readonly address: string;
-    readonly admin: Provider | Signer;
     protected con: ethers.Contract;
-    readonly logParser: AllLogParser;
 
-    constructor(opts: IAvatarOpts) {
-        this.address = opts.address;
-        this.admin = opts.admin;
+    constructor(opts: IWrapperOpts) {
+        super(opts);
         const abi = Avatar.abi;
         if(!abi || abi.length === 0) {
             throw new Error("Invalid ABI");
         }
         this.con = new ethers.Contract(this.address, abi, this.admin);
-        this.logParser = opts.logParser;
         this.logParser.addAbi(this.address, abi);
     }
 
-    async owner(): Promise<string> {
-        return await RPCRetryHandler.withRetry(() => this.con.owner());
-    }
-
-    async addSigners(signers: string[]): Promise<TransactionResponse> {
-        return await RPCRetryHandler.withRetry(() => this.con.addSigners(signers));
-    }
-
-    async removeSigners(signers: string[]): Promise<TransactionResponse> {
-        return await RPCRetryHandler.withRetry(() => this.con.removeSigners(signers));
-    }
-
-    async isSigner(address: string): Promise<boolean> {
-        return await RPCRetryHandler.withRetry(() => this.con.isSigner(address));
-    }
-
-    async getVectorAddress(): Promise<VectorAddress> {
-        return await RPCRetryHandler.withRetry(() => this.con.getBaseVector());
+    getContract(): ethers.Contract {
+        return this.con;
     }
 
     async getName(): Promise<string> {
@@ -172,7 +147,7 @@ export class Avatar {
 
         const erc721 = new ERC721Asset({
             address: wearable.asset.toString(),
-            provider: p,
+            signerOrProvider: p,
             logParser: this.logParser
         });
         return await erc721.tokenURI(wearable.tokenId);
@@ -217,19 +192,5 @@ export class Avatar {
             receipt: r
         } as IAvatarJumpResult;
 
-    }
-
-    async upgrade(): Promise<TransactionResponse> {
-        const t = await RPCRetryHandler.withRetry(() => this.con.upgrade());
-        const r = await t.wait();
-        if(!r.status) {
-            throw new Error("Upgrade failed");
-        }
-        const logs = this.logParser.parseLogs(r);
-        const upgrade = logs.get(LogNames.RegistryUpgradedEntity);
-        if(!upgrade || upgrade.length === 0) {
-            throw new Error("Upgrade failed");
-        }
-        return t;
     }
 }

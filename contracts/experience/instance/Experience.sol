@@ -94,9 +94,11 @@ contract Experience is BaseRemovableEntity, IExperience {
      * the caller (this experience) is registered, and registration requires certain information about 
      * the experience that is set during initialization.
      */
-    function initPortal() public override nonReentrant returns (uint256 portal) {
+    function initPortal() public override nonReentrant onlyRegistry returns (uint256 portal) {
         
         ExperienceStorage storage es = LibExperience.load();
+        require(es.portalId == 0, 'Experience: Portal already initialized');
+        
         //register new portal with the registry
         portal = portalRegistry.addPortal(AddPortalRequest({
             fee: es.entryFee

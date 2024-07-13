@@ -8,15 +8,8 @@ import { IUpgradeResult } from "../../interfaces/IUpgradeable";
 import {abi as WorldABI} from '../../../artifacts/contracts/world/instance/IWorld.sol/IWorld.json';
 import {abi as proxyABI} from '../../../artifacts/contracts/base-types/entity/IEntityProxy.sol/IEntityProxy.json';
 import { RegistrationTerms } from "../../RegistrationTerms";
-
-/**
- * Typescript proxy for World instance
- */
-export interface IWorldOpts {
-    address: string;
-    admin: Signer | Provider;
-    logParser: AllLogParser;
-}
+import { BaseRemovableEntity } from "../../base-types/entity/BaseRemovableEntity";
+import { IWrapperOpts } from "../../interfaces/IWrapperOpts";
 
 export interface ICompanyRegistrationRequest {
     sendTokensToCompanyOwner: boolean;
@@ -56,7 +49,7 @@ export interface IAvatarRegistrationResult {
     receipt: TransactionReceipt;
 }
 
-export class World {
+export class World extends BaseRemovableEntity {
 
     static get abi() {
         return  [
@@ -65,41 +58,20 @@ export class World {
         ]
     }
     
-    readonly address: string;
-    readonly admin: Provider | Signer;
     private world: ethers.Contract;
-    readonly logParser: AllLogParser;
 
-    constructor(opts: IWorldOpts) {
-        this.address = opts.address;
-        this.admin = opts.admin;
+    constructor(opts: IWrapperOpts) {
+        super(opts);
         const abi = World.abi;
         if(!abi || abi.length === 0) {
             throw new Error("Invalid ABI");
         }
         this.world = new ethers.Contract(this.address, abi, this.admin);
-        this.logParser = opts.logParser;
         this.logParser.addAbi(this.address, abi);
     }
 
-    async isActive(): Promise<boolean> {
-        return await RPCRetryHandler.withRetry(() => this.world.isEntityActive());
-    }
-
-    async owner(): Promise<string> {
-        return await RPCRetryHandler.withRetry(() => this.world.owner());
-    }
-
-    async addSigners(signers: string[]): Promise<TransactionResponse> {
-        return await RPCRetryHandler.withRetry(() => this.world.addSigners(signers));
-    }
-
-    async removeSigners(signers: string[]): Promise<TransactionResponse> {
-        return await RPCRetryHandler.withRetry(() => this.world.removeSigners(signers));
-    }
-
-    async isSigner(address: string): Promise<boolean> {
-        return await RPCRetryHandler.withRetry(() => this.world.isSigner(address));
+    getContract(): ethers.Contract {
+        return this.world;
     }
 
     async getVectorAddress(): Promise<VectorAddress> {

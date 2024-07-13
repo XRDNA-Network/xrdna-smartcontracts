@@ -77,7 +77,7 @@ describe("World", () => {
         try {
             const fakeWorld = new World({
                 address: world!.address,
-                admin: signers[0],
+                signerOrProvider: signers[0],
                 logParser: stack.logParser!
             });
             const r = await fakeWorld.addSigners([signers[9].address]);
@@ -109,7 +109,7 @@ describe("World", () => {
         try {
             const fakeWorld = new World({
                 address: world!.address,
-                admin: signers[9],
+                signerOrProvider: signers[9],
                 logParser: stack.logParser!
             });
             const r = await fakeWorld.withdraw(ethers.parseEther("1.0"));
@@ -164,7 +164,7 @@ describe("World", () => {
         expect(r.companyAddress).to.not.be.null;
         company = new Company({
             address: r.companyAddress.toString(),
-            admin: owner,
+            signerOrProvider: owner,
             logParser: stack.logParser!
         });
 
@@ -180,7 +180,7 @@ describe("World", () => {
         experience = new Experience({
             address: eR.experienceAddress.toString(),
             portalId: eR.portalId,
-            provider: ethers.provider,
+            signerOrProvider: ethers.provider,
             logParser: stack.logParser!
         });
 

@@ -77,7 +77,7 @@ export class TestStack {
 
         this.registrarRegistry = new RegistrarRegistry({
             address: registryAddr,
-            admin: this.registrarRegistryOwner,
+            signerOrProvider: this.registrarRegistryOwner,
             logParser: this.logParser
         });
 
@@ -91,14 +91,14 @@ export class TestStack {
         const companyAddr = await mod.companyRegistryProxy.getAddress();
         this.companyRegistry = new CompanyRegistry({
             address: companyAddr,
-            admin: this.registrarRegistryOwner,
+            signerOrProvider: this.registrarRegistryOwner,
             logParser: this.logParser
         });
 
         const avatarAddr = await mod.avatarRegistryProxy.getAddress();
         this.avatarRegistry = new AvatarRegistry({
             address: avatarAddr,
-            admin: this.registrarRegistryOwner,
+            signerOrProvider: this.registrarRegistryOwner,
             logParser: this.logParser
         });
 
@@ -112,20 +112,20 @@ export class TestStack {
         const erc20Addr = await mod.erc20RegistryProxy.getAddress();
         this.erc20Registry = new ERC20AssetRegistry({
             address: erc20Addr,
-            admin: this.registrarRegistryOwner,
+            signerOrProvider: this.registrarRegistryOwner,
             logParser: this.logParser
         });
 
         const erc721Addr = await mod.erc721RegistryProxy.getAddress();
         this.erc721Registry = new ERC721AssetRegistry({
             address: erc721Addr,
-            admin: this.registrarRegistryOwner,
+            signerOrProvider: this.registrarRegistryOwner,
             logParser: this.logParser
         });
         const portalAddr = await mod.portalRegistryProxy.getAddress();
         this.portalRegistry = new PortalRegistry({
             address: portalAddr,
-            admin: this.registrarRegistryOwner,
+            signerOrProvider: this.registrarRegistryOwner,
             logParser: this.logParser
         });
     }
@@ -175,13 +175,13 @@ export class TestStack {
 
         const experience = new Experience({
             address: exp.experienceAddress.toString(),
-            provider: ethers.provider,
+            signerOrProvider: ethers.provider,
             logParser: this.logParser!,
             portalId: exp.portalId
         });
         const experience2 = new Experience({
             address: exp2.experienceAddress.toString(),
-            provider: ethers.provider,
+            signerOrProvider: ethers.provider,
             logParser: this.logParser!,
             portalId: exp2.portalId
         });
@@ -264,8 +264,8 @@ export class TestStack {
         }
         
         this.registrar = new Registrar({
-            registrarAddress: addr,
-            admin: owner,
+            address: addr,
+            signerOrProvider: owner,
             logParser: this.logParser!
         });
         return this.registrar;
@@ -331,7 +331,7 @@ export class TestStack {
         
         this.world = new World({
             address: r.worldAddress,
-            admin: owner,
+            signerOrProvider: owner,
             logParser: this.logParser!
         });
         return {
@@ -382,7 +382,7 @@ export class TestStack {
         }
         return new Company({
             address: r.companyAddress.toString(),
-            admin: owner,
+            signerOrProvider: owner,
             logParser: this.logParser!
         });
     }
@@ -417,7 +417,7 @@ export class TestStack {
 
         return new Avatar({
             address: r.avatarAddress.toString(),
-            admin: owner,
+            signerOrProvider: owner,
             logParser: this.logParser!
         });
 
@@ -442,7 +442,7 @@ export class TestStack {
         }
         return new ERC20Asset({
             address: r.assetAddress.toString(),
-            provider: ethers.provider,
+            signerOrProvider: ethers.provider,
             logParser: this.logParser!
         });
     }
@@ -465,7 +465,7 @@ export class TestStack {
         }
         return new ERC721Asset({
             address: r.assetAddress.toString(),
-            provider: ethers.provider,
+            signerOrProvider: ethers.provider,
             logParser: this.logParser!
         });
     }

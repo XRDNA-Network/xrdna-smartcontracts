@@ -1,17 +1,12 @@
-import { AddressLike, Contract, Provider, Signer, TransactionReceipt, TransactionResponse } from "ethers";
+import { AddressLike, Contract, TransactionReceipt } from "ethers";
 import {abi} from "../../../artifacts/contracts/asset/registry/IAssetRegistry.sol/IAssetRegistry.json";
 import {abi as proxyABI} from '../../../artifacts/contracts/base-types/BaseProxy.sol/BaseProxy.json';
 import { ERC20Asset, ERC20InitData } from "./ERC20Asset";
 import { LogNames } from "../../LogNames";
 import { RPCRetryHandler } from "../../RPCRetryHandler";
-import { isPromise } from "util/types";
-import { AllLogParser } from "../../AllLogParser";
+import { BaseAssetRegistry } from "../BaseAssetRegistry";
+import { IWrapperOpts } from "../../interfaces/IWrapperOpts";
 
-export interface IERC20AssetRegistryOpts {
-    admin: Provider | Signer;
-    address: string;
-    logParser: AllLogParser;
-}
 
 export type CreateERC20AssetResult = {
     receipt: TransactionReceipt;
@@ -27,7 +22,7 @@ export type ERC20CreateArgs = {
     initData: ERC20InitData;
 }
 
-export class ERC20AssetRegistry {
+export class ERC20AssetRegistry extends BaseAssetRegistry {
 
     static get abi() {
         return [
@@ -36,27 +31,18 @@ export class ERC20AssetRegistry {
         ]
     }
     
-    private admin: Provider | Signer;
-    readonly address: string;
     private con: Contract;
-    private logParser: AllLogParser;
-    constructor(opts: IERC20AssetRegistryOpts) {
-        if(isPromise(opts.address)) {
-            throw new Error("Cannot pass address promise to AssetRegistry");
-        }
-        this.admin = opts.admin;
-        this.address = opts.address;
+    constructor(opts: IWrapperOpts) {
+        super(opts);
         this.con = new Contract(this.address, abi, this.admin);
-        this.logParser = opts.logParser;
-        this.logParser.addAbi(this.address, abi);
+    }
+
+    getContract(): Contract {
+        return this.con;
     }
 
     async isRegisteredAsset(assetAddress: AddressLike): Promise<boolean> {
         return await  RPCRetryHandler.withRetry(()=>this.con.isRegistered(assetAddress));
-    }
-
-    async assetExists(originAddress: AddressLike, originChainId: bigint): Promise<boolean> {
-        return await RPCRetryHandler.withRetry(() => this.con.assetExists(originAddress, originChainId));
     }
 
     async registerAsset(cArgs: ERC20CreateArgs): Promise<CreateERC20AssetResult> {

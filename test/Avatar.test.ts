@@ -3,7 +3,7 @@ import { World } from "../typechain-types";
 import {ethers} from "hardhat" 
 // import {ethers } from "ethers"
 
-import { Avatar, ERC721Asset, IAvatarOpts } from "../src";
+import { Avatar, ERC721Asset, IWrapperOpts } from "../src";
 import exp from "constants";
 import { hexlify } from "ethers";
 import { IEcosystem, TestStack } from "./TestStack";
@@ -13,7 +13,7 @@ import {abi} from "../artifacts/contracts/test/IAvatarV2.sol/IAvatarV2.json";
 
 class AvatarV2 extends Avatar {
 
-    constructor(opts: IAvatarOpts) {
+    constructor(opts: IWrapperOpts) {
         super(opts);
         this.con = new ethers.Contract(this.address, abi, this.admin);
     }
@@ -52,7 +52,7 @@ describe('Avatar', () => {
         const {avatar, erc721, company} = ecosystem;
         
         const tokenId = await company.mintERC721(erc721.address, avatar.address);
-        const owner = await erc721.asset.ownerOf(tokenId.tokenId);
+        const owner = await erc721.con.ownerOf(tokenId.tokenId);
 
         expect(owner).to.equal(avatar.address);
 
@@ -218,7 +218,7 @@ describe('Avatar', () => {
 
         const avatarV2 = new AvatarV2({
             address: avatar.address,
-            admin: ecosystem.avatarOwner,
+            signerOrProvider: ecosystem.avatarOwner,
             logParser: avatar.logParser
         });
 

@@ -14,3 +14,5 @@ export * from './asset';
 export * from './avatar';
 export * from './experience';
 export * from './portal';
+export * from './types';
+export * from './interfaces/IWrapperOpts'

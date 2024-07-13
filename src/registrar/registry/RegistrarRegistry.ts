@@ -1,19 +1,14 @@
-import { Provider, Signer, TransactionResponse, ethers } from "ethers";
+import { AddressLike, Provider, Signer, TransactionResponse, ethers } from "ethers";
 import { LogNames } from "../../LogNames";
 import { RPCRetryHandler } from "../../RPCRetryHandler";
 import { AllLogParser } from "../../AllLogParser";
 import { RegistrationTerms } from "../../RegistrationTerms";
 import {abi as ABI} from '../../../artifacts/contracts/registrar/registry/IRegistrarRegistry.sol/IRegistrarRegistry.json';
 import {abi as proxyABI} from '../../../artifacts/contracts/base-types/BaseProxy.sol/BaseProxy.json';
+import { BaseRemovableRegistry } from "../../base-types/registry/BaseRemovableRegistry";
+import { IWrapperOpts } from "../../interfaces/IWrapperOpts";
+import { Bytes } from "../../types";
 
-/**
- * Typescript proxy for RegistrarRegistry deployed contract.
- */
-export interface IRegistrarRegistryOpts {
-    address: string;
-    admin: Provider | Signer;
-    logParser: AllLogParser;
-}
 
 export interface IRegisterRemovableArgs {
     owner: string;
@@ -37,7 +32,22 @@ export interface IRegistrationResult {
     registrarAddress: string;
 }
 
-export class RegistrarRegistry {
+
+export interface  ChangeEntityTermsArgs {
+    //the entity whose terms are changing
+    entity: AddressLike;
+
+    //signature of one of the entity's signers authorizing the change
+    entitySignature: Bytes;
+
+    //expiration for the signature
+    expiration: bigint;
+
+    //new terms
+    terms: RegistrationTerms;
+}
+
+export class RegistrarRegistry extends BaseRemovableRegistry {
     static get abi() {
         return [
             ...ABI,
@@ -45,21 +55,20 @@ export class RegistrarRegistry {
         ]
     }
     
-    readonly address: string;
-    private admin: Provider | Signer;
     private registry: ethers.Contract;
-    private logParser: AllLogParser;
 
-    constructor(opts: IRegistrarRegistryOpts) {
-        this.address = opts.address;
-        this.admin = opts.admin;
+    constructor(opts: IWrapperOpts) {
+        super(opts);
         const abi = RegistrarRegistry.abi;
         if(!abi || abi.length === 0) {
             throw new Error("Invalid ABI");
         }
         this.registry = new ethers.Contract(this.address, abi, this.admin);
-        this.logParser = opts.logParser;
         this.logParser.addAbi(this.address, abi);
+    }
+
+    getContract(): ethers.Contract {
+        return this.registry;
     }
 
     async registerRegistrarNoRemoval(props: IRegisterNonRemovableArgs): Promise<IRegistrationResult> {
@@ -118,51 +127,15 @@ export class RegistrarRegistry {
         return {receipt: r, registrarAddress: addr};
     }
 
-    async getEntityTerms(entity: string): Promise<RegistrationTerms> {
-        if(!this.registry) {
-            throw new Error("Registry not deployed");
-        }
-        const terms = await RPCRetryHandler.withRetry(() => this.registry.getEntityTerms(entity));
-        return {
-            coveragePeriodDays: terms[0],
-            gracePeriodDays: terms[1],
-            fee: terms[2]
-        } as RegistrationTerms;
+    async withdraw(amount: bigint): Promise<TransactionResponse> {
+        return await RPCRetryHandler.withRetry(() => this.registry.withdraw(amount));
     }
 
-    async setTerms(terms: RegistrationTerms): Promise<TransactionResponse> {
-        if(!this.registry) {
-            throw new Error("Registry not deployed");
-        }
-        return await RPCRetryHandler.withRetry(() => this.registry.setTerms(terms));
-    }
-
-    async getTerms(): Promise<RegistrationTerms> {
-        if(!this.registry) {
-            throw new Error("Registry not deployed");
-        }
-        const terms = await RPCRetryHandler.withRetry(() => this.registry.getTerms());
-        return {
-            coveragePeriodDays: terms[0],
-            gracePeriodDays: terms[1],
-            fee: terms[2]
-        } as RegistrationTerms;
-    }
-
-    async isSigner(signer: string): Promise<boolean> {
-        return await RPCRetryHandler.withRetry(() => this.registry.isSigner(signer) );
-    }
-    
-    async addSigners(signers: string[]): Promise<TransactionResponse> {
-        return await RPCRetryHandler.withRetry(() => this.registry.addSigners(signers));
-    }
-
-    async owner(): Promise<string> {
-        return await RPCRetryHandler.withRetry(() => this.registry.owner());
-    }
-
-    async removeSigners(signers: string[]): Promise<TransactionResponse> {
-        return await RPCRetryHandler.withRetry(() => this.registry.removeSigners(signers));
+     /**
+     * Change the terms for an entity. Can only be called by the entity's terms owner.
+     */
+     async changeEntityTerms(args: ChangeEntityTermsArgs): Promise<TransactionResponse>{
+        return RPCRetryHandler.withRetry(() => this.getContract().changeEntityTerms(args));
     }
 }
 

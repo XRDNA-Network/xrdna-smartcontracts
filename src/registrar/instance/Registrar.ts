@@ -6,15 +6,8 @@ import { VectorAddress } from "../../VectorAddress";
 import { LogNames } from "../../LogNames";
 import {abi as ABI} from '../../../artifacts/contracts/registrar/instance/IRegistrar.sol/IRegistrar.json';
 import {abi as proxyABI} from '../../../artifacts/contracts/base-types/entity/IEntityProxy.sol/IEntityProxy.json';
-
-/**
- * Typescript wrapper around regstirar functionality
- */
-export interface IRegistrarOpts {
-    registrarAddress: string;
-    admin: Provider | Signer;
-    logParser: AllLogParser;
-}
+import { BaseRemovableEntity } from "../../base-types/entity/BaseRemovableEntity";
+import { IWrapperOpts } from "../../interfaces/IWrapperOpts";
 
 
 export interface IWorldRegistration {
@@ -34,11 +27,8 @@ export interface IWorldRegistrationResult {
     worldAddress: string;
 }
 
-export class Registrar {
-    readonly address: string;
-    private admin: Provider | Signer;
+export class Registrar extends BaseRemovableEntity {
     private con: ethers.Contract;
-    readonly logParser: AllLogParser;
 
     static get abi() {
         return [
@@ -48,32 +38,18 @@ export class Registrar {
     }
     
 
-    constructor(opts: IRegistrarOpts) {
-        this.address = opts.registrarAddress;
-        this.admin = opts.admin;
+    constructor(opts: IWrapperOpts) {
+        super(opts);
         const abi = Registrar.abi;
         if(!abi || abi.length === 0) {
             throw new Error("ABI not found");
         }
         this.con = new ethers.Contract(this.address, abi, this.admin);
-        this.logParser = opts.logParser;
         this.logParser.addAbi(this.address.toLowerCase(), abi);
     }
 
-    async addSigners(signers: string[]): Promise<TransactionResponse> {
-        return await RPCRetryHandler.withRetry(()=>this.con.addSigners(signers));
-    }
-
-    async removeSigners(signers: string[]): Promise<TransactionResponse> {
-        return await RPCRetryHandler.withRetry(()=>this.con.removeSigners(signers));
-    }
-
-    async isSigner(signer: string): Promise<boolean> {
-        return await RPCRetryHandler.withRetry(()=>this.con.isSigner(signer));
-    }
-
-    async owner(): Promise<string> {
-        return await RPCRetryHandler.withRetry(()=>this.con.owner());
+    getContract(): ethers.Contract {
+        return this.con;
     }
 
     async registerWorld(args: IWorldRegistration): Promise<IWorldRegistrationResult> {
@@ -100,6 +76,29 @@ export class Registrar {
         }
         const addr = adds[0].args[0];
         return {receipt: r, worldAddress: addr};
+    }
+
+    async deactivateWorld(world: AddressLike, reason: string): Promise<TransactionResponse> {
+        return await RPCRetryHandler.withRetry(() => this.con.deactivateWorld(world, reason));
+    }
+
+    /**
+     * Reactivates a world contract. Must be called by a registrar signer
+     */
+    async reactivateWorld(world:AddressLike): Promise<TransactionResponse> {
+        return await RPCRetryHandler.withRetry(() => this.con.reactivateWorld(world));
+    }
+
+    /**
+     * Removes a world contract. Must be called by a registrar signer
+     */
+    async removeWorld(world: AddressLike, reason: string): Promise<TransactionResponse> {
+        return await RPCRetryHandler.withRetry(() => this.con.removeWorld(world, reason));
+    }
+
+
+    async withdraw(amount: bigint): Promise<TransactionResponse> {
+        return await RPCRetryHandler.withRetry(() => this.con.withdraw(amount));
     }
 
 }
