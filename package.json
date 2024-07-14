@@ -11,6 +11,8 @@
     "deploy": "npx hardhat ignition deploy",
     "clear-deployment": "npx hardhat ignition wipe",
     "generate-verify-input": "cat $1 | jq -r '.input' > $1.input.json",
+    "node:start:clean": "./scripts/wipeLocalDeploymentHistory.sh ; yarn build && yarn hardhat node",
+    "node:deploy:all": "./scripts/deployAll.sh localhost",
     "build": "yarn clean ; yarn compile && tsc",
     "compile": "hardhat compile --force",
     "test": "hardhat test"
