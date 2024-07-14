@@ -1,4 +1,4 @@
-import { AddressLike,  ethers } from "ethers";
+import { AddressLike,  Contract,  ethers } from "ethers";
 import {abi} from "../../../artifacts/contracts/asset/instance/erc721/IERC721Asset.sol/IERC721Asset.json";
 import {abi as proxyABI} from '../../../artifacts/contracts/base-types/entity/IEntityProxy.sol/IEntityProxy.json'
 import { RPCRetryHandler } from "../../RPCRetryHandler";
@@ -23,6 +23,10 @@ export class ERC721Asset extends BaseAsset {
             ...abi,
             ...proxyABI
         ]
+    }
+
+    getContract(): Contract {
+        return this.con;
     }
     
     static encodeInitData(data: ERC721InitData): string {

@@ -5,6 +5,8 @@ import { RPCRetryHandler } from "../RPCRetryHandler";
 import { VectorAddress } from "../VectorAddress";
 import { AllLogParser } from "../AllLogParser";
 import { IExperienceInfo } from "./IExperienceInfo";
+import { IWrapperOpts } from "../interfaces/IWrapperOpts";
+import { BaseRegistry } from "../base-types/registry/BaseRegistry";
 
 export interface IExperienceRegistryOpts {
     address: string;
@@ -13,7 +15,7 @@ export interface IExperienceRegistryOpts {
 }
 
 
-export class ExperienceRegistry {
+export class ExperienceRegistry extends BaseRegistry {
     static get abi() {
         return [
             ...abi,
@@ -22,16 +24,19 @@ export class ExperienceRegistry {
     }
     
     private con: Contract;
-    readonly address: string;
-    readonly logParser: AllLogParser;
-    private admin: Provider | Signer;
 
-    constructor(opts: IExperienceRegistryOpts) {
-        this.address = opts.address;
-        this.admin = opts.admin;
+    constructor(opts: IWrapperOpts) {
+        super(opts);
+        const abi = ExperienceRegistry.abi;
+        if(!abi || abi.length === 0) {
+            throw new Error("Invalid ABI");
+        }
         this.con = new Contract(this.address, abi, this.admin);
-        this.logParser = opts.logParser;
         this.logParser.addAbi(this.address, abi);
+    }
+
+    getContract(): Contract {
+        return this.con;
     }
 
     async isExperience(exp: AddressLike): Promise<boolean> {
