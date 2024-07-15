@@ -20,7 +20,7 @@
     "compile": "hardhat compile --force",
     "deploy": "npx hardhat ignition deploy",
     "generate-verify-input": "cat $1 | jq -r '.input' > $1.input.json",
-    "node:start:clean": "./scripts/wipeLocalDeploymentHistory.sh ; yarn build && yarn hardhat node",
+    "node:start:clean": "./scripts/wipeLocalDeploymentHistory.sh 55555; yarn build && yarn hardhat node",
     "node:deploy:all": "./scripts/deployAll.sh localhost",
     "pack:preview": "npm pack && tar -xvzf *.tgz && rm -rf package *.tgz",
     "release": "beachball publish",
