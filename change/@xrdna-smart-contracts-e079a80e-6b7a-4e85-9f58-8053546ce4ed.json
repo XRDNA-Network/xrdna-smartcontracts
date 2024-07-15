@@ -1,7 +1,0 @@
-{
-  "type": "patch",
-  "comment": "Fixed issue with calling wrong contract function",
-  "packageName": "@xrdna/smart-contracts",
-  "email": "mdcoon1@yahoo.com",
-  "dependentChangeType": "patch"
-}

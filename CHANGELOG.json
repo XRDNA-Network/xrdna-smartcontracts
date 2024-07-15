@@ -2,6 +2,21 @@
   "name": "@xrdna/smart-contracts",
   "entries": [
     {
+      "date": "Mon, 15 Jul 2024 19:02:03 GMT",
+      "version": "1.0.1",
+      "tag": "@xrdna/smart-contracts_v1.0.1",
+      "comments": {
+        "patch": [
+          {
+            "author": "mdcoon1@yahoo.com",
+            "package": "@xrdna/smart-contracts",
+            "commit": "54e4eea755acc3b4dadde0a28243b93ae8cb7762",
+            "comment": "Fixed issue with calling wrong contract function"
+          }
+        ]
+      }
+    },
+    {
       "date": "Mon, 15 Jul 2024 17:36:05 GMT",
       "version": "1.0.0",
       "tag": "@xrdna/smart-contracts_v1.0.0",

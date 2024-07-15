@@ -1,8 +1,16 @@
 # Change Log - @xrdna/smart-contracts
 
-This log was last generated on Mon, 15 Jul 2024 17:36:05 GMT and should not be manually modified.
+This log was last generated on Mon, 15 Jul 2024 19:02:03 GMT and should not be manually modified.
 
 <!-- Start content -->
+
+## 1.0.1
+
+Mon, 15 Jul 2024 19:02:03 GMT
+
+### Patches
+
+- Fixed issue with calling wrong contract function (mdcoon1@yahoo.com)
 
 ## 1.0.0
 
