@@ -11,10 +11,10 @@ import { RegistrarRegistry } from "./registrar";
 import { WorldRegistry } from "./world";
 //import { RegistrarRegistry } from "./registrar/registry/RegistrarRegistry";
 export type ABI = any[];
-export const AddrressToABIMap = new Map<string, ABI>();
+export const AddressToABIMap = new Map<string, ABI>();
 
 export const buildAddressToABIMap = (config: DeploymentAddressConfig) => {
-    if(AddrressToABIMap.size > 0) {
+    if(AddressToABIMap.size > 0) {
         return;
     }
 
@@ -22,7 +22,7 @@ export const buildAddressToABIMap = (config: DeploymentAddressConfig) => {
         const address = config.getOrThrow(contractName);
         const abi = resolveABI(contractName);
         if(abi) {
-            AddrressToABIMap.set(address.toLowerCase(), abi);
+            AddressToABIMap.set(address.toLowerCase(), abi);
         }
     });
 }
