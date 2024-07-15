@@ -1,5 +1,5 @@
 import { Log, TransactionReceipt, Interface, LogDescription } from "ethers";
-import { AddrressToABIMap, buildAddressToABIMap } from "./AddressToABIMap";
+import { AddressToABIMap, buildAddressToABIMap } from "./AddressToABIMap";
 import { DeploymentAddressConfig } from "./ContractAddresses";
 
 
@@ -25,7 +25,7 @@ export class AllLogParser {
         logs.forEach( (l: Log) => {
             let ifc = this.abiMap.get(l.address.toLowerCase());
             if(!ifc) {
-                const abiMap = AddrressToABIMap;
+                const abiMap = AddressToABIMap;
                 const addy = l.address.toLowerCase();
                 const abi = abiMap.get(addy);
                 if(!abi) {
