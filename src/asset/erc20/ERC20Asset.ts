@@ -1,80 +1,59 @@
-import { AddressLike, Provider,ethers } from "ethers";
-import {abi} from "../../../artifacts/contracts/asset/erc20/NTERC20Asset.sol/NTERC20Asset.json";
+import { AddressLike, Contract, Provider,ethers } from "ethers";
+import {abi} from "../../../artifacts/contracts/asset/instance/erc20/IERC20Asset.sol/IERC20Asset.json";
+import {abi as proxyABI} from '../../../artifacts/contracts/base-types/entity/IEntityProxy.sol/IEntityProxy.json'
 import { RPCRetryHandler } from "../../RPCRetryHandler";
-import { LogParser } from "../../LogParser";
 import { AllLogParser } from "../../AllLogParser";
 import { BaseAsset } from "../BaseAsset";
+import { IWrapperOpts } from "../../interfaces/IWrapperOpts";
 
-export interface IERC20Opts {
-    address: string;
-    provider: Provider;
-    logParser: AllLogParser;
-}
 
 export type ERC20InitData = {
-    originChainAddress: AddressLike;
-    issuer: AddressLike;
-    originChainId: bigint;
     decimals: number;
-    name: string;
-    symbol: string;
     maxSupply: bigint;
 }
 
 export class ERC20Asset extends BaseAsset {
 
     static encodeInitData(data: ERC20InitData): string {
-        const ifc = new ethers.Interface(abi);
-        const s = ifc.encodeFunctionData("encodeInitData", [data]);
-        return `0x${s.substring(10)}`;
+        return ethers.AbiCoder.defaultAbiCoder().encode([
+            'tuple(uint8 decimals,uint256 maxSupply)'
+        ], [data]);
     }
 
     static get abi() {
-        return abi;
+        return [
+            ...abi,
+            ...proxyABI
+        ]
     }
 
-    readonly address: string;
-    readonly provider: Provider;
-    readonly asset: ethers.Contract;
-    readonly logParser: AllLogParser;
-
     
-
-    constructor(opts: IERC20Opts) {
-        super();
-        this.address = opts.address;
-        this.provider = opts.provider;
-        this.asset = new ethers.Contract(this.address, abi, this.provider);
-        this.logParser = opts.logParser;
+    readonly con: Contract;
+    constructor(opts: IWrapperOpts) {
+        super(opts);
+        this.con = new ethers.Contract(this.address, abi, this.admin);
         this.logParser.addAbi(this.address, abi);
     }
 
-    async name(): Promise<string> {
-        return await  RPCRetryHandler.withRetry(()=>this.asset.name());
+    getContract(): Contract {
+        return this.con;
     }
 
-    async symbol(): Promise<string> {
-        return await  RPCRetryHandler.withRetry(()=>this.asset.symbol());
-    }
-
-    async upgraded(): Promise<boolean> {
-        return await  RPCRetryHandler.withRetry(()=>this.asset.upgraded());
-    }
 
     async totalSupply(): Promise<bigint> {
-        return await  RPCRetryHandler.withRetry(()=>this.asset.totalSupply());
+        return await  RPCRetryHandler.withRetry(()=>this.con.totalSupply());
     }
 
     async balanceOf(account: AddressLike): Promise<bigint> {
-        return await  RPCRetryHandler.withRetry(()=>this.asset.balanceOf(account));
+        return await  RPCRetryHandler.withRetry(()=>this.con.balanceOf(account));
     }
 
     async decimals(): Promise<number> {
-        return await  RPCRetryHandler.withRetry(()=>this.asset.decimals());
+        return await  RPCRetryHandler.withRetry(()=>this.con.decimals());
     }
 
-    async hook(): Promise<string> {
-        return await  RPCRetryHandler.withRetry(()=>this.asset.hook());
+    async canMint(to: AddressLike, amt: bigint): Promise<boolean> {
+        return await RPCRetryHandler.withRetry(() => this.getContract().canMint(to, amt));
     }
 
 }

@@ -1,3 +1,2 @@
-export * from './Company';
-export * from './CompanyFactory';
-export * from './CompanyRegistry';
+export * from './instance/Company';
+export * from './registry/CompanyRegistry';

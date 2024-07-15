@@ -1,78 +1,56 @@
-import { ethers } from "hardhat";
 import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
-import { IWorldRegistration, World } from "../src";
+import { TestStack } from "./TestStack";
+import {ethers} from 'hardhat';
+import { Company, Experience, ICompanyRegistrationRequest, IWorldRegistration, RegistrationTerms, World, signTerms } from "../src";
 import { expect } from "chai";
-import { IWorldStack } from "./test_stack/world/IWorldStack";
-import { StackFactory, StackType } from "./test_stack/StackFactory";
-import { Signer } from "ethers";
-import { Company } from "../src/company/Company";
-import { Experience } from "../src/experience";
-import { IAvatarStack } from "./test_stack/avatar/IAvatarStack";
-import { ICompanyStack } from "./test_stack/company/ICompanyStack";
+import { time } from "@nomicfoundation/hardhat-network-helpers";
 
-describe("World Registration", () => {
 
+
+describe("World", () => {
+
+    let stack: TestStack;
     let signers: HardhatEthersSigner[];
-    let worldStack: IWorldStack;
-    let registrarAdmin: Signer;
-    let registrarSigner: Signer;
-    let worldRegistryAdmin: HardhatEthersSigner;
+    let world: World | null = null;
+    let worldRegistration: IWorldRegistration | null = null;
     let worldOwner: HardhatEthersSigner;
-    let worldRegistration: IWorldRegistration;
-    let companyOwner: HardhatEthersSigner;
-    let avatarOwner: HardhatEthersSigner;
-    let stack: StackFactory;
-    let world: World;
-    let company: Company;
-    let experience: Experience;
-    
+    let company: Company | null = null;
+    let experience: Experience | null = null;
     before(async () => {
-        
         signers = await ethers.getSigners();
-        
-        registrarAdmin = signers[0];
-        registrarSigner = signers[0];
-        worldRegistryAdmin = signers[0];
-        worldOwner = signers[1];
-        companyOwner = signers[2];
-        avatarOwner = signers[3];
-        stack = new StackFactory({
-            companyOwner,
-            worldOwner,
-            avatarOwner
+        stack = new TestStack();
+        await stack.init();
+    });
+
+    it("Should create a world", async () => {
+        worldOwner = signers[3];
+        const {world: w, registration} = await stack.createWorld({
+            owner: worldOwner, tokens: ethers.parseEther('2.0')
         });
-        const {world: w, worldRegistration: wr} = await stack.init();
-        world = w;
-        worldRegistration = wr;
-        //reset the registrar admins since those are linked to XRDNA signer
-        registrarAdmin = stack.admins.registrarAdmin;
-        registrarSigner = stack.admins.registrarSigner;
-        worldStack = stack.getStack<IWorldStack>(StackType.WORLD);
-        
+        world = w; 
+        worldRegistration = registration;
+        expect(world).to.not.be.null;
+        const owner = await world.owner();
+        expect(owner).to.equal(worldOwner.address);
+        const isSigner = await world.isSigner(worldOwner.address);
+        expect(isSigner).to.be.true;
+
+        const bal = await ethers.provider.getBalance(world.address);
+        expect(bal).to.equal(ethers.parseEther('2.0'));
     });
 
-    it("Should register a world", async () => {
-        
-        expect(world).to.not.be.undefined;
-        console.log("World deployed at: ", world.address);
-    });
-
-    
     it("Should not allow duplicate registration", async () => {
         let fail = false;
         try {
         
-            const worldReg = worldStack.getWorldRegistry();
-            const r = await worldReg.createWorld({
-                registrarSigner,
-                details: worldRegistration,
-            });
+            const reg = stack.registrar!;
+            const r = await reg.registerWorld(worldRegistration!);
             if(r) {
                 fail = true;
             }
         } catch(e:any) {
             expect(e.message).to.not.be.undefined;
-            if(e.message.indexOf("name already in use") < 0) {
+            if(e.message.indexOf("name already registered") < 0) {
                 throw e;
             }
         }
@@ -84,11 +62,11 @@ describe("World Registration", () => {
     
     it("Should allow signers to be added", async () => {
         
-        const t = await world.addSigners([signers[8].address]);
+        const t = await world!.addSigners([signers[8].address]);
         const r = await t.wait();
         expect(r).to.not.be.undefined;
         expect(r!.status).to.equal(1);
-        const is = await world.isSigner(signers[8].address);
+        const is = await world!.isSigner(signers[8].address);
         expect(is).to.equal(true);
 
     });
@@ -98,9 +76,9 @@ describe("World Registration", () => {
         let fail = false;
         try {
             const fakeWorld = new World({
-                address: world.address,
-                admin: signers[0],
-                logParser: stack.logParser
+                address: world!.address,
+                signerOrProvider: signers[0],
+                logParser: stack.logParser!
             });
             const r = await fakeWorld.addSigners([signers[9].address]);
             if(r) {
@@ -108,214 +86,171 @@ describe("World Registration", () => {
             }
         } catch(e:any) {
             expect(e.message).to.not.be.undefined;
-            if(e.message.indexOf("caller does not have admin role") < 0) {
+            if(e.message.indexOf("restricted to admins") < 0) {
                 throw e;
             }
         }
     });
 
     it("Should remove signers", async () => {
-        const b4 = await world.isSigner(signers[8].address);
+        const b4 = await world!.isSigner(signers[8].address);
         expect(b4).to.equal(true);
 
-        const t = await world.removeSigners([signers[8].address]);
+        const t = await world!.removeSigners([signers[8].address]);
         const r = await t.wait();
         expect(r).to.not.be.undefined;
         expect(r!.status).to.equal(1);
-        const is = await world.isSigner(signers[8].address);
+        const is = await world!.isSigner(signers[8].address);
         expect(is).to.equal(false);
     });
 
-    it("Should not allow non-signer to withdraw funds", async () => {
+    it("Should not allow non-owner to withdraw funds", async () => {
         let fail = false;
         try {
             const fakeWorld = new World({
-                address: world.address,
-                admin: signers[9],
-                logParser: stack.logParser
+                address: world!.address,
+                signerOrProvider: signers[9],
+                logParser: stack.logParser!
             });
-            const r = await fakeWorld.withdraw(BigInt("1000000000000000000"));
+            const r = await fakeWorld.withdraw(ethers.parseEther("1.0"));
             if(r) {
                 fail = true;
             }
         } catch(e:any) {
             expect(e.message).to.not.be.undefined;
-            if(e.message.indexOf("caller does not have admin role") < 0) {
+            if(e.message.indexOf("restricted to owner") < 0) {
                 throw e;
             }
         }
     });
 
     it("Should allow owner to withdraw funds", async () => {
-        const b4 = await ethers.provider.getBalance(worldOwner.address);
-        const t = await world.withdraw(ethers.parseEther("1.0"));
+        const b4 = await ethers.provider.getBalance(worldOwner!.address);
+        const t = await world!.withdraw(ethers.parseEther("1.0"));
         const r  = await t.wait();
         expect(r).to.not.be.undefined;
         expect(r!.status).to.equal(1);
-        const after = await ethers.provider.getBalance(worldOwner.address);
+        const after = await ethers.provider.getBalance(worldOwner!.address);
         expect(after).to.be.greaterThan(b4);
     });
 
-    ///////////////////////////////////////////////////////////////////////
-    // Hook registration
-    ///////////////////////////////////////////////////////////////////////
-    it("Should register a hook", async () => {
-        const avatar = stack.getStack<IAvatarStack>(StackType.AVATAR);
-        //hook has to be an address, so we're just faking using another deployed contract
-        const fakeHook = avatar.getAvatarRegistry().address;
-        const t = await world.setHook(fakeHook);
-        const r = await t.wait();
-        expect(r).to.not.be.undefined;
-        expect(r!.status).to.equal(1);
-        const hook = await world.getHook();
-        expect(hook).to.equal(fakeHook);
 
-    });
-
-    it("Should remove a hook", async () => {
-        const t = await world.removeHook();
-        const r = await t.wait();
-        expect(r).to.not.be.undefined;
-        expect(r!.status).to.equal(1);
-        const hook = await world.getHook();
-        expect(hook).to.equal(ethers.ZeroAddress);
-    });
-
-    ///////////////////////////////////////////////////////////////////////
-    // Company registration through world
-    ///////////////////////////////////////////////////////////////////////
     it("Should register a company", async () => {
-        const res = await world.registerCompany({
-            name: "My Company",
-            owner: companyOwner.address,
-            sendTokensToCompanyOwner: false
-        }, ethers.parseEther("1.0"));
-        expect(res).to.not.be.undefined;
-        expect(res.receipt.status).to.equal(1);
-        expect(res.companyAddress).to.not.be.undefined;
-        expect(res.vectorAddress).to.not.be.undefined;
-        company = new Company({
-            address: res.companyAddress.toString(),
-            admin: companyOwner,
-            logParser: stack.logParser
+        const owner = signers[4];
+        const terms: RegistrationTerms = {
+            fee: 0n,
+            coveragePeriodDays: 0n,
+            gracePeriodDays: 30n
+        };
+        const expiration = BigInt(Math.ceil(Date.now() / 1000) + 300);
+        const termsSign = await signTerms({
+            terms,
+            signer: owner,
+            termsOwner: world!.address,
+            expiration
         });
-        const r = await company.addExperience({
-            name: "My Experience",
-            entryFee: ethers.parseEther("0.1"),
-            connectionDetails: "0x"
-        });
-            
-        expect(r).to.not.be.undefined;
+        const req = {
+            sendTokensToCompanyOwner: false,
+            owner: await owner.getAddress(),
+            name: 'Test Company',
+            terms,
+            ownerTermsSignature: termsSign,
+            expiration
+        }
+
+        const r = await world!.registerCompany(req);
+        expect(r).to.not.be.null;
         expect(r.receipt.status).to.equal(1);
-        expect(r.experienceAddress).to.not.be.undefined;
+        expect(r.companyAddress).to.not.be.null;
+        company = new Company({
+            address: r.companyAddress.toString(),
+            signerOrProvider: owner,
+            logParser: stack.logParser!
+        });
+
+        const eR = await company!.addExperience({
+            connectionDetails: "https://myexperience.com/test",
+            entryFee: ethers.parseEther('0.1'),
+            name: 'Test Experience',
+        });
+        expect(eR).to.not.be.null;
+        expect(eR.receipt.status).to.equal(1);
+        expect(eR.experienceAddress).to.not.be.null;
+        expect(eR.portalId).to.not.be.null;
         experience = new Experience({
-            address: r.experienceAddress.toString(),
-            portalId: r.portalId,
-            provider: ethers.provider,
-            logParser: stack.logParser
+            address: eR.experienceAddress.toString(),
+            portalId: eR.portalId,
+            signerOrProvider: ethers.provider,
+            logParser: stack.logParser!
         });
 
+        //make sure vector for world didn't change after creating company
+        const vector = await world!.getVectorAddress();
+        expect(vector.p).is.equal(0);
+        expect(vector.p_sub).is.equal(0);
     });
 
-    it("Should register a company and send tokens to owner", async () => {
-        const b4 = await ethers.provider.getBalance(companyOwner.address);
-        const res = await world.registerCompany({
-            name: "Another Company",
-            owner: companyOwner.address,
-            sendTokensToCompanyOwner: true
-        }, ethers.parseEther("1.0"));
-        expect(res).to.not.be.undefined;
-        expect(res.receipt.status).to.equal(1);
-        expect(res.companyAddress).to.not.be.undefined;
-        const c = new Company({
-            address: res.companyAddress.toString(),
-            admin: companyOwner,
-            logParser: stack.logParser
-        });
-        const b = await ethers.provider.getBalance(companyOwner.address);
-        expect(b).to.be.greaterThan(b4);
-    });
+    
 
-    it("Should not allow  a duplicate company", async () => {
-        try {
-           await world.registerCompany({
-                name: "My Company",
-                owner: companyOwner.address,
-                sendTokensToCompanyOwner: false
-            }, ethers.parseEther("1.0"));
-            throw new Error("Should not have allowed creation");
-        } catch(e:any) {
-            expect(e.message).to.not.be.undefined;
-            if(e.message.indexOf("company name already taken") < 0) {
-                throw e;
-            }
-        }
-    });
-
-    ///////////////////////////////////////////////////////////////////////
-    // Avatar registration through world
-    ///////////////////////////////////////////////////////////////////////
     it("Should register an avatar", async () => {
-        const res = await world.registerAvatar({
-            avatarOwner,
-            defaultExperience: experience.address,
-            appearanceDetails: "0x",
+        const owner = signers[5];
+        const req = {
+            sendTokensToOwner: false,
+            avatarOwner: await owner.getAddress(),
+            username: 'testMe',
+            defaultExperience: experience!.address,
             canReceiveTokensOutsideOfExperience: false,
-            sendTokensToAvatarOwner: false,
-            username: "myavatar"
-        });
-        expect(res).to.not.be.undefined;
-        expect(res.receipt.status).to.equal(1);
-        expect(res.avatarAddress).to.not.be.undefined;
+            appearanceDetails: "https://myavatar.com/testMe"
+        }
+
+        const r = await world!.registerAvatar(req);
+        expect(r).to.not.be.null;
+        expect(r.receipt.status).to.equal(1);
+        expect(r.avatarAddress).to.not.be.null;
+
     });
 
-    it("Should not allow duplicate avatar", async () => {
-        try {
-            await world.registerAvatar({
-                avatarOwner,
-                defaultExperience: experience.address,
-                appearanceDetails: "0x",
-                canReceiveTokensOutsideOfExperience: false,
-                sendTokensToAvatarOwner: false,
-                username: "myavatar"
-            });
-            throw new Error("Should not have allowed creation");
-        } catch(e:any) {
-            expect(e.message).to.not.be.undefined;
-            if(e.message.indexOf("username already exists") < 0) {
-                throw e;
-            }
-        }
-    });
 
     it("Should deactivate a company", async () => {
-        const t = await world.deactivateCompany(company.address);
+        const t = await world!.deactivateCompany(company!.address, "Testing");
         const r = await t.wait();
         expect(r).to.not.be.undefined;
         expect(r!.status).to.equal(1);
-        const a = await company.isActive();
+        const a = await company!.isActive();
         expect(a).to.equal(false);
-
-        const cReg = stack.getStack<ICompanyStack>(StackType.COMPANY);
-        const c = cReg.getCompanyRegistry();
-        const registered = await c.isRegisteredCompany(company.address);
-        expect(registered).to.equal(false);
     });
 
 
     it("Should reactivate a company", async () => {
-        const t = await world.reactivateCompany(company.address);
+        const t = await world!.reactivateCompany(company!.address);
         const r = await t.wait();
         expect(r).to.not.be.undefined;
         expect(r!.status).to.equal(1);
-        const a = await company.isActive();
+        const a = await company!.isActive();
         expect(a).to.equal(true);
+    });
 
-        const cReg = stack.getStack<ICompanyStack>(StackType.COMPANY);
-        const c = cReg.getCompanyRegistry();
-        const registered = await c.isRegisteredCompany(company.address);
-        expect(registered).to.equal(true);
+    it("Should remove a company", async () => {
+        //first deactivate
+        const t = await world!.deactivateCompany(company!.address, "Testing");
+        const r = await t.wait();
+        expect(r).to.not.be.undefined;
+        expect(r!.status).to.equal(1);
+        const a = await company!.isActive();
+        expect(a).to.equal(false);
+
+        //simulate grace period elapases so we can remove
+        await time.increase(86400 * 31); //31 days
+
+        //now remove
+        const t2 = await world!.removeCompany(company!.address, "Testing 2");
+        const r2 = await t2.wait();
+        expect(r2).to.not.be.undefined;
+        expect(r2!.status).to.equal(1);
+
+        const reg = stack.companyRegistry!;
+        const isReg = await reg.isRegisteredCompany(company!.address);
+        expect(isReg).to.equal(false);
 
     });
-    
 });

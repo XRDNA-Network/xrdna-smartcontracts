@@ -2,19 +2,13 @@
 // Compatible with OpenZeppelin Contracts ^5.0.0
 pragma solidity ^0.8.24;
 
-import {IExperience} from '../experience/IExperience.sol';
-import {VectorAddress} from '../VectorAddress.sol';
+import {IExperience} from '../experience/instance/IExperience.sol';
+import {VectorAddress} from '../libraries/LibVectorAddress.sol';
 import {IPortalCondition} from './IPortalCondition.sol';
-
-struct PortalInfo {
-    IExperience destination;
-    IPortalCondition condition;
-    uint256 fee;
-    bool active;
-}
+import {PortalInfo} from '../libraries/LibPortal.sol';
+import {Version} from '../libraries/LibVersion.sol';
 
 struct AddPortalRequest {
-    IExperience destination;
     uint256 fee;
 }
 
@@ -22,12 +16,17 @@ interface IPortalRegistry {
 
     event JumpSuccessful(uint256 indexed portalId, address indexed avatar, address indexed destination);
     event PortalAdded(uint256 indexed portalId, address indexed experience);
-    event PortalRemoved(uint256 indexed portalId, address indexed experience);
+    event PortalDeactivated(uint256 indexed portalId, address indexed experience, string reason);
+    event PortalReactivated(uint256 indexed portalId, address indexed experience);
+    event PortalRemoved(uint256 indexed portalId, address indexed experience, string reason);
     event PortalConditionAdded(uint256 indexed portalId, address indexed condition);
     event PortalConditionRemoved(uint256 indexed portalId);
     event PortalRegistryUpgraded(address indexed newRegistry);
     event PortalFeeChanged(uint256 indexed portalId, uint256 indexed newFee);
     event PortalDestinationUpgraded(uint256 indexed portalId, address indexed oldExperience, address indexed newExperience);
+
+
+    function version() external pure returns (Version memory);
 
     /**
      * @dev Returns the portal info for the given portal ID
@@ -67,11 +66,27 @@ interface IPortalRegistry {
     function addPortal(AddPortalRequest memory) external returns (uint256);
 
     /**
+     * @dev Deactivates a portal. This must be called by the experience registry
+     * when an experience is deactivated.
+     * @param portalId The ID of the portal to deactivate
+     * @param reason The reason for deactivating the portal
+     */
+    function deactivatePortal(uint256 portalId, string calldata reason) external;
+
+    /**
+     * @dev Reactivates a portal. This must be called by the experience registry
+     * when an experience is reactivated.
+     * @param portalId The ID of the portal to reactivate
+     */
+    function reactivatePortal(uint256 portalId) external;
+
+    /**
      * @dev Removes a portal from the registry. This must be called by the experience registry
      * when an experience is removed.
      * @param portalId The ID of the portal to remove
+     * @param reason The reason for removing the portal
      */
-    function removePortal(uint256 portalId) external;
+    function removePortal(uint256 portalId, string calldata reason) external;
 
     /**
      * @dev Initiates a jump request to the destination experience. This must be called
@@ -99,9 +114,4 @@ interface IPortalRegistry {
      */
     function changePortalFee(uint256 newFee) external;
 
-    /**
-     * @dev Replace the destination experience address for a portal id. This must be 
-     * called by the experience registry when the experience is upgraded.
-     */
-    function upgradeExperiencePortal(address oldExperience, address newExperience) external;
 }

@@ -1,44 +1,22 @@
 import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
-import { IEcosystem, StackFactory, StackType } from "./test_stack/StackFactory";
-import { Company } from "../src/company/Company";
-import { World } from "../src";
+import { Experience, Registrar, World } from "../src";
 import { ethers } from "hardhat";
 // import {ethers } from "ethers"
 import { expect } from "chai";
 import {abi as TestConditionAbi, bytecode as bytecode} from "../artifacts/contracts/test/TestCondition.sol/TestCondition.json";
-import { company } from "../typechain-types/contracts";
-import { PortalStackImpl } from "./test_stack/portal/PortalStackImpl";
-import exp from "constants";
-import { ExperienceStackImpl } from "./test_stack/experience/ExperienceStackImpl";
+import { IEcosystem, TestStack } from "./TestStack";
+import { time } from "@nomicfoundation/hardhat-network-helpers";
 
 describe('JumpTest', () => {
-    let signers: HardhatEthersSigner[];
-    let registrarAdmin:HardhatEthersSigner
-    let registrarSigner:HardhatEthersSigner
-    let worldRegistryAdmin:HardhatEthersSigner
-    let worldOwner:HardhatEthersSigner
-    let companyOwner:HardhatEthersSigner
-    let avatarOwner:HardhatEthersSigner
-    let stack: StackFactory;
-    let world: World;
+    
+    let stack: TestStack;
     let ecosystem: IEcosystem;
+    let signers: HardhatEthersSigner[];
     before(async () => {
         signers = await ethers.getSigners();
-        
-        registrarAdmin = signers[0];
-        registrarSigner = signers[0];
-        worldRegistryAdmin = signers[0];
-        worldOwner = signers[1];
-        companyOwner = signers[2];
-        avatarOwner = signers[3];
-        stack = new StackFactory({
-            avatarOwner,
-            worldOwner,
-            companyOwner
-        });
-        const {world:w, worldRegistration: wr} = await stack.init();
-        world = w;
-        ecosystem = await stack.getEcosystem();
+        stack = new TestStack();
+        await stack.init();
+        ecosystem = await stack.initEcosystem();
     });
 
     it("Should jump between worlds and experiences", async () => {
@@ -49,7 +27,7 @@ describe('JumpTest', () => {
         expect(current).to.be.not.null;
         expect(current.toString().toLowerCase()).to.be.equal(experience.address.toLowerCase());
         const companyBal = await company2.getBalance();
-        const b4Bal = await avatar.tokenBalance();
+        const b4Bal = await avatar.getBalance();
         expect(b4Bal).to.be.not.null;
         expect(b4Bal.toString()).to.be.not.equal("0");
         const sig = await company2.signJumpRequest({
@@ -68,7 +46,7 @@ describe('JumpTest', () => {
         const loc = await avatar.location();
         expect(loc).to.be.not.null;
         expect(loc.toString().toLowerCase()).to.be.equal(experience2.address.toLowerCase());
-        const afterBal = await avatar.tokenBalance();
+        const afterBal = await avatar.getBalance();
         const afterCompanyBal = await company2.getBalance();
         expect(afterBal).to.be.not.null;
         expect(afterBal.toString()).to.be.equal( (b4Bal - portalForExperience2.fee).toString());
@@ -83,7 +61,7 @@ describe('JumpTest', () => {
         const current = await avatar.location();
         expect(current).to.be.not.null;
         expect(current.toString().toLowerCase()).to.be.equal(experience2.address.toLowerCase());
-        const aB4 = await avatar.tokenBalance();
+        const aB4 = await avatar.getBalance();
         const b4Bal = await company.getBalance();
         expect(b4Bal).to.be.not.null;
         expect(b4Bal.toString()).to.be.not.equal("0");
@@ -100,7 +78,7 @@ describe('JumpTest', () => {
         });
         expect(res).to.be.not.null;
         expect(res.destination.toString().toLowerCase()).to.be.equal(experience.address.toLowerCase());
-        const aAfter = await avatar.tokenBalance();
+        const aAfter = await avatar.getBalance();
         const afterBal = await company.getBalance();
         expect(afterBal).to.be.not.null;
         expect(afterBal.toString()).to.be.equal( (b4Bal - portalForExperience.fee).toString());
@@ -113,7 +91,7 @@ describe('JumpTest', () => {
         const current = await avatar.location();
         expect(current).to.be.not.null;
         expect(current.toString().toLowerCase()).to.be.equal(experience.address.toLowerCase());
-        const b4Bal = await avatar.tokenBalance();
+        const b4Bal = await avatar.getBalance();
         expect(b4Bal).to.be.not.null;
         expect(b4Bal.toString()).to.be.not.equal("0");
         const sig = await company2.signJumpRequest({
@@ -141,7 +119,7 @@ describe('JumpTest', () => {
         const current = await avatar.location();
         expect(current).to.be.not.null;
         expect(current.toString().toLowerCase()).to.be.equal(experience.address.toLowerCase());
-        const b4Bal = await avatar.tokenBalance();
+        const b4Bal = await avatar.getBalance();
         expect(b4Bal).to.be.not.null;
         expect(b4Bal.toString()).to.be.not.equal("0");
         const sig = await company2.signJumpRequest({
@@ -169,7 +147,7 @@ describe('JumpTest', () => {
         const current = await avatar.location();
         expect(current).to.be.not.null;
         expect(current.toString().toLowerCase()).to.be.equal(experience.address.toLowerCase());
-        const aB4 = await avatar.tokenBalance();
+        const aB4 = await avatar.getBalance();
         const b4Bal = await company.getBalance();
         expect(b4Bal).to.be.not.null;
         expect(b4Bal.toString()).to.be.not.equal("0");
@@ -192,7 +170,7 @@ describe('JumpTest', () => {
     })
     it('should only allow jumps with signer passing condition', async () => {
         const {experience, experience2, portalForExperience2, avatar, company, company2} = ecosystem;
-        const Condition = new ethers.ContractFactory(TestConditionAbi, bytecode, stack.admins.companyRegistryAdmin)
+        const Condition = new ethers.ContractFactory(TestConditionAbi, bytecode, ecosystem.companyOwner)
         const condition = await (await Condition.deploy()).waitForDeployment();
 
         const expT = await company2.addExperienceCondition(experience2.address, await condition.getAddress());
@@ -206,8 +184,8 @@ describe('JumpTest', () => {
         const current = await avatar.location();
         expect(current).to.be.not.null;
         expect(current.toString().toLowerCase()).to.be.equal(experience.address.toLowerCase());
-        const companyBal = await company2.tokenBalance();
-        const b4Bal = await avatar.tokenBalance();
+        const companyBal = await company2.getBalance();
+        const b4Bal = await avatar.getBalance();
         expect(b4Bal).to.be.not.null;
         expect(b4Bal.toString()).to.be.not.equal("0");
         const sig = await company2.signJumpRequest({
@@ -244,8 +222,8 @@ describe('JumpTest', () => {
         const loc = await avatar.location();
         expect(loc).to.be.not.null;
         expect(loc.toString().toLowerCase()).to.be.equal(experience2.address.toLowerCase());
-        const afterBal = await avatar.tokenBalance();
-        const afterCompanyBal = await company2.tokenBalance();
+        const afterBal = await avatar.getBalance();
+        const afterCompanyBal = await company2.getBalance();
         expect(afterBal).to.be.not.null;
         expect(afterBal.toString()).to.be.equal( (b4Bal - portalForExperience2.fee).toString());
         expect(afterCompanyBal).to.be.not.null;
@@ -262,7 +240,7 @@ describe('JumpTest', () => {
         expect(current).to.be.not.null;
         expect(current.toString().toLowerCase()).to.be.equal(experience2.address.toLowerCase());
     
-        const b4Bal = await avatar.tokenBalance();
+        const b4Bal = await avatar.getBalance();
         expect(b4Bal).to.be.not.null;
         expect(b4Bal.toString()).to.be.not.equal("0");
         expect(b4Bal).to.be.lessThan(ethers.parseEther('100'));
@@ -308,7 +286,7 @@ describe('JumpTest', () => {
         const current = await avatar.location();
         expect(current).to.be.not.null;
         expect(current.toString().toLowerCase()).to.be.equal(experience2.address.toLowerCase());
-        const b4Bal = await avatar.tokenBalance();
+        const b4Bal = await avatar.getBalance();
     
         expect(b4Bal).to.be.not.null;
         expect(b4Bal.toString()).to.be.not.equal("0");
@@ -339,7 +317,7 @@ describe('JumpTest', () => {
         const loc = await avatar.location();
         expect(loc).to.be.not.null;
         expect(loc.toString().toLowerCase()).to.be.equal(experience2.address.toLowerCase());
-        const afterBal = await avatar.tokenBalance();
+        const afterBal = await avatar.getBalance();
         expect(afterBal).to.equal(b4Bal);
         const chargeBackTxn = await company.changeExperiencePortalFee(experience.address, startingFee);
         const chargeBackR = await chargeBackTxn.wait();
@@ -357,8 +335,8 @@ describe('JumpTest', () => {
         const current = await avatar.location();
         expect(current).to.be.not.null;
         expect(current.toString().toLowerCase()).to.be.equal(experience2.address.toLowerCase());
-        const companyBal = await company.tokenBalance();
-        const b4Bal = await avatar.tokenBalance();
+        const companyBal = await company.getBalance();
+        const b4Bal = await avatar.getBalance();
         expect(b4Bal).to.be.not.null;
         expect(b4Bal.toString()).to.be.not.equal("0");
         const sig = await company.signJumpRequest({
@@ -367,7 +345,7 @@ describe('JumpTest', () => {
             portalId: experience.portalId
         })
         // company deactivates experience
-        const deactivateT = await company2.removeExperience(experience2.address);
+        const deactivateT = await company2.deactivateExperience(current.toString(), "TESTING");
         const deactivateR = await deactivateT.wait();
         if (!deactivateR) {
             throw new Error("Transaction failed with status 0");
@@ -388,8 +366,8 @@ describe('JumpTest', () => {
         const loc = await avatar.location();
         expect(loc).to.be.not.null;
         expect(loc.toString().toLowerCase()).to.be.equal(experience.address.toLowerCase());
-        const afterBal = await avatar.tokenBalance();
-        const afterCompanyBal = await company.tokenBalance();
+        const afterBal = await avatar.getBalance();
+        const afterCompanyBal = await company.getBalance();
         expect(afterBal).to.be.not.null;
         expect(afterBal.toString()).to.be.equal(b4Bal.toString())
         expect(afterCompanyBal).to.be.not.null;
@@ -398,14 +376,21 @@ describe('JumpTest', () => {
 
     it('should not allow jump into deactivated experience', async () => {
         // creates a new experience, signs jump request, deactivates experience, tries to jump
-        const {experience, experience2, portalForExperience, company, company2, avatar} = ecosystem;
-        const experience3 = await company.addExperience({
+        const {experience, company, avatar} = ecosystem;
+        const experience3R = await company.addExperience({
             name: "Test Experience 3",
             connectionDetails: "0x",
             entryFee: 0n
         });
+        
+        const experience3 = new Experience({
+            address: experience3R.experienceAddress.toString(),
+            signerOrProvider: ethers.provider,
+            portalId: experience3R.portalId,
+            logParser: stack.logParser!
+        });
 
-        const portalRegistry = stack.getStack<PortalStackImpl>(StackType.PORTAL).getPortalRegistry();
+        const portalRegistry = stack.portalRegistry!;
         const portalForExperience3 = await portalRegistry.getPortalInfoById(experience3.portalId);
 
 
@@ -413,8 +398,8 @@ describe('JumpTest', () => {
         const current = await avatar.location();
         expect(current).to.be.not.null;
         expect(current.toString().toLowerCase()).to.be.equal(experience.address.toLowerCase());
-        const companyBal = await company.tokenBalance();
-        const b4Bal = await avatar.tokenBalance();
+        const companyBal = await company.getBalance();
+        const b4Bal = await avatar.getBalance();
         expect(b4Bal).to.be.not.null;
         expect(b4Bal.toString()).to.be.not.equal("0");
         const sig = await company.signJumpRequest({
@@ -422,11 +407,11 @@ describe('JumpTest', () => {
             nonce,
             portalId: experience3.portalId
         })
-        const expReg = stack.getStack<ExperienceStackImpl>(StackType.EXPERIENCE).getExperienceRegistry();
-        const isActiveBefore = await expReg.isExperience(experience3.experienceAddress.toString());
+        const expReg = stack.experienceRegistry!;
+        const isActiveBefore = await experience3.isActive();
         expect(isActiveBefore).to.be.true;
         // company deactivates experience
-        const deactivateT = await company.removeExperience(experience3.experienceAddress.toString());
+        const deactivateT = await company.deactivateExperience(experience3.address, "TEST");
         const deactivateR = await deactivateT.wait();
         if (!deactivateR) {
             throw new Error("Transaction failed with status 0");
@@ -434,9 +419,10 @@ describe('JumpTest', () => {
         expect(deactivateR.status).to.be.equal(1);
 
         // test view functions
-        const isActiveAfter = await expReg.isExperience(experience3.experienceAddress.toString());
+        const isActiveAfter = await experience3.isActive();
         expect(isActiveAfter).to.be.false;
 
+        let jumpFailed = false;
         try {
 
             const res = await avatar.jump({
@@ -444,15 +430,20 @@ describe('JumpTest', () => {
                 destinationCompanySignature: sig,
                 portalId: experience3.portalId
             });
+
         } catch (e) {
+            jumpFailed = true;
             expect(e.message).to.be.equal("VM Exception while processing transaction: reverted with reason string 'PortalRegistry: destination portal is not active'")
+        }
+        if(!jumpFailed) {
+            throw new Error("Jump should have failed");
         }
    
         const loc = await avatar.location();
         expect(loc).to.be.not.null;
         expect(loc.toString().toLowerCase()).to.be.equal(experience.address.toLowerCase());
-        const afterBal = await avatar.tokenBalance();
-        const afterCompanyBal = await company.tokenBalance();
+        const afterBal = await avatar.getBalance();
+        const afterCompanyBal = await company.getBalance();
         expect(afterBal).to.be.not.null;
         expect(afterBal.toString()).to.be.equal(b4Bal.toString())
         expect(afterCompanyBal).to.be.not.null;

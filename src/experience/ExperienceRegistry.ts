@@ -1,8 +1,10 @@
-import { AddressLike, Contract, Provider, Signer, TransactionResponse } from "ethers";
-import {abi} from "../../artifacts/contracts/experience/ExperienceRegistry.sol/ExperienceRegistry.json";
+import { AddressLike, Contract, ethers, Provider, Signer, TransactionResponse } from "ethers";
+import {abi} from "../../artifacts/contracts/experience/registry/IExperienceRegistry.sol/IExperienceRegistry.json";
+import {abi as proxyABI} from '../../artifacts/contracts/base-types/BaseProxy.sol/BaseProxy.json';
 import { RPCRetryHandler } from "../RPCRetryHandler";
 import { VectorAddress } from "../VectorAddress";
 import { AllLogParser } from "../AllLogParser";
+import { IExperienceInfo } from "./IExperienceInfo";
 
 export interface IExperienceRegistryOpts {
     address: string;
@@ -10,16 +12,13 @@ export interface IExperienceRegistryOpts {
     logParser: AllLogParser;
 }
 
-export interface IExperienceInfo {
-    company: string;
-    world: string;
-    experience: string;
-    portalId: bigint;
-}
 
 export class ExperienceRegistry {
     static get abi() {
-        return abi;
+        return [
+            ...abi,
+            ...proxyABI
+        ];
     }
     
     private con: Contract;
@@ -36,39 +35,33 @@ export class ExperienceRegistry {
     }
 
     async isExperience(exp: AddressLike): Promise<boolean> {
-        return await RPCRetryHandler.withRetry(() => this.con.isExperience(exp));
-    }
-
-    async registerExperience(bytes: string): Promise<TransactionResponse> {
-        return await RPCRetryHandler.withRetry(() => this.con.registerExperience(bytes));
-    }
-
-    async getExperienceInfo(address: string): Promise<IExperienceInfo> {
-        const r = await RPCRetryHandler.withRetry(() => this.con.getExperienceByAddress(address));
-        return {
-            company: r[0],
-            world: r[1],
-            experience: r[2],
-            portalId: r[3]
-        } as IExperienceInfo;
+        return await RPCRetryHandler.withRetry(() => this.con.isRegistered(exp));
     }
 
     async getExperienceByName(name: string): Promise<IExperienceInfo> {
-        const r = await RPCRetryHandler.withRetry(() => this.con.getExperienceByName(name));
+        const addr = await RPCRetryHandler.withRetry(() => this.con.getEntityByName(name));
+        if(addr === ethers.ZeroAddress) {
+            throw new Error("No experience found");
+        }
+        const r = await RPCRetryHandler.withRetry(() => this.con.getExperienceInfo(addr));
         return {
             company: r[0],
             world: r[1],
-            experience: r[2],
-            portalId: r[3]
+            experience: addr,
+            portalId: r[2]
         } as IExperienceInfo;
     }
 
     async getExperienceByVector(vector: VectorAddress): Promise<IExperienceInfo> {
-        const r = await RPCRetryHandler.withRetry(() => this.con.getExperienceByVector(vector));
+        const addr = await RPCRetryHandler.withRetry(() => this.con.getEntityByVector(vector));
+        if(addr === ethers.ZeroAddress) {
+            throw new Error("No experience found");
+        }
+        const r = await RPCRetryHandler.withRetry(() => this.con.getExperienceInfo(addr));
         return {
             company: r[0],
             world: r[1],
-            experience: r[2],
+            experience: addr,
             portalId: r[3]
         } as IExperienceInfo;
     }

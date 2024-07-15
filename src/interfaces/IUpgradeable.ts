@@ -1,4 +1,5 @@
 import { TransactionReceipt } from "ethers";
+import { Version } from "../Version";
 
 export interface IUpgradeResult {
     receipt: TransactionReceipt;
@@ -16,7 +17,7 @@ export interface IUpgradeable {
     /** 
      * Gets the current version of the upgradeable contract.
     */
-    version(): Promise<bigint>;
+    version(): Promise<Version>;
 
     /**
      * Gets the address of the current implementation.

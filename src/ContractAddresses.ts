@@ -1,8 +1,17 @@
 import { ChainIds } from './ChainIds';
-import XrdnaTestnetDeployment from '../ignition/deployments/chain-26379/deployed_addresses.json';
-// import HardhatDeployment from '../ignition/deployments/chain-55555/deployed_addresses.json';
-
+ 
 export enum ContractNames {
+    RegistrarRegistry = "RegistrarRegistryProxyModule#RegistrarRegistryProxy",
+    WorldRegistry = "WorldRegistryProxyModule#WorldRegistryProxy",
+    CompanyRegistry = "CompanyRegistryProxyModule#CompanyRegistryProxy",
+    AvatarRegistry = "AvatarRegistryProxyModule#AvatarRegistryProxy",
+    ERC20AssetRegistry = "ERC20RegistryProxyModule#ERC20RegistryProxy",
+    ERC721AssetRegistry = "ERC721RegistryProxyModule#ERC721RegistryProxy",
+    MultiAssetRegistry = "MultiAssetRegistry#MultiAssetRegistry",
+    ExperienceRegistry = "ExperienceRegistryProxyModule#ExperienceRegistryProxy",
+    PortalRegistry = "PortalRegistryProxyModule#PortalRegistryProxy",
+
+    /*
     AvatarFactory = "AvatarFactory#AvatarFactory",
     CompanyFactory = "CompanyFactory#CompanyFactory",
     ERC20AssetFactory = "ERC20AssetFactory#ERC20AssetFactory",
@@ -10,10 +19,10 @@ export enum ContractNames {
     ExperienceFactory = "ExperienceFactory#ExperienceFactory",
     PortalRegistry = "PortalRegistry#PortalRegistry",
     RegistrarRegistry = "RegistrarRegistry#RegistrarRegistry",
-    WorldFactoryV2 = "WorldFactoryV2#WorldFactoryV2",
+    WorldFactory = "WorldFactory#WorldFactory",
     ERC20AssetRegistry = "ERC20AssetRegistry#ERC20AssetRegistry",
     ERC721AssetRegistry = "ERC721AssetRegistry#ERC721AssetRegistry",
-    WorldRegistryV2 = "WorldRegistryV2#WorldRegistryV2",
+    WorldRegistry = "WorldRegistry#WorldRegistry",
     AvatarRegistry = "AvatarRegistry#AvatarRegistry",
     CompanyRegistry = "CompanyRegistry#CompanyRegistry",
     MultiAssetRegistry = "MultiAssetRegistry#MultiAssetRegistry",
@@ -24,12 +33,13 @@ export enum ContractNames {
     CompanyProxy = "CompanyProxy#CompanyProxy",
     ExperienceRegistry = "ExperienceRegistry#ExperienceRegistry",
     NTERC20Asset = "NTERC20Asset#NTERC20Asset",
-    WorldV2 = "WorldV2#WorldV2",
+    World = "World#World",
     Company = "Company#Company",
     Experience = "Experience#Experience",
     ExperienceProxy = "ExperienceProxy#ExperienceProxy",
     NTERC721Asset = "NTERC721Asset#NTERC721Asset",
     Avatar = "Avatar#Avatar",
+    */
 }
 
 export class DeploymentAddressConfig extends Map {
@@ -54,6 +64,7 @@ export class DeploymentAddressConfig extends Map {
 }
 
 export function mapJsonToDeploymentAddressConfig(json: any): DeploymentAddressConfig {
+    if(!json) throw new Error("Invalid JSON");
     return Object.values(ContractNames)
         .reduce((acc, jsonProp) => {
             acc.set(jsonProp, (json as any)[jsonProp]);
@@ -61,16 +72,29 @@ export function mapJsonToDeploymentAddressConfig(json: any): DeploymentAddressCo
         }, new DeploymentAddressConfig());
 }
 
+/*
 const XrdnaBaseSepoliaAddresses = mapJsonToDeploymentAddressConfig(
     XrdnaTestnetDeployment
 );
 
-// const HardhatAddresses = mapJsonToDeploymentAddressConfig(
-//     HardhatDeployment
-// );
+ const HardhatAddresses = mapJsonToDeploymentAddressConfig(
+     HardhatDeployment
+ );
 
 
 export const ContractAddresses: ReadonlyMap<BigInt, DeploymentAddressConfig> = new Map([
     [BigInt(ChainIds.XrdnaBaseSepolia), XrdnaBaseSepoliaAddresses],
-    // [BigInt(ChainIds.Hardhat), HardhatAddresses]
+     [BigInt(ChainIds.LocalTestnet), HardhatAddresses]
 ]);
+*/
+
+export type ContractAddresses = ReadonlyMap<BigInt, DeploymentAddressConfig>;
+export const buildContractAddresses = (chainId: bigint): ContractAddresses => {
+    const XrdnaTestnetDeployment = require('../ignition/deployments/chain-26379/deployed_addresses.json');
+    const HardhatDeployment = require('../ignition/deployments/chain-55555/deployed_addresses.json');
+
+    return new Map([
+        [BigInt(ChainIds.XrdnaBaseSepolia), XrdnaTestnetDeployment ? mapJsonToDeploymentAddressConfig(XrdnaTestnetDeployment): new DeploymentAddressConfig()],
+        [BigInt(ChainIds.LocalTestnet),HardhatDeployment ?  mapJsonToDeploymentAddressConfig(HardhatDeployment): new DeploymentAddressConfig()]
+    ]);
+}

@@ -1,59 +1,63 @@
 import { expect } from "chai";
 import { World } from "../typechain-types";
-import { IEcosystem, IStackAdmins, StackFactory } from "./test_stack/StackFactory"
 import {ethers} from "hardhat" 
 // import {ethers } from "ethers"
 
-import { ERC721Asset } from "../src";
+import { Avatar, ERC721Asset, IWrapperOpts } from "../src";
 import exp from "constants";
 import { hexlify } from "ethers";
+import { IEcosystem, TestStack } from "./TestStack";
+import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
+
+import {abi} from "../artifacts/contracts/test/IAvatarV2.sol/IAvatarV2.json";
+
+class AvatarV2 extends Avatar {
+
+    constructor(opts: IWrapperOpts) {
+        super(opts);
+        this.con = new ethers.Contract(this.address, abi, this.admin);
+    }
+
+    async getValue(): Promise<bigint> {
+        return await this.con.getValue();
+    }
+
+    async setValue(value: bigint): Promise<ethers.TransactionReceipt> {
+        return await this.con.setValue(value);
+    }
+}
 
 describe('Avatar', () => {
-    let sf: StackFactory;
-    let admins: IStackAdmins
-    let world: World;
-    let worldOwner: ethers.Signer;
-    let avatarOwner: ethers.Signer;
-    let companyOwner: ethers.Signer;
-    let ecosystem: IEcosystem
-
+    
+    let stack: TestStack;
+    let ecosystem: IEcosystem;
+    let signers: HardhatEthersSigner[];
     before(async () => {
-        const signers = await ethers.getSigners();
-        worldOwner = signers[1];
-        companyOwner = signers[2];
-        avatarOwner = signers[3];
-        
-        sf = new StackFactory({
-            worldOwner: worldOwner,
-            companyOwner: companyOwner,
-            avatarOwner: avatarOwner
-        });
-        admins = sf.admins;
-        const {world:w, worldRegistration: wr} = await sf.init();
-        
-        ecosystem = await sf.getEcosystem();
-        
-        
+        signers = await ethers.getSigners();
+        stack = new TestStack();
+        await stack.init();
+        ecosystem = await stack.initEcosystem();
     });
+
+
     it('should register an avatar', async () => {
        const address = await ecosystem.avatar.address;
        expect(address).to.not.be.undefined;
+       const bal = await ecosystem.avatar.getBalance();
+         expect(bal).to.not.equal(0);
     
     });
 
     it('should add a wearable to an avatar', async () => {
-        const {avatar, testERC721, company} = ecosystem;
+        const {avatar, erc721, company} = ecosystem;
         
-        const tokenId = await company.mintERC721(testERC721.assetAddress, avatar.address);
-
-        const erc721 = new ERC721Asset({address: testERC721.assetAddress.toString(), provider: ethers.provider, logParser: sf.logParser});
-
-        const owner = await erc721.asset.ownerOf(tokenId.tokenId);
+        const tokenId = await company.mintERC721(erc721.address, avatar.address);
+        const owner = await erc721.con.ownerOf(tokenId.tokenId);
 
         expect(owner).to.equal(avatar.address);
 
         const wearable = await avatar.addWearable({
-            asset: testERC721.assetAddress,
+            asset: erc721.address,
             tokenId: tokenId.tokenId
         });
         const r = await wearable.wait();
@@ -70,7 +74,7 @@ describe('Avatar', () => {
     });
 
     it('should remove a wearable from an avatar', async () => {
-        const {avatar, testERC721} = ecosystem;
+        const {avatar} = ecosystem;
         const wearables = await avatar.getWearables();
 
         const wearable = wearables[0];
@@ -86,13 +90,13 @@ describe('Avatar', () => {
     });
 
     it("should add multiple wearables to an avatar", async () => {
-        const {avatar, testERC721, company} = ecosystem;
+        const {avatar, erc721, company} = ecosystem;
         
-        const {tokenId: tokenId1} = await company.mintERC721(testERC721.assetAddress, avatar.address);
-        const {tokenId: tokenId2} = await company.mintERC721(testERC721.assetAddress, avatar.address);
+        const {tokenId: tokenId1} = await company.mintERC721(erc721.address, avatar.address);
+        const {tokenId: tokenId2} = await company.mintERC721(erc721.address, avatar.address);
 
         let t = await avatar.addWearable({
-            asset: testERC721.assetAddress,
+            asset: erc721.address,
             tokenId: tokenId1
         });
 
@@ -102,7 +106,7 @@ describe('Avatar', () => {
         }
         expect(r.status).to.equal(1);
         t = await avatar.addWearable({
-            asset: testERC721.assetAddress,
+            asset: erc721.address,
             tokenId: tokenId2
         });
         r = await t.wait();
@@ -116,11 +120,11 @@ describe('Avatar', () => {
     });
 
     it("should not allow adding a wearable that is already added", async () => {
-        const {avatar, testERC721} = ecosystem;
+        const {avatar, erc721} = ecosystem;
         const wearables = await avatar.getWearables();
         const wearable = wearables[0];
         const t = avatar.addWearable({
-            asset: testERC721.assetAddress,
+            asset: erc721.address,
             tokenId: wearable.tokenId
         });
         const message = await t.catch((reason) => {
@@ -171,12 +175,12 @@ describe('Avatar', () => {
     });
 
     it('revoked wearables should not be returned in getWearables', async () => {
-        const {avatar, testERC721, company} = ecosystem;
+        const {avatar, erc721, company} = ecosystem;
 
-        const tokenId = await company.mintERC721(testERC721.assetAddress, avatar.address);
+        const tokenId = await company.mintERC721(erc721.address, avatar.address);
         
         const wearable = await avatar.addWearable({
-            asset: testERC721.assetAddress,
+            asset: erc721.address,
             tokenId: tokenId.tokenId
         });
         const r = await wearable.wait();
@@ -188,7 +192,7 @@ describe('Avatar', () => {
         const isWearing = wearables.find(w => w.tokenId == tokenId.tokenId);
         expect(isWearing).to.not.be.undefined;
 
-        const revoke = await company.revoke(testERC721.assetAddress.toString(), avatar.address, tokenId.tokenId);
+        const revoke = await company.revokeERC721(erc721.address, avatar.address, tokenId.tokenId);
         const r2 = await revoke.wait();
         if (!r2) {
             throw new Error("Transaction failed");
@@ -198,11 +202,45 @@ describe('Avatar', () => {
         const wearables2 = await avatar.getWearables();
         const isWearing2 = wearables2.find(w => w.tokenId == tokenId.tokenId);
         expect(isWearing2).to.be.undefined;
-    })
+    });
+
+    it("Should be upgradeable", async () => {
+        const {avatar} = ecosystem;
+        const nameB4 = await avatar.getName();
+
+        const avatarRegistry = stack.avatarRegistry!;
+        const t = await avatarRegistry.setEntityImplementation(stack.avatarV2Address!);
+        const er = await t.wait();
+        if (!er || er.status !== 1) {
+            throw new Error("Transaction failed");
+        }
+        await avatar.upgrade();
+
+        const avatarV2 = new AvatarV2({
+            address: avatar.address,
+            signerOrProvider: ecosystem.avatarOwner,
+            logParser: avatar.logParser
+        });
+
+        const value = await avatarV2.getValue();
+        expect(value).to.equal(0n);
+        const r = await avatarV2.setValue(1n);
+        const r2 = await r.wait();
+        if (!r2) {
+            throw new Error("Transaction failed");
+        }
+        expect(r2.status).to.equal(1);
+        const value2 = await avatarV2.getValue();
+        expect(value2).to.equal(1n);
+
+        //get a previously set value
+        const name = await avatarV2.getName();
+        expect(name).to.equal(nameB4);
+    });
 
     // flashbacks to vyper compiler bug leading to nonfunctioning reentrancy guards
     it('should not allow reentrancy', async () => {
-        const {testERC721, company, experience, world } = ecosystem;
+        const {erc721, company, experience, world } = ecosystem;
         
         
     })

@@ -1,2 +1,2 @@
-export * from './Registrar';
-export * from './RegistrarRegistry';
+export * from './registry/RegistrarRegistry';
+export * from './instance/Registrar';

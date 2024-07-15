@@ -2,7 +2,7 @@
 // Compatible with OpenZeppelin Contracts ^5.0.0
 pragma solidity ^0.8.24;
 
-import {IAssetRegistry} from './IAssetRegistry.sol';
+import {IAssetRegistry} from './registry/IAssetRegistry.sol';
 
 /**
  * @title IMultiAssetRegistry
@@ -15,7 +15,7 @@ interface IMultiAssetRegistry {
     /**
      * @dev Returns true if the asset is registered in any of the registries
      */
-    function isRegisteredAsset(address asset) external view returns (bool);
+    function isRegistered(address asset) external view returns (bool);
 
     /**
      * @dev Registers a new asset with the registry. Only callable by the registry admin

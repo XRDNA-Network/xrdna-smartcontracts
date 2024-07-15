@@ -1,15 +1,13 @@
 import { AddressLike, Contract, Provider, Signer, TransactionResponse } from "ethers";
-import {abi} from "../../artifacts/contracts/portal/PortalRegistry.sol/PortalRegistry.json";
+import {abi} from "../../artifacts/contracts/portal/IPortalRegistry.sol/IPortalRegistry.json";
+import {abi as proxyABI} from '../../artifacts/contracts/base-types/BaseProxy.sol/BaseProxy.json';
 import { RPCRetryHandler } from "../RPCRetryHandler";
 import { VectorAddress } from "../VectorAddress";
 import { AllLogParser } from "../AllLogParser";
+import { BaseAccess } from "../base-types/BaseAccess";
+import { IWrapperOpts } from "../interfaces/IWrapperOpts";
 
 
-export interface IPortalRegistryOpts {
-    address: string;
-    admin: Provider | Signer;
-    logParser: AllLogParser;
-}
 
 export interface IAddPortalRequest {
     destination: AddressLike
@@ -23,30 +21,27 @@ export interface IPortalInfo {
     active: boolean
 }
 
-export class PortalRegistry {
+export class PortalRegistry extends BaseAccess {
     static get abi() {
-        return abi;
+        return  [
+            ...abi,
+            ...proxyABI
+        ]
     }
     
     private con: Contract;
-    readonly address: string;
-    private admin: Provider | Signer;
-    readonly logParser: AllLogParser;
 
-    constructor(opts: IPortalRegistryOpts) {
-        this.address = opts.address;
-        this.admin = opts.admin;
+    constructor(opts: IWrapperOpts) {
+        super(opts);
         this.con = new Contract(this.address, abi, this.admin);
-        this.logParser = opts.logParser;
         this.logParser.addAbi(this.address, abi);
     }
 
-
-    async setExperienceRegistry(reg: AddressLike): Promise<TransactionResponse> {
-        return await RPCRetryHandler.withRetry(() => this.con.setExperienceRegistry(reg));
+    getContract(): Contract {
+        return this.con;
     }
-
-   async getPortalInfoById(id: bigint): Promise<IPortalInfo> {
+    
+    async getPortalInfoById(id: bigint): Promise<IPortalInfo> {
         const r = await RPCRetryHandler.withRetry(() => this.con.getPortalInfoById(id));
         return {
             destination: r[0],

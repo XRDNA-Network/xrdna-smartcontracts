@@ -2,22 +2,28 @@
 // Compatible with OpenZeppelin Contracts ^5.0.0
 pragma solidity ^0.8.24;
 
-import {AccessControl} from '@openzeppelin/contracts/access/AccessControl.sol';
-import {PortalInfo, AddPortalRequest, IPortalRegistry} from './IPortalRegistry.sol';
-import {IExperience, JumpEntryRequest} from '../experience/IExperience.sol';
-import {VectorAddress, LibVectorAddress} from '../VectorAddress.sol';
-import {IPortalCondition} from './IPortalCondition.sol';
-import {IAvatarRegistry} from '../avatar/IAvatarRegistry.sol';
-import {IAvatar} from '../avatar/IAvatar.sol';
+import {ReentrancyGuard} from '@openzeppelin/contracts/utils/ReentrancyGuard.sol';
+import {BaseAccess} from '../base-types/BaseAccess.sol';
+import {IPortalRegistry, AddPortalRequest} from './IPortalRegistry.sol';
+import {PortalRegistryStorage, PortalInfo, LibPortal} from '../libraries/LibPortal.sol';
+import {IPortalCondition, JumpEvaluationArgs} from './IPortalCondition.sol';
+import {IExperience, JumpEntryRequest} from '../experience/instance/IExperience.sol';
+import {IExperienceRegistry} from '../experience/registry/IExperienceRegistry.sol';
+import {IAvatarRegistry} from '../avatar/registry/IAvatarRegistry.sol';
+import {IAvatar} from '../avatar/instance/IAvatar.sol';
+import {VectorAddress, LibVectorAddress} from '../libraries/LibVectorAddress.sol';
+import {Version} from '../libraries/LibVersion.sol';
 
-/**
- * @title PortalRegistry
- * @dev The registry for all portals in the metaverse
- */
-contract PortalRegistry is IPortalRegistry, AccessControl {
+
+struct PortalRegistryConstructorArgs {
+    address avatarRegistry;
+    address experienceRegistry;
+}
+
+contract PortalRegistry is ReentrancyGuard, BaseAccess, IPortalRegistry {
+
     using LibVectorAddress for VectorAddress;
 
-    //temporary structure used for jumping requests
     struct PortalJumpMetadata {
         IExperience sourceExperience;
         IExperience destinationExperience;
@@ -29,147 +35,174 @@ contract PortalRegistry is IPortalRegistry, AccessControl {
         PortalInfo destPortal;
     }
 
-    bytes32 constant public ADMIN_ROLE = keccak256("ADMIN_ROLE");
+    IExperienceRegistry public immutable experienceRegistry;
+    IAvatarRegistry public immutable avatarRegistry;
 
-    address public experienceRegistry;
-    IAvatarRegistry public avatarRegistry;
-    
-    //portals by portal id
-    mapping(uint256 => PortalInfo) portals;
-
-    //portal IDs by destination vector address hash
-    mapping(bytes32 => uint256)  portalIdsByVectorHash;
-
-    //portal IDs by destination experience address
-    mapping(address => uint256)  portalIdsByExperience;
-
-    //portal id counter
-    uint256 nextPortalId;
-
-    modifier onlyExperienceRegistry {
-        require(experienceRegistry != address(0), "PortalRegistry: experience registry not set");
-        require(msg.sender == experienceRegistry, "PortalRegistry: caller is not the experience registry");
+    modifier onlyActiveExperience {
+        require(experienceRegistry.isRegistered(msg.sender), "PortalRegistry: Only registered experiences can call this function");
+        require(IExperience(msg.sender).isEntityActive(), "PortalRegistry: Only active experiences can call this function");
         _;
     }
 
     modifier onlyExperience {
-        uint256 id = portalIdsByExperience[msg.sender];
-        require(id != 0, "PortalRegistry: caller is not a registered experience");
+        require(experienceRegistry.isRegistered(msg.sender), "PortalRegistry: Only registered experiences can call this function");
         _;
     }
 
-    modifier onlyAvatar {
-        require(address(avatarRegistry) != address(0), "PortalRegistry: avatar registry not set");
-        require(avatarRegistry.isAvatar(msg.sender), "PortalRegistry: caller must be an avatar");
+     modifier onlyAvatar {
+        require(avatarRegistry.isRegistered(msg.sender), "PortalRegistry: Only registered avatars can call this function");
         _;
     }
 
-    constructor(address mainAdmin, address[] memory admins) {
-        require(mainAdmin != address(0), "PortalRegistry: main admin address cannot be 0");
-        _grantRole(DEFAULT_ADMIN_ROLE, mainAdmin);
-        _grantRole(ADMIN_ROLE, mainAdmin);
-        for (uint256 i = 0; i < admins.length; i++) {
-            require(admins[i] != address(0), "PortalRegistry: admin address cannot be 0");
-            _grantRole(ADMIN_ROLE, admins[i]);
-        }
+    constructor(PortalRegistryConstructorArgs memory args) {
+        require(args.avatarRegistry != address(0), "PortalRegistry: Avatar registry cannot be the zero address" );
+        require(args.experienceRegistry != address(0), "PortalRegistry: Experience registry cannot be the zero address" );
+        avatarRegistry = IAvatarRegistry(args.avatarRegistry);
+        experienceRegistry = IExperienceRegistry(args.experienceRegistry);
     }
 
-    receive() external payable {}
+    receive() external payable {  }
 
-    /**
-     * @dev set the experience registry. Only admin can call this
-     */
-    function setExperienceRegistry(address registry) public onlyRole(ADMIN_ROLE) {
-       require(registry != address(0), "PortalRegistry: invalid registry address");
-       experienceRegistry = registry;
+    function version() external pure override returns (Version memory) {
+        return Version(1, 0);
     }
 
-    /**
-     * @dev set the avatar registry. Only admin can call this
-     */
-    function setAvatarRegistry(address registry) public onlyRole(ADMIN_ROLE)  {
-        require(registry != address(0), "PortalRegistry: invalid registry address");
-        avatarRegistry = IAvatarRegistry(registry);
-    }
-
-    /**
-     * @inheritdoc IPortalRegistry
-     */
     function getPortalInfoById(uint256 portalId) external view returns (PortalInfo memory) {
-        return portals[portalId];
+        return LibPortal.load().portals[portalId];
     }
 
     /**
-     * @inheritdoc IPortalRegistry
+     * @dev Returns the portal info for the given experience address
+     * @param experience The address of the experience contract
      */
     function getPortalInfoByAddress(address experience) external view returns (PortalInfo memory) {
-        uint256 portalId = portalIdsByExperience[experience];
-        return portals[portalId];
+        PortalRegistryStorage storage store = LibPortal.load();
+        uint256 portalId = store.portalIdsByExperience[experience];
+        return store.portals[portalId];
     }
 
     /**
-     * @inheritdoc IPortalRegistry
+     * @dev Returns the portal info for the given vector address
+     * @param va The vector address for a destination experience
      */
     function getPortalInfoByVectorAddress(VectorAddress memory va) external view returns (PortalInfo memory) {
+        PortalRegistryStorage storage store = LibPortal.load();
         bytes32 hash = keccak256(abi.encode(va.asLookupKey()));
-        uint256 portalId = portalIdsByVectorHash[hash];
-        return portals[portalId];
+        uint256 portalId = store.portalIdsByVectorHash[hash];
+        return store.portals[portalId];
     }
-
+    
     /**
-     * @inheritdoc IPortalRegistry
+     * @dev Returns the portal ID for the given experience address
+     * @param experience The address of the experience contract
      */
     function getIdForExperience(address experience) external view returns (uint256) {
-        return portalIdsByExperience[experience];
+        return LibPortal.load().portalIdsByExperience[experience];
     }
 
     /**
-     * @inheritdoc IPortalRegistry
+     * @dev Returns the portal ID for the given vector address
+     * @param va The vector address for a destination experience
      */
     function getIdForVectorAddress(VectorAddress memory va) external view returns (uint256) {
         bytes32 hash = keccak256(abi.encode(va.asLookupKey()));
-        return portalIdsByVectorHash[hash];
+        return LibPortal.load().portalIdsByVectorHash[hash];
     }
-    
-    
-    /**
-     * @inheritdoc IPortalRegistry
+
+    /*
+     * @dev Adds a new portal to the registry. This must be called by the experience registry
+     * when a new experience is created.
+     * @param AddPortalRequest The request to add a new portal
      */
-    function addPortal(AddPortalRequest memory req) external onlyExperienceRegistry returns (uint256) {
-        
-        VectorAddress memory va = req.destination.vectorAddress();
+    function addPortal(AddPortalRequest memory req) external onlyActiveExperience nonReentrant returns (uint256)  {
+        VectorAddress memory va = IExperience(msg.sender).vectorAddress();
         bytes32 hash = keccak256(abi.encode(va.asLookupKey()));
-        require(portalIdsByVectorHash[hash] == 0, "PortalRegistry: portal already exists for this vector address");
-        ++nextPortalId;
-        uint256 portalId = nextPortalId; 
-        portalIdsByVectorHash[hash] = portalId;
-        portalIdsByExperience[address(req.destination)] = portalId;
-        portals[portalId] = PortalInfo({
-            destination: req.destination,
+        PortalRegistryStorage storage store = LibPortal.load();
+        require(store.portalIdsByVectorHash[hash] == 0, "PortalRegistry: portal already exists for this vector address");
+        ++store.nextPortalId;
+        uint256 portalId = store.nextPortalId; 
+        store.portalIdsByVectorHash[hash] = portalId;
+        store.portalIdsByExperience[msg.sender] = portalId;
+        store.portals[portalId] = PortalInfo({
+            destination: IExperience(msg.sender),
             condition: IPortalCondition(address(0)),
             fee: req.fee,
             active: true
         });
-        emit PortalAdded(portalId, address(req.destination));
+        emit IPortalRegistry.PortalAdded(portalId, msg.sender);
         return portalId;
     }
-
+    
     /**
-     * @inheritdoc IPortalRegistry
+     * @dev Changes the fee for a portal. This must be called by the destination experience
      */
-    function removePortal(uint256 portalId) external onlyExperienceRegistry {
-        PortalInfo storage portal = portals[portalId];
-        require(address(portal.destination) != address(0), "PortalRegistry: portal not found");
+    function changePortalFee(uint256 newFee) external onlyActiveExperience {
+        PortalRegistryStorage storage store = LibPortal.load();
+        uint256 portalId = store.portalIdsByExperience[msg.sender];
+        store.portals[portalId].fee = newFee;
+        emit IPortalRegistry.PortalFeeChanged(portalId, newFee);
+    }
 
-        address dest = address(portal.destination);
-        portals[portalId].active = false;
-        emit PortalRemoved(portalId, dest);
+    function deactivatePortal(uint256 portalId, string calldata reason) external onlyExperience {
+        PortalRegistryStorage storage s = LibPortal.load();
+        s.portals[portalId].active = false;
+        address exp = address(s.portals[portalId].destination);
+        require(exp == msg.sender, "PortalRegistry: only the experience can deactivate its own portal");
+        emit IPortalRegistry.PortalDeactivated(portalId, exp, reason);
     }
 
     /**
-     * @inheritdoc IPortalRegistry
+     * @dev Reactivates a portal. This must be called by the experience registry
+     * when an experience is reactivated.
+     * @param portalId The ID of the portal to reactivate
      */
-    function jumpRequest(uint256 portalId) external payable onlyAvatar returns (bytes memory) {
+    function reactivatePortal(uint256 portalId) external onlyExperience {
+        PortalRegistryStorage storage s = LibPortal.load();
+        s.portals[portalId].active = true;
+        address exp = address(s.portals[portalId].destination);
+        require(exp == msg.sender, "PortalRegistry: only the experience can reactivate its own portal");
+        emit IPortalRegistry.PortalReactivated(portalId, exp);
+    }
+
+    /**
+     * @dev Removes a portal from the registry. This must be called by the experience registry
+     * when an experience is removed.
+     * @param portalId The ID of the portal to remove
+     * @param reason The reason for removing the portal
+     */
+    function removePortal(uint256 portalId, string calldata reason) external onlyExperience nonReentrant {
+        PortalRegistryStorage storage s = LibPortal.load();
+        PortalInfo memory pi = s.portals[portalId];
+        address exp = msg.sender;
+        require(address(pi.destination) == exp, "PortalRegistry: only the experience can remove its own portal");
+        delete s.portals[portalId];
+        delete s.portalIdsByExperience[exp];
+        VectorAddress memory va = IExperience(msg.sender).vectorAddress();
+        bytes32 hash = keccak256(abi.encode(va.asLookupKey()));
+        delete s.portalIdsByVectorHash[hash];
+        
+        emit IPortalRegistry.PortalRemoved(portalId, exp, reason);
+    }
+
+
+    function addCondition(IPortalCondition condition) external onlyActiveExperience {
+        PortalRegistryStorage storage s = LibPortal.load();
+        require(address(condition) != address(0), "PortalRegistry: condition address cannot be 0");
+        uint256 id = s.portalIdsByExperience[msg.sender];
+        require(id != 0, "PortalRegistry: experience not found");
+        s.portals[id].condition = condition;
+        emit IPortalRegistry.PortalConditionAdded(id, address(condition));
+    }
+
+    function removeCondition() external onlyActiveExperience {
+        PortalRegistryStorage storage s = LibPortal.load();
+        uint256 portalId = s.portalIdsByExperience[msg.sender];
+        s.portals[portalId].condition = IPortalCondition(address(0));
+        emit IPortalRegistry.PortalConditionRemoved(portalId);
+    }
+
+
+     function jumpRequest(uint256 portalId) external payable onlyAvatar nonReentrant returns (bytes memory) {
         
         /**
          * This contract delegates jump request authorization to the avatar. Only the avatar
@@ -178,10 +211,6 @@ contract PortalRegistry is IPortalRegistry, AccessControl {
          * work out the details of payment and authorization.
          */
         PortalJumpMetadata memory meta = _getExperienceDetails(portalId);
-
-        if(address(meta.destPortal.condition) != address(0)) {
-            require(meta.destPortal.condition.canJump(address(meta.destinationExperience), meta.sourceWorld, meta.sourceCompany, address(meta.sourceExperience), msg.sender), "PortalRegistry: portal jump conditions not met");
-        }
 
         if(meta.destPortal.fee > 0) {
             //make sure sufficient funds were forwarded in txn
@@ -207,69 +236,42 @@ contract PortalRegistry is IPortalRegistry, AccessControl {
          
     }
 
-    /**
-        * @inheritdoc IPortalRegistry
-     */
-    function addCondition(IPortalCondition condition) external onlyExperience {
-        require(address(condition) != address(0), "PortalRegistry: condition address cannot be 0");
-        uint256 id = portalIdsByExperience[msg.sender];
-        require(id != 0, "PortalRegistry: experience not found");
-        portals[id].condition = condition;
-        emit PortalConditionAdded(id, address(condition));
-    }
-
-    /**
-     * @inheritdoc IPortalRegistry
-     */
-    function removeCondition() external onlyExperience {
-        uint256 portalId = portalIdsByExperience[msg.sender];
-        portals[portalId].condition = IPortalCondition(address(0));
-        emit PortalConditionRemoved(portalId);
-    }
-
-    /**
-     * @inheritdoc IPortalRegistry
-     */
-    function changePortalFee(uint256 newFee) external onlyExperience {
-        uint256 portalId = portalIdsByExperience[msg.sender];
-        portals[portalId].fee = newFee;
-        emit PortalFeeChanged(portalId, newFee);
-    }
-
-    /**
-     * @inheritdoc IPortalRegistry
-     */
-    function upgradeExperiencePortal(address oldExperience, address newExperience) public onlyExperienceRegistry {
-        uint256 portalId = portalIdsByExperience[oldExperience];
-        require(portalId != 0, "PortalRegistry: old experience not found");
-        portalIdsByExperience[newExperience] = portalId;
-        delete portalIdsByExperience[oldExperience];
-        portals[portalId].destination = IExperience(newExperience);
-        emit PortalDestinationUpgraded(portalId, oldExperience, newExperience);
-    }
-
-
-    //utility function to gather experience details for a jump request
-    function _getExperienceDetails(uint256 destPortalId) internal view returns (PortalJumpMetadata memory meta) {
+    function _getExperienceDetails(uint256 destPortalId) internal returns (PortalJumpMetadata memory meta) {
         //get avatar's current location
         IAvatar avatar = IAvatar(msg.sender);
-        IExperience exp = avatar.location();
+        address exp = avatar.location();
+        require(exp != address(0), "PortalRegistry: avatar is not in a valid location");
+        
+        PortalRegistryStorage storage s = LibPortal.load();
 
         //the avatar has to be located somewhere. Even when registering through a world, the 
         //world must choose a default experience
         require(address(exp) != address(0), "PortalRegistry: avatar is not in a valid location");
-        uint256 portalId = portalIdsByExperience[address(exp)];
+        uint256 portalId = s.portalIdsByExperience[address(exp)];
         require(portalId != 0, "PortalRegistry: no portal found for the avatar's current location");
         
         require(portalId != destPortalId, "PortalRegistry: cannot jump to the same experience");
 
-        PortalInfo storage sourcePortal = portals[portalId];
+        PortalInfo storage sourcePortal = s.portals[portalId];
         require(address(sourcePortal.destination) != address(0), "PortalRegistry: could not map current location to a valid portal");
         
         //get the destination experience
-        PortalInfo storage destPortal = portals[destPortalId];
+        PortalInfo storage destPortal = s.portals[destPortalId];
         require(destPortal.active, "PortalRegistry: destination portal is not active");
         require(address(destPortal.destination) != address(0), "PortalRegistry: invalid destination portal id");
+        
+        //make sure any jump conditions are met
+        if(address(destPortal.condition) != address(0)) {
+            JumpEvaluationArgs memory args = JumpEvaluationArgs({
+                destinationExperience: address(destPortal.destination),
+                sourceWorld: sourcePortal.destination.world(),
+                sourceCompany: sourcePortal.destination.company(),
+                sourceExperience: address(sourcePortal.destination),
+                avatar: msg.sender
+            });
+            require(destPortal.condition.canJump(args), "PortalRegistry: portal jump conditions not met");
+        }
+
         return PortalJumpMetadata({
             sourcePortal: sourcePortal,
             destPortal: destPortal,
@@ -280,5 +282,14 @@ contract PortalRegistry is IPortalRegistry, AccessControl {
             destWorld: destPortal.destination.world(),
             destCompany: destPortal.destination.company()
         });
+    }
+
+    /**
+     * @dev Withdraws funds from the contract but should only ever be necessary to recover funds 
+     * sent to this contract by mistake. All funds for experience jumps are transferred to the
+     * destination experience.
+     */
+    function withdraw(uint256 amount) external onlyOwner {
+        payable(msg.sender).transfer(amount);
     }
 }

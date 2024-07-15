@@ -1,78 +1,69 @@
-import { Provider, ethers } from "ethers";
+import { AddressLike, Provider, ethers } from "ethers";
 import { AllLogParser } from "../AllLogParser";
 import { RPCRetryHandler } from "../RPCRetryHandler";
+import { BaseRemovableEntity } from "../base-types/entity/BaseRemovableEntity";
 
-export interface IERC20Opts {
-    address: string;
-    provider: Provider;
-    logParser: AllLogParser;
+
+export interface AssetCheckArgs {
+    asset: AddressLike;
+    world: AddressLike;
+    company: AddressLike;
+    experience: AddressLike;
+    avatar: AddressLike;
 }
 
-export abstract class BaseAsset {
+export abstract class BaseAsset extends BaseRemovableEntity {
 
-    abstract readonly address: string;
-    abstract readonly provider: Provider;
-    abstract readonly asset: ethers.Contract;
-    abstract readonly logParser: AllLogParser;
-
+    /**
+     * Get the company contract address that issues this asset
+     * @returns the address of the Company contract allowed to mint the asset
+     */
     async issuer(): Promise<string> {
-        return await  RPCRetryHandler.withRetry(()=>this.asset.issuer());
+        return await  RPCRetryHandler.withRetry(()=>this.getContract().issuer());
     }
 
+    /**
+     * Returns the address of the origin asset
+     */
     async originAddress(): Promise<string> {
-        return await  RPCRetryHandler.withRetry(()=>this.asset.originAddress());
+        return await  RPCRetryHandler.withRetry(()=>this.getContract().originAddress());
     }
 
+    /**
+     * Returns the chain id of the origin asset
+     */
     async originChainId(): Promise<bigint> {
-        return await  RPCRetryHandler.withRetry(()=>this.asset.originAddress());
+        return await  RPCRetryHandler.withRetry(()=>this.getContract().originAddress());
     }
 
-    // function hook() external view returns (IAssetHook) {
-    //     return _loadCommonAttributes().hook;
-    // }
 
-    // function addHook(IAssetHook _hook) public override onlyIssuer {
-    //     CommonAssetV1Storage storage s = _loadCommonAttributes();
-    //     require(address(_hook) != address(0), "BaseAsset: hook cannot be zero address");
-    //     s.hook = _hook;
-    //     emit AssetHookAdded(address(_hook));
-    // }
+    /**
+     * Returns the name of the token.
+     */
+    async name(): Promise<string> {
+        return RPCRetryHandler.withRetry(() => this.getContract().name());
+    }
 
-    // function removeHook() public override onlyIssuer {
-    //     CommonAssetV1Storage storage s = _loadCommonAttributes();
-    //     address h = address(s.hook);
-    //     emit AssetHookRemoved(h);
-    //     delete s.hook;
-    // }
+    /**
+     * Returns the symbol of the token, usually a shorter version of the
+     * name.
+     */
+    async symbol(): Promise<string> {
+        return RPCRetryHandler.withRetry(() => this.getContract().symbol());
+    }
 
-    // function addCondition(IAssetCondition condition) public override onlyIssuer {
-    //     CommonAssetV1Storage storage s = _loadCommonAttributes();
-    //     require(address(condition) != address(0), "BaseAsset: condition cannot be zero address");
-    //     s.condition = condition;
-    //     emit AssetConditionAdded(address(condition));
-    // }
+    /**
+     * Checks if the asset can be viewed based on the world/company/experience/avatar
+     */
+    async canViewAsset(args: AssetCheckArgs): Promise<boolean> {
+        return await RPCRetryHandler.withRetry(() => this.getContract().canViewAsset(args));
+    }
 
-    // function removeCondition() public override onlyIssuer {
-    //     CommonAssetV1Storage storage s = _loadCommonAttributes();
-    //     address c = address(s.condition);
-    //     emit AssetConditionRemoved(c);
-    //     delete s.condition;
-    // }
-
-    // function canViewAsset(AssetCheckArgs memory args) public view override returns (bool) {
-    //     CommonAssetV1Storage storage s = _loadCommonAttributes();
-    //     if (address(s.condition) == address(0)) {
-    //         return true;
-    //     }
-    //     return s.condition.canView(args);
-    // }
-
-    // function canUseAsset(AssetCheckArgs memory args) public view override returns (bool) {
-    //     CommonAssetV1Storage storage s = _loadCommonAttributes();
-    //     if (address(s.condition) == address(0)) {
-    //         return true;
-    //     }
-    //     return s.condition.canUse(args);
-    // }
+    /**
+     * Checks if the asset can be used based on the world/company/experience/avatar
+     */
+    async canUseAsset(args: AssetCheckArgs): Promise<boolean> {
+        return await RPCRetryHandler.withRetry(() => this.getContract().canUseAsset(args));
+    }
 
 }

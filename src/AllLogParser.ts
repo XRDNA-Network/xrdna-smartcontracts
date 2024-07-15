@@ -1,9 +1,11 @@
 import { Log, TransactionReceipt, Interface, LogDescription } from "ethers";
-import { ILogParser, LogMap } from "./interfaces/ILogParser";
 import { AddrressToABIMap, buildAddressToABIMap } from "./AddressToABIMap";
 import { DeploymentAddressConfig } from "./ContractAddresses";
 
-export class AllLogParser implements ILogParser {
+
+export type LogMap  = Map<string, LogDescription[]>;
+
+export class AllLogParser {
 
     private abiMap: Map<string, Interface> = new Map();
     constructor(readonly deploymentConfig: DeploymentAddressConfig) {}

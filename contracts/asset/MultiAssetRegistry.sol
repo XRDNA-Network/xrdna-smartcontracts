@@ -4,7 +4,7 @@ pragma solidity ^0.8.24;
 
 import {IMultiAssetRegistry} from './IMultiAssetRegistry.sol';
 import {AccessControl} from '@openzeppelin/contracts/access/AccessControl.sol';
-import {IAssetRegistry} from './IAssetRegistry.sol';
+import {IAssetRegistry} from './registry/IAssetRegistry.sol';
 
 struct MultiAssetRegistryConstructorArgs {
     //role assigner and registry admin
@@ -48,9 +48,10 @@ contract MultiAssetRegistry is IMultiAssetRegistry, AccessControl {
     /**
      * @inheritdoc IMultiAssetRegistry
      */
-    function isRegisteredAsset(address asset) external view override returns (bool) {
-        for (uint256 i = 0; i < registries.length; i++) {
-            if (registries[i].isRegisteredAsset(asset)) {
+    function isRegistered(address asset) external view override returns (bool) {
+        uint256 len = registries.length;
+        for (uint256 i = 0; i < len; i++) {
+            if (registries[i].isRegistered(asset)) {
                 return true;
             }
         }

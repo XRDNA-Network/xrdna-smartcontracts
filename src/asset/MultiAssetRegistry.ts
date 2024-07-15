@@ -1,6 +1,6 @@
 import { AddressLike, Provider, Signer, TransactionResponse, ethers } from "ethers";
 import { RPCRetryHandler } from "../RPCRetryHandler";
-import {abi} from "../../artifacts/contracts/asset/MultiAssetRegistry.sol/MultiAssetRegistry.json";
+import {abi} from "../../artifacts/contracts/asset/IMultiAssetRegistry.sol/IMultiAssetRegistry.json";
 import { AllLogParser } from "../AllLogParser";
 
 export interface IMultiAssetRegistryOpts {
@@ -27,7 +27,7 @@ export class MultiAssetRegistry {
     }
 
     async isRegisteredAsset(assetAddress: AddressLike): Promise<boolean> {
-        return await  RPCRetryHandler.withRetry(()=>this.con.isRegisteredAsset(assetAddress));
+        return await  RPCRetryHandler.withRetry(()=>this.con.isRegistered(assetAddress));
     }
 
     async addRegistry(registry: AddressLike): Promise<TransactionResponse> {
