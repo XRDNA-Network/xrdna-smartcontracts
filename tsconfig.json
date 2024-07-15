@@ -10,7 +10,8 @@
         "forceConsistentCasingInFileNames": true,
     },
     "include": [
-      "src/**/*"
+      "src/**/*",
+      "ignition/deployments/**/deployed_addresses.json"
     ],
     "exclude": [
       "node_modules",
