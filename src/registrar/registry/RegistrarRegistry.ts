@@ -76,7 +76,7 @@ export class RegistrarRegistry extends BaseRemovableRegistry {
             throw new Error("Registry not deployed");
         }
         
-        const t = await RPCRetryHandler.withRetry(() => this.registry.createRegistrarNoRemoval({
+        const t = await RPCRetryHandler.withRetry(() => this.registry.createNonRemovableRegistrar({
             owner: props.owner,
             name: props.name,
             sendTokensToOwner: props.sendTokensToOwner,
