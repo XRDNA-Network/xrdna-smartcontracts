@@ -68,6 +68,10 @@ contract NTERC721Asset is BaseAsset, IERC721Asset {
         }
     }
 
+    function postUpgradeInit(bytes calldata) external override onlyRegistry {
+        //no-op
+    }
+
     /**
      * @inheritdoc IERC721Asset
      */

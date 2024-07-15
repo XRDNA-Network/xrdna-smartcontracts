@@ -91,8 +91,12 @@ contract Avatar is BaseEntity, IAvatar {
         payable(msg.sender).transfer(amount);
     }
 
-    function upgrade() public override onlyOwner nonReentrant {
-        avatarRegistry.upgradeEntity();
+    function upgrade(bytes calldata initData) public override onlyOwner nonReentrant {
+        avatarRegistry.upgradeEntity(initData);
+    }
+
+    function postUpgradeInit(bytes calldata) public override onlyRegistry {
+        //no-op
     }
 
     function version() public pure override virtual returns (Version memory) {

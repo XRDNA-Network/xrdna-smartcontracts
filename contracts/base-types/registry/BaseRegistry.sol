@@ -71,7 +71,7 @@ abstract contract BaseRegistry is ReentrancyGuard, BaseAccess, IRegistry {
      * done through the registry so that arbitrary logic cannot be attached to entity proxies to circumvent
      * protocol behaviors.
      */
-    function upgradeEntity() public virtual onlyUpgradeable nonReentrant {
+    function upgradeEntity(bytes calldata initData) public virtual onlyUpgradeable nonReentrant {
         IEntityProxy proxy = IEntityProxy(msg.sender); 
         Version memory v = proxy.getVersion();
 
@@ -81,6 +81,8 @@ abstract contract BaseRegistry is ReentrancyGuard, BaseAccess, IRegistry {
 
         //set the implementation on the entity proxy (caller)
         IEntityProxy(msg.sender).setImplementation(fs.entityImplementation);
+        
+        IRegisteredEntity(msg.sender).postUpgradeInit(initData);
 
         emit RegistryUpgradedEntity(msg.sender, fs.entityImplementation);
     }
@@ -90,7 +92,7 @@ abstract contract BaseRegistry is ReentrancyGuard, BaseAccess, IRegistry {
      * done through the registry so that arbitrary logic cannot be attached to entity proxies to circumvent
      * protocol behaviors. This is useful for emergency situations where a bug is found in the latest logic.
      */
-    function downgradeEntity() public virtual onlyUpgradeable nonReentrant {
+    function downgradeEntity(bytes calldata initData) public virtual onlyUpgradeable nonReentrant {
         IEntityProxy proxy = IEntityProxy(msg.sender); 
         Version memory v = proxy.getVersion();
 
@@ -100,6 +102,7 @@ abstract contract BaseRegistry is ReentrancyGuard, BaseAccess, IRegistry {
 
         //set the implementation on the entity proxy (caller)
         IEntityProxy(msg.sender).setImplementation(fs.entityImplementation);
+        IRegisteredEntity(msg.sender).postUpgradeInit(initData);
 
         emit RegistryDowngradedEntity(msg.sender, fs.entityImplementation);
     }

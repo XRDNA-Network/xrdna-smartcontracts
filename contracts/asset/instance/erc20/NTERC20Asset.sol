@@ -61,6 +61,10 @@ contract NTERC20Asset is BaseAsset, IERC20Asset {
         erc20Store.decimals = initData.decimals;
     }
 
+    function postUpgradeInit(bytes calldata) external override onlyRegistry {
+        //no-op
+    }
+
     /**
      * @inheritdoc IERC20Asset
      */

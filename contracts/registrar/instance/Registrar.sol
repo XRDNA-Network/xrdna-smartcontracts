@@ -37,8 +37,12 @@ contract Registrar is BaseRemovableEntity, IRegistrar {
 
     receive() external payable {}
 
-    function upgrade() public override onlyOwner {
-        registrarRegistry.upgradeEntity();
+    function upgrade(bytes calldata initData) public override onlyOwner {
+        registrarRegistry.upgradeEntity(initData);
+    }
+
+    function postUpgradeInit(bytes calldata) external override onlyRegistry{
+        //no-op
     }
 
     function version() external pure override returns (Version memory) {

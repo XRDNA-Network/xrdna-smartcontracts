@@ -1,7 +1,8 @@
-import { TransactionResponse } from "ethers";
+import { AddressLike, TransactionResponse } from "ethers";
 import { RPCRetryHandler } from "../../RPCRetryHandler";
 import { BaseAccess } from "../BaseAccess";
 import { LogNames } from "../../LogNames";
+import { Version } from "../../Version";
 
 export abstract class BaseEntity extends BaseAccess {
 
@@ -9,8 +10,8 @@ export abstract class BaseEntity extends BaseAccess {
         return RPCRetryHandler.withRetry(() => this.getContract().name());
     }
 
-    async upgrade(): Promise<TransactionResponse> {
-        const t = await RPCRetryHandler.withRetry(() => this.getContract().upgrade());
+    async upgrade(initData: string): Promise<TransactionResponse> {
+        const t = await RPCRetryHandler.withRetry(() => this.getContract().upgrade(initData));
         const r = await t.wait();
         if(!r.status) {
             throw new Error("Upgrade failed");
@@ -21,5 +22,17 @@ export abstract class BaseEntity extends BaseAccess {
             throw new Error("Upgrade failed");
         }
         return t;
+    }
+
+    async version(): Promise<Version> {
+        const r = await RPCRetryHandler.withRetry(() => this.getContract().version());
+        return {
+            major: r[0],
+            minor: r[1],
+        } as Version;
+    }
+
+    async getImplementation(): Promise<AddressLike> {
+        return RPCRetryHandler.withRetry(() => this.getContract().getImplementation());
     }
 }

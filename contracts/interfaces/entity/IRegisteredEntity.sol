@@ -26,5 +26,10 @@ interface IRegisteredEntity {
     /**
      * @dev Upgrades the entity to the latest version of the entity logic, if applicable.
      */
-    function upgrade() external;
+    function upgrade(bytes calldata initData) external;
+
+    /**
+     * @dev Initializes the entity after an up or downgrade.
+     */
+    function postUpgradeInit(bytes calldata initData) external;
 }

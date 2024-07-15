@@ -16,3 +16,4 @@ export * from './experience';
 export * from './portal';
 export * from './types';
 export * from './interfaces/IWrapperOpts'
+export * from './Version';

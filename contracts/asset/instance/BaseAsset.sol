@@ -183,8 +183,8 @@ abstract contract BaseAsset is BaseRemovableEntity, IAsset {
         }
     }
 
-    function upgrade() external onlyIssuer nonReentrant override{
-        IRegistry(owningRegistry()).upgradeEntity();
+    function upgrade(bytes calldata initData) external onlyIssuer nonReentrant override{
+        IRegistry(owningRegistry()).upgradeEntity(initData);
     }
 
 }

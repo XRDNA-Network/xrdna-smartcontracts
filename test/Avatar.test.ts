@@ -214,7 +214,7 @@ describe('Avatar', () => {
         if (!er || er.status !== 1) {
             throw new Error("Transaction failed");
         }
-        await avatar.upgrade();
+        await avatar.upgrade('0x');
 
         const avatarV2 = new AvatarV2({
             address: avatar.address,

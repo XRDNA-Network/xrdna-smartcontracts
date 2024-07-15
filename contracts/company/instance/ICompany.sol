@@ -141,7 +141,7 @@ interface ICompany is IAccessControl, IVectoredEntity, IRemovableEntity {
     /**
      * @dev Request that the given company-owned experience upgrade itself
      */
-    function upgradeExperience(address exp) external;
+    function upgradeExperience(address exp, bytes calldata initData) external;
 
     /**
      * @dev Mints the given asset to the given address with the given amount.
@@ -175,14 +175,14 @@ interface ICompany is IAccessControl, IVectoredEntity, IRemovableEntity {
      * that want to upgrade the logic of their assets. This can only be called by the company
      * admin.
      */
-    function upgradeERC20(address asset) external;
+    function upgradeERC20(address asset, bytes calldata initData) external;
 
     /**
      * @dev Upgrades the given ERC721 asset to a new version. This is useful for companies
      * that want to upgrade the logic of their assets. This can only be called by the company
      * admin.
      */
-    function upgradeERC721(address asset) external;
+    function upgradeERC721(address asset, bytes calldata initData) external;
 
     /**
      * @dev Withdraws the given amount of funds from the company. Only the owner can withdraw funds.

@@ -76,8 +76,8 @@ contract Company is BaseRemovableEntity, ICompany {
         payable(msg.sender).transfer(amount);
     }
 
-    function upgrade() public onlyOwner nonReentrant {
-        companyRegistry.upgradeEntity();
+    function upgrade(bytes calldata initData) public onlyOwner nonReentrant {
+        companyRegistry.upgradeEntity(initData);
     }
 
     function version() external pure override returns (Version memory) {
@@ -109,6 +109,10 @@ contract Company is BaseRemovableEntity, ICompany {
         //intialize access controls
         address[] memory admins = new address[](0);
         LibAccess.initAccess(args.owner, admins);
+    }
+
+    function postUpgradeInit(bytes calldata) public override onlyRegistry {
+        //no-op
     }
 
     /**
@@ -207,11 +211,11 @@ contract Company is BaseRemovableEntity, ICompany {
         mintable.revoke(holder, amount);
     }
 
-    function upgradeERC20(address asset) public nonReentrant onlyAdmin onlyIfActive {
+    function upgradeERC20(address asset, bytes calldata initData) public nonReentrant onlyAdmin onlyIfActive {
         require(erc20Registry.isRegistered(asset), "Company: asset not registered");
         IERC20Asset a = IERC20Asset(asset);
         require(a.issuer() == address(this), "Company: not issuer of asset");
-        a.upgrade();
+        a.upgrade(initData);
     }
 
     /**
@@ -226,11 +230,11 @@ contract Company is BaseRemovableEntity, ICompany {
         mintable.revoke(holder, tokenId);
     }
 
-    function upgradeERC721(address asset) public nonReentrant onlyAdmin onlyIfActive {
+    function upgradeERC721(address asset, bytes calldata initData) public nonReentrant onlyAdmin onlyIfActive {
         require(erc721Registry.isRegistered(asset), "Company: asset not registered");
         IERC721Asset a = IERC721Asset(asset);
         require(a.issuer() == address(this), "Company: not issuer of asset");
-        a.upgrade();
+        a.upgrade(initData);
     }
 
     /**
@@ -300,11 +304,11 @@ contract Company is BaseRemovableEntity, ICompany {
         emit CompanyRemovedExperience(experience, reason, portalId);
     }
 
-    function upgradeExperience(address exp) public nonReentrant onlyAdmin onlyIfActive {
+    function upgradeExperience(address exp, bytes calldata initData) public nonReentrant onlyAdmin onlyIfActive {
         require(experienceRegistry.isRegistered(exp), 'Company: Experience not registered');
         IExperience e = IExperience(exp);
         require(e.company() == address(this), 'Company: Experience does not belong to company');
-        e.upgrade();
+        e.upgrade(initData);
     }
 
     /**

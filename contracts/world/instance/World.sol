@@ -57,8 +57,12 @@ contract World is BaseRemovableEntity, IWorld {
 
     receive() external payable {}
 
-    function upgrade() public override onlyOwner {
-        worldRegistry.upgradeEntity();
+    function upgrade(bytes calldata initData) public override onlyOwner {
+        worldRegistry.upgradeEntity(initData);
+    }
+
+    function postUpgradeInit(bytes calldata) external override onlyRegistry {
+        //no-op
     }
     
     function version() public pure override returns (Version memory) {

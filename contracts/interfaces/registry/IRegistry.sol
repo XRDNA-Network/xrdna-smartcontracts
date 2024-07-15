@@ -68,12 +68,12 @@ interface IRegistry is IAccessControl {
      * done through the registry so that arbitrary logic cannot be attached to entity proxies to circumvent
      * protocol behaviors.
      */
-    function upgradeEntity() external;
+    function upgradeEntity(bytes calldata initData) external;
 
     /**
      * @dev Entity owners can request to downgrade the underlying logic of their entity contract. This is
      * done through the registry so that arbitrary logic cannot be attached to entity proxies to circumvent
      * protocol behaviors. This is useful for emergency situations where a bug is found in the latest logic.
      */
-    function downgradeEntity() external;
+    function downgradeEntity(bytes calldata initData) external;
 }
