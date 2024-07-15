@@ -11,7 +11,7 @@
     },
     "include": [
       "src/**/*",
-      "ignition/deployments/**/deployed_addresses.json"
+      "ignition/**/deployed_addresses.json"
     ],
     "exclude": [
       "node_modules",

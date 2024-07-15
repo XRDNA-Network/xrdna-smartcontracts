@@ -15,7 +15,7 @@
   "scripts": {
     "build": "yarn clean ; yarn compile && tsc",
     "change": "beachball change",
-    "clean": "rimraf --glob artifacts/build-info dist/* *.tsbuildinfo",
+    "clean": "rimraf --glob artifacts/build-info dist/* **/*.tsbuildinfo",
     "clear-deployment": "npx hardhat ignition wipe",
     "compile": "hardhat compile --force",
     "deploy": "npx hardhat ignition deploy",
