@@ -9,6 +9,7 @@ export class RPCRetryHandler  {
 
     static async withRetry(fn: FnToRetry, retries: number = 3): Promise<any> {
         let tries = 0;
+        let lastError: any;
         while(tries < retries) {
             try {
                 return await fn();
@@ -16,10 +17,11 @@ export class RPCRetryHandler  {
                 if(!RPCRetryHandler.isKnownError(e)) {
                     throw e;
                 }
+                lastError = e;
             }
             tries++;
         }
-        throw new Error(`Failed after ${retries} retries`);
+        throw lastError;
     }
 
     static isKnownError(e: any): boolean {

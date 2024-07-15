@@ -5,15 +5,11 @@ import { RPCRetryHandler } from "../RPCRetryHandler";
 import { VectorAddress } from "../VectorAddress";
 import { AllLogParser } from "../AllLogParser";
 import { IExperienceInfo } from "./IExperienceInfo";
-
-export interface IExperienceRegistryOpts {
-    address: string;
-    admin: Provider | Signer;
-    logParser: AllLogParser;
-}
+import { BaseVectoredRegistry } from "../base-types/registry/BaseVectoredRegistry";
+import { IWrapperOpts } from "../interfaces/IWrapperOpts";
 
 
-export class ExperienceRegistry {
+export class ExperienceRegistry extends BaseVectoredRegistry {
     static get abi() {
         return [
             ...abi,
@@ -22,16 +18,15 @@ export class ExperienceRegistry {
     }
     
     private con: Contract;
-    readonly address: string;
-    readonly logParser: AllLogParser;
-    private admin: Provider | Signer;
 
-    constructor(opts: IExperienceRegistryOpts) {
-        this.address = opts.address;
-        this.admin = opts.admin;
+    constructor(opts: IWrapperOpts) {
+        super(opts);
         this.con = new Contract(this.address, abi, this.admin);
-        this.logParser = opts.logParser;
         this.logParser.addAbi(this.address, abi);
+    }
+
+    getContract(): Contract {
+        return this.con;
     }
 
     async isExperience(exp: AddressLike): Promise<boolean> {

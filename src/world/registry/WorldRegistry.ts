@@ -3,17 +3,10 @@ import { RPCRetryHandler } from "../../RPCRetryHandler";
 import { AllLogParser } from "../../AllLogParser";
 import {abi as WorldRegistryABI} from '../../../artifacts/contracts/world/registry/IWorldRegistry.sol/IWorldRegistry.json';
 import {abi as proxyABI} from '../../../artifacts/contracts/base-types/BaseProxy.sol/BaseProxy.json';
-/**
- * Typescript proxy for WorldRegistry deployed contract.
- */
-export interface IWorldRegistryOpts {
-    address: string;
-    admin: Provider | Signer;
-    logParser: AllLogParser;
-}
+import { BaseVectoredRegistry } from "../../base-types/registry/BaseVectoredRegistry";
+import { IWrapperOpts } from "../../interfaces/IWrapperOpts";
 
-
-export class WorldRegistry {
+export class WorldRegistry extends BaseVectoredRegistry {
     static get abi() {
         return [
             ...WorldRegistryABI,
@@ -21,21 +14,20 @@ export class WorldRegistry {
         ]
     }
     
-    readonly address: string;
-    readonly logParser: AllLogParser;
-    private admin: Provider | Signer;
     private registry: ethers.Contract;
 
-    constructor(opts: IWorldRegistryOpts) {
-        this.address = opts.address;
-        this.admin = opts.admin;
+    constructor(opts: IWrapperOpts) {
+        super(opts);
         const abi = WorldRegistry.abi;
         if(!abi || abi.length === 0) {
             throw new Error("Invalid ABI");
         }
         this.registry = new ethers.Contract(this.address, abi, this.admin);
-        this.logParser = opts.logParser;
         this.logParser.addAbi(this.address, abi);
+    }
+
+    getContract(): ethers.Contract {
+        return this.registry;
     }
 
     async lookupWorldAddress(name: string): Promise<string> {
