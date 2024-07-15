@@ -1,6 +1,6 @@
 {
   "name": "@xrdna/smart-contracts",
-  "version": "0.0.1-alpha.0",
+  "version": "1.0.0",
   "description": "Smart contracts for XRDNA's L3 blockchain",
   "main": "dist/src/index.js",
   "files": [
