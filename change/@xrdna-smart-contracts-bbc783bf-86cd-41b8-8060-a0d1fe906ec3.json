@@ -1,7 +1,0 @@
-{
-  "type": "major",
-  "comment": "Deployed to testnet and ready to publish to npm",
-  "packageName": "@xrdna/smart-contracts",
-  "email": "mdcoon1@yahoo.com",
-  "dependentChangeType": "patch"
-}

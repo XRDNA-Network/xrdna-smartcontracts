@@ -1,0 +1,20 @@
+{
+  "name": "@xrdna/smart-contracts",
+  "entries": [
+    {
+      "date": "Tue, 25 Jun 2024 16:01:13 GMT",
+      "version": "0.0.1-alpha.0",
+      "tag": "@xrdna/smart-contracts_v0.0.1-alpha.0",
+      "comments": {
+        "major": [
+          {
+            "author": "mdcoon1@yahoo.com",
+            "package": "@xrdna/smart-contracts",
+            "commit": "64d455461c441455aa5fa56eada60dbebccbb632",
+            "comment": "Deployed to testnet and ready to publish to npm"
+          }
+        ]
+      }
+    }
+  ]
+}
