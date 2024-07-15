@@ -39,6 +39,10 @@ export class ERC721Asset extends BaseAsset {
         this.logParser.addAbi(this.address, abi);
     }
 
+    getContract(): ethers.Contract {
+        return this.con;
+    }
+
     async balanceOf(account: AddressLike): Promise<bigint> {
         return await  RPCRetryHandler.withRetry(()=>this.con.balanceOf(account));
     }
