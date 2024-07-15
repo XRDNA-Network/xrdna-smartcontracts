@@ -4,6 +4,7 @@ pragma solidity ^0.8.24;
 
 import {LibRoles} from './LibRoles.sol';
 import {LibStorageSlots} from './LibStorageSlots.sol';
+import {IAccessControl} from '../interfaces/IAccessControl.sol';
 
  
 struct AccessStorage {
@@ -50,11 +51,16 @@ library LibAccess {
         ownerRoles[_owner] = true;
         adminRoles[_owner] = true;
         signerRoles[_owner] = true;
+        emit IAccessControl.OwnerChanged(address(0), _owner);
+        emit IAccessControl.RoleChanged(LibRoles.ROLE_ADMIN, _owner, true);
+        emit IAccessControl.RoleChanged(LibRoles.ROLE_SIGNER, _owner, true);
         for(uint256 i=0;i<admins.length;++i) {
             //set admin privs
             require(admins[i] != address(0), "Admins cannot be zero address");
             adminRoles[admins[i]] = true;
+            emit IAccessControl.RoleChanged(LibRoles.ROLE_ADMIN, admins[i], true);
             signerRoles[admins[i]] = true;
+            emit IAccessControl.RoleChanged(LibRoles.ROLE_SIGNER, admins[i], true);
         }
     }
 
@@ -75,6 +81,7 @@ library LibAccess {
         s.owner = o;
         s.roles[LibRoles.ROLE_OWNER][o] = true;
         s.roles[LibRoles.ROLE_ADMIN][o] = true;
+        emit IAccessControl.OwnerChanged(owner(), o);
     }
 
     /**
@@ -86,6 +93,7 @@ library LibAccess {
         for(uint256 i=0;i<signers.length;++i) {
             require(signers[i] != address(0), "SharedLibAccess: cannot add zero address signers");
             signerRoles[signers[i]] = true;
+            emit IAccessControl.RoleChanged(LibRoles.ROLE_SIGNER, signers[i], true);
         }
     }
 
@@ -98,6 +106,7 @@ library LibAccess {
         for(uint256 i=0;i<signers.length;++i) {
             require(signers[i] != address(0), "SharedLibAccess: cannot remove zero address signers");
             delete signerRoles[signers[i]];
+            emit IAccessControl.RoleChanged(LibRoles.ROLE_SIGNER, signers[i], false);
         }
     }
 
@@ -132,7 +141,7 @@ library LibAccess {
         require(account != address(0), "AccessControl: cannot grant role to zero address");
         AccessStorage storage s = load();
         s.roles[role][account] = true;
-        require(s.roles[role][account], "AccessControl: failed to grant role");
+        emit IAccessControl.RoleChanged(role, account, true);
     }
 
     /**
@@ -142,5 +151,6 @@ library LibAccess {
         require(account != address(0), "AccessControl: cannot revoke role from zero address");
         AccessStorage storage s = load();
         s.roles[role][account] = false;
+        emit IAccessControl.RoleChanged(role, account, false);
     }
 }

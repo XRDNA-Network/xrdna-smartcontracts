@@ -8,6 +8,10 @@ pragma solidity ^0.8.24;
  */
 interface IAccessControl {
 
+    event RoleChanged(bytes32 indexed role, address indexed account, bool indexed grant);
+    event SignerChanged(address signer, bool grant);
+    event OwnerChanged(address indexed owner, address indexed newOwner);
+
     function hasRole(bytes32 role, address account) external view returns (bool);
     function grantRole(bytes32 role, address account) external;
     function revokeRole(bytes32 role, address account) external;
